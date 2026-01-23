@@ -334,6 +334,119 @@ nav {
     font-size: 0.875rem;
 }
 
+/* testimonial */
+.testimonials {
+    padding: 5rem 2rem;
+    background: #ffffff;
+    font-family: 'Inter', sans-serif;
+}
+
+.testimonials-header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.testimonials-header h2 {
+    font-size: 2.5rem;
+    font-weight: 800;
+}
+
+.testimonials-header p {
+    font-size: 1.125rem;
+    color: #6b7280;
+    margin-top: 0.75rem;
+}
+
+.testimonial-columns {
+    column-count: 3;
+    column-gap: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* CARD */
+.testimonial-card {
+    position: relative;
+    background: #ffffff;
+    border-radius: 30px;
+    padding: 1.5rem;
+    margin-bottom: 2.5rem;
+    break-inside: avoid;
+    border: 2px solid rgba(0,0,0,0.12);
+    box-shadow:
+        0 18px 35px rgba(0,0,0,0.10),
+        0 6px 12px rgba(0,0,0,0.06);
+    transition:
+        transform 0.3s ease,
+        box-shadow 0.25s ease,
+        border-color 0.25s ease;
+    animation: fadeInUp 0.8s ease;
+}
+
+
+.testimonial-card:hover {
+    transform: scale(1.05);
+    border-color: rgba(37, 99, 235, 0.35);
+    box-shadow:
+        0 28px 55px rgba(37,99,235,0.18),
+        0 10px 20px rgba(37,99,235,0.10);
+}
+
+
+.testimonial-card:active {
+    transform: scale(1.02);
+}
+
+/* USER */
+.testimonial-user {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.testimonial-user img {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.name {
+    font-weight: 700;
+    color: #111827;
+}
+
+.username {
+    font-size: 0.875rem;
+    color: #6b7280;
+    margin-top: 2px;
+}
+
+.testimonial-text {
+    margin-top: 1rem;
+    font-size: 0.95rem;
+    color: #4b5563;
+    line-height: 1.7;
+}
+
+/* RESPONSIVE */
+@media (max-width: 1024px) {
+    .testimonial-columns {
+        column-count: 2;
+    }
+}
+
+@media (max-width: 640px) {
+    .testimonial-columns {
+        column-count: 1;
+    }
+
+    .testimonial-card:hover {
+        transform: none;
+    }
+}
+
+
 /* Features Section */
 .features {
     padding: 5rem 2rem;
