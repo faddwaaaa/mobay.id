@@ -77,8 +77,7 @@ nav {
 
 .btn-secondary:hover {
     color: var(--primary-blue);
-    transform: translateY(-2px);
-
+    transform: scale(1.08);
 }
 
 .btn-primary {
@@ -88,9 +87,10 @@ nav {
 
 .btn-primary:hover {
     background: var(--dark-blue);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+    transform: scale(1.08);
+    box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35);
 }
+
 
 /* Hero Section */
 .hero {
