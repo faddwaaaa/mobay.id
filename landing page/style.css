@@ -129,7 +129,7 @@ nav {
 .hero-content {
     opacity: 0;
     animation: fadeInUp 0.8s ease forwards;
-    margin-bottom: 20px;
+    margin-bottom: 40px;
 }
 
 .hero-badge {
@@ -193,18 +193,39 @@ nav {
     align-items: center;
     justify-content: center;
     z-index: 1;
-    bottom: -30px;
-    left: 50%;
+    bottom: -120px;
+    left: 59%;
     transform: translateX(-50%);
 }
 
 .img1 img {
-    width: 95%;
+    width: 110%;
     height: auto;
     object-fit: contain;
-    max-width: 550px;
+    max-width: 850px;
     filter: drop-shadow(0 30px 60px rgba(0, 0, 0, 0.15));
-    animation: gentleFloat 4s ease-in-out infinite;
+    /* animation: gentleFloat 4s ease-in-out infinite; */
+}
+.img11 {
+    position: absolute;
+    width: 100%;
+    height: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1;
+    bottom: -100px;
+    left: 59%;
+    transform: translateX(-50%);
+}
+
+.img11 img {
+    width: 110%;
+    height: auto;
+    object-fit: contain;
+    max-width: 850px;
+    filter: drop-shadow(0 30px 60px rgba(0, 0, 0, 0.15));
+    /* animation: gentleFloat 4s ease-in-out infinite; */
 }
 
 /* img2 - Animasi naik turun dengan border-radius */
