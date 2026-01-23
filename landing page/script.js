@@ -53,3 +53,89 @@ document.querySelectorAll('.stat-card').forEach(card => {
     observer.observe(card);
 });
 
+document.addEventListener('DOMContentLoaded', function() {
+    // Target akhir untuk setiap counter
+    const targets = [10000, 50000, 99.9];
+    
+    // Elemen counter
+    const counters = [
+        document.getElementById('counter-1'),
+        document.getElementById('counter-2'),
+        document.getElementById('counter-3')
+    ];
+    
+    // Durasi animasi (dalam milidetik)
+    const duration = 2000;
+    
+    // Mulai semua counter dari 0
+    counters.forEach((counter, index) => {
+        if (index === 2) {
+            counter.textContent = '0%'; // Untuk persentase
+        } else {
+            counter.textContent = '0'; // Untuk angka
+        }
+    });
+    
+    // Fungsi untuk memformat angka
+    function formatNumber(num, isPercent = false) {
+        if (isPercent) {
+            return num.toFixed(1) + '%';
+        }
+        
+        if (num >= 1000) {
+            return (num / 1000).toFixed(0) + 'K+';
+        }
+        
+        return num.toFixed(0);
+    }
+    
+    // Fungsi animasi untuk setiap counter
+    function animateCounter(counterElement, target, isPercent = false) {
+        let startTime = null;
+        const startValue = 0;
+        
+        function step(timestamp) {
+            if (!startTime) startTime = timestamp;
+            
+            const progress = Math.min((timestamp - startTime) / duration, 1);
+            
+            // Easing function untuk animasi lebih natural
+            const easeOutCubic = 1 - Math.pow(1 - progress, 3);
+            
+            const currentValue = startValue + (target - startValue) * easeOutCubic;
+            
+            // Update teks dengan nilai yang sudah diformat
+            counterElement.textContent = formatNumber(currentValue, isPercent);
+            
+            if (progress < 1) {
+                requestAnimationFrame(step);
+            } else {
+                // Pastikan nilai akhir tepat
+                counterElement.textContent = formatNumber(target, isPercent);
+            }
+        }
+        
+        requestAnimationFrame(step);
+    }
+    
+    // Jalankan animasi untuk semua counter dengan sedikit delay
+    setTimeout(() => animateCounter(counters[0], targets[0], false), 200);
+    setTimeout(() => animateCounter(counters[1], targets[1], false), 400);
+    setTimeout(() => animateCounter(counters[2], targets[2], true), 600);
+    
+    // Opsional: Restart animasi saat di-klik
+    counters.forEach((counter, index) => {
+        counter.style.cursor = 'pointer';
+        counter.addEventListener('click', function() {
+            if (index === 2) {
+                animateCounter(counter, targets[2], true);
+            } else {
+                animateCounter(counter, targets[index], false);
+            }
+        });
+        
+        // Tambahkan tooltip
+        counter.title = 'Klik untuk restart animasi';
+    });
+});
+

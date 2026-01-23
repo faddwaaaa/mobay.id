@@ -277,29 +277,50 @@ nav {
     color: var(--gray-600);
 }
 
-.trust-stats {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 2rem;
-    margin-bottom: 4rem;
-}
+ .trust-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-bottom: 4rem;
+        }
 
-.stat-card {
-    text-align: center;
-    padding: 2rem;
-}
+        .stat-card {
+            text-align: center;
+            padding: 2rem;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
 
-.stat-number {
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-number {
+            font-size: 3rem;
+            font-weight: 800;
+            color: var(--primary-blue);
+            margin-bottom: 0.5rem;
+            height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .stat-label {
+            font-size: 1rem;
+            color: var(--gray-600);
+            font-weight: 500;
+    }
+
+    .stat-number {
     font-size: 3rem;
     font-weight: 800;
     color: var(--primary-blue);
     margin-bottom: 0.5rem;
-}
-
-.stat-label {
-    font-size: 1rem;
-    color: var(--gray-600);
-    font-weight: 500;
+    transition: all 0.3s ease; /* Tambahkan ini */
 }
 
 .trust-logos {
