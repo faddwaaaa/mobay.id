@@ -405,25 +405,188 @@ nav {
     transition: all 0.3s ease; /* Tambahkan ini */
 }
 
+/* INI TETAP: */
 .trust-logos {
-    background: var(--gray-50);
-    padding: 2rem;
-    border-radius: 16px;
+    padding: 2rem 0; 
+    margin-top: 1rem; 
+    margin-bottom: 1rem;
 }
 
-.trust-logos p {
+.umkm-card {
+     background: white;
+    padding: 1.5rem;
+    border-radius: 16px;
     text-align: center;
-    font-size: 0.875rem;
-    color: var(--gray-600);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid rgba(148, 163, 184, 0.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+}
+
+.trust-logos-header {
+    text-align: center;
     margin-bottom: 1.5rem;
-    font-weight: 600;
+}
+
+.trust-tagline {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--gray-900);
+    margin-bottom: 0.5rem;
+    position: relative;
+    display: inline-block;
+}
+
+.trust-tagline::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 3px;
+    background: var(--primary-blue);
+    border-radius: 2px;
+}
+
+.trust-subtitle {
+    font-size: 0.95rem;
+    color: var(--gray-600);
+    font-weight: 500;
 }
 
 .logos-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-    gap: 2rem;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1.5rem;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+
+.umkm-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.umkm-card.fashion::before { background: #ec4899; }
+.umkm-card.kuliner::before { background: #f59e0b; }
+.umkm-card.kerajinan::before { background: #10b981; }
+.umkm-card.jasa::before { background: #3b82f6; }
+
+.umkm-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+}
+
+.umkm-card:hover::before {
+    opacity: 1;
+}
+
+.umkm-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 16px;
+    display: flex;
     align-items: center;
+    justify-content: center;
+    margin-bottom: 1rem;
+    font-size: 1.8rem;
+    transition: all 0.3s ease;
+}
+
+.umkm-card.fashion .umkm-icon {
+    background: rgba(236, 72, 153, 0.1);
+    color: #ec4899;
+}
+
+.umkm-card.kuliner .umkm-icon {
+    background: rgba(245, 158, 11, 0.1);
+    color: #f59e0b;
+}
+
+.umkm-card.kerajinan .umkm-icon {
+    background: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+}
+
+.umkm-card.jasa .umkm-icon {
+    background: rgba(59, 130, 246, 0.1);
+    color: #3b82f6;
+}
+
+.umkm-card:hover .umkm-icon {
+    transform: scale(1.1) rotate(5deg);
+}
+
+.umkm-name {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--gray-900);
+    margin-bottom: 0.25rem;
+}
+
+.umkm-count {
+    font-size: 0.75rem;
+    color: var(--gray-600);
+    font-weight: 500;
+    background: var(--gray-100);
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    margin-top: 0.25rem;
+}
+
+/* Animasi fade in */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.umkm-card {
+    animation: fadeInUp 0.6s ease forwards;
+    opacity: 0;
+}
+
+.umkm-card:nth-child(1) { animation-delay: 0.1s; }
+.umkm-card:nth-child(2) { animation-delay: 0.2s; }
+.umkm-card:nth-child(3) { animation-delay: 0.3s; }
+.umkm-card:nth-child(4) { animation-delay: 0.4s; }
+
+/* Responsive */
+@media (max-width: 768px) {
+    .trust-logos {
+        padding: 2rem 1rem;
+    }
+    
+    .logos-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+    
+    .umkm-card {
+        padding: 1.25rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .logos-grid {
+        grid-template-columns: 1fr;
+        max-width: 250px;
+    }
 }
 
 .logo-placeholder {
