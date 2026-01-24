@@ -701,22 +701,60 @@ nav {
 }
 
 /* Footer */
-footer {
-    background: var(--gray-900);
-    color: var(--white);
-    padding: 2rem;
+.footer {
+    background: #ffffff;
+    border-top: 1px solid #e5e7eb;
+    padding: 3rem 2rem 1.5rem;
+}
+
+.footer-wrapper {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    align-items: flex-start;
+    gap: 7rem;
+}
+
+
+.footer-logo {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--primary-blue);
+    text-decoration: none;
+}
+
+.footer-links {
+    display: grid;
+    grid-template-columns: repeat(2, auto);
+    gap: 1rem 3rem;
+}
+
+.footer-links a {
+    text-decoration: none;
+    color: #374151;
+    font-weight: 500;
+    transition: all 0.25s ease;
+    display: inline-block;
+}
+
+.footer-links a:hover {
+    color: var(--primary-blue);
+}
+
+.footer-bottom {
+    max-width: 1200px;
+    margin: 2.5rem auto 0;
+    padding-top: 1.5rem;
+    border-top: 1px solid #e5e7eb;
     text-align: center;
 }
 
-.footer-container {
-    max-width: 1200px;
-    margin: 0 auto;
+.footer-bottom p {
+    font-size: 0.875rem;
+    color: #9ca3af;
 }
 
-.footer-container p {
-    color: rgba(255, 255, 255, 0.7);
-    font-size: 0.875rem;
-}
+
 
 /* Animations */
 @keyframes fadeInUp {
