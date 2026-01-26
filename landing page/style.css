@@ -50,6 +50,26 @@ nav {
     font-weight: 800;
     color: var(--primary-blue);
     text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.logo img {
+    height: 20px;
+    width: auto;
+    object-fit: contain;
+    transition: transform 0.3s ease, filter 0.3s ease;
+}
+
+.logo:hover {
+    transform: scale(1.05);
+}
+
+.logo:hover img {
+    filter: drop-shadow(0 4px 12px rgba(37, 99, 235, 0.3));
+    transform: scale(1.08);
 }
 
 .nav-buttons {
@@ -299,7 +319,7 @@ nav {
 .img3 img:nth-child(3) {
     width: 170px;
     height: auto;
-    bottom: -30px;
+    bottom: -0px;
     right: 5%;
     animation: floatUpDown 3s ease-in-out infinite;
     transform: rotate(15deg) translateY(0);
