@@ -1,3 +1,38 @@
+// Hamburger Menu Toggle
+document.addEventListener('DOMContentLoaded', function() {
+    const hamburger = document.getElementById('hamburger');
+    const navButtons = document.getElementById('navButtons');
+    
+    if (hamburger && navButtons) {
+        hamburger.addEventListener('click', (e) => {
+            e.stopPropagation();
+            hamburger.classList.toggle('active');
+            navButtons.classList.toggle('active');
+        });
+
+        // Close menu when a link is clicked
+        navButtons.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', () => {
+                hamburger.classList.remove('active');
+                navButtons.classList.remove('active');
+            });
+        });
+    }
+});
+
+// Close menu when clicking outside
+document.addEventListener('click', (e) => {
+    const hamburger = document.getElementById('hamburger');
+    const navButtons = document.getElementById('navButtons');
+    
+    if (hamburger && navButtons) {
+        if (!e.target.closest('nav')) {
+            hamburger.classList.remove('active');
+            navButtons.classList.remove('active');
+        }
+    }
+});
+
 // Smooth scroll untuk navigasi
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener('click', function (e) {
