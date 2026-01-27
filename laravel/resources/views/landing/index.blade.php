@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
@@ -11,7 +11,7 @@
 
 </head>
 <body>
-    <!-- Navigation -->
+    
     <nav>
         <div class="nav-container">
             <a href="#" class="logo"><img src="../img/icon.png" alt="payou.id" srcset=""></a>
@@ -29,7 +29,7 @@
         </div>
     </nav>
 
-    <!-- Hero Section -->
+    
     <section class="hero">
         <div class="hero-container">
             <div class="hero-content">
@@ -55,7 +55,7 @@
         </div>
     </section>
 
-    <!-- Trust Builder Section -->
+    
 <section class="trust">
     <div class="trust-container">
         <div class="trust-header">
@@ -131,7 +131,7 @@
     </div>
 </section>
 
-    <!-- Testimonial Section -->
+   
     <section class="testimonials">
         <div class="testimonials-header">
             <h2>Lihat Apa Kata UMKM</h2>
@@ -139,7 +139,7 @@
         </div>
 
         <div class="testimonial-columns">
-            <!-- Card -->
+            
             <div class="testimonial-card">
                 <div class="testimonial-user">
                     <img src="../img/profil default instagram.jpeg" alt="user">
@@ -226,7 +226,7 @@
         </div>
     </section>
 
-    <!-- Features Section -->
+   
     <section class="features">
         <div class="features-container">
             <div class="features-header">
@@ -275,7 +275,7 @@
         </div>
     </section>
 
-    <!-- Footer -->
+    
     <footer class="footer">
         <div class="footer-wrapper">
             <a href="#" class="footer-logo">payou.id</a>
@@ -293,4 +293,4 @@
 
     <script src="script.js"></script>
 </body>
-</html>
+</html> -->

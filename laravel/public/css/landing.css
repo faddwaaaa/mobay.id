@@ -892,6 +892,7 @@ nav {
     display: flex;
     align-items: flex-start;
     gap: 7rem;
+
     padding-left: 3rem;
 }
 
@@ -918,6 +919,15 @@ nav {
 .footer-logo:hover img {
     transform: scale(1.08);
     filter: drop-shadow(0 4px 10px rgba(37, 99, 235, 0.3));
+
+}
+
+.footer-logo {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--primary-blue);
+    text-decoration: none;
+
 }
 
 .footer-links {
@@ -950,6 +960,7 @@ nav {
     font-size: 0.875rem;
     color: #9ca3af;
 }
+
 
 .reveal {
     opacity: 0;
@@ -1026,6 +1037,16 @@ nav {
     .features-header h2,
     .cta-container h2 {
         font-size: 2rem;
+    }
+
+
+    .mockup-container {
+        max-width: 350px;
+    }
+
+    .mockup-screen {
+        min-height: 500px;
+        padding: 1.5rem 1rem;
     }
 
     .nav-buttons {
