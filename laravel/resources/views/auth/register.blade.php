@@ -66,7 +66,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-top: -50px;
+            margin-top: -60px;
         }
 
         .logo img {
@@ -84,7 +84,7 @@
             color: #666;
             text-align: center;
             margin: 0;
-            margin-top: -50px;
+            margin-top: -70px;
         }
 
         .register-form {
@@ -151,6 +151,7 @@
             margin: 25px 0;
             color: #999;
             font-size: 13px;
+            margin-top: 5px;
         }
 
         .divider::before,

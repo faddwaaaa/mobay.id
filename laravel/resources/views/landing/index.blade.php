@@ -18,8 +18,8 @@
             <div class="nav-buttons" id="navButtons">
                 <a href="#" class="btn btn-secondary">Service</a>
                 <a href="#" class="btn btn-secondary">FAQ</a>
-                <a href="#" class="btn btn-secondary">Masuk</a>
-                <a href="/login" class="btn btn-primary">Daftar Gratis</a>
+                <a href="/login" class="btn btn-secondary">Masuk</a>
+                <a href="/register" class="btn btn-primary">Daftar Gratis</a>
             </div>
             <button class="hamburger" id="hamburger" aria-label="Menu">
                 <span></span>
