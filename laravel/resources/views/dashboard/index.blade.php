@@ -1,5 +1,8 @@
 @php
-    $userSlug = Auth::user()->username ?? Str::slug(Auth::user()->name);
+    use Illuminate\Support\Str;
+
+    $user = Auth::user();
+    $userSlug = $user->username ?? Str::slug($user->name);
 @endphp
 
 <!DOCTYPE html>
@@ -76,9 +79,12 @@
                         <a href="#"><i class="fas fa-cog"></i> Pengaturan</a>
                         <a href="#"><i class="fas fa-question-circle"></i> Bantuan</a>
                         <div class="divider"></div>
-                        <a class="logout" role="button" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                        <a href="{{ route('logout') }}"
+                        class="logout"
+                        onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
                             <i class="fas fa-sign-out-alt"></i> Keluar
                         </a>
+
                         <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
                             @csrf
                         </form>
@@ -155,65 +161,63 @@
 
                 <!-- STATS CARDS -->
                 <div class="stats-cards">
+
+                    <!-- TOTAL KLIK -->
                     <div class="stat-card">
                         <div class="stat-header">
                             <h3>Total Klik</h3>
-                            <div class="stat-trend up">
-                                <i class="fas fa-arrow-up"></i>
-                                <span>12%</span>
-                            </div>
                         </div>
-                        <div class="stat-value">1,248</div>
+                        <div class="stat-value">
+                            {{ number_format($totalClicks) }}
+                        </div>
                         <div class="stat-footer">
                             <i class="fas fa-calendar"></i>
-                            <span>Bulan ini</span>
+                            <span>Semua waktu</span>
                         </div>
                     </div>
-                    
+
+                    <!-- TOTAL LINK -->
                     <div class="stat-card">
                         <div class="stat-header">
                             <h3>Total Link</h3>
-                            <div class="stat-trend">
-                                <i class="fas fa-plus"></i>
-                                <span>2 baru</span>
-                            </div>
                         </div>
-                        <div class="stat-value">12</div>
+                        <div class="stat-value">
+                            {{ $totalLinks }}
+                        </div>
                         <div class="stat-footer">
                             <i class="fas fa-check-circle"></i>
-                            <span>11 aktif</span>
+                            <span>{{ $activeLinks }} aktif</span>
                         </div>
                     </div>
-                    
+
+                    <!-- SALDO (DUMMY TAPI AMAN) -->
                     <div class="stat-card">
                         <div class="stat-header">
                             <h3>Saldo Tersedia</h3>
-                            <div class="stat-trend up">
-                                <i class="fas fa-arrow-up"></i>
-                                <span>Rp 250k</span>
-                            </div>
                         </div>
-                        <div class="stat-value">Rp 2,45 JT</div>
+                        <div class="stat-value">
+                            Rp 0
+                        </div>
                         <div class="stat-footer">
                             <i class="fas fa-wallet"></i>
-                            <button class="withdraw-btn">Tarik Dana</button>
+                            <span>Belum tersedia</span>
                         </div>
                     </div>
-                    
+
+                    <!-- KONVERSI (DUMMY REALISTIS) -->
                     <div class="stat-card">
                         <div class="stat-header">
                             <h3>Konversi</h3>
-                            <div class="stat-trend up">
-                                <i class="fas fa-arrow-up"></i>
-                                <span>8%</span>
-                            </div>
                         </div>
-                        <div class="stat-value">4,8%</div>
+                        <div class="stat-value">
+                            0%
+                        </div>
                         <div class="stat-footer">
                             <i class="fas fa-shopping-cart"></i>
-                            <span>15 transaksi</span>
+                            <span>0 transaksi</span>
                         </div>
                     </div>
+
                 </div>
 
                 <!-- RECENT LINKS -->
@@ -224,119 +228,42 @@
                     </div>
                     
                     <div class="links-grid">
+                    @forelse($links as $link)
                         <div class="link-card">
                             <div class="link-card-header">
-                                <div class="link-icon whatsapp">
-                                    <i class="fab fa-whatsapp"></i>
+                                <div class="link-icon">
+                                    <i class="fas fa-link"></i>
                                 </div>
-                                <div class="link-status active"></div>
+                                <div class="link-status {{ $link->is_active ? 'active' : 'inactive' }}"></div>
                             </div>
-                            <h3>WhatsApp Admin</h3>
-                            <p class="link-description">Hubungi admin untuk pertanyaan dan pemesanan</p>
+
+                            <h3>{{ $link->title }}</h3>
+                            <p class="link-description">{{ $link->url }}</p>
+
                             <div class="link-url">
-                                <span>payou.id/{{ $userSlug }}/wa</span>
-                                <button class="copy-btn" data-url="payou.id/{{ $userSlug }}/shop">
+                                <span>payou.id/{{ $userSlug }}/{{ $link->slug }}</span>
+                                <button class="copy-btn"
+                                    data-url="{{ url($userSlug.'/'.$link->slug) }}">
                                     <i class="far fa-copy"></i>
                                 </button>
                             </div>
+
                             <div class="link-stats">
                                 <div class="stat">
                                     <i class="fas fa-mouse-pointer"></i>
-                                    <span>420 klik</span>
-                                </div>
-                                <div class="stat">
-                                    <i class="fas fa-chart-line"></i>
-                                    <span class="trend up">+18%</span>
+                                    <span>{{ $link->clicks_count }} klik</span>
                                 </div>
                             </div>
+
                             <div class="link-actions">
-                                <button class="btn-action edit">
-                                    <i class="fas fa-edit"></i>
-                                </button>
-                                <button class="btn-action qr">
-                                    <i class="fas fa-qrcode"></i>
-                                </button>
-                                <button class="btn-action analytics">
-                                    <i class="fas fa-chart-bar"></i>
-                                </button>
+                                <button class="btn-action edit"><i class="fas fa-edit"></i></button>
+                                <button class="btn-action qr"><i class="fas fa-qrcode"></i></button>
+                                <button class="btn-action analytics"><i class="fas fa-chart-bar"></i></button>
                             </div>
                         </div>
-                        
-                        <div class="link-card">
-                            <div class="link-card-header">
-                                <div class="link-icon instagram">
-                                    <i class="fab fa-instagram"></i>
-                                </div>
-                                <div class="link-status active"></div>
-                            </div>
-                            <h3>Instagram</h3>
-                            <p class="link-description">Ikuti update produk terbaru kami</p>
-                            <div class="link-url">
-                                <span>payou.id/{{ $userSlug }}/ig</span>
-                                <button class="copy-btn" data-url="payou.id/{{ $userSlug }}/ig">
-                                    <i class="far fa-copy"></i>
-                                </button>
-                            </div>
-                            <div class="link-stats">
-                                <div class="stat">
-                                    <i class="fas fa-mouse-pointer"></i>
-                                    <span>312 klik</span>
-                                </div>
-                                <div class="stat">
-                                    <i class="fas fa-chart-line"></i>
-                                    <span class="trend up">+12%</span>
-                                </div>
-                            </div>
-                            <div class="link-actions">
-                                <button class="btn-action edit">
-                                    <i class="fas fa-edit"></i>
-                                </button>
-                                <button class="btn-action qr">
-                                    <i class="fas fa-qrcode"></i>
-                                </button>
-                                <button class="btn-action analytics">
-                                    <i class="fas fa-chart-bar"></i>
-                                </button>
-                            </div>
-                        </div>
-                        
-                        <div class="link-card">
-                            <div class="link-card-header">
-                                <div class="link-icon shop">
-                                    <i class="fas fa-store"></i>
-                                </div>
-                                <div class="link-status inactive"></div>
-                            </div>
-                            <h3>Katalog Produk</h3>
-                            <p class="link-description">Lihat semua produk yang tersedia</p>
-                            <div class="link-url">
-                                <span>payou.id/{{ $userSlug }}/shop</span>
-                                <button class="copy-btn" data-url="payou.id/{{ $userSlug }}/shop">
-                                    <i class="far fa-copy"></i>
-                                </button>
-                            </div>
-                            <div class="link-stats">
-                                <div class="stat">
-                                    <i class="fas fa-mouse-pointer"></i>
-                                    <span>189 klik</span>
-                                </div>
-                                <div class="stat">
-                                    <i class="fas fa-chart-line"></i>
-                                    <span class="trend down">-5%</span>
-                                </div>
-                            </div>
-                            <div class="link-actions">
-                                <button class="btn-action edit">
-                                    <i class="fas fa-edit"></i>
-                                </button>
-                                <button class="btn-action qr">
-                                    <i class="fas fa-qrcode"></i>
-                                </button>
-                                <button class="btn-action analytics">
-                                    <i class="fas fa-chart-bar"></i>
-                                </button>
-                            </div>
-                        </div>
+                    @empty
+                        <p>Belum ada link.</p>
+                    @endforelse
                     </div>
                 </div>
 
@@ -436,32 +363,32 @@
                                 <div class="chart-placeholder">
                                     <!-- Chart akan ditempatkan di sini -->
                                     <div class="chart-bars">
-                                        <div class="chart-bar" style="height: 70%;" data-day="Sen" data-value="180"></div>
-                                        <div class="chart-bar" style="height: 85%;" data-day="Sel" data-value="220"></div>
-                                        <div class="chart-bar" style="height: 60%;" data-day="Rab" data-value="150"></div>
-                                        <div class="chart-bar" style="height: 95%;" data-day="Kam" data-value="240"></div>
-                                        <div class="chart-bar" style="height: 75%;" data-day="Jum" data-value="190"></div>
-                                        <div class="chart-bar" style="height: 90%;" data-day="Sab" data-value="225"></div>
-                                        <div class="chart-bar" style="height: 65%;" data-day="Min" data-value="165"></div>
+                                        @foreach ($data as $index => $value)
+                                            @php
+                                                $height = $maxClick > 0 ? ($value / $maxClick) * 100 : 0;
+                                            @endphp
+                                            <div class="chart-bar"
+                                                style="height: {{ $height }}%;"
+                                                data-day="{{ $labels[$index] }}"
+                                                data-value="{{ $value }}">
+                                            </div>
+                                        @endforeach
                                     </div>
                                     <div class="chart-labels">
-                                        <span>Sen</span>
-                                        <span>Sel</span>
-                                        <span>Rab</span>
-                                        <span>Kam</span>
-                                        <span>Jum</span>
-                                        <span>Sab</span>
-                                        <span>Min</span>
+                                        @foreach ($labels as $label)
+                                            <span>{{ $label }}</span>
+                                        @endforeach
                                     </div>
                                 </div>
                                 <div class="chart-stats">
                                     <div class="chart-stat">
                                         <h4>Klik Tertinggi</h4>
-                                        <p>240 klik (Kamis)</p>
+                                        <p>{{ $maxClick }} klik</p>
                                     </div>
+
                                     <div class="chart-stat">
                                         <h4>Total Klik</h4>
-                                        <p>1,370 klik</p>
+                                        <p>{{ $totalClicks }} klik</p>
                                     </div>
                                 </div>
                             </div>
