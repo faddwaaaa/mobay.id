@@ -253,15 +253,15 @@ nav {
     justify-content: center;
     z-index: 1;
     bottom: -120px;
-    left: 59%;
+    left: 61%;
     transform: translateX(-50%);
 }
 
 .img1 img {
-    width: 110%;
+    width: 120%;
     height: auto;
     object-fit: contain;
-    max-width: 850px;
+    max-width: 1050px;
     filter: drop-shadow(0 30px 60px rgba(0, 0, 0, 0.15));
     /* animation: gentleFloat 4s ease-in-out infinite; */
 }
@@ -274,15 +274,15 @@ nav {
     justify-content: center;
     z-index: 1;
     bottom: -100px;
-    left: 59%;
+    left: 61%;
     transform: translateX(-50%);
 }
 
 .img11 img {
-    width: 110%;
+    width: 120%;
     height: auto;
     object-fit: contain;
-    max-width: 850px;
+    max-width: 1050px;
     filter: drop-shadow(0 30px 60px rgba(0, 0, 0, 0.15));
     /* animation: gentleFloat 4s ease-in-out infinite; */
 }
