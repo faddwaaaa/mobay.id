@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PublicProfileController;
 use App\Http\Controllers\DashboardController;
+use Illuminate\Support\Facades\Auth;
 
 
 // LANDING PAGE
@@ -18,6 +19,14 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])
         ->name('dashboard');
 });
+
+Route::post('/logout', function () {
+    Auth::logout();
+    request()->session()->invalidate();
+    request()->session()->regenerateToken();
+
+    return redirect('/login');
+})->name('logout');
 
 // AUTH ROUTES (BREEZE)
 require __DIR__.'/auth.php';

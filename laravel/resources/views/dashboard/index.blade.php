@@ -17,8 +17,7 @@
                     <i class="fas fa-bars"></i>
                 </div>
                 <div class="logo">
-                    {{-- <span class="logo-icon">P</span> --}}
-                    <span class="logo-text">payou.id</span>
+                    <a href="#" class="logo-icon"><img src="../img/icon.png" alt="payou.id"></a>
                 </div>
             </div>
             
@@ -65,7 +64,12 @@
                         <a href="#"><i class="fas fa-cog"></i> Pengaturan</a>
                         <a href="#"><i class="fas fa-question-circle"></i> Bantuan</a>
                         <div class="divider"></div>
-                        <a href="#" class="logout"><i class="fas fa-sign-out-alt"></i> Keluar</a>
+                        <a class="logout" role="button" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                            <i class="fas fa-sign-out-alt"></i> Keluar
+                        </a>
+                        <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+                            @csrf
+                        </form>
                     </div>
                 </div>
             </div>
