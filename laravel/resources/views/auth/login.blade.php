@@ -226,11 +226,11 @@
             box-shadow: 0 5px 15px rgba(30, 136, 229, 0.15);
         }
 
-        .google-icon {
+        .google-icon-img {
             width: 20px;
             height: 20px;
             margin-right: 10px;
-            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-size="20" fill="%234285F4">G</text></svg>') center/contain no-repeat;
+            object-fit: contain;
         }
 
         .signup-link {
@@ -355,7 +355,7 @@
 
         <!-- Google Login Button -->
         <a href="{{ route('auth.google') }}" class="google-btn">
-            <span class="google-icon"></span>
+            <img src="../img/google.png" alt="Google" class="google-icon-img">
             Masuk dengan Google
         </a>
 
