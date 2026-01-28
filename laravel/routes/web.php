@@ -5,7 +5,6 @@ use App\Http\Controllers\PublicProfileController;
 use App\Http\Controllers\DashboardController;
 use Illuminate\Support\Facades\Auth;
 
-
 // LANDING PAGE
 Route::get('/', function () {
     return view('landing.index');
@@ -15,24 +14,19 @@ Route::get('/', function () {
 Route::get('/@{username}', [PublicProfileController::class, 'show']);
 Route::get('/@{username}/click/{link}', [PublicProfileController::class, 'redirect']);
 
+// DASHBOARD (SATU SAJA)
 Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])
         ->name('dashboard');
 });
 
-Route::middleware(['auth'])->group(function () {
-    Route::get('/dashboard', function () {
-        return view('dashboard.index');
-    });
-});
-
+// LOGOUT
 Route::post('/logout', function () {
     Auth::logout();
     request()->session()->invalidate();
     request()->session()->regenerateToken();
-
     return redirect('/login');
 })->name('logout');
 
-// AUTH ROUTES (BREEZE)
+// AUTH ROUTES
 require __DIR__.'/auth.php';
