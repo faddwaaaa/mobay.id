@@ -1,3 +1,7 @@
+@php
+    $userSlug = Auth::user()->username ?? Str::slug(Auth::user()->name);
+@endphp
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -230,8 +234,8 @@
                             <h3>WhatsApp Admin</h3>
                             <p class="link-description">Hubungi admin untuk pertanyaan dan pemesanan</p>
                             <div class="link-url">
-                                <span>payou.id/bapakhajj/wa</span>
-                                <button class="copy-btn" data-url="payou.id/bapakhajj/wa">
+                                <span>payou.id/{{ $userSlug }}/wa</span>
+                                <button class="copy-btn" data-url="payou.id/{{ $userSlug }}/shop">
                                     <i class="far fa-copy"></i>
                                 </button>
                             </div>
@@ -268,8 +272,8 @@
                             <h3>Instagram</h3>
                             <p class="link-description">Ikuti update produk terbaru kami</p>
                             <div class="link-url">
-                                <span>payou.id/bapakhajj/ig</span>
-                                <button class="copy-btn" data-url="payou.id/bapakhajj/ig">
+                                <span>payou.id/{{ $userSlug }}/ig</span>
+                                <button class="copy-btn" data-url="payou.id/{{ $userSlug }}/ig">
                                     <i class="far fa-copy"></i>
                                 </button>
                             </div>
@@ -306,8 +310,8 @@
                             <h3>Katalog Produk</h3>
                             <p class="link-description">Lihat semua produk yang tersedia</p>
                             <div class="link-url">
-                                <span>payou.id/bapakhajj/shop</span>
-                                <button class="copy-btn" data-url="payou.id/bapakhajj/shop">
+                                <span>payou.id/{{ $userSlug }}/shop</span>
+                                <button class="copy-btn" data-url="payou.id/{{ $userSlug }}/shop">
                                     <i class="far fa-copy"></i>
                                 </button>
                             </div>
