@@ -54,9 +54,17 @@
                 
                 <div class="user-profile-dropdown">
                     <div class="user-avatar">
-                        <img src="https://ui-avatars.com/api/?name=Bapak+Hajj&background=8B5CF6&color=fff" alt="Bapak Hajj">
+                        @if(Auth::user()->avatar)
+                            <img src="{{ Auth::user()->avatar }}" alt="{{ Auth::user()->name }}">
+                        @else
+                            <img src="{{ asset('img/default-avatar.jpg') }}" alt="Default Avatar">
+                        @endif
                     </div>
-                    <div class="user-name">Bapak Hajj</div>
+
+                    <div class="user-name">
+                        {{ Auth::user()->name }}
+                    </div>
+
                     <i class="fas fa-chevron-down"></i>
                     
                     <div class="dropdown-menu">
@@ -131,7 +139,9 @@
                 <div class="page-header">
                     <div>
                         <h1>Dashboard</h1>
-                        <p class="subtitle">Selamat datang kembali, <strong>Bapak Hajj</strong> 👋</p>
+                        <p class="subtitle">
+                            Selamat datang kembali, <strong>{{ Auth::user()->name }}</strong> 👋
+                        </p>
                     </div>
                     <button class="btn-create-link">
                         <i class="fas fa-plus-circle"></i>

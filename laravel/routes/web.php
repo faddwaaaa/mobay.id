@@ -20,6 +20,12 @@ Route::middleware(['auth'])->group(function () {
         ->name('dashboard');
 });
 
+Route::middleware(['auth'])->group(function () {
+    Route::get('/dashboard', function () {
+        return view('dashboard.index');
+    });
+});
+
 Route::post('/logout', function () {
     Auth::logout();
     request()->session()->invalidate();
