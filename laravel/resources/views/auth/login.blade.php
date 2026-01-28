@@ -122,21 +122,21 @@
             color: #999;
         }
 
-        .remember-forgot {
+        .forgot {
             display: flex;
-            justify-content: space-between;
             align-items: center;
             font-size: 13px;
             margin-bottom: 25px;
         }
 
-        .remember-forgot a {
+        .forgot a {
+            margin-left: auto;
             color: #1e88e5;
             text-decoration: none;
             transition: color 0.3s ease;
         }
 
-        .remember-forgot a:hover {
+        .forgot a:hover {
             color: #1565c0;
             text-decoration: underline;
         }
@@ -339,12 +339,8 @@
                 <input type="password" id="password" name="password" placeholder="Masukkan password Anda" required>
             </div>
 
-            <div class="remember-forgot">
-                <label class="checkbox-label">
-                    <input type="checkbox" name="remember" id="remember">
-                    Ingat saya
-                </label>
-                <a href="{{ route('password.request') }}">Lupa password?</a>
+            <div class="forgot">
+                <a href="{{ route('password.request') }}">Lupa Password?</a>
             </div>
 
             <button type="submit" class="login-btn">Masuk</button>
