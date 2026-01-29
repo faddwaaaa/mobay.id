@@ -1,6 +1,10 @@
 @extends('layouts.dashboard')
 
 @section('title', 'Dashboard | Payou.id')
+    $user = Auth::user();
+    // Gunakan userProfile.username jika ada, atau slug dari name
+    $userSlug = $user->profile?->username ?? Str::slug($user->name);
+@endphp
 
 @section('content')
 
