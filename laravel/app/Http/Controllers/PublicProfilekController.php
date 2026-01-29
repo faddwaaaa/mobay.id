@@ -6,7 +6,7 @@ use App\Models\UserProfile;
 use App\Models\Click;
 use Illuminate\Http\Request;
 
-class PublicProfileController extends Controller
+class PublicProfilekController extends Controller
 {
     public function show($username)
     {

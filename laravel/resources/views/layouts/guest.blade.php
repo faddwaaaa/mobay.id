@@ -11,6 +11,9 @@
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
 
+        <!-- Tailwind CSS CDN (for development without Node.js) -->
+        <script src="https://cdn.tailwindcss.com"></script>
+
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
@@ -26,5 +29,8 @@
                 {{ $slot }}
             </div>
         </div>
+
+        <!-- Alpine.js CDN (for interactive components) -->
+        <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     </body>
 </html>

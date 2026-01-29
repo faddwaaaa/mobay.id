@@ -8,9 +8,21 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\View\View;
+use App\Models\User;
 
 class ProfileController extends Controller
 {
+    /**
+     * Display the user's profile information page.
+     * Shows user profile details like avatar, name, email, verification status, login method, and join date.
+     */
+    public function show(Request $request): View
+    {
+        return view('profile.show', [
+            'user' => Auth::user(),
+        ]);
+    }
+
     /**
      * Display the user's profile form.
      */

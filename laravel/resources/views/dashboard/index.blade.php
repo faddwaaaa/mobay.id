@@ -75,7 +75,7 @@
                     <i class="fas fa-chevron-down"></i>
                     
                     <div class="dropdown-menu">
-                        <a href="#"><i class="fas fa-user"></i> Profil Saya</a>
+                        <a href="/profile"><i class="fas fa-user"></i> Profil Saya</a>
                         <a href="#"><i class="fas fa-cog"></i> Pengaturan</a>
                         <a href="#"><i class="fas fa-question-circle"></i> Bantuan</a>
                         <div class="divider"></div>
