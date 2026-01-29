@@ -16,9 +16,9 @@ class ProfileController extends Controller
      * Display the user's profile information page.
      * Shows user profile details like avatar, name, email, verification status, login method, and join date.
      */
-    public function show(Request $request): View
+    public function profile(Request $request): View
     {
-        return view('profile.show', [
+        return view('dashboard.profile', [
             'user' => Auth::user(),
         ]);
     }

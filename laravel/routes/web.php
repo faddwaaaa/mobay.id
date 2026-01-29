@@ -12,7 +12,7 @@ Route::get('/', function () {
 });
 
 // PUBLIC PROFILE
-Route::get('/@{username}', [PublicProfilekController::class, 'show']);
+Route::get('/@{username}', [PublicProfilekController::class, 'profile']);
 Route::get('/@{username}/click/{link}', [PublicProfilekController::class, 'redirect']);
 
 // DASHBOARD (SATU SAJA)
@@ -21,9 +21,9 @@ Route::middleware(['auth'])->group(function () {
         ->name('dashboard');
 
     // USER PROFILE
-    Route::get('/profile', [ProfileController::class, 'show'])
-        ->name('profile.show');
-    
+    Route::get('/dashboard/profile', [ProfileController::class, 'profile'])
+        ->name('dashboard.profile');
+
     // PROFILE EDIT & UPDATE
     Route::get('/profile/edit', [ProfileController::class, 'edit'])
         ->name('profile.edit');

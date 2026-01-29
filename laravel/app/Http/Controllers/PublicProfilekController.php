@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 
 class PublicProfilekController extends Controller
 {
-    public function show($username)
+    public function profile($username)
     {
         $profile = UserProfile::where('username', $username)
             ->where('is_public', true)
