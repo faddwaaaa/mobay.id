@@ -2,7 +2,8 @@
     use Illuminate\Support\Str;
 
     $user = Auth::user();
-    $userSlug = $user->username ?? Str::slug($user->name);
+    // Gunakan userProfile.username jika ada, atau slug dari name
+    $userSlug = $user->profile?->username ?? Str::slug($user->name);
 @endphp
 
 <!DOCTYPE html>
