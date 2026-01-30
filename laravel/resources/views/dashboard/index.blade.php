@@ -218,29 +218,4 @@
                 </div>
             </div>
         </div>
-
-        <!-- DEMOGRAPHIC -->
-        <div class="content-section">
-            <div class="section-header">
-                <h2><i class="fas fa-users"></i> Demografi Pengunjung</h2>
-            </div>
-
-            <div class="demographics">
-                <div class="demo-item">
-                    <span>Pria</span>
-                    <div class="demo-bar"><div class="demo-fill" style="width:65%"></div></div>
-                    <span>65%</span>
-                </div>
-
-                <div class="demo-item">
-                    <span>Wanita</span>
-                    <div class="demo-bar"><div class="demo-fill" style="width:35%"></div></div>
-                    <span>35%</span>
-                </div>
-            </div>
-        </div>
-
-    </div>
-</div>
-
 @endsection

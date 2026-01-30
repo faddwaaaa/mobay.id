@@ -101,11 +101,12 @@
                     <span>Dashboard</span>
                 </a>
 
-                <a href="#"
-                   class="nav-item {{ request()->routeIs('links.*') ? 'active' : '' }}">
-                    <i class="fas fa-link"></i>
-                    <span>Link Saya</span>
-                </a>
+             <a href="{{ route('links.index') }}"
+   class="nav-item {{ request()->routeIs('links.*') ? 'active' : '' }}">
+    <i class="fas fa-link"></i>
+    <span>Link Saya</span>
+</a>
+
 
                 <a href="#" class="nav-item">
                     <i class="fas fa-chart-bar"></i>
@@ -116,7 +117,7 @@
                     <i class="fas fa-qrcode"></i>
                     <span>QR Code</span>
                 </a>
-
+   
                 <a href="#" class="nav-item">
                     <i class="fas fa-shopping-cart"></i>
                     <span>Produk</span>

@@ -5,6 +5,7 @@ use App\Http\Controllers\PublicProfilekController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\LinkController;
 
 // LANDING PAGE
 Route::get('/', function () {
@@ -32,6 +33,10 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])
         ->name('profile.destroy');
 });
+
+//link
+Route::get('/links', [LinkController::class, 'index'])
+        ->name('links.index');
 
 // LOGOUT
 Route::post('/logout', function () {
