@@ -1,8 +1,9 @@
 @extends('layouts.dashboard')
 
 @section('title', 'Dashboard | Payou.id')
+
+@php
     $user = Auth::user();
-    // Gunakan userProfile.username jika ada, atau slug dari name
     $userSlug = $user->profile?->username ?? Str::slug($user->name);
 @endphp
 
@@ -202,10 +203,10 @@
                         @php
                             $height = $maxClick > 0 ? ($value / $maxClick) * 100 : 0;
                         @endphp
-                        <div class="chart-bar">
+                        <div class="chart-bar"
                             style= "height: { $height }}%;"
                             data-day= "{{ $labels[$index] }}"
-                            data-value="{{ $value }}">w
+                            data-value="{{ $value }}">
                         </div>
                     @endforeach
                 </div>
