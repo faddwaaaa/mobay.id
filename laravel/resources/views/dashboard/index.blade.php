@@ -202,10 +202,10 @@
                         @php
                             $height = $maxClick > 0 ? ($value / $maxClick) * 100 : 0;
                         @endphp
-                        <div class="chart-bar"
-                            style="height: {{ $height }}%;"
-                            data-day="{{ $labels[$index] }}"
-                            data-value="{{ $value }}">
+                        <div class="chart-bar">
+                            style= "height: { $height }}%;"
+                            data-day= "{{ $labels[$index] }}"
+                            data-value="{{ $value }}">w
                         </div>
                     @endforeach
                 </div>
