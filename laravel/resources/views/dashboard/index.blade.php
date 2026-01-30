@@ -57,11 +57,11 @@
             <h3>Saldo Tersedia</h3>
         </div>
         <div class="stat-value">
-            Rp 0
+            {{ 'Rp ' . number_format($balance ?? 0, 0, ',', '.') }}
         </div>
         <div class="stat-footer">
             <i class="fas fa-wallet"></i>
-            <span>Belum tersedia</span>
+            <span>Saldo aktif</span>
         </div>
     </div>
 
@@ -172,16 +172,26 @@
             <div class="balance-overview">
                 <div class="total-balance">
                     <h3>Total Saldo</h3>
-                    <div class="balance-amount">Rp 0</div>
+                    <div class="balance-amount">{{ 'Rp ' . number_format($balance ?? 0, 0, ',', '.') }}</div>
                 </div>
 
                 <div class="balance-actions">
-                    <button class="btn-balance topup">
+                    <button id="btn-topup" class="btn-balance topup">
                         <i class="fas fa-plus-circle"></i> Top Up
                     </button>
-                    <button class="btn-balance withdraw">
+                    <button id="btn-withdraw" class="btn-balance withdraw">
                         <i class="fas fa-arrow-up"></i> Tarik
                     </button>
+                </div>
+
+                <div id="topup-form" style="display:none; margin-top:12px;">
+                    <form id="form-topup">
+                        @csrf
+                        <label for="amount">Jumlah Top Up (Rp)</label>
+                        <input type="number" id="amount" name="amount" min="{{ config('midtrans.topup.min_amount', 10000) }}" max="{{ config('midtrans.topup.max_amount', 10000000) }}" required>
+                        <button type="submit" class="btn btn-primary">Bayar</button>
+                        <button type="button" id="cancel-topup" class="btn">Batal</button>
+                    </form>
                 </div>
             </div>
         </div>
@@ -197,19 +207,22 @@
                 <h2><i class="fas fa-chart-line"></i> Performa 7 Hari Terakhir</h2>
             </div>
 
-            <div class="chart-container">
-                <div class="chart-bars">
-                    @foreach ($data as $index => $value)
-                        @php
-                            $height = $maxClick > 0 ? ($value / $maxClick) * 100 : 0;
-                        @endphp
-                        <div class="chart-bar"
-                            style= "height: { $height }}%;"
-                            data-day= "{{ $labels[$index] }}"
-                            data-value="{{ $value }}">
-                        </div>
-                    @endforeach
-                </div>
+<div class="chart-container">
+    <div class="chart-bars">
+        @foreach ($data as $index => $value)
+            @php
+                $height = $maxClick > 0 ? ($value / $maxClick) * 100 : 0;
+            @endphp
+
+            <div class="chart-bar">
+                style="height: {{ $height }}%;"
+                data-day="{{ $labels[$index] }}"
+                data-value="{{ $value }}">
+            </div>
+        @endforeach
+    </div>
+</div>
+
 
                 <div class="chart-labels">
                     @foreach ($labels as $label)
@@ -218,4 +231,71 @@
                 </div>
             </div>
         </div>
+        </div>
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const btnTopup = document.getElementById('btn-topup');
+    const topupFormWrap = document.getElementById('topup-form');
+    const cancelTopup = document.getElementById('cancel-topup');
+    const formTopup = document.getElementById('form-topup');
+
+    if (btnTopup) {
+        btnTopup.addEventListener('click', () => {
+            topupFormWrap.style.display = topupFormWrap.style.display === 'none' ? 'block' : 'none';
+        });
+    }
+
+    if (cancelTopup) {
+        cancelTopup.addEventListener('click', () => topupFormWrap.style.display = 'none');
+    }
+
+    if (formTopup) {
+        formTopup.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const amount = parseInt(document.getElementById('amount').value, 10);
+            if (!amount || amount <= 0) {
+                alert('Masukkan jumlah top-up yang valid.');
+                return;
+            }
+
+            try {
+                const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+                const res = await fetch('/api/topup', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': token,
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ amount })
+                });
+
+                const data = await res.json();
+                if (!res.ok) {
+                    alert(data.message || 'Gagal membuat transaksi top-up');
+                    return;
+                }
+
+                // If Midtrans snap token returned, you can integrate Snap.js here to open payment.
+                if (data.snap_token) {
+                    alert('Transaksi dibuat. Token Snap tersedia.');
+                } else {
+                    alert(data.message || 'Top-up dibuat.');
+                }
+
+                // Optionally refresh the page to update balance after payment success
+                // location.reload();
+            } catch (err) {
+                console.error(err);
+                alert('Terjadi kesalahan saat membuat top-up.');
+            }
+        });
+    }
+});
+</script>
+@endpush
+
 @endsection

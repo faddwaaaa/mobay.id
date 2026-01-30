@@ -4,8 +4,9 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PublicProfilekController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\TransactionController;
+use App\Http\Controllers\CallbackController;
 use Illuminate\Support\Facades\Auth;
-use App\Http\Controllers\LinkController;
 
 // LANDING PAGE
 Route::get('/', function () {
@@ -21,7 +22,17 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])
         ->name('dashboard');
 
-    // USER PROFILE
+    // Top-up API endpoint (called from dashboard JS)
+    Route::post('/api/topup', [\App\Http\Controllers\TransactionController::class, 'createTopUp'])
+        ->name('api.topup');
+
+    // (withdraw approve route removed)
+
+    // USER PROFILE - View profile page
+    Route::get('/profile', [ProfileController::class, 'show'])
+        ->name('profile.show');
+    
+    // PROFILE - Dashboard version
     Route::get('/dashboard/profile', [ProfileController::class, 'profile'])
         ->name('dashboard.profile');
 
@@ -34,9 +45,16 @@ Route::middleware(['auth'])->group(function () {
         ->name('profile.destroy');
 });
 
+
 //link
 Route::get('/links', [LinkController::class, 'index'])
         ->name('links.index');
+// ==========================================
+// MIDTRANS CALLBACK (PUBLIC - NO AUTH)
+// ==========================================
+// Must be public because Midtrans server sends callback
+Route::post('/api/callback/midtrans', [CallbackController::class, 'handleMidtransCallback'])
+    ->name('midtrans.callback');
 
 // LOGOUT
 Route::post('/logout', function () {

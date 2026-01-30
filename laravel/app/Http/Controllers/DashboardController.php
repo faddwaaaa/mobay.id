@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\PaymentService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use App\Models\Link;
@@ -10,6 +11,13 @@ use Carbon\Carbon;
 
 class DashboardController extends Controller
 {
+    protected PaymentService $paymentService;
+
+    public function __construct(PaymentService $paymentService)
+    {
+        $this->paymentService = $paymentService;
+    }
+
     public function index()
     {
         $user = Auth::user();
@@ -54,6 +62,24 @@ class DashboardController extends Controller
         // ⬇️ PENTING: nilai tertinggi untuk tinggi bar
         $maxClick = max($data);
 
+        // ============================
+        // PAYMENT SYSTEM DATA
+        // ============================
+        $balance = $user->balance ?? 0;
+        $totalEarned = $this->paymentService->getTotalEarned($user);
+
+        // Get recent transactions (last 5)
+        $recentTransactions = $user->transactions()
+            ->latest()
+            ->take(5)
+            ->get();
+
+        // Get recent withdrawals (last 5)
+        $recentWithdrawals = $user->withdrawals()
+            ->latest()
+            ->take(5)
+            ->get();
+
         return view('dashboard.index', compact(
             'user',
             'links',
@@ -62,8 +88,37 @@ class DashboardController extends Controller
             'activeLinks',
             'labels',
             'data',
-            'maxClick'
+            'maxClick',
+            'balance',
+            'totalEarned',
+            'recentTransactions',
+            'recentWithdrawals'
         ));
     }
+
+    /**
+     * Get dashboard stats via API
+     * GET /api/dashboard/stats
+     */
+    public function getStats()
+    {
+        $user = auth()->user();
+
+        return response()->json([
+            'success' => true,
+            'user' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+            ],
+            'balance' => $user->balance,
+            'formatted_balance' => 'Rp ' . number_format($user->balance, 0, ',', '.'),
+            'total_earned' => $this->paymentService->getTotalEarned($user),
+            'total_clicks' => Click::whereHas('link', function ($q) use ($user) {
+                $q->where('user_id', $user->id);
+            })->count(),
+            'total_links' => Link::where('user_id', $user->id)->count(),
+            'active_links' => Link::where('user_id', $user->id)->where('is_active', true)->count(),
+        ]);
+    }
 }
-        
