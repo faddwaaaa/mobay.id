@@ -1,18 +1,25 @@
 @extends('layouts.dashboard')
 
 @section('content')
+
 <div class="profile-page">
     <div class="max-w-3xl mx-auto">
         <div class="profile-card">
             <div class="profile-header"></div>
-
             <div class="profile-content">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-4">
                         <div class="profile-avatar">
-                            <img src="{{ asset('storage/' . ($user->avatar ?? 'default.png')) }}">
+                            @if ($user->avatar)
+                                <img src="{{ $user->avatar }}" alt="Avatar">
+                            @else
+                                <div class="profile-avatar-placeholder">
+                                    <span class="text-white text-3xl font-bold">
+                                        {{ strtoupper(substr($user->name, 0, 1)) }}
+                                    </span>
+                                </div>
+                            @endif
                         </div>
-
                         <div>
                             <h1 class="profile-name">{{ $user->name }}</h1>
                             <p class="profile-email">{{ $user->email }}</p>
