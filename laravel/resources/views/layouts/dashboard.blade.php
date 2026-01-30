@@ -29,7 +29,7 @@
                 <i class="fas fa-bars"></i>
             </div>
             <div class="logo">
-                <a href="#" class="logo-icon">
+                <a href="{{ route('dashboard') }}" class="logo-icon">
                     <img src="{{ asset('img/icon.png') }}" alt="payou.id">
                 </a>
             </div>

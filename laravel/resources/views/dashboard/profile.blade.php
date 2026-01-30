@@ -27,7 +27,7 @@
                     </div>
 
                     <a href="/profile/edit" class="btn-primary">
-                        ✏️ Edit Profil
+                        <i class="fa-solid fa-pen"></i>Edit Profil
                     </a>
                 </div>
 

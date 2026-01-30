@@ -172,7 +172,7 @@
             <div class="balance-overview">
                 <div class="total-balance">
                     <h3>Total Saldo</h3>
-                    <div class="balance-amount">Rp 2.450.000</div>
+                    <div class="balance-amount">Rp 0</div>
                 </div>
 
                 <div class="balance-actions">
