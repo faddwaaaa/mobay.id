@@ -19,7 +19,7 @@
                         </div>
                     </div>
 
-                    <a href="#" class="btn-primary">
+                    <a href="/profile/edit" class="btn-primary">
                         ✏️ Edit Profil
                     </a>
                 </div>
