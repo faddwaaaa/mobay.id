@@ -16,9 +16,7 @@ class DashboardController extends Controller
     public function __construct(PaymentService $paymentService)
     {
         $this->paymentService = $paymentService;
-
         $this->middleware('auth');
-
     }
 
     public function index()
