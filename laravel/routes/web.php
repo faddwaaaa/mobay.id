@@ -3,11 +3,16 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
+<<<<<<< Updated upstream
 use App\Http\Controllers\LinkController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\BlockController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\CallbackController;
+=======
+use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\LinkController;
+>>>>>>> Stashed changes
 
 // ======================
 // LANDING PAGE
@@ -82,6 +87,7 @@ Route::middleware(['auth'])->group(function () {
 
 });
 
+<<<<<<< Updated upstream
 // ==========================================
 // PAYMENT ROUTES (TOP-UP & WITHDRAW)
 Route::get('/dashboard/topup', [TransactionController::class, 'showTopupForm'])
@@ -114,6 +120,11 @@ Route::prefix('api')->group(function () {
 // MIDTRANS CALLBACK
 Route::post('/api/callback/midtrans', [CallbackController::class, 'handleMidtransCallback'])
     ->name('midtrans.callback');
+=======
+//link saya
+Route::get('/links', [LinkController::class, 'index'])
+        ->name('links.index');
+>>>>>>> Stashed changes
 
 // LOGOUT
 Route::post('/logout', function () {

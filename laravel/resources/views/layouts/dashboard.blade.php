@@ -102,11 +102,20 @@
                     <span>Dashboard</span>
                 </a>
 
+<<<<<<< Updated upstream
              <a href="{{ route('links.index') }}"
    class="nav-item {{ request()->routeIs('links.*') ? 'active' : '' }}">
     <i class="fas fa-link"></i>
     <span>Link Saya</span>
 </a>
+
+=======
+                <a href="{{ route('links.index') }}"
+                    class="nav-item {{ request()->routeIs('links.*') ? 'active' : '' }}">
+                    <i class="fas fa-link"></i>
+                    <span>Link Saya</span>
+                </a>
+>>>>>>> Stashed changes
 
 
                 <a href="#" class="nav-item">

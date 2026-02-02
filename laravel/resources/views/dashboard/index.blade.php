@@ -229,6 +229,7 @@
                         <span>{{ $label }}</span>
                     @endforeach
                 </div>
+<<<<<<< Updated upstream
             </div>
         </div>
         </div>
@@ -297,5 +298,9 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 </script>
 @endpush
+=======
+    </div>
+</div>
+>>>>>>> Stashed changes
 
 @endsection
