@@ -1,19 +1,22 @@
 <?php
-
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Models\User;
 
 class LinkController extends Controller
 {
     public function index()
     {
-        $user = Auth::user();
+        /** @var User $user */
+        $user = Auth::user(); // ✅ METHOD RESMI
 
-        // nanti kalau sudah ada tabel links, ini tinggal diganti
-        $links = [];
+        $pages = $user->pages()
+            ->with('blocks')
+            ->orderBy('position')
+            ->get();
 
-        return view('dashboard.links.index', compact('user', 'links'));
+        return view('dashboard.links.index', compact('pages'));
     }
 }
+
