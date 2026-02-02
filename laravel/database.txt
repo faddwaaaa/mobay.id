@@ -1,0 +1,283 @@
+DATABASE: payou_id
+
+TABEL: users
+PK:
+
+id (bigint)
+
+Kolom:
+
+name varchar(255)
+
+email varchar(255)
+
+balance bigint
+
+email_verified_at timestamp
+
+password varchar(255)
+
+remember_token varchar(100)
+
+google_id varchar(255)
+
+avatar varchar(255)
+
+created_at timestamp
+
+updated_at timestamp
+
+TABEL: user_profiles
+PK:
+
+id (bigint)
+
+FK:
+
+user_id -> users.id
+
+Kolom:
+
+username varchar(255)
+
+bio varchar(255)
+
+avatar varchar(255)
+
+theme_color varchar(255)
+
+background_color varchar(255)
+
+is_public tinyint(1)
+
+views int
+
+created_at timestamp
+
+updated_at timestamp
+
+TABEL: pages
+PK:
+
+id (bigint)
+
+FK:
+
+user_id -> users.id
+
+Kolom:
+
+title varchar(255)
+
+slug varchar(255)
+
+position int
+
+is_active tinyint(1)
+
+created_at timestamp
+
+updated_at timestamp
+
+TABEL: blocks
+PK:
+
+id (bigint)
+
+FK:
+
+page_id -> pages.id
+
+Kolom:
+
+type varchar(255)
+
+content longtext
+
+position int
+
+is_active tinyint(1)
+
+created_at timestamp
+
+updated_at timestamp
+
+TABEL: links
+PK:
+
+id (bigint)
+
+FK:
+
+user_id -> users.id
+
+Kolom:
+
+short_code varchar(255)
+
+url varchar(255)
+
+title varchar(255)
+
+description text
+
+views int
+
+created_at timestamp
+
+updated_at timestamp
+
+TABEL: clicks
+PK:
+
+id (bigint)
+
+FK:
+
+link_id -> links.id
+
+Kolom:
+
+ip_address varchar(255)
+
+user_agent varchar(255)
+
+referrer varchar(255)
+
+created_at timestamp
+
+updated_at timestamp
+
+TABEL: social_links
+PK:
+
+id (bigint)
+
+FK:
+
+user_id -> users.id
+
+Kolom:
+
+platform varchar(255)
+
+url varchar(255)
+
+icon varchar(255)
+
+created_at timestamp
+
+updated_at timestamp
+
+TABEL: transactions
+PK:
+id (bigint)
+FK:
+user_id -> users.id
+
+Kolom:
+order_id varchar(255)
+transaction_id varchar(255)
+amount bigint
+status enum('pending','settlement','failed','expired','denied','cancelled')
+payment_method varchar(255)
+midtrans_response longtext
+notes text
+ip_address varchar(45)
+created_at timestamp
+updated_at timestamp
+
+TABEL: withdrawals
+PK:
+id (bigint)
+FK:
+user_id -> users.id
+approved_by -> users.id
+Kolom:
+amount bigint
+status enum('pending','approved','rejected','completed','cancelled')
+bank_name varchar(255)
+account_name varchar(255)
+account_number varchar(255)
+payout_id varchar(255)
+midtrans_response longtext
+approved_at timestamp
+notes text
+rejection_reason text
+ip_address varchar(45)
+created_at timestamp
+updated_at timestamp
+
+TABEL: sessions
+PK:
+id varchar(255)
+FK:
+user_id -> users.id
+Kolom:
+ip_address varchar(45)
+user_agent text
+payload longtext
+last_activity int
+
+TABEL: password_reset_tokens
+PK:
+email varchar(255)
+Kolom:
+token varchar(255)
+created_at timestamp
+
+TABEL: jobs
+PK:
+id (bigint)
+Kolom:
+queue varchar(255)
+payload longtext
+attempts tinyint
+reserved_at int
+available_at int
+created_at int
+
+TABEL: job_batches
+PK:
+id varchar(255)
+Kolom:
+name varchar(255)
+total_jobs int
+pending_jobs int
+failed_jobs int
+failed_job_ids longtext
+options mediumtext
+cancelled_at int
+created_at int
+finished_at int
+
+TABEL: failed_jobs
+PK:
+id (bigint)
+Kolom:
+uuid varchar(255)
+connection text
+queue text
+payload longtext
+exception longtext
+failed_at timestamp
+
+TABEL: cache
+PK:
+key varchar(255)
+Kolom:
+value mediumtext
+expiration int
+TABEL: cache_locks
+PK:
+key varchar(255)
+Kolom:
+owner varchar(255)
+expiration int
+
+TABEL: migrations
+PK:
+id int
+Kolom:
+migration varchar(255)
+batch int
