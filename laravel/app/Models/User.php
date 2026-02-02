@@ -54,13 +54,11 @@ class User extends Authenticatable
         return $this->hasMany(SocialLink::class);
     }
 
-<<<<<<< HEAD
     public function pages()
     {
         return $this->hasMany(Page::class);
     }
 
-=======
     public function transactions()
     {
         return $this->hasMany(Transaction::class);
@@ -75,5 +73,4 @@ class User extends Authenticatable
     {
         return $this->hasMany(Withdrawal::class, 'approved_by');
     }
->>>>>>> fcec5cf8c788fced1ce930754125131cc88d9143
 }

@@ -1,23 +1,15 @@
-<?php
 
+<?php
 use Illuminate\Support\Facades\Route;
-<<<<<<< HEAD
 use Illuminate\Support\Facades\Auth;
-use App\Http\Controllers\{
-    DashboardController,
-    ProfileController,
-    LinkController,
-    PageController,
-    BlockController
-};
-=======
-use App\Http\Controllers\PublicProfilekController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\LinkController;
+use App\Http\Controllers\PageController;
+use App\Http\Controllers\BlockController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\CallbackController;
-use Illuminate\Support\Facades\Auth;
->>>>>>> fcec5cf8c788fced1ce930754125131cc88d9143
+// use App\Http\Controllers\PublicProfileController; // Uncomment jika controller ini ada
 
 // ======================
 // LANDING PAGE
@@ -37,11 +29,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])
         ->name('dashboard');
 
-<<<<<<< HEAD
     // ======================
     // PROFILE
     // ======================
-=======
     // Top-up API endpoint (called from dashboard JS)
     Route::post('/api/topup', [\App\Http\Controllers\TransactionController::class, 'createTopUp'])
         ->name('api.topup');
@@ -53,7 +43,6 @@ Route::middleware(['auth'])->group(function () {
         ->name('profile.show');
     
     // PROFILE - Dashboard version
->>>>>>> fcec5cf8c788fced1ce930754125131cc88d9143
     Route::get('/dashboard/profile', [ProfileController::class, 'profile'])
         ->name('dashboard.profile');
 
@@ -65,7 +54,6 @@ Route::middleware(['auth'])->group(function () {
 
     Route::delete('/profile', [ProfileController::class, 'destroy'])
         ->name('profile.destroy');
-<<<<<<< HEAD
 
     // ======================
     // LINKS (LYNK.ID CLONE)
@@ -101,7 +89,6 @@ Route::middleware(['auth'])->group(function () {
 });
 
 // ======================
-=======
 
     // ==========================================
     // PAYMENT ROUTES (TOP-UP & WITHDRAW)
@@ -139,13 +126,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/withdrawals', [TransactionController::class, 'getWithdrawalHistory'])
             ->name('api.withdrawals.history');
     });
-});
 
-
-
-//link
-Route::get('/links', [LinkController::class, 'index'])
-        ->name('links.index');
+// Hapus duplikasi route links (sudah ada di group auth di atas)
 
 // ==========================================
 // MIDTRANS CALLBACK (PUBLIC - NO AUTH)
@@ -154,7 +136,6 @@ Route::get('/links', [LinkController::class, 'index'])
 Route::post('/api/callback/midtrans', [CallbackController::class, 'handleMidtransCallback'])
     ->name('midtrans.callback');
 
->>>>>>> fcec5cf8c788fced1ce930754125131cc88d9143
 // LOGOUT
 // ======================
 Route::post('/logout', function () {
@@ -166,8 +147,5 @@ Route::post('/logout', function () {
 
 // ======================
 // AUTH ROUTES
-<<<<<<< HEAD
 // ======================
-=======
->>>>>>> fcec5cf8c788fced1ce930754125131cc88d9143
 require __DIR__.'/auth.php';
