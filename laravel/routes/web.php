@@ -1,27 +1,47 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+<<<<<<< HEAD
+use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\{
+    DashboardController,
+    ProfileController,
+    LinkController,
+    PageController,
+    BlockController
+};
+=======
 use App\Http\Controllers\PublicProfilekController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\CallbackController;
 use Illuminate\Support\Facades\Auth;
+>>>>>>> fcec5cf8c788fced1ce930754125131cc88d9143
 
+// ======================
 // LANDING PAGE
+// ======================
 Route::get('/', function () {
     return view('landing.index');
 });
 
-// PUBLIC PROFILE
-Route::get('/@{username}', [PublicProfilekController::class, 'profile']);
-Route::get('/@{username}/click/{link}', [PublicProfilekController::class, 'redirect']);
-
-// DASHBOARD (SATU SAJA)
+// ======================
+// AUTH REQUIRED
+// ======================
 Route::middleware(['auth'])->group(function () {
+
+    // ======================
+    // DASHBOARD
+    // ======================
     Route::get('/dashboard', [DashboardController::class, 'index'])
         ->name('dashboard');
 
+<<<<<<< HEAD
+    // ======================
+    // PROFILE
+    // ======================
+=======
     // Top-up API endpoint (called from dashboard JS)
     Route::post('/api/topup', [\App\Http\Controllers\TransactionController::class, 'createTopUp'])
         ->name('api.topup');
@@ -33,16 +53,55 @@ Route::middleware(['auth'])->group(function () {
         ->name('profile.show');
     
     // PROFILE - Dashboard version
+>>>>>>> fcec5cf8c788fced1ce930754125131cc88d9143
     Route::get('/dashboard/profile', [ProfileController::class, 'profile'])
         ->name('dashboard.profile');
 
-    // PROFILE EDIT & UPDATE
     Route::get('/profile/edit', [ProfileController::class, 'edit'])
         ->name('profile.edit');
+
     Route::patch('/profile', [ProfileController::class, 'update'])
         ->name('profile.update');
+
     Route::delete('/profile', [ProfileController::class, 'destroy'])
         ->name('profile.destroy');
+<<<<<<< HEAD
+
+    // ======================
+    // LINKS (LYNK.ID CLONE)
+    // ======================
+    Route::get('/links', [LinkController::class, 'index'])
+        ->name('links.index');
+
+    // ======================
+    // PAGE
+    // ======================
+    Route::post('/pages', [PageController::class, 'store'])
+        ->name('pages.store');
+
+    Route::delete('/pages/{page}', [PageController::class, 'destroy'])
+        ->name('pages.destroy');
+
+    // ======================
+    // BLOCK
+    // ======================
+    Route::get('/blocks/create', function () {
+        return view('dashboard.links.blocks.create');
+    })->name('blocks.create');
+
+    Route::post('/blocks', [BlockController::class, 'store'])
+        ->name('blocks.store');
+
+    Route::delete('/blocks/{block}', [BlockController::class, 'destroy'])
+        ->name('blocks.destroy');
+
+    Route::post('/blocks/reorder', [BlockController::class, 'reorder'])
+        ->name('blocks.reorder');
+
+});
+
+// ======================
+=======
 
     // ==========================================
     // PAYMENT ROUTES (TOP-UP & WITHDRAW)
@@ -95,7 +154,9 @@ Route::get('/links', [LinkController::class, 'index'])
 Route::post('/api/callback/midtrans', [CallbackController::class, 'handleMidtransCallback'])
     ->name('midtrans.callback');
 
+>>>>>>> fcec5cf8c788fced1ce930754125131cc88d9143
 // LOGOUT
+// ======================
 Route::post('/logout', function () {
     Auth::logout();
     request()->session()->invalidate();
@@ -103,5 +164,10 @@ Route::post('/logout', function () {
     return redirect('/login');
 })->name('logout');
 
+// ======================
 // AUTH ROUTES
+<<<<<<< HEAD
+// ======================
+=======
+>>>>>>> fcec5cf8c788fced1ce930754125131cc88d9143
 require __DIR__.'/auth.php';
