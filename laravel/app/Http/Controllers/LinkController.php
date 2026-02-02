@@ -9,7 +9,7 @@ class LinkController extends Controller
     public function index()
     {
         /** @var User $user */
-        $user = Auth::user(); // ✅ METHOD RESMI
+        $user = Auth::user();
 
         $pages = $user->pages()
             ->with('blocks')
