@@ -10,6 +10,8 @@ use Illuminate\Notifications\Notifiable;
 use App\Models\UserProfile;
 use App\Models\Link;
 use App\Models\SocialLink;
+use App\Models\Transaction;
+use App\Models\Withdrawal;
 
 class User extends Authenticatable
 {
@@ -22,6 +24,7 @@ class User extends Authenticatable
         'google_id',
         'avatar',
         'email_verified_at',
+        'balance',
     ];
 
     protected $hidden = [
@@ -51,9 +54,26 @@ class User extends Authenticatable
         return $this->hasMany(SocialLink::class);
     }
 
+<<<<<<< HEAD
     public function pages()
     {
         return $this->hasMany(Page::class);
     }
 
+=======
+    public function transactions()
+    {
+        return $this->hasMany(Transaction::class);
+    }
+
+    public function withdrawals()
+    {
+        return $this->hasMany(Withdrawal::class);
+    }
+
+    public function approvedWithdrawals()
+    {
+        return $this->hasMany(Withdrawal::class, 'approved_by');
+    }
+>>>>>>> fcec5cf8c788fced1ce930754125131cc88d9143
 }
