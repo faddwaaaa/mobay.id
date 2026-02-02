@@ -19,7 +19,7 @@ use App\Models\User;
 Route::get('/preview/{username}', function ($username) {
     $user = User::where('username', $username)
         ->with(['pages' => function ($q) {
-            $q->where('is_active', 1)->with('blocks');
+            $q->with('blocks');
         }])
         ->firstOrFail();
 
