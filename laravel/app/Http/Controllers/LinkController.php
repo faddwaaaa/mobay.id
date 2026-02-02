@@ -1,22 +1,19 @@
 <?php
+
 namespace App\Http\Controllers;
 
+use App\Models\Page;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use App\Models\User;
 
 class LinkController extends Controller
 {
     public function index()
     {
-        /** @var User $user */
-        $user = Auth::user();
-
-        $pages = $user->pages()
-            ->with('blocks')
-            ->orderBy('position')
-            ->get();
-
+        $pages = Page::where('user_id', Auth::id())
+                    ->orderBy('position')
+                    ->get();
+        
         return view('dashboard.links.index', compact('pages'));
     }
 }
-

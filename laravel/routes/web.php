@@ -1,4 +1,3 @@
-
 <?php
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
@@ -9,40 +8,32 @@ use App\Http\Controllers\PageController;
 use App\Http\Controllers\BlockController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\CallbackController;
-// use App\Http\Controllers\PublicProfileController; // Uncomment jika controller ini ada
 
 // ======================
 // LANDING PAGE
-// ======================
 Route::get('/', function () {
     return view('landing.index');
 });
 
 // ======================
 // AUTH REQUIRED
-// ======================
 Route::middleware(['auth'])->group(function () {
 
     // ======================
     // DASHBOARD
-    // ======================
     Route::get('/dashboard', [DashboardController::class, 'index'])
         ->name('dashboard');
 
     // ======================
     // PROFILE
-    // ======================
     // Top-up API endpoint (called from dashboard JS)
     Route::post('/api/topup', [\App\Http\Controllers\TransactionController::class, 'createTopUp'])
         ->name('api.topup');
 
-    // (withdraw approve route removed)
-
-    // USER PROFILE - View profile page
+    // USER PROFILE
     Route::get('/profile', [ProfileController::class, 'show'])
         ->name('profile.show');
     
-    // PROFILE - Dashboard version
     Route::get('/dashboard/profile', [ProfileController::class, 'profile'])
         ->name('dashboard.profile');
 
@@ -57,22 +48,25 @@ Route::middleware(['auth'])->group(function () {
 
     // ======================
     // LINKS (LYNK.ID CLONE)
-    // ======================
     Route::get('/links', [LinkController::class, 'index'])
         ->name('links.index');
 
     // ======================
-    // PAGE
-    // ======================
+    // PAGE CRUD (PERBAIKI ROUTE INI)
     Route::post('/pages', [PageController::class, 'store'])
         ->name('pages.store');
-
+    
+    Route::put('/pages/{page}', [PageController::class, 'update'])
+        ->name('pages.update');
+    
     Route::delete('/pages/{page}', [PageController::class, 'destroy'])
         ->name('pages.destroy');
+    
+    Route::get('/pages/{page}/edit', [PageController::class, 'edit'])
+        ->name('pages.edit');
 
     // ======================
     // BLOCK
-    // ======================
     Route::get('/blocks/create', function () {
         return view('dashboard.links.blocks.create');
     })->name('blocks.create');
@@ -88,56 +82,40 @@ Route::middleware(['auth'])->group(function () {
 
 });
 
-// ======================
+// ==========================================
+// PAYMENT ROUTES (TOP-UP & WITHDRAW)
+Route::get('/dashboard/topup', [TransactionController::class, 'showTopupForm'])
+    ->name('topup.form');
+Route::get('/dashboard/topup/success', [TransactionController::class, 'topupSuccess'])
+    ->name('topup.success');
+Route::get('/dashboard/topup/error', [TransactionController::class, 'topupError'])
+    ->name('topup.error');
+Route::get('/dashboard/topup/pending', [TransactionController::class, 'topupPending'])
+    ->name('topup.pending');
 
-    // ==========================================
-    // PAYMENT ROUTES (TOP-UP & WITHDRAW)
-    // ==========================================
+Route::get('/dashboard/withdraw', [TransactionController::class, 'showWithdrawForm'])
+    ->name('withdraw.form');
 
-    // Top-up routes
-    Route::get('/dashboard/topup', [TransactionController::class, 'showTopupForm'])
-        ->name('topup.form');
-    Route::get('/dashboard/topup/success', [TransactionController::class, 'topupSuccess'])
-        ->name('topup.success');
-    Route::get('/dashboard/topup/error', [TransactionController::class, 'topupError'])
-        ->name('topup.error');
-    Route::get('/dashboard/topup/pending', [TransactionController::class, 'topupPending'])
-        ->name('topup.pending');
-
-    // Withdraw routes
-    Route::get('/dashboard/withdraw', [TransactionController::class, 'showWithdrawForm'])
-        ->name('withdraw.form');
-
-    // API routes for payment operations
-    Route::prefix('api')->group(function () {
-        // Dashboard stats
-        Route::get('/dashboard/stats', [DashboardController::class, 'getStats'])
-            ->name('api.dashboard.stats');
-
-        // Transaction operations
-        Route::post('/topup', [TransactionController::class, 'createTopUp'])
-            ->name('api.topup.create');
-        Route::get('/transactions', [TransactionController::class, 'getTransactionHistory'])
-            ->name('api.transactions.history');
-
-        // Withdrawal operations
-        Route::post('/withdraw', [TransactionController::class, 'createWithdraw'])
-            ->name('api.withdraw.create');
-        Route::get('/withdrawals', [TransactionController::class, 'getWithdrawalHistory'])
-            ->name('api.withdrawals.history');
-    });
-
-// Hapus duplikasi route links (sudah ada di group auth di atas)
+// API routes
+Route::prefix('api')->group(function () {
+    Route::get('/dashboard/stats', [DashboardController::class, 'getStats'])
+        ->name('api.dashboard.stats');
+    Route::post('/topup', [TransactionController::class, 'createTopUp'])
+        ->name('api.topup.create');
+    Route::get('/transactions', [TransactionController::class, 'getTransactionHistory'])
+        ->name('api.transactions.history');
+    Route::post('/withdraw', [TransactionController::class, 'createWithdraw'])
+        ->name('api.withdraw.create');
+    Route::get('/withdrawals', [TransactionController::class, 'getWithdrawalHistory'])
+        ->name('api.withdrawals.history');
+});
 
 // ==========================================
-// MIDTRANS CALLBACK (PUBLIC - NO AUTH)
-// ==========================================
-// Must be public because Midtrans server sends callback
+// MIDTRANS CALLBACK
 Route::post('/api/callback/midtrans', [CallbackController::class, 'handleMidtransCallback'])
     ->name('midtrans.callback');
 
 // LOGOUT
-// ======================
 Route::post('/logout', function () {
     Auth::logout();
     request()->session()->invalidate();
@@ -145,7 +123,5 @@ Route::post('/logout', function () {
     return redirect('/login');
 })->name('logout');
 
-// ======================
 // AUTH ROUTES
-// ======================
 require __DIR__.'/auth.php';
