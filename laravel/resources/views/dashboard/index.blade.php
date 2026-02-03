@@ -179,7 +179,7 @@
                     <button id="btn-topup" class="btn-balance topup">
                         <i class="fas fa-plus-circle"></i> Top Up
                     </button>
-                    <button id="btn-withdraw" class="btn-balance withdraw">
+                    <button id="btn-withdraw" class="btn-balance withdraw" onclick="openWithdrawModal()">
                         <i class="fas fa-arrow-up"></i> Tarik
                     </button>
                 </div>
@@ -207,32 +207,232 @@
                 <h2><i class="fas fa-chart-line"></i> Performa 7 Hari Terakhir</h2>
             </div>
 
-<div class="chart-container">
-    <div class="chart-bars">
-        @foreach ($data as $index => $value)
-            @php
-                $height = $maxClick > 0 ? ($value / $maxClick) * 100 : 0;
-            @endphp
+            <div class="chart-container">
+                <div class="chart-bars">
+                    @foreach ($data as $index => $value)
+                        @php
+                            $height = $maxClick > 0 ? ($value / $maxClick) * 100 : 0;
+                        @endphp
 
-            <div class="chart-bar"
-                style="height: {{ $height }}%;"
-                data-day="{{ $labels[$index] }}"
-                data-value="{{ $value }}">
+                        <div class="chart-bar"
+                            style="height: {{ $height }}%;"
+                            data-day="{{ $labels[$index] }}"
+                            data-value="{{ $value }}">
+                        </div>
+                    @endforeach
+                </div>
             </div>
-        @endforeach
+
+            <div class="chart-labels">
+                @foreach ($labels as $label)
+                    <span>{{ $label }}</span>
+                @endforeach
+            </div>
+        </div>
     </div>
 </div>
 
-
-                <div class="chart-labels">
-                    @foreach ($labels as $label)
-                        <span>{{ $label }}</span>
-                    @endforeach
-                </div>
-<<<<<<< Updated upstream
+<!-- MODAL PENARIKAN - SIMPLE ALERT STYLE -->
+<div id="withdraw-modal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 99999; align-items: center; justify-content: center;">
+    <div style="background: white; border-radius: 16px; width: 90%; max-width: 480px; max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 40px rgba(0,0,0,0.2);">
+        
+        <!-- Header -->
+        <div style="padding: 24px 24px 16px 24px; border-bottom: 2px solid #f0f0f0; display: flex; align-items: center; justify-content: space-between;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <i class="fas fa-money-bill-wave" style="font-size: 24px; color: #3b82f6;"></i>
+                <h3 style="margin: 0; font-size: 20px; font-weight: 700; color: #1a1a1a;">Tarik Saldo</h3>
             </div>
+            <button onclick="closeWithdrawModal()" style="background: none; border: none; font-size: 24px; color: #666; cursor: pointer; padding: 8px; border-radius: 8px; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                <i class="fas fa-times"></i>
+            </button>
         </div>
+
+        <!-- Body -->
+        <div style="padding: 24px;">
+            
+            <!-- Alert Info Saldo & Minimal -->
+            <div style="background: #e8f4fd; border: 2px solid #3b82f6; border-radius: 12px; padding: 16px; margin-bottom: 24px;">
+                <div style="display: flex; align-items: start; gap: 12px;">
+                    <i class="fas fa-info-circle" style="font-size: 20px; color: #1e40af; margin-top: 2px;"></i>
+                    <div style="flex: 1;">
+                        <div style="font-weight: 600; color: #1e40af; margin-bottom: 8px; font-size: 14px;">Informasi Penarikan</div>
+                        <div style="font-size: 13px; color: #1e40af; line-height: 1.6;">
+                            <div style="margin-bottom: 6px;">
+                                <strong>Saldo Tersedia:</strong> {{ 'Rp ' . number_format($balance ?? 0, 0, ',', '.') }}
+                            </div>
+                            <div>
+                                <strong>Minimal Penarikan:</strong> Rp 50.000
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form -->
+            <form id="form-withdraw" onsubmit="handleWithdrawSubmit(event)">
+                @csrf
+                
+                <!-- Amount -->
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; margin-bottom: 6px; font-weight: 600; color: #1a1a1a; font-size: 14px;">
+                        Jumlah Penarikan (Rp) <span style="color: #ef4444;">*</span>
+                    </label>
+                    <input type="number" 
+                           name="amount" 
+                           min="50000" 
+                           max="{{ $balance ?? 0 }}" 
+                           step="1000"
+                           placeholder="Contoh: 100000"
+                           style="width: 100%; padding: 12px 14px; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 14px; box-sizing: border-box;"
+                           required>
+                </div>
+
+                <!-- Bank -->
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; margin-bottom: 6px; font-weight: 600; color: #1a1a1a; font-size: 14px;">
+                        Nama Bank <span style="color: #ef4444;">*</span>
+                    </label>
+                    <select name="bank_name" 
+                            style="width: 100%; padding: 12px 14px; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 14px; box-sizing: border-box;"
+                            required>
+                        <option value="">Pilih Bank</option>
+                        <option value="BCA">Bank Central Asia (BCA)</option>
+                        <option value="BNI">Bank Negara Indonesia (BNI)</option>
+                        <option value="BRI">Bank Rakyat Indonesia (BRI)</option>
+                        <option value="MANDIRI">Bank Mandiri</option>
+                        <option value="CIMB">CIMB Niaga</option>
+                        <option value="PERMATA">Bank Permata</option>
+                        <option value="BSI">Bank Syariah Indonesia (BSI)</option>
+                        <option value="DANAMON">Bank Danamon</option>
+                    </select>
+                </div>
+
+                <!-- Account Number -->
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; margin-bottom: 6px; font-weight: 600; color: #1a1a1a; font-size: 14px;">
+                        Nomor Rekening <span style="color: #ef4444;">*</span>
+                    </label>
+                    <input type="text" 
+                           name="account_number" 
+                           pattern="[0-9]+"
+                           maxlength="20"
+                           placeholder="Contoh: 1234567890"
+                           style="width: 100%; padding: 12px 14px; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 14px; box-sizing: border-box;"
+                           required>
+                </div>
+
+                <!-- Account Name -->
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; margin-bottom: 6px; font-weight: 600; color: #1a1a1a; font-size: 14px;">
+                        Nama Pemilik Rekening <span style="color: #ef4444;">*</span>
+                    </label>
+                    <input type="text" 
+                           name="account_name" 
+                           placeholder="Sesuai rekening bank"
+                           style="width: 100%; padding: 12px 14px; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 14px; box-sizing: border-box;"
+                           required>
+                </div>
+
+                <!-- Notes -->
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; margin-bottom: 6px; font-weight: 600; color: #1a1a1a; font-size: 14px;">
+                        Catatan (Opsional)
+                    </label>
+                    <textarea name="notes" 
+                              rows="3"
+                              maxlength="500"
+                              placeholder="Tambahkan catatan..."
+                              style="width: 100%; padding: 12px 14px; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 14px; box-sizing: border-box; resize: vertical;"></textarea>
+                </div>
+
+                <!-- Buttons -->
+                <div style="display: flex; gap: 12px;">
+                    <button type="button" 
+                            onclick="closeWithdrawModal()" 
+                            style="flex: 1; padding: 14px; background: #f0f0f0; color: #1a1a1a; border: none; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer;">
+                        Batal
+                    </button>
+                    <button type="submit" 
+                            id="submit-withdraw-btn"
+                            style="flex: 1; padding: 14px; background: #3b82f6; color: white; border: none; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer;">
+                        <i class="fas fa-check"></i> Ajukan Penarikan
+                    </button>
+                </div>
+            </form>
         </div>
+    </div>
+</div>
+
+<script>
+// Withdraw Modal Functions
+function openWithdrawModal() {
+    const modal = document.getElementById('withdraw-modal');
+    if (modal) {
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+function closeWithdrawModal() {
+    const modal = document.getElementById('withdraw-modal');
+    const form = document.getElementById('form-withdraw');
+    if (modal) {
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+        if (form) form.reset();
+    }
+}
+
+// Handle Form Submit
+async function handleWithdrawSubmit(event) {
+    event.preventDefault();
+    
+    const submitBtn = document.getElementById('submit-withdraw-btn');
+    const originalBtnHtml = submitBtn.innerHTML;
+    
+    // Disable and show loading
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses...';
+    
+    const formData = new FormData(event.target);
+    const token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    
+    try {
+        const response = await fetch('/withdrawal', {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': token,
+                'Accept': 'application/json',
+            },
+            body: formData
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            alert('✅ ' + result.message);
+            closeWithdrawModal();
+            window.location.reload();
+        } else {
+            alert('❌ ' + result.message);
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalBtnHtml;
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('❌ Terjadi kesalahan saat memproses penarikan. Silakan coba lagi.');
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalBtnHtml;
+    }
+}
+
+// Close on ESC key
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        closeWithdrawModal();
+    }
+});
+</script>
 
 @push('scripts')
 <script>
@@ -242,6 +442,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const cancelTopup = document.getElementById('cancel-topup');
     const formTopup = document.getElementById('form-topup');
 
+    // Top Up Button
     if (btnTopup) {
         btnTopup.addEventListener('click', () => {
             topupFormWrap.style.display = topupFormWrap.style.display === 'none' ? 'block' : 'none';
@@ -252,6 +453,7 @@ document.addEventListener('DOMContentLoaded', function () {
         cancelTopup.addEventListener('click', () => topupFormWrap.style.display = 'none');
     }
 
+    // Top Up Form Submit
     if (formTopup) {
         formTopup.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -280,27 +482,35 @@ document.addEventListener('DOMContentLoaded', function () {
                     return;
                 }
 
-                // If Midtrans snap token returned, you can integrate Snap.js here to open payment.
                 if (data.snap_token) {
                     alert('Transaksi dibuat. Token Snap tersedia.');
                 } else {
                     alert(data.message || 'Top-up dibuat.');
                 }
-
-                // Optionally refresh the page to update balance after payment success
-                // location.reload();
             } catch (err) {
                 console.error(err);
                 alert('Terjadi kesalahan saat membuat top-up.');
             }
         });
     }
+
+    // Input validation - only numbers
+    const accountNumberInput = document.querySelector('input[name="account_number"]');
+    const amountInput = document.querySelector('input[name="amount"]');
+    
+    if (accountNumberInput) {
+        accountNumberInput.addEventListener('input', function(e) {
+            this.value = this.value.replace(/\D/g, '');
+        });
+    }
+    
+    if (amountInput) {
+        amountInput.addEventListener('input', function(e) {
+            this.value = this.value.replace(/\D/g, '');
+        });
+    }
 });
 </script>
 @endpush
-=======
-    </div>
-</div>
->>>>>>> Stashed changes
 
 @endsection
