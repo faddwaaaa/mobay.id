@@ -113,7 +113,7 @@
                     <span>Analitik</span>
                 </a>
 
-                <a href="#" class="nav-item">
+                <a href="{{ route('qrcode.show') }}" class="nav-item">
                     <i class="fas fa-qrcode"></i>
                     <span>QR Code</span>
                 </a>

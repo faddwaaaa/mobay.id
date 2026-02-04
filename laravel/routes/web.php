@@ -130,6 +130,21 @@ Route::middleware(['auth'])->group(function () {
     })->name('logout');
 });
 
+// =========================================
+// QR CODE CONTROLLER ROUTES
+// QR CODE PAGE
+Route::middleware('auth')->group(function () {
+    Route::get('/qr-code', function () {
+        $user = auth()->user();
+        
+        return view('qr-code', [
+            'userSlug' => $user->username,
+            'totalScans' => 0,
+            'todayScans' => 0,
+        ]);
+    })->name('qrcode.show');
+});
+
 // ==========================================
 // PAYMENT ROUTES (TOP-UP & WITHDRAW)
 Route::get('/dashboard/topup', [TransactionController::class, 'showTopupForm'])
@@ -227,4 +242,3 @@ Route::middleware('auth')->group(function () {
     Route::post('/produk', [ProductController::class, 'store'])
         ->name('products.store');
 });
-
