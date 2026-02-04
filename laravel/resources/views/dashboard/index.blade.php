@@ -141,7 +141,7 @@
             </div>
 
             <div class="quick-actions">
-                <button class="quick-action-btn">
+                <button class="quick-action-btn" onclick="openQRModal('{{ $userSlug }}')">
                     <div class="action-icon"><i class="fas fa-qrcode"></i></div>
                     {{-- <a href="{{ route('qr.index') }}"> --}}
                             <p class="font-semibold">Buat QR Code</p>
@@ -160,7 +160,7 @@
                     <span>Export Data</span>
                 </button>
 
-                <button class="quick-action-btn">
+                <button class="quick-action-btn" onclick="openQRModal('{{ $userSlug }}')">
                     <div class="action-icon"><i class="fas fa-share-alt"></i></div>
                     <span>Bagikan Halaman</span>
                 </button>
@@ -252,6 +252,7 @@
         </div>
 
         <!-- Body -->
+        
         <div style="padding: 24px;">
             
             <!-- Alert Info Saldo & Minimal -->
@@ -366,7 +367,8 @@
         </div>
     </div>
 </div>
-
+{{-- Include QR Modal Component di sini --}}
+        @include('components.qr-modal')
 <script>
 // Withdraw Modal Functions
 function openWithdrawModal() {
