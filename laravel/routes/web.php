@@ -9,6 +9,7 @@ use App\Http\Controllers\PageController;
 use App\Http\Controllers\BlockController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\CallbackController;
+use App\Http\Controllers\ProductController;
 
 // LANDING PAGE
 use App\Models\User;
@@ -218,3 +219,12 @@ Route::get('/{username}', function ($username) {
     $page = $user->pages->first();
     return view('public.profile', compact('user', 'page'));
 })->where('username', '[a-zA-Z0-9_]+');
+//add produk
+Route::middleware('auth')->group(function () {
+    Route::get('/produk/tambah', [ProductController::class, 'create'])
+        ->name('products.create');
+
+    Route::post('/produk', [ProductController::class, 'store'])
+        ->name('products.store');
+});
+

@@ -143,8 +143,12 @@
             <div class="quick-actions">
                 <button class="quick-action-btn">
                     <div class="action-icon"><i class="fas fa-qrcode"></i></div>
-                    <span>Buat QR Code</span>
+                    {{-- <a href="{{ route('qr.index') }}"> --}}
+                            <p class="font-semibold">Buat QR Code</p>
+                        </a>
                 </button>
+                
+
 
                 <button class="quick-action-btn">
                     <div class="action-icon"><i class="fas fa-paint-brush"></i></div>
