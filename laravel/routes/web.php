@@ -12,7 +12,8 @@ use App\Http\Controllers\{
     BlockController,
     TransactionController,
     CallbackController,
-    ProductController
+    ProductController,
+    AnalyticsController
 };
 
 /*
@@ -21,6 +22,25 @@ use App\Http\Controllers\{
 |--------------------------------------------------------------------------
 */
 Route::get('/', fn () => view('landing.index'));
+
+
+
+/*
+|--------------------------------------------------------------------------
+| Analytics Routes
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware(['auth', 'verified'])->group(function () {
+    
+    // Analytics Routes
+    Route::prefix('analitik')->name('analitik.')->group(function () {
+        Route::get('/', [AnalyticsController::class, 'show'])->name('show');
+        Route::get('/export', [AnalyticsController::class, 'export'])->name('export');
+        Route::get('/realtime', [AnalyticsController::class, 'realtime'])->name('realtime');
+    });
+    
+});
 
 /*
 |--------------------------------------------------------------------------
@@ -151,5 +171,7 @@ Route::get('/{username}', function ($username) {
     $page = $user->pages->first();
     return view('public.profile', compact('user', 'page'));
 })->where('username', '[a-zA-Z0-9_]+');
+
+
 
 ?>
