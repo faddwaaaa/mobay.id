@@ -219,6 +219,19 @@ Route::post('/logout', function () {
 
 // AUTH ROUTES
 require __DIR__.'/auth.php';
+
+//add produk
+Route::middleware('auth')->group(function () {
+    Route::get('/produk/tambah', [ProductController::class, 'create'])
+        ->name('products.create');
+
+    Route::post('/produk', [ProductController::class, 'store'])
+        ->name('products.store');
+
+        Route::get('/produk', [ProductController::class, 'manage'])
+        ->name('products.manage');
+});
+
 /*
 |--------------------------------------------------------------------------
 | PUBLIC PROFILE (PALING BAWAH + FILTER)
@@ -234,11 +247,3 @@ Route::get('/{username}', function ($username) {
     $page = $user->pages->first();
     return view('public.profile', compact('user', 'page'));
 })->where('username', '[a-zA-Z0-9_]+');
-//add produk
-Route::middleware('auth')->group(function () {
-    Route::get('/produk/tambah', [ProductController::class, 'create'])
-        ->name('products.create');
-
-    Route::post('/produk', [ProductController::class, 'store'])
-        ->name('products.store');
-});

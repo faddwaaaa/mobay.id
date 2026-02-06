@@ -118,11 +118,28 @@
                     <span>QR Code</span>
                 </a>
 
-                <a href="{{ route('products.create') }}" class="nav-item"
-                        class="{{ request()->routeIs('products.create') ? 'active' : '' }}">
+                <div class="dropdown">
+                <div class="nav-item dropdown-toggle">
+                    <div class="nav-left">
                         <i class="fas fa-shopping-cart"></i>
                         <span>Produk</span>
+                    </div>
+                    <i class="fas fa-chevron-down arrow"></i>
+                </div>
+
+                <div class="dropdown-menu-sidebar">
+                    <a href="/produk/tambah" class="nav-sub-item">
+                        <i class="fas fa-plus"></i>
+                        Tambah Produk
                     </a>
+                    <a href="/produk" class="nav-sub-item">
+                        <i class="fas fa-list"></i>
+                        Daftar Produk
+                    </a>
+                </div>
+            </div>
+
+
 
                 <a href="#" class="nav-item">
                     <i class="fas fa-credit-card"></i>
