@@ -108,7 +108,8 @@
                 </a>
 
 
-                <a href="{{ route('analitik.show') }}" class="nav-item">
+                <a href="{{ route('analitik.show') }}" 
+                    class="nav-item {{ request()->routeIs('analitik.show') ? 'active' : '' }}">
                     <i class="fas fa-chart-bar"></i>
                     <span>Analitik</span>
                 </a>

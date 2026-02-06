@@ -9,6 +9,7 @@
 <div class="max-w-7xl mx-auto px-4 py-6">
 
     <!-- HEADER -->
+    <div class="link-page">
     <div class="mb-8">
         <h1 class="text-2xl font-bold text-gray-900 mb-2">Link Saya</h1>
         <div class="flex items-center gap-3">
@@ -31,11 +32,11 @@
             <div class="bg-white rounded-xl shadow border border-gray-200">
                 <div class="p-6 border-b border-gray-200">
                     <div class="flex justify-between items-center">
-                        <h3 class="text-lg font-bold text-gray-900">Your Pages</h3>
+                        <h3 class="text-lg font-bold text-gray-900">Halaman Saya</h3>
                         <button type="button" onclick="showAddPageForm()" 
                                 class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex items-center gap-2">
                             <i class="fas fa-plus"></i>
-                            <span>Add new page</span>
+                            <span>Tambah Halaman Baru</span>
                         </button>
                     </div>
                 </div>
@@ -81,18 +82,18 @@
             <!-- BLOCK LIST -->
             <div class="bg-white rounded-xl shadow border border-gray-200">
                 <div class="p-6 border-b border-gray-200">
-                    <h2 class="font-bold text-gray-900">Block List</h2>
+                    <h2 class="font-bold text-gray-900">Daftar Blok</h2>
                 </div>
 
                 <!-- ADD BLOCK -->
                 <div class="p-6 border-b border-gray-200">
-                    <h3 class="font-medium text-gray-900 mb-4">Add new block</h3>
+                    <h3 class="font-medium text-gray-900 mb-4">Tambahkan blok baru</h3>
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <button type="button" onclick="addBlock('text')" 
                                 class="border border-gray-300 rounded-xl p-4 hover:bg-blue-50 hover:border-blue-300 transition text-center">
                             <div class="flex flex-col items-center">
                                 <i class="fas fa-font text-blue-600 text-xl mb-2"></i>
-                                <span class="text-sm font-medium">Text</span>
+                                <span class="text-sm font-medium">Teks</span>
                             </div>
                         </button>
                         
@@ -100,7 +101,7 @@
                                 class="border border-gray-300 rounded-xl p-4 hover:bg-green-50 hover:border-green-300 transition text-center">
                             <div class="flex flex-col items-center">
                                 <i class="fas fa-image text-green-600 text-xl mb-2"></i>
-                                <span class="text-sm font-medium">Image</span>
+                                <span class="text-sm font-medium">Gambar</span>
                             </div>
                         </button>
                         
@@ -160,8 +161,8 @@
                     @else
                     <div class="text-center py-8 text-gray-400 border-2 border-dashed border-gray-300 rounded-lg">
                         <i class="fas fa-cubes text-3xl mb-3"></i>
-                        <p class="font-medium">Belum ada block</p>
-                        <p class="text-sm mt-1">Tambahkan block untuk menampilkan konten</p>
+                        <p class="font-medium">Belum ada blok</p>
+                        <p class="text-sm mt-1">Tambahkan blok untuk menampilkan konten</p>
                     </div>
                     @endif
                 </div>
@@ -206,7 +207,7 @@
 <div id="editPageModal" class="modal-overlay hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
     <div class="modal-container bg-white rounded-xl shadow-lg w-full max-w-md">
         <div class="p-6 border-b border-gray-200">
-            <h3 class="text-lg font-bold text-gray-900">Edit Page</h3>
+            <h3 class="text-lg font-bold text-gray-900">Edit Halaman</h3>
             <button type="button" onclick="closeModal()" 
                     class="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
                 <i class="fas fa-times"></i>
@@ -220,7 +221,7 @@
                 <input type="hidden" name="page_id" id="edit_page_id">
                 <div class="mb-4">
                     <label for="edit_page_title" class="block text-sm font-medium text-gray-700 mb-2">
-                        Page Title
+                        Judul Halaman
                     </label>
                     <input type="text" 
                            id="edit_page_title" 
@@ -266,7 +267,7 @@
             <div class="p-6">
                 <div class="mb-4">
                     <label for="new_page_title" class="block text-sm font-medium text-gray-700 mb-2">
-                        Page Title
+                        Judul Halaman
                     </label>
                     <input type="text" 
                            id="new_page_title" 
@@ -288,12 +289,13 @@
                     </button>
                     <button type="submit"
                             class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-                        Buat Page
+                        Buat Halaman
                     </button>
                 </div>
             </div>
         </form>
     </div>
+</div>
 </div>
 
 <style>
@@ -403,10 +405,14 @@
 }
 
 /* Block type icons */
-.fa-font, .fa-image, .fa-link, .fa-video {
+.link-page .fa-font,
+.link-page .fa-image,
+.link-page .fa-link,
+.link-page .fa-video {
     font-size: 1.5rem;
     margin-bottom: 0.5rem;
 }
+
 
 /* Block List items container */
 #blockList {
