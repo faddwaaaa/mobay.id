@@ -151,7 +151,7 @@
                                        class="form-input pl-10"
                                        placeholder="0"
                                        min="0"
-                                       max="100">
+                                       max="0">
                             </div>
                         </div>
 
