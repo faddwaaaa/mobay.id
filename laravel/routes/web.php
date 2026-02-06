@@ -121,6 +121,8 @@ Route::middleware('auth')->group(function () {
     // PRODUK
     Route::get('/produk/tambah', [ProductController::class, 'create'])->name('products.create');
     Route::post('/produk', [ProductController::class, 'store'])->name('products.store');
+    Route::get('/produk', [ProductController::class, 'manage'])
+    ->name('products.manage');
 
     // PAYMENT
     Route::get('/dashboard/topup', [TransactionController::class, 'showTopupForm'])->name('topup.form');

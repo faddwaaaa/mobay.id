@@ -8,56 +8,82 @@ use Illuminate\Support\Facades\Auth;
 
 class ProductController extends Controller
 {
+    /**
+     * =========================
+     * FORM TAMBAH PRODUK
+     * =========================
+     */
     public function create()
     {
         return view('products.create');
     }
 
+    /**
+     * =========================
+     * SIMPAN PRODUK
+     * =========================
+     */
     public function store(Request $request)
-{
-    $request->validate([
-        'title'           => 'required|string|max:255',
-        'description'     => 'nullable|string',
+    {
+        $request->validate([
+            'title'           => 'required|string|max:255',
+            'description'     => 'nullable|string',
 
-        // harga & diskon (rupiah)
-        'price'           => 'required|numeric|min:0',
-        'discount'        => 'nullable|numeric|min:0|lt:price',
+            // harga & diskon (rupiah)
+            'price'           => 'required|numeric|min:0',
+            'discount'        => 'nullable|numeric|min:0|lt:price',
 
-        // toggle dependent
-        'stock'           => 'nullable|integer|min:1',
-        'purchase_limit'  => 'nullable|integer|min:1',
+            // toggle dependent
+            'stock'           => 'nullable|integer|min:1',
+            'purchase_limit'  => 'nullable|integer|min:1',
 
-        // upload
-        'images.*'        => 'image|max:5120',
-        'files.*'         => 'file|max:10240',
-    ]);
+            // upload
+            'images.*'        => 'image|max:5120',
+            'files.*'         => 'file|max:10240',
+        ]);
 
-    $product = Product::create([
-        'user_id'        => Auth::id(),
-        'title'          => $request->title,
-        'description'    => $request->description,
-        'price' => (int) str_replace('.', '', $request->price),
-        'discount' => $request->discount
-        ? (int) str_replace('.', '', $request->discount) : null,
-        'stock'          => $request->has('stock_toggle') ? $request->stock : null,
-        'purchase_limit' => $request->has('limit_toggle') ? $request->purchase_limit : null,
-    ]);
+        $product = Product::create([
+            'user_id'        => Auth::id(),
+            'title'          => $request->title,
+            'description'    => $request->description,
+            'price'          => (int) str_replace('.', '', $request->price),
+            'discount'       => $request->discount
+                                ? (int) str_replace('.', '', $request->discount)
+                                : null,
+            'stock'          => $request->has('stock_toggle') ? $request->stock : null,
+            'purchase_limit' => $request->has('limit_toggle') ? $request->purchase_limit : null,
+        ]);
 
-    if ($request->hasFile('images')) {
-        foreach ($request->file('images') as $img) {
-            $path = $img->store('products/images', 'public');
-            $product->images()->create(['image' => $path]);
+        if ($request->hasFile('images')) {
+            foreach ($request->file('images') as $img) {
+                $path = $img->store('products/images', 'public');
+                $product->images()->create(['image' => $path]);
+            }
         }
+
+        if ($request->hasFile('files')) {
+            foreach ($request->file('files') as $file) {
+                $path = $file->store('products/files', 'public');
+                $product->files()->create(['file' => $path]);
+            }
+        }
+
+        return redirect()
+            ->route('products.manage')
+            ->with('success', 'Produk berhasil ditambahkan');
     }
 
-    if ($request->hasFile('files')) {
-        foreach ($request->file('files') as $file) {
-            $path = $file->store('products/files', 'public');
-            $product->files()->create(['file' => $path]);
-        }
+    /**
+     * =========================
+     * MANAJEMEN PRODUK
+     * =========================
+     */
+    public function manage()
+    {
+        $products = Product::where('user_id', Auth::id())
+            ->latest()
+            ->get();
+
+        return view('products.manage', compact('products'));
     }
-
-    return back()->with('success', 'Produk berhasil ditambahkan');
-}
-
 }

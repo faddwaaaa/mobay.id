@@ -275,3 +275,14 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 });
+
+document.querySelectorAll('.dropdown-toggle').forEach(toggle => {
+    toggle.addEventListener('click', () => {
+        const dropdown = toggle.closest('.dropdown');
+
+        // kalau sedang active (lagi di halaman produk), jangan ditutup
+        if (!dropdown.classList.contains('active')) {
+            dropdown.classList.toggle('open');
+        }
+    });
+});
