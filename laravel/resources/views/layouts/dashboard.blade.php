@@ -102,7 +102,7 @@
                     <span>Dashboard</span>
                 </a>
                 <a href="{{ route('links.index') }}"
-                    class="nav-item {{ request()->routeIs('links.*') ? 'active' : '' }}">
+                    class="nav-item {{ request()->routeIs('links.*') ? 'active ' : '' }}">
                     <i class="fas fa-link"></i>
                     <span>Link Saya</span>
                 </a>
@@ -113,32 +113,36 @@
                     <span>Analitik</span>
                 </a>
 
-                <a href="{{ route('qrcode.show') }}" class="nav-item">
+                <a href="{{ route('qrcode.show') }}"
+                class="nav-item {{ request()->routeIs('qrcode.show') ? 'active' : '' }}">
                     <i class="fas fa-qrcode"></i>
                     <span>QR Code</span>
                 </a>
 
-                <div class="dropdown">
-                <div class="nav-item dropdown-toggle">
-                    <div class="nav-left">
-                        <i class="fas fa-shopping-cart"></i>
-                        <span>Produk</span>
-                    </div>
-                    <i class="fas fa-chevron-down arrow"></i>
-                </div>
 
-                <div class="dropdown-menu-sidebar">
-                    <a href="/produk/tambah" class="nav-sub-item">
-                        <i class="fas fa-plus"></i>
-                        Tambah Produk
-                    </a>
-                    <a href="/produk" class="nav-sub-item">
-                        <i class="fas fa-list"></i>
-                        Daftar Produk
-                    </a>
-                </div>
-            </div>
+                <div class="dropdown {{ request()->is('produk*') ? 'active' : '' }}">
+    <div class="nav-item dropdown-toggle">
+        <div class="nav-left">
+            <i class="fas fa-shopping-cart"></i>
+            <span>Produk</span>
+        </div>
+        <i class="fas fa-chevron-down arrow"></i>
+    </div>
 
+    <div class="dropdown-menu-sidebar">
+        <a href="{{ route('products.create') }}"
+           class="nav-sub-item {{ request()->routeIs('products.create') ? 'active' : '' }}">
+            <i class="fas fa-plus"></i>
+            Tambah Produk
+        </a>
+
+        <a href="{{ route('products.manage') }}"
+           class="nav-sub-item {{ request()->routeIs('products.manage') ? 'active' : '' }}">
+            <i class="fas fa-list"></i>
+            Daftar Produk
+        </a>
+    </div>
+</div>
 
 
                 <a href="#" class="nav-item">

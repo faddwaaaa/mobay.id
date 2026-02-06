@@ -278,7 +278,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
 document.querySelectorAll('.dropdown-toggle').forEach(toggle => {
     toggle.addEventListener('click', () => {
-        toggle.parentElement.classList.toggle('open');
+        const dropdown = toggle.closest('.dropdown');
+
+        // kalau sedang active (lagi di halaman produk), jangan ditutup
+        if (!dropdown.classList.contains('active')) {
+            dropdown.classList.toggle('open');
+        }
     });
 });
-
