@@ -113,16 +113,19 @@
                     <span>Analitik</span>
                 </a>
 
-                <a href="{{ route('qrcode.show') }}" class="nav-item">
+                <a href="{{ route('qrcode.show') }}"
+                class="nav-item {{ request()->routeIs('qrcode.show') ? 'active' : '' }}">
                     <i class="fas fa-qrcode"></i>
                     <span>QR Code</span>
                 </a>
 
-                <a href="{{ route('products.create') }}" class="nav-item"
-                        class="{{ request()->routeIs('products.create') ? 'active' : '' }}">
-                        <i class="fas fa-shopping-cart"></i>
-                        <span>Produk</span>
-                    </a>
+
+                <a href="{{ route('products.create') }}"
+                class="nav-item {{ request()->routeIs('products.*') ? 'active' : '' }}">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span>Produk</span>
+                </a>
+
 
                 <a href="#" class="nav-item">
                     <i class="fas fa-credit-card"></i>
