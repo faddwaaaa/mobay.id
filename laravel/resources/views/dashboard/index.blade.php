@@ -9,6 +9,8 @@
 @endphp
 
 @section('content')
+@include('components.qr-modal')
+
 
 <!-- ================= HEADER ================= -->
 <div class="page-header"
@@ -114,6 +116,34 @@
         </button>
     </div>
 </div>
+
+<!-- ================= CHART KLIK 7 HARI ================= -->
+<div style="
+    background:#ffffff;
+    border-radius:18px;
+    padding:24px;
+    margin-bottom:32px;
+    box-shadow:0 10px 30px rgba(0,0,0,.06);
+">
+
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+        <h3 style="font-size:16px;font-weight:700;">
+            Performa Klik 7 Hari Terakhir
+        </h3>
+        <span style="font-size:13px;color:#6b7280;">
+            Total {{ number_format($totalClicks) }} klik
+        </span>
+    </div>
+
+    <!-- 🔑 FIX UTAMA: WRAPPER DENGAN HEIGHT -->
+    <div style="height:260px; width:100%;">
+        <canvas id="clickChart"></canvas>
+    </div>
+
+</div>
+
+
+
 
 
 
@@ -315,7 +345,52 @@
 </div>
 
 <!-- ================= JS ================= -->
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 <script>
+
+
+document.addEventListener('DOMContentLoaded', function () {
+
+    const ctx = document.getElementById('clickChart').getContext('2d');
+
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: @json($labels),
+            datasets: [{
+                label: 'Klik',
+                data: @json($data),
+                borderColor: '#2563eb',
+                backgroundColor: 'rgba(37,99,235,0.15)',
+                fill: true,
+                tension: 0.4,
+                pointRadius: 4,
+                pointHoverRadius: 6,
+                pointBackgroundColor: '#2563eb',
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true, // ✅ PENTING
+            plugins: {
+                legend: { display: false }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        precision: 0
+                    }
+                }
+            }
+        }
+    });
+
+});
+
+    
 function openWithdrawModal() {
     const modal = document.getElementById('withdraw-modal');
     modal.style.display = 'flex';
