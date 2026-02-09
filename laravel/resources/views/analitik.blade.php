@@ -67,7 +67,7 @@
                             </div>
                             <div>
                                 <h3 style="margin: 0; font-size: 28px; font-weight: 700; color: #0f172a;">{{ number_format($uniqueVisitors) }}</h3>
-                                <p style="margin: 0; font-size: 13px; color: #94a3b8;">Pengunjung</p>
+                                <p style="margin: 0; font-size: 13px; color: #94a3b8;">Pengunjung Unik</p>
                             </div>
                         </div>
                         <div style="display: flex; align-items: center; gap: 6px;">

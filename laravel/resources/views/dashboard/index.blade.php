@@ -139,8 +139,8 @@
             ">
                 {{ url('/' . $user->username) }}
             </a>
-            <i class="fas fa-link" style="font-size:12px;"></i>
-            <span style="word-break:break-all;">{{ url('/' . $user->username) }}</span>
+            <!-- <i class="fas fa-link" style="font-size:12px;"></i> -->
+            <!-- <span style="word-break:break-all;">{{ url('/' . $user->username) }}</span> -->
         </div>
     </div>
 
