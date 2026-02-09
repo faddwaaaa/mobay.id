@@ -57,19 +57,49 @@
             @endif
         </div>
 
-        <div class="mt-4">
-            <x-input-label for="avatar" value="Foto Profil" />
-            <div class="flex items-center gap-4 mt-2">
-                @if ($user->avatar)
-                    <img src="{{ Str::startsWith($user->avatar, ['http://','https://']) ? $user->avatar : asset('storage/'.$user->avatar) }}"
-                        class="w-16 h-16 rounded-full object-cover">
-                @else
-                    <img src="{{ asset('img/default-avatar.jpg') }}"
-                        class="w-16 h-16 rounded-full object-cover">
-                @endif
-                <input type="file" name="avatar" accept="image/*">
+        <div class="relative w-20 h-20">
+            <!-- FOTO -->
+            @if ($user->avatar)
+                <img id="avatarPreview"
+                    src="{{ asset('storage/'.$user->avatar) }}"
+                    class="w-20 h-20 rounded-full object-cover">
+            @else
+                <img id="avatarPreview"
+                    src="{{ asset('img/default-avatar.jpg') }}"
+                    class="w-20 h-20 rounded-full object-cover">
+            @endif
+
+            <!-- INPUT FILE -->
+            <input type="file"
+                id="avatarInput"
+                name="avatar"
+                accept="image/*"
+                class="hidden">
+
+            <!-- TOMBOL EDIT -->
+            <div onclick="toggleAvatarMenu()"
+                class="absolute right-0 bottom-0 bg-white border rounded-full px-2 py-1 text-xs flex items-center gap-1 shadow cursor-pointer">
+                <i class="fa-solid fa-pen text-gray-600"></i>
+                Edit
             </div>
-            <x-input-error class="mt-2" :messages="$errors->get('avatar')" />
+
+            <!-- MENU -->
+            <div id="avatarMenu"
+                class="hidden absolute right-0 bottom-10 bg-white border rounded-xl shadow p-2 w-36">
+
+                <button type="button"
+                        onclick="document.getElementById('avatarInput').click()"
+                        class="w-full text-left px-3 py-2 hover:bg-gray-100 rounded">
+                    Upload Foto
+                </button>
+
+                <button type="submit"
+                        name="remove_avatar"
+                        value="1"
+                        class="w-full text-left px-3 py-2 hover:bg-gray-100 rounded text-red-500">
+                    Hapus Foto
+                </button>
+            </div>
         </div>
 
         <div class="flex items-center gap-4">
@@ -87,3 +117,34 @@
         </div>
     </form>
 </section>
+<script>
+function toggleAvatarMenu() {
+    document.getElementById('avatarMenu').classList.toggle('hidden');
+}
+
+document.getElementById('avatarInput').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+
+    if (file) {
+        const reader = new FileReader();
+
+        reader.onload = function(e) {
+            document.getElementById('avatarPreview').src = e.target.result;
+        }
+
+        reader.readAsDataURL(file);
+
+        // TUTUP MENU SETELAH PILIH FOTO
+        document.getElementById('avatarMenu').classList.add('hidden');
+    }
+});
+
+document.addEventListener('click', function(event) {
+    const menu = document.getElementById('avatarMenu');
+    const avatar = document.querySelector('.relative.w-20');
+
+    if (!avatar.contains(event.target)) {
+        menu.classList.add('hidden');
+    }
+});
+</script>

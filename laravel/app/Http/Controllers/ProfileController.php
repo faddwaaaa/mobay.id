@@ -45,10 +45,26 @@ class ProfileController extends Controller
     // update basic fields
     $user->fill($request->validated());
 
-    // upload avatar baru (kalau ada)
+    // ======================
+    // HAPUS FOTO PROFIL
+    // ======================
+    if ($request->has('remove_avatar') && $request->remove_avatar == '1') {
+
+        // hapus file lama jika dari storage
+        if ($user->avatar && !Str::startsWith($user->avatar, ['http://','https://'])) {
+            Storage::disk('public')->delete($user->avatar);
+        }
+
+        // kosongkan avatar
+        $user->avatar = null;
+    }
+
+    // ======================
+    // UPLOAD FOTO BARU
+    // ======================
     if ($request->hasFile('avatar')) {
 
-        // hapus avatar lama JIKA dari storage
+        // hapus avatar lama
         if ($user->avatar && !Str::startsWith($user->avatar, ['http://','https://'])) {
             Storage::disk('public')->delete($user->avatar);
         }
@@ -56,6 +72,7 @@ class ProfileController extends Controller
         $path = $request->file('avatar')->store('avatars', 'public');
         $user->avatar = $path;
     }
+
 
     // email berubah → unverified
     if ($user->isDirty('email')) {

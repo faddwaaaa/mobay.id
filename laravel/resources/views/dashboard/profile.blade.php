@@ -30,7 +30,7 @@
                                 <img src="{{ asset('img/default-avatar.jpg') }}" alt="Default Avatar">
                             @endif
                         </div>
-                        <div>
+                        <div class="profile-basic-info">
                             <h1 class="profile-name">{{ $user->name }}</h1>
                             <p class="profile-email">{{ $user->email }}</p>
                         </div>
