@@ -26,16 +26,36 @@ class GoogleLoginController extends Controller
         try {
             $googleUser = Socialite::driver('google')->user();
 
-            // Cek apakah user sudah ada
+            // Cek user berdasarkan email
             $user = User::where('email', $googleUser->getEmail())->first();
 
             if ($user) {
-                // User sudah ada, login
+                // User sudah ada → login
                 Auth::login($user, true);
             } else {
-                // User baru, buat akun
+
+                // =============================
+                // BUAT USERNAME OTOMATIS
+                // =============================
+                $baseUsername = Str::slug(
+                    explode('@', $googleUser->getEmail())[0]
+                );
+
+                $username = $baseUsername;
+                $counter = 1;
+
+                // Pastikan username unik
+                while (User::where('username', $username)->exists()) {
+                    $username = $baseUsername . '-' . $counter;
+                    $counter++;
+                }
+
+                // =============================
+                // CREATE USER
+                // =============================
                 $user = User::create([
                     'name' => $googleUser->getName(),
+                    'username' => $username,
                     'email' => $googleUser->getEmail(),
                     'password' => bcrypt(Str::random(24)),
                     'email_verified_at' => now(),
@@ -47,8 +67,10 @@ class GoogleLoginController extends Controller
             }
 
             return redirect()->intended('/dashboard');
+
         } catch (\Exception $e) {
-            return redirect('/login')->with('error', 'Login gagal: ' . $e->getMessage());
+            return redirect('/login')
+                ->with('error', 'Login gagal: ' . $e->getMessage());
         }
     }
 
