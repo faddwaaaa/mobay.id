@@ -2,7 +2,8 @@
     use Illuminate\Support\Str;
 
     $user = Auth::user();
-    $userSlug = $user->username ?? Str::slug($user->name);
+    $userSlug = $user->username;
+    $avatar = Auth::user()->avatar;
 @endphp
 
 <!DOCTYPE html>
@@ -56,8 +57,13 @@
 
             <div class="user-profile-dropdown">
                 <div class="user-avatar">
-                    @if(Auth::user()->avatar)
-                        <img src="{{ Auth::user()->avatar }}" alt="{{ Auth::user()->name }}">
+                    @if ($avatar)
+                        <img
+                            src="{{ Str::startsWith($avatar, ['http://', 'https://'])
+                                    ? $avatar
+                                    : asset('storage/'.$avatar) }}"
+                            alt="{{ Auth::user()->name }}"
+                        >
                     @else
                         <img src="{{ asset('img/default-avatar.jpg') }}" alt="Default Avatar">
                     @endif

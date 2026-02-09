@@ -37,10 +37,17 @@
             gap:6px;
             font-size:13px;
             font-weight:600;
-            color:#2563eb;
         ">
-            <i class="fas fa-link" style="font-size:12px;"></i>
-            <span>{{ url('/' . $user->username) }}</span>
+            <i class="fas fa-link" style="font-size:12px;color:#2563eb;"></i>
+
+            <a href="{{ url('/' . $user->username) }}"
+            target="_blank"
+            style="
+                    color:#2563eb;
+                    text-decoration:none;
+            ">
+                {{ url('/' . $user->username) }}
+            </a>
         </div>
     </div>
 
