@@ -3,7 +3,7 @@
 
     $user = Auth::user();
     $userSlug = $user->username;
-    $avatar = Auth::user()->avatar;
+    $avatar = Auth::user()->avatar ?? null; // Tambahkan null coalescing
 @endphp
 <!DOCTYPE html>
 <html lang="id">
@@ -52,9 +52,14 @@
                 color: #475569;
             }
             
-            /* Logo lebih kecil */
+            /* Logo lebih kecil dan Sembunyikan logo di mobile */
+            .logo {
+                display: none !important;
+            }
+            
+            /* Atau jika hanya ingin image yang hilang, teks tetap ada */
             .logo-icon img {
-                height: 24px !important;
+                display: none !important;
             }
             
             /* Sembunyikan search di mobile */
@@ -139,6 +144,78 @@
             .sidebar-overlay.active {
                 display: block;
             }
+            
+            /* Atau jika Anda ingin navbar-left lebih kompak */
+            .navbar-left {
+                min-width: auto;
+                justify-content: flex-start;
+            }
+            
+            /* Style untuk sidebar mobile header */
+            .mobile-sidebar-header {
+                padding: 20px 16px;
+                border-bottom: 1px solid #e2e8f0;
+                background: #f8fafc;
+            }
+            
+            .mobile-user-info {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+            }
+            
+            .mobile-user-avatar {
+                width: 48px;
+                height: 48px;
+                border-radius: 50%;
+                overflow: hidden;
+            }
+            
+            .mobile-user-avatar img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+            }
+            
+            .mobile-user-name {
+                margin: 0;
+                font-size: 16px;
+                font-weight: 600;
+                color: #0f172a;
+            }
+            
+            .mobile-user-email {
+                margin: 4px 0 0 0;
+                font-size: 12px;
+                color: #64748b;
+            }
+            
+            /* Style untuk sidebar mobile footer */
+            .mobile-sidebar-footer {
+                margin-top: auto;
+                padding: 16px;
+                border-top: 1px solid #e2e8f0;
+            }
+            
+            .logout-mobile {
+                color: #ef4444 !important;
+            }
+            
+            .logout-mobile:hover {
+                background: #fef2f2 !important;
+            }
+        }
+        
+        /* Tablet - Sembunyikan logo jika perlu */
+        @media (max-width: 1024px) and (min-width: 769px) {
+            /* Jika ingin logo lebih kecil di tablet */
+            .logo-icon img {
+                height: 28px !important;
+            }
+            
+            .menu-toggle {
+                display: none !important;
+            }
         }
         
         /* ========== DESKTOP ========== */
@@ -157,6 +234,15 @@
             
             /* Tampilkan sidebar desktop */
             .sidebar:not(.mobile-sidebar) {
+                display: block !important;
+            }
+            
+            /* Tampilkan logo di desktop */
+            .logo {
+                display: block !important;
+            }
+            
+            .logo-icon img {
                 display: block !important;
             }
         }
@@ -314,6 +400,27 @@
         <!-- ================= SIDEBAR MOBILE ================= -->
         <aside class="sidebar mobile-sidebar" id="sidebarMobile">
             <nav class="sidebar-nav">
+                <div class="mobile-sidebar-header">
+                    <div class="mobile-user-info">
+                        <div class="mobile-user-avatar">
+                            @if ($avatar)
+                                <img
+                                    src="{{ Str::startsWith($avatar, ['http://', 'https://'])
+                                            ? $avatar
+                                            : asset('storage/'.$avatar) }}"
+                                    alt="{{ Auth::user()->name }}"
+                                >
+                            @else
+                                <img src="{{ asset('img/default-avatar.jpg') }}" alt="Default Avatar">
+                            @endif
+                        </div>
+                        <div>
+                            <p class="mobile-user-name">{{ Auth::user()->name }}</p>
+                            <p class="mobile-user-email">{{ Auth::user()->email }}</p>
+                        </div>
+                    </div>
+                </div>
+                
                 <a href="{{ route('dashboard') }}"
                    class="nav-item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
                     <i class="fas fa-home"></i>
@@ -375,6 +482,18 @@
                     <i class="fas fa-cog"></i>
                     <span>Pengaturan</span>
                 </a>
+                
+                <div class="mobile-sidebar-footer">
+                    <a href="{{ route('logout') }}" 
+                       class="nav-item logout-mobile"
+                       onclick="event.preventDefault(); document.getElementById('logout-form-mobile').submit();">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Keluar</span>
+                    </a>
+                    <form id="logout-form-mobile" action="{{ route('logout') }}" method="POST" style="display:none;">
+                        @csrf
+                    </form>
+                </div>
             </nav>
         </aside>
 
