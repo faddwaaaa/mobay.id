@@ -17,35 +17,27 @@ use App\Http\Controllers\{
 };
 
 /*
-|--------------------------------------------------------------------------
+|--------------------------------------------------------------------------|
 | LANDING PAGE
-|--------------------------------------------------------------------------
+|--------------------------------------------------------------------------|
 */
 Route::get('/', fn () => view('landing.index'));
 
-
-
 /*
-|--------------------------------------------------------------------------
-| Analytics Routes
-|--------------------------------------------------------------------------
+|--------------------------------------------------------------------------|
+| ANALYTICS ROUTES
+|--------------------------------------------------------------------------|
 */
-
 Route::middleware(['auth', 'verified'])->group(function () {
-    
-    // Analytics Routes
     Route::prefix('analitik')->name('analitik.')->group(function () {
-        Route::get('/', [AnalyticsController::class, 'show'])->name('show');
-        Route::get('/export', [AnalyticsController::class, 'export'])->name('export');
-        Route::get('/realtime', [AnalyticsController::class, 'realtime'])->name('realtime');
+        Route::get('/', [AnalyticsController::class, 'index'])->name('index');
     });
-    
 });
 
 /*
-|--------------------------------------------------------------------------
+|--------------------------------------------------------------------------|
 | PREVIEW (PUBLIC)
-|--------------------------------------------------------------------------
+|--------------------------------------------------------------------------|
 */
 Route::get('/preview/{username}', function ($username) {
     $user = User::where('username', $username)
@@ -57,42 +49,31 @@ Route::get('/preview/{username}', function ($username) {
 });
 
 /*
-|--------------------------------------------------------------------------
-| AUTH ROUTES (LOGIN, REGISTER, DLL)
-|--------------------------------------------------------------------------
+|--------------------------------------------------------------------------|
+| AUTH ROUTES
+|--------------------------------------------------------------------------|
 */
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';
 
 /*
-|--------------------------------------------------------------------------
-| AUTHENTICATED ROUTES (SATU GROUP)
-|--------------------------------------------------------------------------
+|--------------------------------------------------------------------------|
+| AUTHENTICATED ROUTES
+|--------------------------------------------------------------------------|
 */
 Route::middleware('auth')->group(function () {
 
     // DASHBOARD
-    Route::get('/dashboard', [DashboardController::class, 'index'])
-        ->name('dashboard');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     // PROFILE
-    Route::get('/profile', [ProfileController::class, 'show'])
-        ->name('profile.show');
-
-    Route::get('/dashboard/profile', [ProfileController::class, 'profile'])
-        ->name('dashboard.profile');
-
-    Route::get('/profile/edit', [ProfileController::class, 'edit'])
-        ->name('profile.edit');
-
-    Route::patch('/profile', [ProfileController::class, 'update'])
-        ->name('profile.update');
-
-    Route::delete('/profile', [ProfileController::class, 'destroy'])
-        ->name('profile.destroy');
+    Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
+    Route::get('/dashboard/profile', [ProfileController::class, 'profile'])->name('dashboard.profile');
+    Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     // LINKS
-    Route::get('/links', [LinkController::class, 'index'])
-        ->name('links.index');
+    Route::get('/links', [LinkController::class, 'index'])->name('links.index');
 
     // PAGE
     Route::post('/pages', [PageController::class, 'store'])->name('pages.store');
@@ -101,9 +82,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/pages/{page}/edit', [PageController::class, 'edit'])->name('pages.edit');
 
     // BLOCK
-    Route::get('/blocks/create', fn () => view('dashboard.links.blocks.create'))
-        ->name('blocks.create');
-
+    Route::get('/blocks/create', fn () => view('dashboard.links.blocks.create'))->name('blocks.create');
     Route::post('/blocks', [BlockController::class, 'store'])->name('blocks.store');
     Route::delete('/blocks/{block}', [BlockController::class, 'destroy'])->name('blocks.destroy');
     Route::post('/blocks/reorder', [BlockController::class, 'reorder'])->name('blocks.reorder');
@@ -121,8 +100,7 @@ Route::middleware('auth')->group(function () {
     // PRODUK
     Route::get('/produk/tambah', [ProductController::class, 'create'])->name('products.create');
     Route::post('/produk', [ProductController::class, 'store'])->name('products.store');
-    Route::get('/produk', [ProductController::class, 'manage'])
-    ->name('products.manage');
+    Route::get('/produk', [ProductController::class, 'manage'])->name('products.manage');
 
     // PAYMENT
     Route::get('/dashboard/topup', [TransactionController::class, 'showTopupForm'])->name('topup.form');
@@ -131,7 +109,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboard/topup/pending', [TransactionController::class, 'topupPending'])->name('topup.pending');
     Route::get('/dashboard/withdraw', [TransactionController::class, 'showWithdrawForm'])->name('withdraw.form');
 
-    // LOGOUT (SATU KALI)
+    // LOGOUT
     Route::post('/logout', function () {
         Auth::logout();
         request()->session()->invalidate();
@@ -141,9 +119,9 @@ Route::middleware('auth')->group(function () {
 });
 
 /*
-|--------------------------------------------------------------------------
+|--------------------------------------------------------------------------|
 | API
-|--------------------------------------------------------------------------
+|--------------------------------------------------------------------------|
 */
 Route::prefix('api')->group(function () {
     Route::post('/topup', [TransactionController::class, 'createTopUp'])->name('api.topup.create');
@@ -153,17 +131,17 @@ Route::prefix('api')->group(function () {
 });
 
 /*
-|--------------------------------------------------------------------------
-| MIDTRANS CALLBACK (PUBLIC)
-|--------------------------------------------------------------------------
+|--------------------------------------------------------------------------|
+| MIDTRANS CALLBACK
+|--------------------------------------------------------------------------|
 */
 Route::post('/api/callback/midtrans', [CallbackController::class, 'handleMidtransCallback'])
     ->name('midtrans.callback');
 
 /*
-|--------------------------------------------------------------------------
-| PUBLIC PROFILE (PALING BAWAH)
-|--------------------------------------------------------------------------
+|--------------------------------------------------------------------------|
+| PUBLIC PROFILE
+|--------------------------------------------------------------------------|
 */
 Route::get('/{username}', function ($username) {
     $user = User::where('username', $username)
@@ -173,7 +151,3 @@ Route::get('/{username}', function ($username) {
     $page = $user->pages->first();
     return view('public.profile', compact('user', 'page'));
 })->where('username', '[a-zA-Z0-9_]+');
-
-
-
-?>

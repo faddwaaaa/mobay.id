@@ -108,7 +108,7 @@
                 </a>
 
 
-                <a href="{{ route('analitik.show') }}" 
+                <a href="{{ route('analitik.index') }}" 
                     class="nav-item {{ request()->routeIs('analitik.show') ? 'active' : '' }}">
                     <i class="fas fa-chart-bar"></i>
                     <span>Analitik</span>
@@ -162,14 +162,14 @@
                 </a>
             </nav>
 
-            <div class="sidebar-promo">
+            <!-- <div class="sidebar-promo">
                 <div class="promo-icon">
                     <i class="fas fa-rocket"></i>
                 </div>
                 <h4>Tingkatkan Bisnis Anda</h4>
                 <p>Upgrade ke Premium untuk fitur lebih lengkap</p>
                 <button class="btn-promo">Upgrade Sekarang</button>
-            </div>
+            </div> -->
         </aside>
 
         <!-- ================= CONTENT ================= -->
