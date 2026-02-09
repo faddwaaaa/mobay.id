@@ -1,10 +1,3 @@
-@php
-    use Illuminate\Support\Str;
-
-    $user = Auth::user();
-    $userSlug = $user->username ?? Str::slug($user->name);
-@endphp
-
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -18,10 +11,156 @@
     <link rel="stylesheet" href="{{ asset('css/dashboard.css') }}">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <link rel="stylesheet" href="{{ asset('css/profile.css') }}">
+    
+    <style>
+        /* ========== MOBILE FIXES ========== */
+        @media (max-width: 768px) {
+            /* Reset semua margin/padding yang membuat konten tertutup */
+            body, html {
+                overflow-x: hidden;
+            }
+            
+            /* Navbar mobile fix - lebih kompak */
+            .top-navbar {
+                height: 56px !important;
+                padding: 0 12px !important;
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                z-index: 1000;
+                background: white;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            }
+            
+            /* Menu toggle - pastikan muncul */
+            .menu-toggle {
+                display: flex !important;
+                width: 40px;
+                height: 40px;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                margin-right: 8px;
+                color: #475569;
+            }
+            
+            /* Logo lebih kecil */
+            .logo-icon img {
+                height: 24px !important;
+            }
+            
+            /* Sembunyikan search di mobile */
+            .navbar-center {
+                display: none !important;
+            }
+            
+            /* Perbaiki navbar kanan untuk mobile */
+            .navbar-right {
+                gap: 8px !important;
+            }
+            
+            .btn-upgrade span {
+                display: none !important;
+            }
+            
+            .btn-upgrade {
+                padding: 6px 8px !important;
+                min-width: auto !important;
+            }
+            
+            .user-name {
+                display: none !important;
+            }
+            
+            /* ========== SIDEBAR FIX ========== */
+            /* Sembunyikan sidebar default */
+            .sidebar {
+                display: none !important;
+            }
+            
+            /* Buat sidebar mobile khusus */
+            .sidebar.mobile-sidebar {
+                display: block !important;
+                position: fixed !important;
+                top: 56px !important;
+                left: -280px !important;
+                width: 280px !important;
+                height: calc(100vh - 56px) !important;
+                z-index: 999 !important;
+                background: white;
+                box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+                transition: transform 0.3s ease;
+                transform: translateX(-100%);
+                overflow-y: auto;
+            }
+            
+            .sidebar.mobile-sidebar.active {
+                transform: translateX(0);
+                left: 0 !important;
+            }
+            
+            /* Main container reset */
+            .main-container {
+                margin-left: 0 !important;
+                width: 100% !important;
+                margin-top: 56px !important;
+            }
+            
+            /* Content area fill full width */
+            .content-area {
+                width: 100% !important;
+                padding: 16px !important;
+                margin: 0 !important;
+                min-height: calc(100vh - 56px);
+                background: #f8fafc;
+            }
+            
+            /* Overlay untuk sidebar */
+            .sidebar-overlay {
+                display: none;
+                position: fixed;
+                top: 56px;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0,0,0,0.5);
+                z-index: 998;
+                backdrop-filter: blur(2px);
+            }
+            
+            .sidebar-overlay.active {
+                display: block;
+            }
+        }
+        
+        /* ========== DESKTOP ========== */
+        @media (min-width: 769px) {
+            .menu-toggle {
+                display: none !important;
+            }
+            
+            .sidebar-overlay {
+                display: none !important;
+            }
+            
+            .sidebar.mobile-sidebar {
+                display: none !important;
+            }
+            
+            /* Tampilkan sidebar desktop */
+            .sidebar:not(.mobile-sidebar) {
+                display: block !important;
+            }
+        }
+    </style>
 </head>
 <body>
 
 <div class="dashboard-wrapper">
+    
+    <!-- Overlay untuk sidebar di mobile -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
     <!-- ================= TOP NAVBAR ================= -->
     <nav class="top-navbar">
@@ -93,8 +232,8 @@
     <!-- ================= MAIN CONTAINER ================= -->
     <div class="main-container">
 
-        <!-- ================= SIDEBAR ================= -->
-        <aside class="sidebar" id="sidebar">
+        <!-- ================= SIDEBAR DESKTOP ================= -->
+        <aside class="sidebar" id="sidebarDesktop">
             <nav class="sidebar-nav">
                 <a href="{{ route('dashboard') }}"
                    class="nav-item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
@@ -106,7 +245,6 @@
                     <i class="fas fa-link"></i>
                     <span>Link Saya</span>
                 </a>
-
 
                 <a href="{{ route('analitik.index') }}" 
                     class="nav-item {{ request()->routeIs('analitik.show') ? 'active' : '' }}">
@@ -120,31 +258,29 @@
                     <span>QR Code</span>
                 </a>
 
-
                 <div class="dropdown {{ request()->is('produk*') ? 'active' : '' }}">
-    <div class="nav-item dropdown-toggle">
-        <div class="nav-left">
-            <i class="fas fa-shopping-cart"></i>
-            <span>Produk</span>
-        </div>
-        <i class="fas fa-chevron-down arrow"></i>
-    </div>
+                    <div class="nav-item dropdown-toggle">
+                        <div class="nav-left">
+                            <i class="fas fa-shopping-cart"></i>
+                            <span>Produk</span>
+                        </div>
+                        <i class="fas fa-chevron-down arrow"></i>
+                    </div>
 
-    <div class="dropdown-menu-sidebar">
-        <a href="{{ route('products.create') }}"
-           class="nav-sub-item {{ request()->routeIs('products.create') ? 'active' : '' }}">
-            <i class="fas fa-plus"></i>
-            Tambah Produk
-        </a>
+                    <div class="dropdown-menu-sidebar">
+                        <a href="{{ route('products.create') }}"
+                           class="nav-sub-item {{ request()->routeIs('products.create') ? 'active' : '' }}">
+                            <i class="fas fa-plus"></i>
+                            Tambah Produk
+                        </a>
 
-        <a href="{{ route('products.manage') }}"
-           class="nav-sub-item {{ request()->routeIs('products.manage') ? 'active' : '' }}">
-            <i class="fas fa-list"></i>
-            Daftar Produk
-        </a>
-    </div>
-</div>
-
+                        <a href="{{ route('products.manage') }}"
+                           class="nav-sub-item {{ request()->routeIs('products.manage') ? 'active' : '' }}">
+                            <i class="fas fa-list"></i>
+                            Daftar Produk
+                        </a>
+                    </div>
+                </div>
 
                 <a href="#" class="nav-item">
                     <i class="fas fa-credit-card"></i>
@@ -161,15 +297,73 @@
                     <span>Pengaturan</span>
                 </a>
             </nav>
+        </aside>
 
-            <!-- <div class="sidebar-promo">
-                <div class="promo-icon">
-                    <i class="fas fa-rocket"></i>
+        <!-- ================= SIDEBAR MOBILE ================= -->
+        <aside class="sidebar mobile-sidebar" id="sidebarMobile">
+            <nav class="sidebar-nav">
+                <a href="{{ route('dashboard') }}"
+                   class="nav-item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
+                    <i class="fas fa-home"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="{{ route('links.index') }}"
+                    class="nav-item {{ request()->routeIs('links.*') ? 'active ' : '' }}">
+                    <i class="fas fa-link"></i>
+                    <span>Link Saya</span>
+                </a>
+
+                <a href="{{ route('analitik.index') }}" 
+                    class="nav-item {{ request()->routeIs('analitik.show') ? 'active' : '' }}">
+                    <i class="fas fa-chart-bar"></i>
+                    <span>Analitik</span>
+                </a>
+
+                <a href="{{ route('qrcode.show') }}"
+                class="nav-item {{ request()->routeIs('qrcode.show') ? 'active' : '' }}">
+                    <i class="fas fa-qrcode"></i>
+                    <span>QR Code</span>
+                </a>
+
+                <div class="dropdown {{ request()->is('produk*') ? 'active' : '' }}">
+                    <div class="nav-item dropdown-toggle">
+                        <div class="nav-left">
+                            <i class="fas fa-shopping-cart"></i>
+                            <span>Produk</span>
+                        </div>
+                        <i class="fas fa-chevron-down arrow"></i>
+                    </div>
+
+                    <div class="dropdown-menu-sidebar">
+                        <a href="{{ route('products.create') }}"
+                           class="nav-sub-item {{ request()->routeIs('products.create') ? 'active' : '' }}">
+                            <i class="fas fa-plus"></i>
+                            Tambah Produk
+                        </a>
+
+                        <a href="{{ route('products.manage') }}"
+                           class="nav-sub-item {{ request()->routeIs('products.manage') ? 'active' : '' }}">
+                            <i class="fas fa-list"></i>
+                            Daftar Produk
+                        </a>
+                    </div>
                 </div>
-                <h4>Tingkatkan Bisnis Anda</h4>
-                <p>Upgrade ke Premium untuk fitur lebih lengkap</p>
-                <button class="btn-promo">Upgrade Sekarang</button>
-            </div> -->
+
+                <a href="#" class="nav-item">
+                    <i class="fas fa-credit-card"></i>
+                    <span>Pembayaran</span>
+                </a>
+
+                <a href="#" class="nav-item">
+                    <i class="fas fa-paint-brush"></i>
+                    <span>Tema</span>
+                </a>
+
+                <a href="#" class="nav-item">
+                    <i class="fas fa-cog"></i>
+                    <span>Pengaturan</span>
+                </a>
+            </nav>
         </aside>
 
         <!-- ================= CONTENT ================= -->
@@ -181,5 +375,74 @@
 </div>
 
 <script src="{{ asset('js/dashboard.js') }}"></script>
+<script>
+// Mobile sidebar toggle
+document.addEventListener('DOMContentLoaded', function() {
+    const menuToggle = document.getElementById('menuToggle');
+    const sidebarMobile = document.getElementById('sidebarMobile');
+    const sidebarOverlay = document.getElementById('sidebarOverlay');
+    
+    if (menuToggle && sidebarMobile) {
+        // Toggle sidebar mobile
+        menuToggle.addEventListener('click', function(e) {
+            e.stopPropagation();
+            sidebarMobile.classList.toggle('active');
+            if (sidebarOverlay) {
+                sidebarOverlay.classList.toggle('active');
+            }
+            
+            // Toggle body overflow
+            if (sidebarMobile.classList.contains('active')) {
+                document.body.style.overflow = 'hidden';
+            } else {
+                document.body.style.overflow = '';
+            }
+        });
+        
+        // Close sidebar when overlay is clicked
+        if (sidebarOverlay) {
+            sidebarOverlay.addEventListener('click', function() {
+                sidebarMobile.classList.remove('active');
+                sidebarOverlay.classList.remove('active');
+                document.body.style.overflow = '';
+            });
+        }
+        
+        // Close sidebar when menu item is clicked
+        const navItems = sidebarMobile.querySelectorAll('.nav-item, .nav-sub-item');
+        navItems.forEach(item => {
+            item.addEventListener('click', function() {
+                sidebarMobile.classList.remove('active');
+                if (sidebarOverlay) {
+                    sidebarOverlay.classList.remove('active');
+                }
+                document.body.style.overflow = '';
+            });
+        });
+        
+        // Close sidebar on window resize (if going to desktop)
+        window.addEventListener('resize', function() {
+            if (window.innerWidth > 768) {
+                sidebarMobile.classList.remove('active');
+                if (sidebarOverlay) {
+                    sidebarOverlay.classList.remove('active');
+                }
+                document.body.style.overflow = '';
+            }
+        });
+        
+        // Close sidebar with ESC key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && sidebarMobile.classList.contains('active')) {
+                sidebarMobile.classList.remove('active');
+                if (sidebarOverlay) {
+                    sidebarOverlay.classList.remove('active');
+                }
+                document.body.style.overflow = '';
+            }
+        });
+    }
+});
+</script>
 </body>
 </html>
