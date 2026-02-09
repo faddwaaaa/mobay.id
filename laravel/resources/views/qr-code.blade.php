@@ -46,16 +46,21 @@
                     </p>
                 </div>
 
-                {{-- Action Buttons --}}
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
-                    <button onclick="copyLink()" id="copy-btn" style="padding: 12px 20px; background: #3b82f6; color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s;">
-                        <i class="far fa-copy" style="font-size: 13px;"></i>
-                        <span>Salin Link</span>
+                {{-- Action Buttons - 3 BUTTONS --}}
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 16px;">
+                    <button onclick="copyLink()" id="copy-btn" style="padding: 12px 16px; background: #3b82f6; color: white; border: none; border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.2s;">
+                        <i class="far fa-copy" style="font-size: 12px;"></i>
+                        <span>Salin</span>
                     </button>
                     
-                    <button onclick="downloadQR()" style="padding: 12px 20px; background: #ffffff; color: #475569; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s;">
-                        <i class="fas fa-download" style="font-size: 13px;"></i>
-                        <span>Download QR</span>
+                    <button onclick="downloadQR()" style="padding: 12px 16px; background: #ffffff; color: #475569; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.2s;">
+                        <i class="fas fa-download" style="font-size: 12px;"></i>
+                        <span>Download</span>
+                    </button>
+
+                    <button onclick="shareWhatsApp()" style="padding: 12px 16px; background: #25D366; color: white; border: none; border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.2s;">
+                        <i class="fab fa-whatsapp" style="font-size: 12px;"></i>
+                        <span>Share</span>
                     </button>
                 </div>
 
@@ -69,7 +74,7 @@
             {{-- Right Column - Info & Customization --}}
             <div style="display: flex; flex-direction: column; gap: 20px;">
                 
-                {{-- Statistics Card --}}
+                <!-- {{-- Statistics Card --}}
                 <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
                     <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 16px;">
                         <div style="width: 36px; height: 36px; background: #f1f5f9; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
@@ -88,7 +93,7 @@
                             <p style="margin: 0; font-size: 24px; font-weight: 600; color: #0f172a;">{{ $todayScans ?? 0 }}</p>
                         </div>
                     </div>
-                </div>
+                </div> -->
 
                 {{-- Customization Card --}}
                 <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
@@ -242,6 +247,12 @@ button[onclick="shareQR()"]:hover {
     border-color: #cbd5e1 !important;
 }
 
+/* WhatsApp Button Hover */
+button[onclick="shareWhatsApp()"]:hover {
+    background: #20BA5A !important;
+    box-shadow: 0 2px 8px rgba(37, 211, 102, 0.3);
+}
+
 /* Back Button */
 a[href*="dashboard"]:hover {
     background: #f8fafc !important;
@@ -301,7 +312,8 @@ a[href*="dashboard"]:hover {
 }
 
 @media (max-width: 640px) {
-    div[style*="grid-template-columns: repeat(3, 1fr)"] {
+    div[style*="grid-template-columns: repeat(3, 1fr)"],
+    div[style*="grid-template-columns: 1fr 1fr 1fr"] {
         grid-template-columns: 1fr !important;
     }
 }
@@ -349,11 +361,11 @@ async function copyLink() {
         await navigator.clipboard.writeText(currentUrl);
         
         // Success feedback
-        copyBtn.innerHTML = '<i class="fas fa-check" style="font-size: 13px;"></i><span>Tersalin!</span>';
+        copyBtn.innerHTML = '<i class="fas fa-check" style="font-size: 12px;"></i><span>Tersalin!</span>';
         copyBtn.classList.add('copy-success');
         
         setTimeout(() => {
-            copyBtn.innerHTML = '<i class="far fa-copy" style="font-size: 13px;"></i><span>Salin Link</span>';
+            copyBtn.innerHTML = '<i class="far fa-copy" style="font-size: 12px;"></i><span>Salin</span>';
             copyBtn.classList.remove('copy-success');
         }, 2000);
         
@@ -368,11 +380,11 @@ async function copyLink() {
         document.execCommand('copy');
         document.body.removeChild(textArea);
         
-        copyBtn.innerHTML = '<i class="fas fa-check" style="font-size: 13px;"></i><span>Tersalin!</span>';
+        copyBtn.innerHTML = '<i class="fas fa-check" style="font-size: 12px;"></i><span>Tersalin!</span>';
         copyBtn.classList.add('copy-success');
         
         setTimeout(() => {
-            copyBtn.innerHTML = '<i class="far fa-copy" style="font-size: 13px;"></i><span>Salin Link</span>';
+            copyBtn.innerHTML = '<i class="far fa-copy" style="font-size: 12px;"></i><span>Salin</span>';
             copyBtn.classList.remove('copy-success');
         }, 2000);
     }
@@ -406,6 +418,29 @@ function downloadQR() {
         console.error('Download failed:', err);
         alert('Gagal mendownload QR Code');
     }
+}
+
+/**
+ * Share to WhatsApp
+ */
+function shareWhatsApp() {
+    // Format pesan WhatsApp
+    const message = `Halo,
+Saya ingin membagikan tautan resmi saya melalui pesan ini:
+${currentUrl}
+Silakan diakses sesuai kebutuhan.
+Terima kasih.`;
+    
+    // Encode message untuk URL
+    const encodedMessage = encodeURIComponent(message);
+    
+    // WhatsApp Web/App URL
+    const whatsappUrl = `https://wa.me/?text=${encodedMessage}`;
+    
+    // Buka WhatsApp di tab baru
+    window.open(whatsappUrl, '_blank');
+    
+    console.log('Sharing to WhatsApp:', currentUrl);
 }
 
 /**
