@@ -44,15 +44,20 @@
             </div>
 
             <!-- Action Buttons -->
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                <button onclick="copyQRLink()" id="copy-link-btn" style="padding: 10px 16px; background: #3b82f6; color: white; border: none; border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.2s;">
-                    <i class="far fa-copy" style="font-size: 12px;"></i>
-                    <span>Salin Link</span>
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;">
+                <button onclick="copyQRLink()" id="copy-link-btn" style="padding: 10px 12px; background: #3b82f6; color: white; border: none; border-radius: 8px; font-size: 12px; font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.2s;">
+                    <i class="far fa-copy" style="font-size: 11px;"></i>
+                    <span>Salin</span>
                 </button>
                 
-                <button onclick="downloadQRCode()" style="padding: 10px 16px; background: #ffffff; color: #475569; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.2s;">
-                    <i class="fas fa-download" style="font-size: 12px;"></i>
+                <button onclick="downloadQRCode()" style="padding: 10px 12px; background: #ffffff; color: #475569; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 12px; font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.2s;">
+                    <i class="fas fa-download" style="font-size: 11px;"></i>
                     <span>Download</span>
+                </button>
+
+                <button onclick="shareToWhatsApp()" style="padding: 10px 12px; background: #25D366; color: white; border: none; border-radius: 8px; font-size: 12px; font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.2s;">
+                    <i class="fab fa-whatsapp" style="font-size: 11px;"></i>
+                    <span>Whatsapp</span>
                 </button>
             </div>
         </div>
@@ -91,6 +96,12 @@
     border-color: #cbd5e1;
 }
 
+/* WhatsApp Button Hover */
+#qr-modal button[onclick="shareToWhatsApp()"]:hover {
+    background: #20BA5A;
+    box-shadow: 0 2px 8px rgba(37, 211, 102, 0.3);
+}
+
 /* Copy Button Success State */
 .copy-success {
     background: #10b981 !important;
@@ -123,8 +134,8 @@
     }
     
     #qr-modal button {
-        font-size: 12px;
-        padding: 9px 14px;
+        font-size: 11px;
+        padding: 9px 10px;
     }
 }
 
@@ -195,7 +206,7 @@ function closeQRModal() {
     
     // Reset copy button
     const copyBtn = document.getElementById('copy-link-btn');
-    copyBtn.innerHTML = '<i class="far fa-copy" style="font-size: 12px;"></i><span>Salin Link</span>';
+    copyBtn.innerHTML = '<i class="far fa-copy" style="font-size: 11px;"></i><span>Salin</span>';
     copyBtn.classList.remove('copy-success');
 }
 
@@ -209,12 +220,12 @@ async function copyQRLink() {
         await navigator.clipboard.writeText(currentUrl);
         
         // Success feedback - subtle
-        copyBtn.innerHTML = '<i class="fas fa-check" style="font-size: 12px;"></i><span>Tersalin!</span>';
+        copyBtn.innerHTML = '<i class="fas fa-check" style="font-size: 11px;"></i><span>Tersalin!</span>';
         copyBtn.classList.add('copy-success');
         
         // Reset after 2 seconds
         setTimeout(() => {
-            copyBtn.innerHTML = '<i class="far fa-copy" style="font-size: 12px;"></i><span>Salin Link</span>';
+            copyBtn.innerHTML = '<i class="far fa-copy" style="font-size: 11px;"></i><span>Salin</span>';
             copyBtn.classList.remove('copy-success');
         }, 2000);
         
@@ -233,11 +244,11 @@ async function copyQRLink() {
             document.execCommand('copy');
             document.body.removeChild(textArea);
             
-            copyBtn.innerHTML = '<i class="fas fa-check" style="font-size: 12px;"></i><span>Tersalin!</span>';
+            copyBtn.innerHTML = '<i class="fas fa-check" style="font-size: 11px;"></i><span>Tersalin!</span>';
             copyBtn.classList.add('copy-success');
             
             setTimeout(() => {
-                copyBtn.innerHTML = '<i class="far fa-copy" style="font-size: 12px;"></i><span>Salin Link</span>';
+                copyBtn.innerHTML = '<i class="far fa-copy" style="font-size: 11px;"></i><span>Salin</span>';
                 copyBtn.classList.remove('copy-success');
             }, 2000);
         } catch (fallbackErr) {
@@ -275,6 +286,29 @@ function downloadQRCode() {
         console.error('Download failed:', err);
         alert('Gagal mendownload QR Code');
     }
+}
+
+/**
+ * Share to WhatsApp
+ */
+function shareToWhatsApp() {
+    // Format pesan WhatsApp
+    const message = `Halo,
+Saya ingin membagikan tautan resmi saya melalui pesan ini:
+${currentUrl}
+Silakan diakses sesuai kebutuhan.
+Terima kasih.`;
+    
+    // Encode message untuk URL
+    const encodedMessage = encodeURIComponent(message);
+    
+    // WhatsApp Web/App URL
+    const whatsappUrl = `https://wa.me/?text=${encodedMessage}`;
+    
+    // Buka WhatsApp di tab baru
+    window.open(whatsappUrl, '_blank');
+    
+    console.log('Sharing to WhatsApp:', currentUrl);
 }
 
 // Close modal when clicking outside
