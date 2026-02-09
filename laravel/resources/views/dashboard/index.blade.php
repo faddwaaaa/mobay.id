@@ -5,7 +5,6 @@
 @php
     use Illuminate\Support\Str;
     $user = Auth::user();
-    $userSlug = $user->profile?->username ?? Str::slug($user->name);
 @endphp
 
 @section('content')
@@ -41,13 +40,13 @@
             color:#2563eb;
         ">
             <i class="fas fa-link" style="font-size:12px;"></i>
-            <span>payou.id/{{ $userSlug }}</span>
+            <span>{{ url('/' . $user->username) }}</span>
         </div>
     </div>
 
     <!-- SHARE BUTTON (SMALL & CLEAN) -->
 <button type="button"
-        onclick="openQRModal('{{ $userSlug }}')"
+        onclick="openQRModal('{{ $user->username }}')"
         style="
             display:flex;
             align-items:center;
