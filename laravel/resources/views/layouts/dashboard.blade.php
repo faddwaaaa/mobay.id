@@ -3,7 +3,7 @@
 
     $user = Auth::user();
     $userSlug = $user->username;
-    $avatar = Auth::user()->avatar ?? null; // Tambahkan null coalescing
+    $avatar = Auth::user()->avatar ?? null;
 @endphp
 <!DOCTYPE html>
 <html lang="id">
@@ -18,6 +18,7 @@
     <link rel="stylesheet" href="{{ asset('css/dashboard.css') }}">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <link rel="stylesheet" href="{{ asset('css/profile.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/darkmode.css') }}">
     
     <style>
         /* ========== MOBILE FIXES ========== */
@@ -248,7 +249,7 @@
         }
     </style>
 </head>
-<body>
+<body class="preload">
 
 <div class="dashboard-wrapper">
     
@@ -385,10 +386,36 @@
                     <span>Pembayaran</span>
                 </a>
 
-                <a href="#" class="nav-item">
-                    <i class="fas fa-paint-brush"></i>
-                    <span>Tema</span>
-                </a>
+                <!-- Theme Dropdown -->
+                <div class="theme-dropdown">
+                    <div class="nav-item theme-dropdown-toggle">
+                        <div class="nav-left">
+                            <i class="fas fa-paint-brush"></i>
+                            <span>Tema</span>
+                        </div>
+                        <i class="fas fa-chevron-down arrow"></i>
+                    </div>
+
+                    <div class="theme-dropdown-menu">
+                        <button class="theme-option" data-theme="light">
+                            <i class="fas fa-sun"></i>
+                            <div class="theme-option-text">
+                                <span class="theme-label">Terang</span>
+                                <!-- <span class="theme-desc">Tampilan cerah untuk siang hari</span> -->
+                            </div>
+                            <i class="fas fa-check check-icon"></i>
+                        </button>
+
+                        <button class="theme-option" data-theme="dark">
+                            <i class="fas fa-moon"></i>
+                            <div class="theme-option-text">
+                                <span class="theme-label">Gelap</span>
+                                <!-- <span class="theme-desc">Tampilan nyaman untuk malam hari</span> -->
+                            </div>
+                            <i class="fas fa-check check-icon"></i>
+                        </button>
+                    </div>
+                </div>
 
                 <a href="#" class="nav-item">
                     <i class="fas fa-cog"></i>
@@ -473,10 +500,36 @@
                     <span>Pembayaran</span>
                 </a>
 
-                <a href="#" class="nav-item">
-                    <i class="fas fa-paint-brush"></i>
-                    <span>Tema</span>
-                </a>
+                <!-- Theme Dropdown Mobile -->
+                <div class="theme-dropdown">
+                    <div class="nav-item theme-dropdown-toggle">
+                        <div class="nav-left">
+                            <i class="fas fa-paint-brush"></i>
+                            <span>Tema</span>
+                        </div>
+                        <i class="fas fa-chevron-down arrow"></i>
+                    </div>
+
+                    <div class="theme-dropdown-menu">
+                        <button class="theme-option" data-theme="light">
+                            <i class="fas fa-sun"></i>
+                            <div class="theme-option-text">
+                                <span class="theme-label">Terang</span>
+                                <span class="theme-desc">Tampilan cerah untuk siang hari</span>
+                            </div>
+                            <i class="fas fa-check check-icon"></i>
+                        </button>
+
+                        <button class="theme-option" data-theme="dark">
+                            <i class="fas fa-moon"></i>
+                            <div class="theme-option-text">
+                                <span class="theme-label">Gelap</span>
+                                <span class="theme-desc">Tampilan nyaman untuk malam hari</span>
+                            </div>
+                            <i class="fas fa-check check-icon"></i>
+                        </button>
+                    </div>
+                </div>
 
                 <a href="#" class="nav-item">
                     <i class="fas fa-cog"></i>
@@ -506,7 +559,13 @@
 </div>
 
 <script src="{{ asset('js/dashboard.js') }}"></script>
+<script src="{{ asset('js/darkmode.js') }}"></script>
 <script>
+// Remove preload class after page load to enable transitions
+window.addEventListener('load', function() {
+    document.body.classList.remove('preload');
+});
+
 // Mobile sidebar toggle
 document.addEventListener('DOMContentLoaded', function() {
     const menuToggle = document.getElementById('menuToggle');
@@ -540,7 +599,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         // Close sidebar when menu item is clicked
-        const navItems = sidebarMobile.querySelectorAll('.nav-item, .nav-sub-item');
+        const navItems = sidebarMobile.querySelectorAll('.nav-item:not(.theme-dropdown-toggle), .nav-sub-item');
         navItems.forEach(item => {
             item.addEventListener('click', function() {
                 sidebarMobile.classList.remove('active');

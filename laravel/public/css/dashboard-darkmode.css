@@ -1,0 +1,395 @@
+/* ========================================
+   DARK MODE - DASHBOARD PAGE
+   ======================================== */
+
+/* Dashboard Header */
+.dark .dashboard-header {
+    color: var(--text-primary);
+}
+
+.dark .dashboard-title {
+    color: var(--text-primary) !important;
+}
+
+.dark .dashboard-welcome {
+    color: var(--text-secondary) !important;
+}
+
+.dark .dashboard-welcome strong {
+    color: var(--text-primary);
+}
+
+.dark .dashboard-link {
+    color: var(--accent-color) !important;
+}
+
+.dark .dashboard-link:hover {
+    color: var(--accent-hover) !important;
+}
+
+/* Share Button */
+.dark .share-button {
+    background: var(--bg-tertiary) !important;
+    border-color: var(--border-color) !important;
+    color: var(--accent-color) !important;
+}
+
+.dark .share-button:hover {
+    background: var(--hover-bg) !important;
+    border-color: var(--accent-color) !important;
+}
+
+/* Balance Card - Keep gradient but adjust for dark mode */
+.dark .balance-card {
+    /* Keep the gradient beautiful in dark mode */
+    background: linear-gradient(135deg, #1e3a8a, #3b82f6) !important;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.4) !important;
+}
+
+.dark .balance-label,
+.dark .balance-amount,
+.dark .balance-desc {
+    color: #ffffff !important;
+}
+
+.dark .withdraw-button {
+    background: #ffffff !important;
+    color: #1e3a8a !important;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3) !important;
+}
+
+.dark .withdraw-button:hover {
+    background: #f1f5f9 !important;
+}
+
+/* Chart Card */
+.dark .dashboard-chart-card {
+    background: var(--bg-primary) !important;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3) !important;
+}
+
+.dark .chart-title {
+    color: var(--text-primary) !important;
+}
+
+.dark .chart-total {
+    color: var(--text-secondary) !important;
+}
+
+/* Stat Cards */
+.dark .dashboard-stat-card {
+    background: var(--bg-primary) !important;
+    border: 1px solid var(--border-color) !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2) !important;
+}
+
+.dark .stat-title {
+    color: var(--text-secondary) !important;
+}
+
+.dark .stat-value {
+    color: var(--text-primary) !important;
+}
+
+.dark .stat-subtitle {
+    color: var(--text-tertiary) !important;
+}
+
+/* Links Section */
+.dark .dashboard-links-section {
+    color: var(--text-primary);
+}
+
+.dark .section-title {
+    color: var(--text-primary) !important;
+}
+
+.dark .dashboard-link-card {
+    background: var(--bg-primary) !important;
+    border: 1px solid var(--border-color) !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2) !important;
+}
+
+.dark .dashboard-link-card:hover {
+    background: var(--hover-bg) !important;
+    border-color: var(--accent-color) !important;
+}
+
+.dark .link-card-title {
+    color: var(--text-primary) !important;
+}
+
+.dark .link-card-url {
+    color: var(--text-secondary) !important;
+}
+
+.dark .link-card-clicks {
+    color: var(--text-tertiary) !important;
+}
+
+.dark .empty-message {
+    color: var(--text-secondary) !important;
+}
+
+/* Modal */
+.dark .modal-overlay {
+    background: rgba(0,0,0,0.7) !important;
+}
+
+.dark .modal-content {
+    background: var(--bg-primary) !important;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6) !important;
+}
+
+.dark .modal-header {
+    border-bottom: 1px solid var(--border-color) !important;
+}
+
+.dark .modal-icon {
+    background: var(--bg-tertiary) !important;
+    color: var(--accent-color) !important;
+}
+
+.dark .modal-title {
+    color: var(--text-primary) !important;
+}
+
+.dark .modal-close {
+    color: var(--text-secondary) !important;
+}
+
+.dark .modal-close:hover {
+    color: var(--text-primary) !important;
+}
+
+.dark .modal-body {
+    background: var(--bg-primary) !important;
+}
+
+.dark .modal-info {
+    background: var(--bg-tertiary) !important;
+    border-color: var(--accent-color) !important;
+    color: var(--text-primary) !important;
+}
+
+.dark .modal-info strong {
+    color: var(--text-primary) !important;
+}
+
+.dark .modal-info b {
+    color: var(--accent-color) !important;
+}
+
+/* Form Elements in Modal */
+.dark .form-label {
+    color: var(--text-primary) !important;
+}
+
+.dark .form-input {
+    background: var(--bg-secondary) !important;
+    border-color: var(--border-color) !important;
+    color: var(--text-primary) !important;
+}
+
+.dark .form-input:focus {
+    background: var(--bg-primary) !important;
+    border-color: var(--accent-color) !important;
+}
+
+.dark .form-input::placeholder {
+    color: var(--text-tertiary) !important;
+}
+
+.dark .form-input option {
+    background: var(--bg-secondary) !important;
+    color: var(--text-primary) !important;
+}
+
+/* Form Buttons */
+.dark .btn-cancel {
+    background: var(--bg-tertiary) !important;
+    color: var(--text-primary) !important;
+}
+
+.dark .btn-cancel:hover {
+    background: var(--hover-bg) !important;
+}
+
+.dark .btn-submit {
+    background: var(--accent-color) !important;
+    color: #ffffff !important;
+}
+
+.dark .btn-submit:hover {
+    background: var(--accent-hover) !important;
+}
+
+.dark .btn-submit:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* ========================================
+   OVERRIDE INLINE STYLES (FALLBACK)
+   ======================================== */
+
+/* Header text colors */
+.dark div[style*="color:#374151"] {
+    color: var(--text-secondary) !important;
+}
+
+.dark h1[style*="font-size:24px"] {
+    color: var(--text-primary) !important;
+}
+
+/* Chart card backgrounds */
+.dark div[style*="background:#ffffff"][style*="border-radius:18px"] {
+    background: var(--bg-primary) !important;
+}
+
+/* Stat cards */
+.dark .stat-card {
+    background: var(--bg-primary) !important;
+    border: 1px solid var(--border-color) !important;
+    color: var(--text-primary) !important;
+}
+
+.dark .stat-card h4 {
+    color: var(--text-secondary) !important;
+}
+
+.dark .stat-card .stat-value {
+    color: var(--text-primary) !important;
+}
+
+.dark .stat-card small {
+    color: var(--text-tertiary) !important;
+}
+
+/* Content section */
+.dark .content-section {
+    color: var(--text-primary);
+}
+
+.dark .content-section h2 {
+    color: var(--text-primary) !important;
+}
+
+/* Link cards */
+.dark .link-card {
+    background: var(--bg-primary) !important;
+    border: 1px solid var(--border-color) !important;
+    color: var(--text-primary) !important;
+}
+
+.dark .link-card h3 {
+    color: var(--text-primary) !important;
+}
+
+.dark .link-card p {
+    color: var(--text-secondary) !important;
+}
+
+.dark .link-card:hover {
+    background: var(--hover-bg) !important;
+    border-color: var(--accent-color) !important;
+}
+
+/* Modal specific overrides */
+.dark #withdraw-modal div[style*="background:#ffffff"] {
+    background: var(--bg-primary) !important;
+}
+
+.dark #withdraw-modal div[style*="border-bottom:1px solid #eee"] {
+    border-bottom: 1px solid var(--border-color) !important;
+}
+
+.dark #withdraw-modal h3[style*="margin:0"] {
+    color: var(--text-primary) !important;
+}
+
+.dark #withdraw-modal button[style*="color:#6b7280"] {
+    color: var(--text-secondary) !important;
+}
+
+.dark #withdraw-modal input,
+.dark #withdraw-modal select,
+.dark #withdraw-modal textarea {
+    background: var(--bg-secondary) !important;
+    border-color: var(--border-color) !important;
+    color: var(--text-primary) !important;
+}
+
+.dark #withdraw-modal input:focus,
+.dark #withdraw-modal select:focus,
+.dark #withdraw-modal textarea:focus {
+    background: var(--bg-primary) !important;
+    border-color: var(--accent-color) !important;
+}
+
+.dark #withdraw-modal button[style*="background:#f1f5f9"] {
+    background: var(--bg-tertiary) !important;
+    color: var(--text-primary) !important;
+}
+
+/* ========================================
+   ADDITIONAL FIXES
+   ======================================== */
+
+/* Links grid */
+.dark .links-grid {
+    gap: 16px;
+}
+
+/* Section header */
+.dark .section-header {
+    margin-bottom: 16px;
+}
+
+.dark .section-header h2 {
+    color: var(--text-primary) !important;
+    font-size: 18px;
+    font-weight: 700;
+}
+
+/* Chart canvas - slight brightness adjustment */
+.dark #clickChart {
+    filter: brightness(1.05);
+}
+
+/* Scrollbar in modal */
+.dark .modal-body::-webkit-scrollbar {
+    width: 8px;
+}
+
+.dark .modal-body::-webkit-scrollbar-track {
+    background: var(--bg-secondary);
+}
+
+.dark .modal-body::-webkit-scrollbar-thumb {
+    background: var(--bg-tertiary);
+    border-radius: 4px;
+}
+
+.dark .modal-body::-webkit-scrollbar-thumb:hover {
+    background: var(--border-color);
+}
+
+/* ========================================
+   RESPONSIVE DARK MODE
+   ======================================== */
+
+@media (max-width: 768px) {
+    .dark .balance-card {
+        box-shadow: 0 8px 24px rgba(0,0,0,0.4) !important;
+    }
+    
+    .dark .dashboard-chart-card {
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3) !important;
+    }
+    
+    .dark .dashboard-stat-card {
+        box-shadow: 0 2px 8px rgba(0,0,0,0.2) !important;
+    }
+}
