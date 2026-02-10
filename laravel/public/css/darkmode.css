@@ -1,0 +1,472 @@
+/* ========================================
+   DARK MODE STYLES
+   ======================================== */
+
+/* Root Variables */
+:root {
+    /* Light Mode Colors */
+    --bg-primary: #ffffff;
+    --bg-secondary: #f8fafc;
+    --bg-tertiary: #f1f5f9;
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    --text-tertiary: #64748b;
+    --border-color: #e2e8f0;
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    --hover-bg: #f1f5f9;
+    --active-bg: #e0e7ff;
+    --accent-color: #6366f1;
+    --accent-hover: #4f46e5;
+}
+
+/* Dark Mode Variables */
+.dark {
+    --bg-primary: #0f172a;
+    --bg-secondary: #1e293b;
+    --bg-tertiary: #334155;
+    --text-primary: #f1f5f9;
+    --text-secondary: #cbd5e1;
+    --text-tertiary: #94a3b8;
+    --border-color: #334155;
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+    --hover-bg: #334155;
+    --active-bg: #3730a3;
+    --accent-color: #818cf8;
+    --accent-hover: #6366f1;
+}
+
+/* Theme Dropdown Styles */
+.theme-dropdown {
+    position: relative;
+}
+
+.theme-dropdown-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 8px;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.theme-dropdown-toggle:hover {
+    background: var(--hover-bg);
+    border-color: var(--accent-color);
+}
+
+.theme-dropdown-toggle i {
+    font-size: 16px;
+}
+
+.theme-dropdown-toggle .arrow {
+    font-size: 12px;
+    transition: transform 0.2s ease;
+}
+
+.theme-dropdown.active .theme-dropdown-toggle .arrow {
+    transform: rotate(180deg);
+}
+
+.theme-dropdown-menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    min-width: 200px;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    box-shadow: var(--shadow-lg);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.2s ease;
+    z-index: 1000;
+    overflow: hidden;
+}
+
+.theme-dropdown-menu.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.theme-option {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    color: var(--text-primary);
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+    background: transparent;
+    width: 100%;
+    text-align: left;
+}
+
+.theme-option:hover {
+    background: var(--hover-bg);
+}
+
+.theme-option.active {
+    background: var(--active-bg);
+    color: var(--accent-color);
+}
+
+.theme-option i {
+    width: 20px;
+    font-size: 18px;
+}
+
+.theme-option-text {
+    flex: 1;
+}
+
+.theme-option-text .theme-label {
+    display: block;
+    font-weight: 500;
+    font-size: 14px;
+    margin-bottom: 2px;
+}
+
+.theme-option-text .theme-desc {
+    display: block;
+    font-size: 12px;
+    color: var(--text-tertiary);
+}
+
+.theme-option .check-icon {
+    font-size: 14px;
+    color: var(--accent-color);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.theme-option.active .check-icon {
+    opacity: 1;
+}
+
+/* Sidebar Nav Item with Dropdown */
+.nav-item.theme-dropdown-toggle {
+    width: 100%;
+    justify-content: space-between;
+    border: none;
+    border-radius: 8px;
+    margin-bottom: 4px;
+}
+
+/* Mobile Sidebar Theme Dropdown */
+@media (max-width: 768px) {
+    .theme-dropdown-menu {
+        left: 0;
+        right: auto;
+        min-width: 100%;
+    }
+}
+
+/* ========================================
+   COMPONENT DARK MODE STYLES
+   ======================================== */
+
+/* Body and Base */
+body.dark-mode {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+}
+
+/* Top Navbar */
+.dark .top-navbar {
+    background: var(--bg-primary);
+    border-bottom: 1px solid var(--border-color);
+}
+
+/* Sidebar */
+.dark .sidebar {
+    background: var(--bg-primary);
+    border-right: 1px solid var(--border-color);
+}
+
+.dark .nav-item {
+    color: var(--text-secondary);
+}
+
+.dark .nav-item:hover {
+    background: var(--hover-bg);
+    color: var(--text-primary);
+}
+
+.dark .nav-item.active {
+    background: var(--active-bg);
+    color: var(--accent-color);
+}
+
+.dark .nav-sub-item {
+    color: var(--text-tertiary);
+}
+
+.dark .nav-sub-item:hover {
+    background: var(--hover-bg);
+    color: var(--text-primary);
+}
+
+.dark .nav-sub-item.active {
+    color: var(--accent-color);
+}
+
+/* Mobile Sidebar Header */
+.dark .mobile-sidebar-header {
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.dark .mobile-user-name {
+    color: var(--text-primary);
+}
+
+.dark .mobile-user-email {
+    color: var(--text-tertiary);
+}
+
+.dark .mobile-sidebar-footer {
+    border-top: 1px solid var(--border-color);
+}
+
+/* Content Area */
+.dark .content-area {
+    background: var(--bg-secondary);
+}
+
+/* Cards */
+.dark .card,
+.dark .stats-card,
+.dark .link-card,
+.dark .product-card {
+    background: var(--bg-primary);
+    border-color: var(--border-color);
+    box-shadow: var(--shadow-sm);
+}
+
+/* Buttons */
+.dark .btn-primary {
+    background: var(--accent-color);
+    color: white;
+}
+
+.dark .btn-primary:hover {
+    background: var(--accent-hover);
+}
+
+.dark .btn-secondary {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    border-color: var(--border-color);
+}
+
+.dark .btn-secondary:hover {
+    background: var(--hover-bg);
+}
+
+/* Inputs */
+.dark input,
+.dark textarea,
+.dark select {
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    border-color: var(--border-color);
+}
+
+.dark input:focus,
+.dark textarea:focus,
+.dark select:focus {
+    border-color: var(--accent-color);
+    background: var(--bg-primary);
+}
+
+.dark input::placeholder,
+.dark textarea::placeholder {
+    color: var(--text-tertiary);
+}
+
+/* Search Container */
+.dark .search-container {
+    background: var(--bg-secondary);
+    border-color: var(--border-color);
+}
+
+.dark .search-container input {
+    background: transparent;
+    color: var(--text-primary);
+}
+
+.dark .search-container i {
+    color: var(--text-tertiary);
+}
+
+/* Dropdown Menu */
+.dark .dropdown-menu {
+    background: var(--bg-primary);
+    border-color: var(--border-color);
+    box-shadow: var(--shadow-lg);
+}
+
+.dark .dropdown-menu a {
+    color: var(--text-primary);
+}
+
+.dark .dropdown-menu a:hover {
+    background: var(--hover-bg);
+}
+
+.dark .dropdown-menu .divider {
+    background: var(--border-color);
+}
+
+/* Tables */
+.dark table {
+    background: var(--bg-primary);
+}
+
+.dark thead {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+}
+
+.dark tbody tr {
+    border-bottom: 1px solid var(--border-color);
+}
+
+.dark tbody tr:hover {
+    background: var(--hover-bg);
+}
+
+.dark td,
+.dark th {
+    color: var(--text-primary);
+}
+
+/* Modal */
+.dark .modal-content {
+    background: var(--bg-primary);
+    color: var(--text-primary);
+}
+
+.dark .modal-header {
+    border-bottom: 1px solid var(--border-color);
+}
+
+.dark .modal-footer {
+    border-top: 1px solid var(--border-color);
+}
+
+/* Alert / Notification */
+.dark .alert {
+    background: var(--bg-tertiary);
+    border-color: var(--border-color);
+    color: var(--text-primary);
+}
+
+/* Notification Bell */
+.dark .notification-bell {
+    color: var(--text-secondary);
+}
+
+.dark .notification-bell:hover {
+    color: var(--text-primary);
+}
+
+/* User Profile Dropdown */
+.dark .user-profile-dropdown .user-name {
+    color: var(--text-primary);
+}
+
+/* Upgrade Button */
+.dark .btn-upgrade {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.dark .btn-upgrade:hover {
+    opacity: 0.9;
+}
+
+/* Badges */
+.dark .badge {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+}
+
+/* Stats */
+.dark .stat-value {
+    color: var(--text-primary);
+}
+
+.dark .stat-label {
+    color: var(--text-tertiary);
+}
+
+/* Links */
+.dark a {
+    color: var(--accent-color);
+}
+
+.dark a:hover {
+    color: var(--accent-hover);
+}
+
+/* Scrollbar */
+.dark ::-webkit-scrollbar {
+    width: 10px;
+}
+
+.dark ::-webkit-scrollbar-track {
+    background: var(--bg-secondary);
+}
+
+.dark ::-webkit-scrollbar-thumb {
+    background: var(--bg-tertiary);
+    border-radius: 5px;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+    background: var(--border-color);
+}
+
+/* Chart Colors for Dark Mode */
+.dark .chart-container canvas {
+    filter: brightness(0.9);
+}
+
+/* QR Code Container */
+.dark .qr-container {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+}
+
+/* Code Block */
+.dark pre,
+.dark code {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    border-color: var(--border-color);
+}
+
+/* Transition for smooth theme switching */
+* {
+    transition: background-color 0.2s ease, 
+                border-color 0.2s ease, 
+                color 0.2s ease;
+}
+
+/* Prevent transition on page load */
+.preload * {
+    transition: none !important;
+}

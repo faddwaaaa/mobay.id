@@ -4,23 +4,33 @@
 
 <div class="profile-page">
     <div class="max-w-3xl mx-auto">
+        @if (session('status') === 'profile-updated')
+            <div class="alert-success mb-4">
+                Profil berhasil diperbarui.
+            </div>
+        @endif
         <div class="profile-card">
             <div class="profile-header"></div>
             <div class="profile-content">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-4">
                         <div class="profile-avatar">
+                            @php
+                                use Illuminate\Support\Str;
+                            @endphp
+
                             @if ($user->avatar)
-                                <img src="{{ $user->avatar }}" alt="Avatar">
+                                <img
+                                    src="{{ Str::startsWith($user->avatar, ['http://', 'https://'])
+                                            ? $user->avatar
+                                            : asset('storage/'.$user->avatar) }}"
+                                    alt="Avatar"
+                                >
                             @else
-                                <div class="profile-avatar-placeholder">
-                                    <span class="text-white text-3xl font-bold">
-                                        {{ strtoupper(substr($user->name, 0, 1)) }}
-                                    </span>
-                                </div>
+                                <img src="{{ asset('img/default-avatar.jpg') }}" alt="Default Avatar">
                             @endif
                         </div>
-                        <div>
+                        <div class="profile-basic-info">
                             <h1 class="profile-name">{{ $user->name }}</h1>
                             <p class="profile-email">{{ $user->email }}</p>
                         </div>
@@ -31,6 +41,12 @@
                     </a>
                 </div>
 
+                <div class="profile-info">
+                    <div class="profile-item">
+                        <label>Username</label>
+                        <p>{{ $user->username }}</p>
+                    </div>
+                </div>
                 <div class="profile-info">
                     <div class="profile-item">
                         <label>Email</label>

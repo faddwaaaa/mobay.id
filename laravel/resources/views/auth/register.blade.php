@@ -301,7 +301,11 @@
                 <input type="text" id="name" name="name" placeholder="Masukkan nama lengkap" 
                        value="{{ old('name') }}" required autofocus>
             </div>
-
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" placeholder="Contoh: admin123" 
+                        value="{{ old('username') }}" required>
+            </div>
             <div class="form-group">
                 <label for="email">Email</label>
                 <input type="email" id="email" name="email" placeholder="Masukkan email Anda" 

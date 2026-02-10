@@ -8,6 +8,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\View\View;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use App\Models\User;
 
 class ProfileController extends Controller
@@ -37,17 +39,33 @@ class ProfileController extends Controller
      * Update the user's profile information.
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
-    {
-        $request->user()->fill($request->validated());
+{
+    $user = $request->user();
 
-        if ($request->user()->isDirty('email')) {
-            $request->user()->email_verified_at = null;
+    // update basic fields
+    $user->fill($request->validated());
+
+    // upload avatar baru (kalau ada)
+    if ($request->hasFile('avatar')) {
+
+        // hapus avatar lama JIKA dari storage
+        if ($user->avatar && !Str::startsWith($user->avatar, ['http://','https://'])) {
+            Storage::disk('public')->delete($user->avatar);
         }
 
-        $request->user()->save();
-
-        return Redirect::route('profile.edit')->with('status', 'profile-updated');
+        $path = $request->file('avatar')->store('avatars', 'public');
+        $user->avatar = $path;
     }
+
+    // email berubah → unverified
+    if ($user->isDirty('email')) {
+        $user->email_verified_at = null;
+    }
+
+    $user->save();
+
+    return Redirect::route('dashboard.profile')->with('status', 'profile-updated');
+}
 
     /**
      * Delete the user's account.

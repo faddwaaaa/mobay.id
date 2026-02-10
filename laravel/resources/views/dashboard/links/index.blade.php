@@ -15,9 +15,11 @@
         <div class="flex items-center gap-3">
             <p class="text-gray-600">Link Saya:</p>
             <div class="px-4 py-2 bg-blue-50 border border-blue-200 rounded-lg">
-                <span class="text-blue-700 font-medium">
+                <a href="{{ url('/' . $user->username) }}"
+                target="_blank"
+                class="text-blue-700 font-medium">
                     {{ url('/' . $user->username) }}
-                </span>
+                </a>
             </div>
         </div>
     </div>
@@ -170,8 +172,8 @@
         </div>
 
         <!-- KANAN - PREVIEW -->
-        <div class="lg:w-1/3">
-            <div class="sticky top-6">
+        <div class="lg:w-1/3 -mt-6">
+            <div class="sticky top-0">
                 <div class="mb-4">
                     <h3 class="font-bold text-gray-900 mb-2">Preview</h3>
                     <p class="text-sm text-gray-600">Tampilan di mobile device</p>
