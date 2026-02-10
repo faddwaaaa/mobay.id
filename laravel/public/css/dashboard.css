@@ -45,7 +45,6 @@ body {
     flex-direction: column;
 }
 
-/* TOP NAVBAR */
 .top-navbar {
     background: var(--surface);
     border-bottom: 1px solid var(--border);
@@ -342,14 +341,14 @@ body {
     color: var(--danger);
 }
 
-/* MAIN CONTAINER */
+
 .main-container {
     display: flex;
     flex: 1;
     overflow: visible;
 }
 
-/* SIDEBAR */
+
 .sidebar {
     width: 240px;
     height: calc(100vh - 70px);
@@ -1216,51 +1215,6 @@ body {
     }
 }
 
-/* ===== DROPDOWN WRAPPER ===== */
-.sidebar .dropdown {
-    display: flex;
-    flex-direction: column;
-}
-
-/* ===== TOGGLE ===== */
-.dropdown-toggle {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-
-/* kiri */
-.dropdown-toggle .nav-left {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-/* arrow */
-.dropdown-toggle .arrow {
-    font-size: 12px;
-    transition: transform 0.3s ease;
-}
-
-/* ===== MENU ===== */
-.dropdown-menu-sidebar {
-    max-height: 0;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    margin-left: 36px;
-    gap: 4px;
-    transition: max-height 0.35s ease;
-}
-
-/* aktif */
-.dropdown.open .dropdown-menu-sidebar {
-    max-height: 200px;
-}
-
-.dropdown.open .arrow {
-    transform: rotate(180deg);
-}
 
 /* ===== SUB ITEM ===== */
 .nav-sub-item {

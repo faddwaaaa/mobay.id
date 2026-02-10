@@ -10,17 +10,29 @@ class ProductController extends Controller
 {
     /**
      * =========================
-     * FORM TAMBAH PRODUK
+     * MANAJEMEN PRODUK
+     * GET /produk
      * =========================
+     * - Tampilkan daftar produk
+     * - Form tambah produk hanya muncul jika ada ?tambah=1
      */
-    public function create()
-    {
-        return view('products.create');
-    }
+    public function index(Request $request)
+{
+    $products = Product::where('user_id', Auth::id())
+        ->latest()
+        ->get();
+
+    $showForm = $request->query('tambah') == 1;
+
+    return view('products.manage', compact('products', 'showForm'));
+}
+
+
 
     /**
      * =========================
      * SIMPAN PRODUK
+     * POST /produk
      * =========================
      */
     public function store(Request $request)
@@ -29,15 +41,12 @@ class ProductController extends Controller
             'title'           => 'required|string|max:255',
             'description'     => 'nullable|string',
 
-            // harga & diskon (rupiah)
             'price'           => 'required|numeric|min:0',
             'discount'        => 'nullable|numeric|min:0|lt:price',
 
-            // toggle dependent
             'stock'           => 'nullable|integer|min:1',
             'purchase_limit'  => 'nullable|integer|min:1',
 
-            // upload
             'images.*'        => 'image|max:5120',
             'files.*'         => 'file|max:10240',
         ]);
@@ -54,36 +63,45 @@ class ProductController extends Controller
             'purchase_limit' => $request->has('limit_toggle') ? $request->purchase_limit : null,
         ]);
 
+        // simpan gambar
         if ($request->hasFile('images')) {
             foreach ($request->file('images') as $img) {
                 $path = $img->store('products/images', 'public');
-                $product->images()->create(['image' => $path]);
+                $product->images()->create([
+                    'image' => $path
+                ]);
             }
         }
 
+        // simpan file digital
         if ($request->hasFile('files')) {
             foreach ($request->file('files') as $file) {
                 $path = $file->store('products/files', 'public');
-                $product->files()->create(['file' => $path]);
+                $product->files()->create([
+                    'file' => $path
+                ]);
             }
         }
 
+        // balik ke manage + form ditutup
         return redirect()
             ->route('products.manage')
             ->with('success', 'Produk berhasil ditambahkan');
     }
 
+
     /**
      * =========================
-     * MANAJEMEN PRODUK
+     * HAPUS PRODUK
+     * DELETE /produk/{produk}
      * =========================
      */
-    public function manage()
+    public function destroy(Product $produk)
     {
-        $products = Product::where('user_id', Auth::id())
-            ->latest()
-            ->get();
+        abort_if($produk->user_id !== Auth::id(), 403);
 
-        return view('products.manage', compact('products'));
+        $produk->delete();
+
+        return back()->with('success', 'Produk berhasil dihapus');
     }
 }
