@@ -159,11 +159,9 @@ Route::get('/{username}', function ($username) {
     $page = $user->pages->first();
     return view('public.profile', compact('user', 'page'));
 })->where('username', '[a-zA-Z0-9_]+');
-<<<<<<< HEAD
 
 Route::resource('blocks', BlockController::class)->only(['store', 'destroy']);
 
 
 ?>
-=======
->>>>>>> 8b218e75fb85d116e06dc4bd6169020a940b2c76
+
