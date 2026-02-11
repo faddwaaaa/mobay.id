@@ -52,6 +52,38 @@ class BlockController extends Controller
         return response()->json(['success' => true]);
     }
 
+    public function update(Request $request, Block $block)
+    {
+        $content = [];
+
+        if ($request->type === 'text') {
+            $content['text'] = $request->input('content.text');
+        }
+
+        if ($request->type === 'link') {
+            $content = [
+                'title' => $request->input('content.title'),
+                'url'   => $request->input('content.url'),
+            ];
+        }
+
+        if ($request->type === 'video') {
+            $content['url'] = $request->input('content.url');
+        }
+
+        if ($request->type === 'image' && $request->hasFile('image')) {
+            $path = $request->file('image')->store('blocks', 'public');
+            $content['image'] = $path;
+        }
+
+        $block->update([
+            'type'    => $request->type,
+            'content' => $content,
+        ]);
+
+        return response()->json(['success' => true]);
+    }
+
     public function reorder(Request $request)
     {
         foreach ($request->all() as $item) {
@@ -63,20 +95,20 @@ class BlockController extends Controller
     }
 
     public function destroy(Block $block)
-{
-    $pageId = $block->page_id;
-    $block->delete();
+    {
+        $pageId = $block->page_id;
+        $block->delete();
 
-    $blocks = Block::where('page_id', $pageId)
-        ->orderBy('position')
-        ->get();
+        $blocks = Block::where('page_id', $pageId)
+            ->orderBy('position')
+            ->get();
 
-    foreach ($blocks as $index => $item) {
-        $item->update(['position' => $index + 1]);
+        foreach ($blocks as $index => $item) {
+            $item->update(['position' => $index + 1]);
+        }
+
+        return response()->json(['success' => true]);
     }
-
-    return response()->json(['success' => true]);
-}
 
 }
 

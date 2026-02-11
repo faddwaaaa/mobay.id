@@ -94,7 +94,7 @@
             <!-- BLOCK LIST -->
             <div class="bg-white rounded-xl shadow border border-gray-200">
                 <div class="p-6 border-b border-gray-200">
-                    <h2 class="font-bold text-gray-900">Daftar Blok</h2>
+                    <h2 class="font-bold text-gray-900 text-lg">Daftar Blok</h2>
                 </div>
 
                 <!-- ADD BLOCK -->
@@ -140,8 +140,11 @@
                     @if($activePage && $activePage->blocks->count())
                     <div id="blockList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         @foreach($activePage->blocks as $block)
-                        <div data-id="{{ $block->id }}" 
-                             class="bg-gray-50 rounded-lg border border-gray-200 p-4 hover:bg-gray-100 transition cursor-move">
+                        <div data-id="{{ $block->id }}"
+                            data-type="{{ $block->type }}"
+                            data-content='@json($block->content)'
+                            onclick="editBlock(this)"
+                            class="bg-gray-50 rounded-lg border border-gray-200 p-4 hover:bg-gray-100 transition cursor-pointer">
                             <div class="flex items-center justify-between mb-2">
                                 <div class="flex items-center gap-3">
                                     @switch($block->type)
@@ -325,21 +328,21 @@
             <!-- TEXT -->
             <div id="textField" class="hidden">
                 <label class="block text-sm font-medium mb-1">Teks</label>
-                <textarea id="textContent" class="w-full border rounded-lg p-2" rows="3"></textarea>
+                <textarea id="textContent" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" rows="3"></textarea>
             </div>
 
             <!-- LINK -->
             <div id="linkField" class="hidden">
                 <label class="block text-sm font-medium mb-1">Judul</label>
-                <input id="linkTitle" class="w-full border rounded-lg p-2 mb-2">
+                <input id="linkTitle" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                 <label class="block text-sm font-medium mb-1">URL</label>
-                <input id="linkUrl" class="w-full border rounded-lg p-2">
+                <input id="linkUrl" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
             </div>
 
             <!-- VIDEO -->
             <div id="videoField" class="hidden">
                 <label class="block text-sm font-medium mb-1">Link YouTube</label>
-                <input id="videoUrl" class="w-full border rounded-lg p-2">
+                <input id="videoUrl" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
             </div>
 
             <!-- IMAGE -->
@@ -775,9 +778,17 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Function to add block
 function addBlock(type) {
-    document.getElementById('blockModal').classList.remove('hidden');
+    const modal = document.getElementById('blockModal');
+    const form = document.getElementById('blockForm');
+
+    modal.classList.remove('hidden');
     document.getElementById('blockType').value = type;
 
+    form.removeAttribute('data-edit-id');
+    form.reset();
+    document.getElementById('blockModalTitle').innerText = "Tambah Blok";
+
+    // hide semua field dulu
     document.getElementById('textField').classList.add('hidden');
     document.getElementById('linkField').classList.add('hidden');
     document.getElementById('videoField').classList.add('hidden');
@@ -790,8 +801,52 @@ function addBlock(type) {
 }
 
 function closeBlockModal() {
+    const form = document.getElementById('blockForm');
+    form.removeAttribute('data-edit-id');
+    form.reset();
     document.getElementById('blockModal').classList.add('hidden');
-}   
+} 
+
+// Edit block
+function editBlock(element) {
+    const id = element.dataset.id;
+    const type = element.dataset.type;
+    const content = JSON.parse(element.dataset.content);
+
+    const modal = document.getElementById('blockModal');
+    modal.classList.remove('hidden');
+
+    document.getElementById('blockType').value = type;
+    document.getElementById('blockForm').dataset.editId = id;
+
+    // reset semua field
+    document.getElementById('textField').classList.add('hidden');
+    document.getElementById('linkField').classList.add('hidden');
+    document.getElementById('videoField').classList.add('hidden');
+    document.getElementById('imageField').classList.add('hidden');
+
+    if (type === 'text') {
+        document.getElementById('textField').classList.remove('hidden');
+        document.getElementById('textContent').value = content.text || '';
+    }
+
+    if (type === 'link') {
+        document.getElementById('linkField').classList.remove('hidden');
+        document.getElementById('linkTitle').value = content.title || '';
+        document.getElementById('linkUrl').value = content.url || '';
+    }
+
+    if (type === 'video') {
+        document.getElementById('videoField').classList.remove('hidden');
+        document.getElementById('videoUrl').value = content.url || '';
+    }
+
+    if (type === 'image') {
+        document.getElementById('imageField').classList.remove('hidden');
+    }
+
+    document.getElementById('blockModalTitle').innerText = "Edit Blok";
+}
 
 // Show Edit Modal
 function showEditModal(pageId, pageTitle) {
@@ -880,47 +935,71 @@ document.getElementById('editPageForm')?.addEventListener('submit', function(e) 
     });
 });
 
+const form = document.getElementById('blockForm');
 
-document.getElementById('blockForm').addEventListener('submit', function(e) {
+form.onsubmit = function(e) {
     e.preventDefault();
 
+    const editId = form.getAttribute('data-edit-id');
     const type = document.getElementById('blockType').value;
-    const formData = new FormData();
 
-    formData.append('page_id', {{ $activePage->id ?? 'null' }});
+    let formData = new FormData();
     formData.append('type', type);
 
+    let url = '';
+
+    // =====================
+    // MODE EDIT
+    // =====================
+    if (editId) {
+        url = '/blocks/' + editId;
+        formData.append('_method', 'PUT');
+    } 
+    // =====================
+    // MODE TAMBAH
+    // =====================
+    else {
+        url = '/blocks';
+        formData.append('page_id', {{ $activePage->id ?? 'null' }});
+    }
+
+    // FIELD TEXT
     if (type === 'text') {
         formData.append('content[text]', document.getElementById('textContent').value);
     }
 
+    // FIELD LINK
     if (type === 'link') {
         formData.append('content[title]', document.getElementById('linkTitle').value);
         formData.append('content[url]', document.getElementById('linkUrl').value);
     }
 
+    // FIELD VIDEO
     if (type === 'video') {
         formData.append('content[url]', document.getElementById('videoUrl').value);
     }
 
+    // FIELD IMAGE
     if (type === 'image') {
-        formData.append('image', document.getElementById('imageFile').files[0]);
+        const file = document.getElementById('imageFile').files[0];
+        if (file) {
+            formData.append('image', file);
+        }
     }
 
-    fetch('{{ route("blocks.store") }}', {
+    fetch(url, {
         method: 'POST',
         headers: {
-            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
         },
         body: formData
-    }).then(res => {
-        if (res.ok) {
-            closeBlockModal();
-            reloadPreview();
-            location.reload();
-        }
+    })
+    .then(res => res.json())
+    .then(() => {
+        form.removeAttribute('data-edit-id');
+        location.reload();
     });
-});
+};
 
 function reloadPreview() {
     const iframe = document.getElementById('preview');
