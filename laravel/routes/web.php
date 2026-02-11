@@ -163,5 +163,29 @@ Route::get('/{username}', function ($username) {
 Route::resource('blocks', BlockController::class)->only(['store', 'destroy']);
 
 
+
+/*
+|--------------------------------------------------------------------------|
+| SHORT LINK REDIRECT (HARUS SEBELUM ROUTE USERNAME!)
+|--------------------------------------------------------------------------|
+*/
+Route::get('/{short_code}', [LinkController::class, 'redirect'])
+    ->where('short_code', '[a-zA-Z0-9]{6,8}') // Sesuaikan dengan panjang short_code Anda
+    ->name('link.redirect');
+
+/*
+|--------------------------------------------------------------------------|
+| PUBLIC PROFILE
+|--------------------------------------------------------------------------|
+*/
+Route::get('/{username}', function ($username) {
+    $user = User::where('username', $username)
+        ->with(['pages' => fn ($q) => $q->where('is_active', 1)->with('blocks')])
+        ->firstOrFail();
+
+    $page = $user->pages->first();
+    return view('public.profile', compact('user', 'page'));
+})->where('username', '[a-zA-Z0-9_]+');
+
 ?>
 
