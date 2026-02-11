@@ -240,11 +240,11 @@
             <div class="p-6 border-t border-gray-200 bg-gray-50 rounded-b-xl">
                 <div class="flex justify-end gap-3">
                     <button type="button" onclick="closeModal()"
-                            class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50">
+                            class="px-4 py-2 rounded-lg btn-secondary">
                         Batal
                     </button>
                     <button type="submit"
-                            class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                            class="px-4 py-2 rounded-lg btn-primary">
                         Simpan
                     </button>
                 </div>
@@ -257,7 +257,7 @@
 <div id="addPageModal" class="modal-overlay hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
     <div class="modal-container bg-white rounded-xl shadow-lg w-full max-w-md">
         <div class="p-6 border-b border-gray-200">
-            <h3 class="text-lg font-bold text-gray-900">Add New Page</h3>
+            <h3 class="text-lg font-bold text-gray-900">Tambah Halaman Baru</h3>
             <button type="button" onclick="closeAddModal()" 
                     class="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
                 <i class="fas fa-times"></i>
@@ -275,7 +275,7 @@
                            id="new_page_title" 
                            name="title"
                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                           placeholder="Masukkan nama page baru"
+                           placeholder="Masukkan nama halaman baru"
                            required>
                     <p class="text-xs text-gray-500 mt-2">
                         Nama ini akan ditampilkan di dashboard dan URL
@@ -286,11 +286,11 @@
             <div class="p-6 border-t border-gray-200 bg-gray-50 rounded-b-xl">
                 <div class="flex justify-end gap-3">
                     <button type="button" onclick="closeAddModal()"
-                            class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50">
+                            class="px-4 py-2 rounded-lg btn-secondary">
                         Batal
                     </button>
                     <button type="submit"
-                            class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                            class="px-4 py-2 rounded-lg btn-primary">
                         Buat Halaman
                     </button>
                 </div>
@@ -303,7 +303,7 @@
 <div id="blockModal" class="modal-overlay hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
     <div class="bg-white rounded-xl shadow-lg w-full max-w-md">
         <div class="p-6 border-b flex justify-between items-center">
-            <h3 id="blockModalTitle" class="font-bold text-lg">Tambah Block</h3>
+            <h3 id="blockModalTitle" class="font-bold text-lg">Tambah Blok</h3>
             <button onclick="closeBlockModal()" class="text-gray-400 hover:text-gray-600">
                 <i class="fas fa-times"></i>
             </button>
@@ -339,10 +339,10 @@
             </div>
 
             <div class="flex justify-end gap-3 pt-4">
-                <button type="button" onclick="closeBlockModal()" class="px-4 py-2 border rounded-lg">
+                <button type="button" onclick="closeBlockModal()" class="px-4 py-2 rounded-lg btn-secondary">
                     Batal
                 </button>
-                <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg">
+                <button type="submit" class="px-4 py-2 rounded-lg btn-primary">
                     Simpan
                 </button>
             </div>
@@ -692,6 +692,44 @@ input[type="text"].w-full.px-3.py-2.border.border-gray-300.rounded-lg {
 .mb-4 p.text-sm.text-gray-600 {
     font-size: 0.8125rem;
     color: #6b7280;
+}
+
+/* GLOBAL BUTTON STYLE */
+.btn-primary {
+    background-color: #2563eb;
+    color: white;
+    transition: all 0.2s ease;
+}
+
+.btn-primary:hover {
+    background-color: #1d4ed8;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(37, 99, 235, 0.3);
+}
+
+.btn-secondary {
+    background-color: white;
+    border: 1px solid #d1d5db;
+    color: #374151;
+    transition: all 0.2s ease;
+}
+
+.btn-secondary:hover {
+    background-color: #f9fafb;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+}
+
+.btn-danger {
+    background-color: #dc2626;
+    color: white;
+    transition: all 0.2s ease;
+}
+
+.btn-danger:hover {
+    background-color: #b91c1c;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(220, 38, 38, 0.3);
 }
 </style>
 

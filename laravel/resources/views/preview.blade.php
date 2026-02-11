@@ -24,6 +24,7 @@
             border-radius: 50%;
             background: #d1d5db;
             margin: 0 auto 12px;
+            display: block;
         }
 
         h1 {
@@ -82,51 +83,85 @@
 
 <div class="container">
 
-    <div class="avatar"></div>
+    @if($user->avatar)
+        <img 
+            src="{{ asset('storage/' . $user->avatar) }}" 
+            class="avatar"
+            style="object-fit:cover;"
+        >
+    @else
+        <div class="avatar"></div>
+    @endif
 
     <h1>{{ $user->name }}</h1>
-    <div class="username">@{{ $user->username }}</div>
+    <div class="username">{{ '@' . $user->username }}</div>
 
     @if($user->bio)
         <div class="bio">{{ $user->bio }}</div>
     @endif
 
-    @foreach($page->blocks->sortBy('position') as $block)
+    @if(!$page)
 
-        {{-- TEXT --}}
-        @if($block->type === 'text')
-            <div class="block block-text">
-                {{ $block->content['text'] ?? '' }}
-            </div>
-        @endif
+        <div style="text-align:center; margin-top:15px; color:#9ca3af;">
+            Belum ada Halaman.
+        </div>
 
-        {{-- LINK --}}
-        @if($block->type === 'link')
-            <div class="block block-link">
-                <a href="{{ $block->content['url'] ?? '#' }}" target="_blank">
-                    {{ $block->content['title'] ?? 'Link' }}
-                </a>
-            </div>
-        @endif
+    @elseif($page->blocks->count() === 0)
 
-        {{-- IMAGE --}}
-        @if($block->type === 'image')
-            <div class="block block-image">
-                <img src="{{ asset('storage/' . $block->content['image']) }}">
-            </div>
-        @endif
+        <div style="text-align:center; margin-top:15px; color:#9ca3af;">
+            Halaman ini belum memiliki konten.
+        </div>
 
-        {{-- VIDEO --}}
-        @if($block->type === 'video')
-            <div class="block block-video">
-                <iframe
-                    src="https://www.youtube.com/embed/{{ \Illuminate\Support\Str::after($block->content['url'], 'v=') }}"
-                    allowfullscreen>
-                </iframe>
-            </div>
-        @endif
+    @else
 
-    @endforeach
+        @foreach($page->blocks->sortBy('position') as $block)
+
+            {{-- TEXT --}}
+            @if($block->type === 'text')
+                <div class="block block-text">
+                    {{ $block->content['text'] ?? '' }}
+                </div>
+            @endif
+
+            {{-- LINK --}}
+            @if($block->type === 'link')
+                <div class="block block-link">
+                    <a href="{{ $block->content['url'] ?? '#' }}" target="_blank">
+                        {{ $block->content['title'] ?? 'Link' }}
+                    </a>
+                </div>
+            @endif
+
+            {{-- IMAGE --}}
+            @if($block->type === 'image')
+                <div class="block block-image">
+                    <img src="{{ asset('storage/' . $block->content['image']) }}">
+                </div>
+            @endif
+
+            {{-- VIDEO --}}
+            @if($block->type === 'video')
+                @php
+                    $url = $block->content['url'] ?? '';
+                    parse_str(parse_url($url, PHP_URL_QUERY), $query);
+                    $videoId = $query['v'] ?? '';
+
+                    // kalau format youtu.be
+                    if (!$videoId && str_contains($url, 'youtu.be/')) {
+                        $videoId = basename(parse_url($url, PHP_URL_PATH));
+                    }
+                @endphp
+
+                <div class="block block-video">
+                    <iframe
+                        src="https://www.youtube.com/embed/{{ $videoId }}"
+                        allowfullscreen>
+                    </iframe>
+                </div>
+            @endif
+        @endforeach
+
+    @endif
 
 </div>
 
