@@ -7,22 +7,32 @@
 @endphp
 
 <div class="max-w-7xl mx-auto px-4 py-6">
-
-    <!-- HEADER -->
-    <div class="link-page">
-    <div class="mb-8">
-        <h1 class="text-2xl font-bold text-gray-900 mb-2">Link Saya</h1>
-        <div class="flex items-center gap-3">
-            <p class="text-gray-600">Link Saya:</p>
-            <div class="px-4 py-2 bg-blue-50 border border-blue-200 rounded-lg">
-                <a href="{{ url('/' . $user->username) }}"
-                target="_blank"
-                class="text-blue-700 font-medium">
-                    {{ url('/' . $user->username) }}
+        {{-- Header --}}
+        <div style="margin-bottom: 24px;">
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
+                <a href="{{ route('dashboard') }}" style="width: 36px; height: 36px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; display: flex; align-items: center; justify-content: center; text-decoration: none; transition: all 0.2s;">
+                    <i class="fas fa-arrow-left" style="font-size: 14px; color: #475569;"></i>
                 </a>
+                <div>
+                    <h1 style="margin: 0; font-size: 24px; font-weight: 600; color: #000000;">
+                        Link Saya
+                    </h1>
+
+                    <div style="display: flex; align-items: center; gap: 5px; margin-top: 4px;">
+                        <span style="font-size: 14px; color: #797979;">Link Saya :</span>
+
+                        <div class="px-3 py-1 bg-blue-50 border border-blue-200 rounded-lg">
+                            <a href="{{ url('/' . $user->username) }}"
+                            target="_blank"
+                            class="text-blue-700 font-medium text-sm">
+                                {{ url('/' . $user->username) }}
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
             </div>
         </div>
-    </div>
 
     <!-- DUA KOLOM -->
     <div class="flex flex-col lg:flex-row gap-8">
