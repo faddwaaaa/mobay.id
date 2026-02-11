@@ -273,7 +273,7 @@
                     <!-- Phone Body -->
                     <div class="relative bg-gray-900 rounded-[40px] p-2 shadow-2xl">
                         <!-- Notch -->
-                        <div class="h-6 bg-black rounded-b-xl mb-2"></div>
+                        <div class="mb-4"></div>
                         
                         <!-- Screen -->
                         <div class="bg-white rounded-[30px] overflow-hidden">

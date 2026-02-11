@@ -441,10 +441,10 @@
 <body>
 
 <!-- ================= NAVBAR ================= -->
+<!-- NAVBAR -->
 <div class="navbar">
     <div class="navbar-container">
 
-        <!-- LEFT -->
         <div class="navbar-left">
             <div class="hamburger" id="hamburger">
                 <span></span>
@@ -457,10 +457,8 @@
             </div>
         </div>
 
-        <!-- RIGHT -->
         <div class="navbar-right">
             <div class="nav-icon" id="cartBtn">
-                <!-- ICON CART -->
                 <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round"
                           stroke-linejoin="round"
@@ -469,21 +467,17 @@
                              2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0
                              100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
                 </svg>
-
-                <!-- BADGE -->
-                <span class="cart-badge" id="cartBadge">0</span>
+                <span class="cart-badge">0</span>
             </div>
         </div>
 
     </div>
 </div>
 
-
-<!-- ================= SIDEBAR OVERLAY ================= -->
+<!-- OVERLAY -->
 <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
-
-<!-- ================= SIDEBAR ================= -->
+<!-- SIDEBAR -->
 <div class="sidebar" id="sidebar">
 
     <div class="sidebar-header">
@@ -491,29 +485,19 @@
     </div>
 
     <div class="sidebar-menu">
-
-        <!-- HOME -->
-        <a href="#" class="menu-item active" data-tab="home">
-            <div class="menu-icon">🏠</div>
-            <span class="menu-text">Home</span>
-        </a>
-
-        
-
-        <!-- DYNAMIC PAGES -->
-        @foreach($user->pages as $userPage)
+        @foreach($user->pages as $page)
             <a href="#"
-               class="menu-item"
-               data-tab="page-{{ $userPage->id }}">
-                <div class="menu-icon">📄</div>
+               class="menu-item {{ $loop->first ? 'active' : '' }}"
+               data-tab="page-{{ $page->id }}">
                 <span class="menu-text">
-                    {{ $userPage->title }}
+                    {{ $page->title }}
                 </span>
             </a>
         @endforeach
-
     </div>
+
 </div>
+
 
 
 <!-- TABS (Hanya untuk custom pages, bukan Home & Produk) -->
@@ -533,243 +517,149 @@
 
 <!-- MAIN CONTENT -->
 <div class="container">
-    
-    <!-- TAB: HOME -->
-    <div class="tab-content active" id="tab-home">
+
+    <!-- PROFILE HEADER (TAMPIL DI SEMUA PAGE) -->
+    <div style="text-align:center; margin-bottom:28px;">
+
         @if($user->avatar)
-            <img 
-                src="{{ asset('storage/' . $user->avatar) }}" 
-                class="avatar"
-                style="object-fit:cover;"
-            >
+            <img src="{{ asset('storage/' . $user->avatar) }}"
+                 class="avatar"
+                 style="object-fit:cover; margin:0 auto;">
         @else
             <div class="avatar"></div>
         @endif
 
-        <h1>{{ $user->name }}</h1>
-        <div class="username">{{ '@' . $user->username }}</div>
+        <h1 style="margin-top:12px;">
+            {{ $user->name }}
+        </h1>
+
+        <div class="username">
+            {{ '@' . $user->username }}
+        </div>
 
         @if($user->bio)
-            <div class="bio">{{ $user->bio }}</div>
+            <div class="bio">
+                {{ $user->bio }}
+            </div>
         @endif
 
-        @if(!$page)
-            <div class="empty-state">
-                <div class="empty-icon">📄</div>
-                Belum ada Halaman.
-            </div>
-        @elseif($page->blocks->count() === 0)
-            <div class="empty-state">
-                <div class="empty-icon">📝</div>
-                Halaman ini belum memiliki konten.
-            </div>
-        @else
-            @foreach($page->blocks->sortBy('position') as $block)
-
-                {{-- TEXT --}}
-                @if($block->type === 'text')
-                    <div class="block block-text">
-                        {{ $block->content['text'] ?? '' }}
-                    </div>
-                @endif
-
-                {{-- LINK --}}
-                @if($block->type === 'link')
-                    <div class="block block-link">
-                        <a href="{{ $block->content['url'] ?? '#' }}" target="_blank">
-                            {{ $block->content['title'] ?? 'Link' }}
-                        </a>
-                    </div>
-                @endif
-
-                {{-- IMAGE --}}
-                @if($block->type === 'image')
-                    <div class="block block-image">
-                        <img src="{{ asset('storage/' . $block->content['image']) }}">
-                    </div>
-                @endif
-
-                {{-- VIDEO --}}
-                @if($block->type === 'video')
-                    @php
-                        $url = $block->content['url'] ?? '';
-                        parse_str(parse_url($url, PHP_URL_QUERY), $query);
-                        $videoId = $query['v'] ?? '';
-
-                        // kalau format youtu.be
-                        if (!$videoId && str_contains($url, 'youtu.be/')) {
-                            $videoId = basename(parse_url($url, PHP_URL_PATH));
-                        }
-                    @endphp
-
-                    <div class="block block-video">
-                        <iframe
-                            src="https://www.youtube.com/embed/{{ $videoId }}"
-                            allowfullscreen>
-                        </iframe>
-                    </div>
-                @endif
-            @endforeach
-        @endif
     </div>
 
-    <!-- TAB: PRODUCTS -->
-    <div class="tab-content" id="tab-products">
-        @if(isset($products) && $products->count() > 0)
-            <div class="products-grid">
-                @foreach($products as $product)
-                    <div class="product-card">
-                        <div class="product-image">
-                            @if($product->images && $product->images->count() > 0)
-                                <img src="{{ asset('storage/' . $product->images->first()->image) }}" 
-                                     alt="{{ $product->title }}">
-                            @else
-                                <svg width="48" height="48" fill="none" stroke="#9ca3af" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
-                                </svg>
-                            @endif
+
+    <!-- SEMUA PAGE -->
+    @foreach($user->pages as $page)
+        <div class="tab-content {{ $loop->first ? 'active' : '' }}"
+             id="tab-page-{{ $page->id }}">
+
+            @if($page->blocks->count() > 0)
+
+                @foreach($page->blocks->sortBy('position') as $block)
+
+                    @if($block->type === 'text')
+                        <div class="block block-text">
+                            {{ $block->content['text'] ?? '' }}
                         </div>
-                        <div class="product-info">
-                            <div class="product-title">{{ $product->title }}</div>
-                            <div class="product-price {{ $product->discount ? 'product-price-discount' : '' }}">
-                                Rp {{ number_format($product->discount ?? $product->price, 0, ',', '.') }}
-                                @if($product->discount)
-                                    <span class="product-price-original">
-                                        Rp {{ number_format($product->price, 0, ',', '.') }}
-                                    </span>
-                                @endif
-                            </div>
+                    @endif
+
+                    @if($block->type === 'link')
+                        <div class="block block-link">
+                            <a href="{{ $block->content['url'] ?? '#' }}" target="_blank">
+                                {{ $block->content['title'] ?? 'Link' }}
+                            </a>
                         </div>
-                    </div>
+                    @endif
+
+                    @if($block->type === 'image')
+                        <div class="block block-image">
+                            <img src="{{ asset('storage/' . $block->content['image']) }}">
+                        </div>
+                    @endif
+
+                    @if($block->type === 'video')
+                        @php
+                            $url = $block->content['url'] ?? '';
+                            parse_str(parse_url($url, PHP_URL_QUERY), $query);
+                            $videoId = $query['v'] ?? '';
+                            if (!$videoId && str_contains($url, 'youtu.be/')) {
+                                $videoId = basename(parse_url($url, PHP_URL_PATH));
+                            }
+                        @endphp
+
+                        <div class="block block-video">
+                            <iframe
+                                src="https://www.youtube.com/embed/{{ $videoId }}"
+                                allowfullscreen>
+                            </iframe>
+                        </div>
+                    @endif
+
                 @endforeach
-            </div>
-        @else
-            <div class="empty-state">
-                <div class="empty-icon">🛍️</div>
-                Belum ada produk tersedia.
-            </div>
-        @endif
-    </div>
 
-    <!-- TAB: DYNAMIC PAGES -->
-    @if(isset($userPages) && $userPages->count() > 0)
-        @foreach($userPages as $userPage)
-            <div class="tab-content {{ $loop->first ? 'active' : '' }}" id="tab-page-{{ $userPage->id }}">
-                <h2 style="margin-bottom: 20px; font-size: 18px;">{{ $userPage->name }}</h2>
-                
-                @if($userPage->blocks && $userPage->blocks->count() > 0)
-                    @foreach($userPage->blocks->sortBy('position') as $block)
-                        {{-- Render blocks sama seperti home --}}
-                        @if($block->type === 'text')
-                            <div class="block block-text">
-                                {{ $block->content['text'] ?? '' }}
-                            </div>
-                        @endif
+            @else
+                <div class="empty-state">
+                    <div class="empty-icon">📝</div>
+                    Halaman ini belum memiliki konten.
+                </div>
+            @endif
 
-                        @if($block->type === 'link')
-                            <div class="block block-link">
-                                <a href="{{ $block->content['url'] ?? '#' }}" target="_blank">
-                                    {{ $block->content['title'] ?? 'Link' }}
-                                </a>
-                            </div>
-                        @endif
-
-                        @if($block->type === 'image')
-                            <div class="block block-image">
-                                <img src="{{ asset('storage/' . $block->content['image']) }}">
-                            </div>
-                        @endif
-
-                        @if($block->type === 'video')
-                            @php
-                                $url = $block->content['url'] ?? '';
-                                parse_str(parse_url($url, PHP_URL_QUERY), $query);
-                                $videoId = $query['v'] ?? '';
-                                if (!$videoId && str_contains($url, 'youtu.be/')) {
-                                    $videoId = basename(parse_url($url, PHP_URL_PATH));
-                                }
-                            @endphp
-                            <div class="block block-video">
-                                <iframe
-                                    src="https://www.youtube.com/embed/{{ $videoId }}"
-                                    allowfullscreen>
-                                </iframe>
-                            </div>
-                        @endif
-                    @endforeach
-                @else
-                    <div class="empty-state">
-                        <div class="empty-icon">📝</div>
-                        Halaman ini belum memiliki konten.
-                    </div>
-                @endif
-            </div>
-        @endforeach
-    @endif
+        </div>
+    @endforeach
 
 </div>
 
+
+
+
 <script>
-// ========== HAMBURGER MENU ==========
-const hamburger = document.getElementById('hamburger');
-const sidebar = document.getElementById('sidebar');
-const sidebarOverlay = document.getElementById('sidebarOverlay');
+document.addEventListener("DOMContentLoaded", function () {
 
-function toggleSidebar() {
-    hamburger.classList.toggle('active');
-    sidebar.classList.toggle('active');
-    sidebarOverlay.classList.toggle('active');
-}
+    const hamburger = document.getElementById("hamburger");
+    const sidebar = document.getElementById("sidebar");
+    const overlay = document.getElementById("sidebarOverlay");
+    const menuItems = document.querySelectorAll(".menu-item");
+    const tabContents = document.querySelectorAll(".tab-content");
 
-hamburger.addEventListener('click', toggleSidebar);
-sidebarOverlay.addEventListener('click', toggleSidebar);
-
-// ========== TAB SWITCHING ==========
-const tabs = document.querySelectorAll('.tab');
-const menuItems = document.querySelectorAll('.menu-item');
-const tabContents = document.querySelectorAll('.tab-content');
-
-function switchTab(tabName) {
-    // Update tabs
-    tabs.forEach(t => t.classList.remove('active'));
-    const targetTab = document.querySelector(`.tab[data-tab="${tabName}"]`);
-    if (targetTab) {
-        targetTab.classList.add('active');
+    function toggleSidebar() {
+        sidebar.classList.toggle("active");
+        overlay.classList.toggle("active");
+        hamburger.classList.toggle("active");
     }
-    
-    // Update menu items
-    menuItems.forEach(m => m.classList.remove('active'));
-    document.querySelector(`.menu-item[data-tab="${tabName}"]`)?.classList.add('active');
-    
-    // Update content
-    tabContents.forEach(c => c.classList.remove('active'));
-    document.getElementById(`tab-${tabName}`)?.classList.add('active');
-    
-    // Close sidebar on mobile
-    if (window.innerWidth < 768) {
-        toggleSidebar();
+
+    if (hamburger) {
+        hamburger.addEventListener("click", toggleSidebar);
     }
-}
 
-tabs.forEach(tab => {
-    tab.addEventListener('click', () => {
-        switchTab(tab.dataset.tab);
+    if (overlay) {
+        overlay.addEventListener("click", toggleSidebar);
+    }
+
+    menuItems.forEach(item => {
+        item.addEventListener("click", function (e) {
+            e.preventDefault();
+
+            const tabName = this.dataset.tab;
+
+            menuItems.forEach(m => m.classList.remove("active"));
+            this.classList.add("active");
+
+            tabContents.forEach(content => {
+                content.classList.remove("active");
+            });
+
+            const target = document.getElementById("tab-" + tabName);
+            if (target) {
+                target.classList.add("active");
+            }
+
+            toggleSidebar();
+        });
     });
-});
 
-menuItems.forEach(item => {
-    item.addEventListener('click', (e) => {
-        e.preventDefault();
-        switchTab(item.dataset.tab);
-    });
-});
-
-// ========== CART BUTTON (placeholder) ==========
-const cartBtn = document.getElementById('cartBtn');
-cartBtn.addEventListener('click', () => {
-    alert('Fitur keranjang akan segera hadir!');
 });
 </script>
 
+
+
 </body>
 </html>
+
