@@ -164,7 +164,7 @@
                             </div>
                             @if($block->content && isset($block->content['text']))
                             <p class="text-sm text-gray-600 truncate">
-                                {{ substr($block->content['text'], 0, 40) }}...
+                                {{ substr($block->content['text'], 0, 40) }}
                             </p>
                             @endif
                         </div>
