@@ -9,65 +9,95 @@ use Illuminate\Support\Str;
 
 class PageController extends Controller
 {
-    public function index(Request $request)
-    {
-        $pages = Page::where('user_id', Auth::id())
-            ->orderBy('created_at', 'asc')
-            ->get();
-
-        return view('pages.index', compact('pages'));
-    }
-
+    /**
+     * Store a newly created page
+     */
     public function store(Request $request)
     {
         $request->validate([
             'title' => 'required|string|max:255',
         ]);
 
+        $slug = Str::slug($request->title);
+        
+        // Check if slug exists
+        $originalSlug = $slug;
+        $counter = 1;
+        while (Page::where('user_id', Auth::id())->where('slug', $slug)->exists()) {
+            $slug = $originalSlug . '-' . $counter;
+            $counter++;
+        }
+
         Page::create([
             'user_id' => Auth::id(),
             'title' => $request->title,
-            'slug' => Str::slug($request->title),
+            'slug' => $slug,
+            'is_active' => true,
+            'position' => Page::where('user_id', Auth::id())->max('position') + 1,
         ]);
 
-        return redirect()->route('links.index')
-            ->with('success', 'Halaman berhasil ditambahkan');
+        return redirect()->route('links.index')->with('success', 'Halaman berhasil dibuat!');
     }
 
+    /**
+     * Update the specified page
+     */
     public function update(Request $request, Page $page)
     {
+        // Pastikan page milik user yang login
         abort_if($page->user_id !== Auth::id(), 403);
 
-        if ($page->is_default) {
-        return response()->json([
-            'success' => false,
-            'message' => 'Halaman Utama tidak bisa diubah'
-        ], 403);
-    }
+        // Tidak bisa edit halaman "Utama"
+        if (strtolower($page->title) === 'utama') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Halaman Utama tidak dapat diubah'
+            ], 403);
+        }
 
         $request->validate([
             'title' => 'required|string|max:255',
         ]);
 
+        $slug = Str::slug($request->title);
+        
+        // Check if slug exists (except current page)
+        $originalSlug = $slug;
+        $counter = 1;
+        while (Page::where('user_id', Auth::id())
+                   ->where('slug', $slug)
+                   ->where('id', '!=', $page->id)
+                   ->exists()) {
+            $slug = $originalSlug . '-' . $counter;
+            $counter++;
+        }
+
         $page->update([
             'title' => $request->title,
-            'slug' => Str::slug($request->title),
+            'slug' => $slug,
         ]);
 
-        return back()->with('success', 'Halaman berhasil diupdate');
+        return response()->json([
+            'success' => true,
+            'message' => 'Halaman berhasil diupdate'
+        ]);
     }
 
+    /**
+     * Remove the specified page
+     */
     public function destroy(Page $page)
-{
+    {
+        // Pastikan page milik user yang login
         abort_if($page->user_id !== Auth::id(), 403);
 
-    if ($page->is_default) {
-        return back()->with('error', 'Halaman Utama tidak bisa dihapus');
+        // Tidak bisa hapus halaman "Utama"
+        if (strtolower($page->title) === 'utama') {
+            return back()->with('error', 'Halaman Utama tidak dapat dihapus');
+        }
+
+        $page->delete();
+
+        return redirect()->route('links.index')->with('success', 'Halaman berhasil dihapus!');
     }
-
-    $page->delete();
-
-    return back();
-}
-
 }

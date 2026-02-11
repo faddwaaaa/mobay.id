@@ -7,32 +7,34 @@ use App\Models\Link;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Carbon\Carbon;
 
 class LinkController extends Controller
 {
     /**
-     * Halaman manajemen link & pages
+     * Halaman manajemen link
      */
     public function index(Request $request)
     {
         $user = Auth::user();
 
-        // Ambil semua page milik user + blocks
-        $pages = $user->pages()
-            ->with('blocks')
-            ->orderBy('created_at')
-            ->get();
+        // 🔹 Jika belum punya page sama sekali, buat page Utama
+        if ($user->pages()->count() === 0) {
+            $user->pages()->create([
+                'title' => 'Utama',
+                'slug' => 'utama',
+                'is_default' => true,
+            ]);
+        }
+
+        $pages = $user->pages()->with('blocks')->get();
 
         $selectedPageId = $request->query('page');
 
-        // Jika ada query page, pakai itu
-        if ($selectedPageId) {
-            $activePage = $pages->firstWhere('id', $selectedPageId);
-        } else {
-            // Default ambil page utama (is_default = true)
-            $activePage = $pages->firstWhere('is_default', true);
-        }
+        $activePage = $selectedPageId
+            ? $pages->where('id', $selectedPageId)->first()
+            : $pages->where('is_default', true)->first();
 
         return view('dashboard.links.index', compact('pages', 'activePage'));
     }
@@ -65,12 +67,9 @@ class LinkController extends Controller
         return redirect($link->original_url);
     }
 
-    /**
-     * Deteksi device
-     */
     private function detectDevice($userAgent)
     {
-        $userAgent = strtolower($userAgent ?? '');
+        $userAgent = strtolower($userAgent);
 
         if (preg_match('/mobile|android|iphone|ipod|blackberry|iemobile|opera mini/i', $userAgent)) {
             return 'mobile';
@@ -83,27 +82,23 @@ class LinkController extends Controller
         return 'desktop';
     }
 
-    /**
-     * Deteksi referrer source
-     */
     private function detectReferrerSource($referrer)
     {
         if (empty($referrer)) return 'direct';
 
         $referrer = strtolower($referrer);
 
-        if (str_contains($referrer, 'facebook.com')) return 'facebook';
-        if (str_contains($referrer, 'instagram.com')) return 'instagram';
-        if (str_contains($referrer, 'twitter.com') || str_contains($referrer, 'x.com')) return 'twitter';
-        if (str_contains($referrer, 'linkedin.com')) return 'linkedin';
-        if (str_contains($referrer, 'tiktok.com')) return 'tiktok';
-        if (str_contains($referrer, 'youtube.com')) return 'youtube';
-        if (str_contains($referrer, 'whatsapp.com') || str_contains($referrer, 'wa.me')) return 'whatsapp';
+        if (str_contains($referrer, 'facebook')) return 'facebook';
+        if (str_contains($referrer, 'instagram')) return 'instagram';
+        if (str_contains($referrer, 'twitter') || str_contains($referrer, 'x.com')) return 'twitter';
+        if (str_contains($referrer, 'linkedin')) return 'linkedin';
+        if (str_contains($referrer, 'tiktok')) return 'tiktok';
+        if (str_contains($referrer, 'youtube')) return 'youtube';
+        if (str_contains($referrer, 'whatsapp') || str_contains($referrer, 'wa.me')) return 'whatsapp';
         if (str_contains($referrer, 'telegram') || str_contains($referrer, 't.me')) return 'telegram';
-
-        if (str_contains($referrer, 'google.com')) return 'google';
-        if (str_contains($referrer, 'bing.com')) return 'bing';
-        if (str_contains($referrer, 'yahoo.com')) return 'yahoo';
+        if (str_contains($referrer, 'google')) return 'google';
+        if (str_contains($referrer, 'bing')) return 'bing';
+        if (str_contains($referrer, 'yahoo')) return 'yahoo';
 
         return 'other';
     }

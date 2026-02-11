@@ -74,6 +74,7 @@
                                 </div>
                                 
                                 <div class="flex items-center gap-2" onclick="event.stopPropagation()">
+                                    @if(strtolower($page->title) !== 'utama')
                                     <button type="button" 
                                             onclick="showEditModal({{ $page->id }}, '{{ $page->title }}')"
                                             class="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition">
@@ -88,6 +89,11 @@
                                             <i class="fas fa-trash"></i>
                                         </button>
                                     </form>
+                                    @else
+                                    <span class="px-3 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-full">
+                                        Halaman Utama
+                                    </span>
+                                    @endif
                                 </div>
                             </div>
                         </div>
@@ -97,7 +103,7 @@
                     <div class="text-center py-8 text-gray-400">
                         <i class="fas fa-folder-open text-3xl mb-3"></i>
                         <p class="font-medium">Belum ada halaman</p>
-                        <p class="text-sm mt-1">Halaman "Home" otomatis dibuat saat registrasi</p>
+                        <p class="text-sm mt-1">Klik "Tambah Halaman" untuk membuat halaman baru</p>
                     </div>
                     @endif
                 </div>
@@ -106,9 +112,8 @@
             <!-- BLOCK LIST -->
             <div class="bg-white rounded-xl shadow border border-gray-200">
                 <div class="p-6 border-b border-gray-200">
-                    <h2 class="font-bold text-gray-900 text-lg">Daftar Blok</h2>
                     <div class="flex justify-between items-center">
-                        <h2 class="font-bold text-gray-900">
+                        <h2 class="font-bold text-gray-900 text-lg">
                             @if($activePage)
                                 Konten: <span class="text-blue-600">{{ $activePage->title }}</span>
                             @else
@@ -291,10 +296,10 @@
 
 <!-- MODAL EDIT PAGE -->
 <div id="editPageModal" class="modal-overlay hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-    <div class="modal-container bg-white rounded-xl shadow-lg w-full max-w-md">
+    <div class="modal-container bg-white rounded-xl shadow-lg w-full max-w-md relative">
         <div class="p-6 border-b border-gray-200">
             <h3 class="text-lg font-bold text-gray-900">Edit Halaman</h3>
-            <button type="button" onclick="closeModal()" 
+            <button type="button" onclick="closeEditModal()" 
                     class="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
                 <i class="fas fa-times"></i>
             </button>
@@ -323,7 +328,7 @@
             
             <div class="p-6 border-t border-gray-200 bg-gray-50 rounded-b-xl">
                 <div class="flex justify-end gap-3">
-                    <button type="button" onclick="closeModal()"
+                    <button type="button" onclick="closeEditModal()"
                             class="px-4 py-2 rounded-lg btn-secondary">
                         Batal
                     </button>
@@ -339,7 +344,7 @@
 
 <!-- MODAL ADD PAGE -->
 <div id="addPageModal" class="modal-overlay hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-    <div class="modal-container bg-white rounded-xl shadow-lg w-full max-w-md">
+    <div class="modal-container bg-white rounded-xl shadow-lg w-full max-w-md relative">
         <div class="p-6 border-b border-gray-200">
             <h3 class="text-lg font-bold text-gray-900">Tambah Halaman Baru</h3>
             <button type="button" onclick="closeAddModal()" 
@@ -383,12 +388,12 @@
     </div>
 </div>
 
-<!-- MODAL ADD BLOCK -->
+<!-- MODAL ADD/EDIT BLOCK -->
 <div id="blockModal" class="modal-overlay hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-xl shadow-lg w-full max-w-md">
+    <div class="bg-white rounded-xl shadow-lg w-full max-w-md relative">
         <div class="p-6 border-b flex justify-between items-center">
             <h3 id="blockModalTitle" class="font-bold text-lg">Tambah Blok</h3>
-            <button onclick="closeBlockModal()" class="text-gray-400 hover:text-gray-600">
+            <button type="button" onclick="closeBlockModal()" class="text-gray-400 hover:text-gray-600">
                 <i class="fas fa-times"></i>
             </button>
         </div>
@@ -541,8 +546,13 @@ document.addEventListener('DOMContentLoaded', function() {
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({ order: order })
-                }).then(() => {
-                    document.getElementById('preview').contentWindow.location.reload();
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Reload preview
+                        document.getElementById('preview').contentWindow.location.reload();
+                    }
                 });
             }
         });
@@ -569,6 +579,7 @@ function addBlock(type) {
     document.getElementById('videoField').classList.add('hidden');
     document.getElementById('imageField').classList.add('hidden');
 
+    // Clear all values
     document.getElementById('textContent').value = '';
     document.getElementById('linkTitle').value = '';
     document.getElementById('linkUrl').value = '';
@@ -611,12 +622,10 @@ function editBlock(blockId, type, content) {
     
     if (type === 'video') {
         document.getElementById('videoField').classList.remove('hidden');
-        // Note: file input can't be prefilled for security reasons
     }
     
     if (type === 'image') {
         document.getElementById('imageField').classList.remove('hidden');
-        // Note: file input can't be prefilled for security reasons
     }
 }
 
@@ -638,56 +647,17 @@ function deleteBlock(blockId) {
         } else {
             alert('Gagal menghapus blok');
         }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Terjadi kesalahan saat menghapus blok');
     });
 }
 
 function closeBlockModal() {
-    const form = document.getElementById('blockForm');
-    form.removeAttribute('data-edit-id');
-    form.reset();
+    document.getElementById('blockForm').reset();
     document.getElementById('blockModal').classList.add('hidden');
 } 
-
-// Edit block
-function editBlock(element) {
-    const id = element.dataset.id;
-    const type = element.dataset.type;
-    const content = JSON.parse(element.dataset.content);
-
-    const modal = document.getElementById('blockModal');
-    modal.classList.remove('hidden');
-
-    document.getElementById('blockType').value = type;
-    document.getElementById('blockForm').dataset.editId = id;
-
-    // reset semua field
-    document.getElementById('textField').classList.add('hidden');
-    document.getElementById('linkField').classList.add('hidden');
-    document.getElementById('videoField').classList.add('hidden');
-    document.getElementById('imageField').classList.add('hidden');
-
-    if (type === 'text') {
-        document.getElementById('textField').classList.remove('hidden');
-        document.getElementById('textContent').value = content.text || '';
-    }
-
-    if (type === 'link') {
-        document.getElementById('linkField').classList.remove('hidden');
-        document.getElementById('linkTitle').value = content.title || '';
-        document.getElementById('linkUrl').value = content.url || '';
-    }
-
-    if (type === 'video') {
-        document.getElementById('videoField').classList.remove('hidden');
-        document.getElementById('videoUrl').value = content.url || '';
-    }
-
-    if (type === 'image') {
-        document.getElementById('imageField').classList.remove('hidden');
-    }
-
-    document.getElementById('blockModalTitle').innerText = "Edit Blok";
-}
 
 // Show Edit Modal
 function showEditModal(pageId, pageTitle) {
@@ -705,7 +675,7 @@ function showEditModal(pageId, pageTitle) {
     
     // Show modal
     modal.classList.remove('hidden');
-    titleInput.focus();
+    setTimeout(() => titleInput.focus(), 100);
 }
 
 // Show Add Page Modal
@@ -717,7 +687,7 @@ function showAddPageForm() {
 }
 
 // Close Edit Modal
-function closeModal() {
+function closeEditModal() {
     document.getElementById('editPageModal').classList.add('hidden');
 }
 
@@ -728,7 +698,7 @@ function closeAddModal() {
 
 // Confirm Delete
 function confirmDelete(button) {
-    if (confirm('Yakin ingin menghapus page ini?')) {
+    if (confirm('Yakin ingin menghapus halaman ini?')) {
         button.closest('form').submit();
     }
 }
@@ -736,7 +706,7 @@ function confirmDelete(button) {
 // Close modal when clicking outside
 document.addEventListener('click', function(e) {
     if (e.target.classList.contains('modal-overlay')) {
-        closeModal();
+        closeEditModal();
         closeAddModal();
         closeBlockModal();
     }
@@ -745,14 +715,14 @@ document.addEventListener('click', function(e) {
 // Close modal with Escape key
 document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') {
-        closeModal();
+        closeEditModal();
         closeAddModal();
         closeBlockModal();
     }
 });
 
 // Handle edit form submission
-document.getElementById('editPageForm')?.addEventListener('submit', function(e) {
+document.getElementById('editPageForm').addEventListener('submit', function(e) {
     e.preventDefault();
     
     const formData = new FormData(this);
@@ -765,11 +735,12 @@ document.getElementById('editPageForm')?.addEventListener('submit', function(e) 
         },
         body: formData
     })
-    .then(response => {
-        if (response.ok) {
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
             location.reload();
         } else {
-            alert('Gagal mengupdate page');
+            alert('Gagal mengupdate halaman');
         }
     })
     .catch(error => {
@@ -794,23 +765,6 @@ document.getElementById('blockForm').addEventListener('submit', function(e) {
 
     formData.append('page_id', currentPageId);
     formData.append('type', type);
-
-    let url = '';
-
-    // =====================
-    // MODE EDIT
-    // =====================
-    if (editId) {
-        url = '/blocks/' + editId;
-        formData.append('_method', 'PUT');
-    } 
-    // =====================
-    // MODE TAMBAH
-    // =====================
-    else {
-        url = '/blocks';
-        formData.append('page_id', {{ $activePage->id ?? 'null' }});
-    }
 
     // FIELD TEXT
     if (type === 'text') {
@@ -856,13 +810,19 @@ document.getElementById('blockForm').addEventListener('submit', function(e) {
             'X-CSRF-TOKEN': '{{ csrf_token() }}'
         },
         body: formData
-    }).then(res => {
-        if (res.ok) {
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
             closeBlockModal();
             location.reload();
         } else {
-            alert('Gagal menyimpan blok');
+            alert(data.message || 'Gagal menyimpan blok');
         }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Terjadi kesalahan saat menyimpan blok');
     });
 });
 </script>

@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Illuminate\View\View;
 use App\Models\Page;
+use Illuminate\Support\Str;
 
 class RegisteredUserController extends Controller
 {
@@ -43,6 +44,16 @@ class RegisteredUserController extends Controller
             'email' => $request->email,
             'password' => Hash::make($request->password),
         ]);
+        
+        Page::create([
+    'user_id' => $user->id,
+    'title' => 'Utama',
+    'slug' => 'utama',
+    'is_active' => true,
+    'position' => 1,
+]);
+
+
 
         return redirect()
             ->route('login')
