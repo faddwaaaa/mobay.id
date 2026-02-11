@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
 use Illuminate\View\View;
+use App\Models\Page;
 
 class RegisteredUserController extends Controller
 {
@@ -47,4 +48,5 @@ class RegisteredUserController extends Controller
             ->route('login')
             ->with('success', 'Akun berhasil dibuat, silakan login');
     }
+    
 }
