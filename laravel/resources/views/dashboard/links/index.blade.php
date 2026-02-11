@@ -106,6 +106,7 @@
             <!-- BLOCK LIST -->
             <div class="bg-white rounded-xl shadow border border-gray-200">
                 <div class="p-6 border-b border-gray-200">
+                    <h2 class="font-bold text-gray-900 text-lg">Daftar Blok</h2>
                     <div class="flex justify-between items-center">
                         <h2 class="font-bold text-gray-900">
                             @if($activePage)
@@ -562,7 +563,7 @@ function addBlock(type) {
     document.getElementById('blockId').value = '';
     document.getElementById('submitBtnText').textContent = 'Simpan';
 
-    // Hide & clear all fields
+    // Hide all fields
     document.getElementById('textField').classList.add('hidden');
     document.getElementById('linkField').classList.add('hidden');
     document.getElementById('videoField').classList.add('hidden');
@@ -641,8 +642,52 @@ function deleteBlock(blockId) {
 }
 
 function closeBlockModal() {
+    const form = document.getElementById('blockForm');
+    form.removeAttribute('data-edit-id');
+    form.reset();
     document.getElementById('blockModal').classList.add('hidden');
-}   
+} 
+
+// Edit block
+function editBlock(element) {
+    const id = element.dataset.id;
+    const type = element.dataset.type;
+    const content = JSON.parse(element.dataset.content);
+
+    const modal = document.getElementById('blockModal');
+    modal.classList.remove('hidden');
+
+    document.getElementById('blockType').value = type;
+    document.getElementById('blockForm').dataset.editId = id;
+
+    // reset semua field
+    document.getElementById('textField').classList.add('hidden');
+    document.getElementById('linkField').classList.add('hidden');
+    document.getElementById('videoField').classList.add('hidden');
+    document.getElementById('imageField').classList.add('hidden');
+
+    if (type === 'text') {
+        document.getElementById('textField').classList.remove('hidden');
+        document.getElementById('textContent').value = content.text || '';
+    }
+
+    if (type === 'link') {
+        document.getElementById('linkField').classList.remove('hidden');
+        document.getElementById('linkTitle').value = content.title || '';
+        document.getElementById('linkUrl').value = content.url || '';
+    }
+
+    if (type === 'video') {
+        document.getElementById('videoField').classList.remove('hidden');
+        document.getElementById('videoUrl').value = content.url || '';
+    }
+
+    if (type === 'image') {
+        document.getElementById('imageField').classList.remove('hidden');
+    }
+
+    document.getElementById('blockModalTitle').innerText = "Edit Blok";
+}
 
 // Show Edit Modal
 function showEditModal(pageId, pageTitle) {
@@ -750,15 +795,35 @@ document.getElementById('blockForm').addEventListener('submit', function(e) {
     formData.append('page_id', currentPageId);
     formData.append('type', type);
 
+    let url = '';
+
+    // =====================
+    // MODE EDIT
+    // =====================
+    if (editId) {
+        url = '/blocks/' + editId;
+        formData.append('_method', 'PUT');
+    } 
+    // =====================
+    // MODE TAMBAH
+    // =====================
+    else {
+        url = '/blocks';
+        formData.append('page_id', {{ $activePage->id ?? 'null' }});
+    }
+
+    // FIELD TEXT
     if (type === 'text') {
         formData.append('content[text]', document.getElementById('textContent').value);
     }
 
+    // FIELD LINK
     if (type === 'link') {
         formData.append('content[title]', document.getElementById('linkTitle').value);
         formData.append('content[url]', document.getElementById('linkUrl').value);
     }
 
+    // FIELD VIDEO
     if (type === 'video') {
         const videoFile = document.getElementById('videoFile').files[0];
         if (videoFile) {
@@ -769,6 +834,7 @@ document.getElementById('blockForm').addEventListener('submit', function(e) {
         }
     }
 
+    // FIELD IMAGE
     if (type === 'image') {
         const imageFile = document.getElementById('imageFile').files[0];
         if (imageFile) {
@@ -787,7 +853,7 @@ document.getElementById('blockForm').addEventListener('submit', function(e) {
     fetch(url, {
         method: 'POST',
         headers: {
-            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
         },
         body: formData
     }).then(res => {
