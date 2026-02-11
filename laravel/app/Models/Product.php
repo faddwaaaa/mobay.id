@@ -24,4 +24,10 @@ class Product extends Model
     public function files() {
         return $this->hasMany(ProductFile::class);
     }
+
+    public function block()
+{
+    return $this->hasOne(Block::class);
+}
+
 }

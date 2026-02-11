@@ -1,4 +1,3 @@
-
 <div class="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 p-4 md:p-6">
     <div class="max-w-7xl mx-auto">
         <!-- Header -->
@@ -15,7 +14,9 @@
         </div>
 
         <!-- Form -->
-        <form method="POST" action="/produk" enctype="multipart/form-data" class="space-y-6">
+        <form method="POST" 
+        action="{{ route('products.store') }}" 
+        enctype="multipart/form-data" class="space-y-6">
             @csrf
             
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -48,12 +49,19 @@
                             </div>
                         </div>
                         
-                        <!-- Image Upload Area - Tetap ada untuk upload tambahan -->
-                        <div id="imageUploadArea" class="border-2 border-dashed border-gray-300 rounded-xl p-4 text-center hover:border-blue-400 transition-colors cursor-pointer mb-4">
-                            <input type="file" name="images[]" multiple 
-                                   class="hidden" 
-                                   id="imageUpload"
-                                   accept="image/*">
+                        <!-- Image Upload Area -->
+                        <div id="imageUploadArea" 
+                            class="border-2 border-dashed border-gray-300 rounded-xl p-4 text-center hover:border-blue-400 transition-colors cursor-pointer mb-4">
+
+                            <input 
+                                type="file" 
+                                id="imageUpload"
+                                name="images[]" 
+                                multiple
+                                accept="image/*"
+                                class="hidden"
+                            >
+
                             <label for="imageUpload" class="cursor-pointer block">
                                 <div class="mx-auto w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center mb-3">
                                     <svg class="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -64,6 +72,7 @@
                                 <p class="text-xs text-gray-500 mt-1">PNG, JPG, JPEG (Max 5MB per gambar)</p>
                             </label>
                         </div>
+
                         
                         <!-- Image Preview Grid -->
                         <div id="imagePreviewContainer" class="mt-4">

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
+//use App\Models\Block;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -27,7 +28,6 @@ class ProductController extends Controller
 
     /**
      * STORE PRODUK
-     * POST /produk
      */
     public function store(Request $request)
     {
@@ -79,9 +79,18 @@ class ProductController extends Controller
         ]);
 
         /*
-        |--------------------------------------------------------------------------
+        | AUTO BUAT BLOCK PRODUCT
+        */
+        // Block::create([
+        //     'user_id'    => Auth::id(),
+        //     'type'       => 'product',
+        //     'product_id' => $product->id,
+        //     'order'      => Block::where('user_id', Auth::id())->max('order') + 1,
+        // ]);
+
+
+        /*
         | SIMPAN GAMBAR
-        |--------------------------------------------------------------------------
         */
         if ($request->hasFile('images')) {
             foreach ($request->file('images') as $img) {
@@ -93,10 +102,9 @@ class ProductController extends Controller
             }
         }
 
+
         /*
-        |--------------------------------------------------------------------------
         | SIMPAN FILE DIGITAL (HANYA JIKA ADA)
-        |--------------------------------------------------------------------------
         */
         if ($request->product_type === 'digital' && $request->hasFile('files')) {
             foreach ($request->file('files') as $file) {
@@ -121,10 +129,8 @@ class ProductController extends Controller
     {
         abort_if($produk->user_id !== Auth::id(), 403);
 
-        // Hapus relasi file & gambar dulu (optional tapi recommended)
         $produk->images()->delete();
         $produk->files()->delete();
-
         $produk->delete();
 
         return back()->with('success', 'Produk berhasil dihapus');

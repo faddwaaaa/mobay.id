@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('page_id')->constrained()->onDelete('cascade');
             $table->string('type'); // text, image, link, video
+            $table->foreignId('product_id')->nullable()->constrained()->cascadeOnDelete();
             $table->json('content');
             $table->integer('position')->default(0);
             $table->boolean('is_active')->default(true);

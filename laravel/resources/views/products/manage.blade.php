@@ -290,7 +290,7 @@ tbody tr:hover { background: #f1f5f9; }
 
 
 {{-- ================= PRODUCT LIST ================= --}}
-@if($products->count())
+@if($products->count() && !$showForm)
 <div class="links-grid">
 @foreach($products as $product)
     <div class="link-card">
