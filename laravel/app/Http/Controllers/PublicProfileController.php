@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use App\Models\UserProfile;
 use App\Models\Click;
 use Illuminate\Http\Request;
@@ -10,18 +11,20 @@ class PublicProfileController extends Controller
 {
     public function profile($username)
     {
-        $profile = UserProfile::where('username', $username)
-            ->where('is_public', true)
-            ->with(['links' => function($query) {
-                $query->where('is_active', true)
-                    ->orderBy('position');
-            }, 'socialLinks'])
+        $user = User::where('username', $username)
+            ->with([
+                'pages.blocks',
+                'products.images'
+            ])
             ->firstOrFail();
 
-        // Increment views
-        $profile->increment('views');
+        // Default page pertama
+        $page = $user->pages->first();
 
-        return view('public.profile', compact('profile'));
+        return view('public.index', compact(
+            'user',
+            'page'
+        ));
     }
 
     public function redirect($username, $linkId)
@@ -35,15 +38,15 @@ class PublicProfileController extends Controller
             ->where('is_active', true)
             ->firstOrFail();
 
-        // Increment click count
+        // Increment counter
         $link->increment('clicks');
 
-        // Record click details
+        // Record detail click
         Click::create([
-            'link_id' => $link->id,
+            'link_id'    => $link->id,
             'ip_address' => request()->ip(),
             'user_agent' => request()->userAgent(),
-            'referrer' => request()->header('referer')
+            'referrer'   => request()->header('referer')
         ]);
 
         return redirect($link->url);

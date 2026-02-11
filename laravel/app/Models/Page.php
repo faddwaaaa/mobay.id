@@ -14,4 +14,10 @@ class Page extends Model
     {
         return $this->hasMany(Block::class)->orderBy('position');
     }
+    public function user()
+{
+    return $this->belongsTo(User::class);
+}
+
+
 }

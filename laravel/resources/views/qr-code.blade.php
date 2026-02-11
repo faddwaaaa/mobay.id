@@ -12,8 +12,8 @@
                     <i class="fas fa-arrow-left" style="font-size: 14px; color: #475569;"></i>
                 </a>
                 <div>
-                    <h1 style="margin: 0; font-size: 24px; font-weight: 600; color: #0f172a;">QR Code Saya</h1>
-                    <p style="margin: 0; font-size: 14px; color: #94a3b8;">Bagikan QR Code untuk mempromosikan halaman Anda</p>
+                    <h1 style="margin: 0; font-size: 24px; font-weight: 600; color: #000000;">QR Code Saya</h1>
+                    <p style="margin: 0; font-size: 14px; color: #797979;">Bagikan QR Code untuk mempromosikan halaman Anda</p>
                 </div>
             </div>
         </div>

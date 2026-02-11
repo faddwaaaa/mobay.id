@@ -16,8 +16,8 @@
                     <i class="fas fa-arrow-left" style="font-size: 14px;"></i>
                 </a>
                 <div>
-                    <h1 class="page-title" style="margin: 0; font-size: 24px; font-weight: 600;">Analitik</h1>
-                    <p class="page-subtitle" style="margin: 0; font-size: 14px;">Pantau performa link dan aktivitas pengunjung</p>
+                    <h1 class="page-title" style="margin: 0; font-size: 24px; font-weight: 600; color: #000000;">Analitik</h1>
+                    <p class="page-subtitle" style="margin: 0; font-size: 14px; color: #797979;">Pantau performa link dan aktivitas pengunjung</p>
                 </div>
             </div>
         </div>
