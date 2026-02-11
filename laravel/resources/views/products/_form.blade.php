@@ -21,6 +21,19 @@
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <!-- Left Column -->
                 <div class="lg:col-span-2 space-y-6">
+                    <!-- Product Type -->
+                    <div class="card-gradient p-5">
+                        <label class="form-label">Jenis Produk</label>
+                        <select name="product_type" id="productType" class="form-input" required>
+                            <option value="">Pilih Jenis Produk</option>
+                            <option value="umkm">Produk UMKM (Fisik)</option>
+                            <option value="digital">Produk Digital</option>
+                        </select>
+                        <p class="text-xs text-gray-500 mt-2">
+                            Pilih jenis produk untuk menyesuaikan pengaturan penjualan
+                        </p>
+                    </div>
+
                     <!-- Images Upload -->
                     <div class="card-gradient p-5">
                         <div class="flex items-center justify-between mb-4">
@@ -79,7 +92,7 @@
                     </div>
 
                     <!-- Files Upload -->
-                    <div class="card-gradient p-5">
+                        <div id="fileSection" class="card-gradient p-5 hidden">
                         <div class="flex items-center justify-between mb-4">
                             <div>
                                 <h3 class="text-lg font-semibold text-gray-800 mb-1">File Produk</h3>
@@ -588,16 +601,26 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
+    // ===== PRODUCT TYPE TOGGLE =====
+    const productType = document.getElementById('productType');
+    const fileSection = document.getElementById('fileSection');
+
+    productType.addEventListener('change', function() {
+        if (this.value === 'digital') {
+            fileSection.classList.remove('hidden');
+        } else {
+            fileSection.classList.add('hidden');
+            uploadedFiles = [];
+            updateFileList();
+            updateFileUploadAreaText();
+        }
+    });
+
     // ========== IMAGE UPLOAD FUNCTIONALITY ==========
     const imageUpload = document.getElementById('imageUpload');
     const imageUploadArea = document.getElementById('imageUploadArea');
     const imagePreviewGrid = document.getElementById('imagePreviewGrid');
     let uploadedImages = [];
-    
-    // Click on upload area to trigger file input
-    imageUploadArea.addEventListener('click', function() {
-        imageUpload.click();
-    });
     
     // Handle image selection
     imageUpload.addEventListener('change', function(e) {
@@ -692,11 +715,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const fileUploadArea = document.getElementById('fileUploadArea');
     const fileList = document.getElementById('fileList');
     let uploadedFiles = [];
-    
-    // Click on upload area to trigger file input
-    fileUploadArea.addEventListener('click', function() {
-        fileUpload.click();
-    });
     
     // Handle file selection
     fileUpload.addEventListener('change', function(e) {
@@ -880,15 +898,9 @@ document.addEventListener('DOMContentLoaded', function() {
         fileUpload.files = fileDataTransfer.files;
         
         // Validation
-        if (uploadedImages.length === 0) {
+        if (productType.value === 'digital' && uploadedFiles.length === 0) {
             e.preventDefault();
-            showAlert('error', 'Harap upload minimal 1 gambar produk');
-            return;
-        }
-        
-        if (uploadedFiles.length === 0) {
-            e.preventDefault();
-            showAlert('error', 'Harap upload minimal 1 file produk');
+            showAlert('error', 'Produk digital wajib memiliki file');
             return;
         }
     });

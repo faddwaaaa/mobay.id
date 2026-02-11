@@ -10,6 +10,8 @@ return new class extends Migration {
             $table->id();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
 
+            $table->enum('product_type', ['umkm', 'digital'])->default('umkm');
+            
             $table->string('title');
             $table->text('description')->nullable();
 
