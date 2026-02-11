@@ -298,6 +298,58 @@
         </form>
     </div>
 </div>
+
+<!-- MODAL ADD BLOCK -->
+<div id="blockModal" class="modal-overlay hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-lg w-full max-w-md">
+        <div class="p-6 border-b flex justify-between items-center">
+            <h3 id="blockModalTitle" class="font-bold text-lg">Tambah Block</h3>
+            <button onclick="closeBlockModal()" class="text-gray-400 hover:text-gray-600">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <form id="blockForm" class="p-6 space-y-4">
+            <input type="hidden" id="blockType">
+
+            <!-- TEXT -->
+            <div id="textField" class="hidden">
+                <label class="block text-sm font-medium mb-1">Teks</label>
+                <textarea id="textContent" class="w-full border rounded-lg p-2" rows="3"></textarea>
+            </div>
+
+            <!-- LINK -->
+            <div id="linkField" class="hidden">
+                <label class="block text-sm font-medium mb-1">Judul</label>
+                <input id="linkTitle" class="w-full border rounded-lg p-2 mb-2">
+                <label class="block text-sm font-medium mb-1">URL</label>
+                <input id="linkUrl" class="w-full border rounded-lg p-2">
+            </div>
+
+            <!-- VIDEO -->
+            <div id="videoField" class="hidden">
+                <label class="block text-sm font-medium mb-1">Link YouTube</label>
+                <input id="videoUrl" class="w-full border rounded-lg p-2">
+            </div>
+
+            <!-- IMAGE -->
+            <div id="imageField" class="hidden">
+                <label class="block text-sm font-medium mb-1">Upload Gambar</label>
+                <input type="file" id="imageFile" accept="image/*">
+            </div>
+
+            <div class="flex justify-end gap-3 pt-4">
+                <button type="button" onclick="closeBlockModal()" class="px-4 py-2 border rounded-lg">
+                    Batal
+                </button>
+                <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg">
+                    Simpan
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
 </div>
 
 <style>
@@ -675,23 +727,23 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Function to add block
 function addBlock(type) {
-    fetch('{{ route("blocks.store") }}', {
-        method: 'POST',
-        headers: {
-            'X-CSRF-TOKEN': '{{ csrf_token() }}',
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            page_id: {{ $activePage->id ?? 'null' }},
-            type: type,
-            content: { text: 'New ' + type + ' block' }
-        })
-    }).then(response => {
-        if (response.ok) {
-            location.reload();
-        }
-    });
+    document.getElementById('blockModal').classList.remove('hidden');
+    document.getElementById('blockType').value = type;
+
+    document.getElementById('textField').classList.add('hidden');
+    document.getElementById('linkField').classList.add('hidden');
+    document.getElementById('videoField').classList.add('hidden');
+    document.getElementById('imageField').classList.add('hidden');
+
+    if (type === 'text') document.getElementById('textField').classList.remove('hidden');
+    if (type === 'link') document.getElementById('linkField').classList.remove('hidden');
+    if (type === 'video') document.getElementById('videoField').classList.remove('hidden');
+    if (type === 'image') document.getElementById('imageField').classList.remove('hidden');
 }
+
+function closeBlockModal() {
+    document.getElementById('blockModal').classList.add('hidden');
+}   
 
 // Show Edit Modal
 function showEditModal(pageId, pageTitle) {
@@ -779,5 +831,77 @@ document.getElementById('editPageForm')?.addEventListener('submit', function(e) 
         alert('Terjadi kesalahan');
     });
 });
+
+
+document.getElementById('blockForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    const type = document.getElementById('blockType').value;
+    const formData = new FormData();
+
+    formData.append('page_id', {{ $activePage->id ?? 'null' }});
+    formData.append('type', type);
+
+    if (type === 'text') {
+        formData.append('content[text]', document.getElementById('textContent').value);
+    }
+
+    if (type === 'link') {
+        formData.append('content[title]', document.getElementById('linkTitle').value);
+        formData.append('content[url]', document.getElementById('linkUrl').value);
+    }
+
+    if (type === 'video') {
+        formData.append('content[url]', document.getElementById('videoUrl').value);
+    }
+
+    if (type === 'image') {
+        formData.append('image', document.getElementById('imageFile').files[0]);
+    }
+
+    fetch('{{ route("blocks.store") }}', {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+        },
+        body: formData
+    }).then(res => {
+        if (res.ok) {
+            closeBlockModal();
+            reloadPreview();
+            location.reload();
+        }
+    });
+});
+
+function reloadPreview() {
+    const iframe = document.getElementById('preview');
+    iframe.src = iframe.src;
+}
+
+
+document.addEventListener('click', function (e) {
+    if (e.target.classList.contains('delete-block')) {
+        const id = e.target.dataset.id;
+
+        if (!confirm('Yakin hapus block ini?')) return;
+
+        fetch(`/blocks/${id}`, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json'
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                e.target.closest('.block-item').remove();
+            }
+        });
+    }
+});
+
+
 </script>
 @endsection

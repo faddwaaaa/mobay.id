@@ -98,9 +98,17 @@ Route::middleware('auth')->group(function () {
     })->name('qrcode.show');
 
     // PRODUK
-    Route::get('/produk/tambah', [ProductController::class, 'create'])->name('products.create');
-    Route::post('/produk', [ProductController::class, 'store'])->name('products.store');
-    Route::get('/produk', [ProductController::class, 'manage'])->name('products.manage');
+
+    Route::get('/produk', [ProductController::class, 'index'])
+    ->name('products.manage');
+
+
+    Route::post('/produk', [ProductController::class, 'store'])
+        ->name('products.store');
+
+    Route::delete('/produk/{produk}', [ProductController::class, 'destroy'])
+        ->name('products.destroy');
+
 
     // PAYMENT
     Route::get('/dashboard/topup', [TransactionController::class, 'showTopupForm'])->name('topup.form');
@@ -151,3 +159,9 @@ Route::get('/{username}', function ($username) {
     $page = $user->pages->first();
     return view('public.profile', compact('user', 'page'));
 })->where('username', '[a-zA-Z0-9_]+');
+
+Route::resource('blocks', BlockController::class)->only(['store', 'destroy']);
+
+
+?>
+

@@ -361,29 +361,11 @@
                     <span>QR Code</span>
                 </a>
 
-                <div class="dropdown {{ request()->is('produk*') ? 'active' : '' }}">
-                    <div class="nav-item dropdown-toggle">
-                        <div class="nav-left">
-                            <i class="fas fa-shopping-cart"></i>
-                            <span>Produk</span>
-                        </div>
-                        <i class="fas fa-chevron-down arrow"></i>
-                    </div>
-
-                    <div class="dropdown-menu-sidebar">
-                        <a href="{{ route('products.create') }}"
-                           class="nav-sub-item {{ request()->routeIs('products.create') ? 'active' : '' }}">
-                            <i class="fas fa-plus"></i>
-                            Tambah Produk
-                        </a>
-
-                        <a href="{{ route('products.manage') }}"
-                           class="nav-sub-item {{ request()->routeIs('products.manage') ? 'active' : '' }}">
-                            <i class="fas fa-list"></i>
-                            Daftar Produk
-                        </a>
-                    </div>
-                </div>
+                <a href="{{ route('products.manage') }}"
+                class="nav-item {{ request()->routeIs('products.manage') ? 'active' : '' }}">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span>Produk</span>
+                </a>
 
                 <a href="#" class="nav-item">
                     <i class="fas fa-credit-card"></i>
@@ -475,29 +457,11 @@
                     <span>QR Code</span>
                 </a>
 
-                <div class="dropdown {{ request()->is('produk*') ? 'active' : '' }}">
-                    <div class="nav-item dropdown-toggle">
-                        <div class="nav-left">
-                            <i class="fas fa-shopping-cart"></i>
-                            <span>Produk</span>
-                        </div>
-                        <i class="fas fa-chevron-down arrow"></i>
-                    </div>
-
-                    <div class="dropdown-menu-sidebar">
-                        <a href="{{ route('products.create') }}"
-                           class="nav-sub-item {{ request()->routeIs('products.create') ? 'active' : '' }}">
-                            <i class="fas fa-plus"></i>
-                            Tambah Produk
-                        </a>
-
-                        <a href="{{ route('products.manage') }}"
-                           class="nav-sub-item {{ request()->routeIs('products.manage') ? 'active' : '' }}">
-                            <i class="fas fa-list"></i>
-                            Daftar Produk
-                        </a>
-                    </div>
-                </div>
+                <a href="{{ route('products.manage') }}"
+                class="nav-item {{ request()->routeIs('products.manage') ? 'active' : '' }}">
+                    <i class="fas fa-box"></i>
+                    <span>Produk</span>
+                </a>
 
                 <a href="#" class="nav-item">
                     <i class="fas fa-credit-card"></i>

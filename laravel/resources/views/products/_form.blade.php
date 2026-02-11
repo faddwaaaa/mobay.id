@@ -1,8 +1,4 @@
-@extends('layouts.dashboard')
 
-@section('title', 'Tambah Produk')
-
-@section('content')
 <div class="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 p-4 md:p-6">
     <div class="max-w-7xl mx-auto">
         <!-- Header -->
@@ -129,6 +125,7 @@
                             <label class="form-label">Harga (Rp)</label>
                             <div class="relative">
                                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <span class="text-gray-500"></span>
                                 </div>
                                 <input type="number" name="price" 
                                        class="form-input pl-10"
@@ -146,12 +143,13 @@
                             </label>
                             <div class="relative">
                                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <span class="text-gray-500"></span>
                                 </div>
                                 <input type="number" name="discount" 
                                        class="form-input pl-10"
                                        placeholder="0"
                                        min="0"
-                                       max="0">
+                                       max="100">
                             </div>
                         </div>
 
@@ -769,4 +767,3 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
-@endsection
