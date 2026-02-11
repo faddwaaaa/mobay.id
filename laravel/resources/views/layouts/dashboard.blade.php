@@ -246,6 +246,10 @@
             .logo-icon img {
                 display: block !important;
             }
+
+            .tem{
+                margin-left: 8px;
+            }
         }
     </style>
 </head>
@@ -391,7 +395,7 @@
                     <div class="nav-item theme-dropdown-toggle">
                         <div class="nav-left">
                             <i class="fas fa-paint-brush"></i>
-                            <span>Tema</span>
+                            <span class="tem"> Tema</span>
                         </div>
                         <i class="fas fa-chevron-down arrow"></i>
                     </div>
