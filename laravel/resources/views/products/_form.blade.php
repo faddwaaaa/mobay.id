@@ -117,41 +117,54 @@
                 <!-- Right Column -->
                 <div class="space-y-6">
                     <!-- Pricing & Settings -->
-                    <div class="card-gradient p-5 space-y-5">
-                        <h3 class="text-lg font-semibold text-gray-800 mb-2">Harga & Pengaturan</h3>
-                        
-                        <!-- Price -->
-                        <div>
-                            <label class="form-label">Harga (Rp)</label>
-                            <div class="relative">
-                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <span class="text-gray-500"></span>
-                                </div>
-                                <input type="number" name="price" 
-                                       class="form-input pl-10"
-                                       placeholder="0"
-                                       min="0"
-                                       required>
-                            </div>
-                        </div>
+<div class="card-gradient p-5 space-y-5">
+    <h3 class="text-lg font-semibold text-gray-800 mb-2">Harga & Pengaturan</h3>
+    
+    <!-- Price -->
+    <div>
+        <label class="form-label">Harga Normal (Rp)</label>
+        <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <span class="text-gray-500 text-sm"></span>
+            </div>
+            <input type="text" name="price" 
+                   id="priceInput"
+                   class="form-input pl-12"
+                   placeholder="0"
+                   required>
+        </div>
+        <p class="text-xs text-gray-500 mt-1">Harga akan otomatis diformat: Rp 100.000</p>
+    </div>
 
-                        <!-- Discount -->
-                        <div>
-                            <label class="form-label">
-                                Diskon 
-                                <span class="text-sm font-normal text-gray-500">(opsional)</span>
-                            </label>
-                            <div class="relative">
-                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <span class="text-gray-500"></span>
-                                </div>
-                                <input type="number" name="discount" 
-                                       class="form-input pl-10"
-                                       placeholder="0"
-                                       min="0"
-                                       max="100">
-                            </div>
-                        </div>
+    <!-- Discount -->
+    <div>
+        <label class="form-label">
+            Harga Setelah Diskon
+            <span class="text-sm font-normal text-gray-500">(opsional)</span>
+        </label>
+        <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <span class="text-gray-500 text-sm"></span>
+            </div>
+            <input type="text" name="discount" 
+                   id="discountInput"
+                   class="form-input pl-12"
+                   placeholder="0">
+        </div>
+        <p class="text-xs text-blue-600 mt-1">
+            <svg class="w-3 h-3 inline mr-1" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+            </svg>
+            Masukkan harga setelah diskon, bukan persentase
+        </p>
+        <div id="discountPreview" class="hidden mt-2 p-2 bg-green-50 border border-green-200 rounded-md">
+            <p class="text-xs text-green-700">
+                <span class="font-semibold">Hemat:</span> 
+                <span id="discountAmount"></span> 
+                <span id="discountPercentage" class="ml-1"></span>
+            </p>
+        </div>
+    </div>
 
                         <!-- Stock Toggle -->
                         <div class="pt-4 border-t border-gray-100">
@@ -452,7 +465,7 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Setup toggle functionality
+    // ========== TOGGLE FUNCTIONALITY ==========
     function setupToggle(checkboxId, inputId) {
         const checkbox = document.getElementById(checkboxId);
         const input = document.getElementById(inputId);
@@ -470,6 +483,110 @@ document.addEventListener('DOMContentLoaded', function() {
     
     setupToggle('stockCheck', 'stockInput');
     setupToggle('limitCheck', 'limitInput');
+    
+    // ========== RUPIAH FORMATTING ==========
+    
+    /**
+     * Format number to Rupiah with dots
+     * Example: 100000 -> 100.000
+     */
+    function formatRupiah(angka) {
+        if (!angka) return '';
+        
+        // Remove all non-digits
+        let number = angka.toString().replace(/[^,\d]/g, '');
+        
+        // Add dots as thousand separator
+        let formatted = number.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+        
+        return formatted;
+    }
+    
+    /**
+     * Get clean number from formatted string
+     * Example: "100.000" -> 100000
+     */
+    function cleanRupiah(formatted) {
+        return parseInt(formatted.replace(/\./g, '')) || 0;
+    }
+    
+    // ========== PRICE INPUT ==========
+    const priceInput = document.getElementById('priceInput');
+    const discountInput = document.getElementById('discountInput');
+    const discountPreview = document.getElementById('discountPreview');
+    const discountAmount = document.getElementById('discountAmount');
+    const discountPercentage = document.getElementById('discountPercentage');
+    
+    // Format price on input
+    priceInput.addEventListener('input', function(e) {
+        let value = e.target.value;
+        let formatted = formatRupiah(value);
+        e.target.value = formatted;
+        
+        // Update discount preview if discount is set
+        updateDiscountPreview();
+    });
+    
+    // ========== DISCOUNT INPUT ==========
+    discountInput.addEventListener('input', function(e) {
+        let value = e.target.value;
+        let formatted = formatRupiah(value);
+        e.target.value = formatted;
+        
+        // Update discount preview
+        updateDiscountPreview();
+    });
+    
+    // ========== UPDATE DISCOUNT PREVIEW ==========
+    function updateDiscountPreview() {
+        const priceValue = cleanRupiah(priceInput.value);
+        const discountValue = cleanRupiah(discountInput.value);
+        
+        if (priceValue > 0 && discountValue > 0) {
+            if (discountValue >= priceValue) {
+                // Invalid: discount price higher than normal price
+                discountPreview.classList.add('hidden');
+                discountInput.classList.add('border-red-300');
+                discountInput.classList.remove('border-gray-300');
+                
+                // Show error
+                let errorMsg = discountInput.parentElement.nextElementSibling;
+                if (errorMsg && errorMsg.querySelector('svg')) {
+                    errorMsg.innerHTML = `
+                        <svg class="w-3 h-3 inline mr-1" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                        </svg>
+                        <span class="text-red-600">Harga diskon harus lebih rendah dari harga normal</span>
+                    `;
+                }
+            } else {
+                // Valid discount
+                discountInput.classList.remove('border-red-300');
+                
+                const savings = priceValue - discountValue;
+                const percentage = ((savings / priceValue) * 100).toFixed(0);
+                
+                discountAmount.textContent = `Rp ${formatRupiah(savings)}`;
+                discountPercentage.textContent = `(${percentage}% OFF)`;
+                
+                discountPreview.classList.remove('hidden');
+                
+                // Reset error message
+                let errorMsg = discountInput.parentElement.nextElementSibling;
+                if (errorMsg) {
+                    errorMsg.innerHTML = `
+                        <svg class="w-3 h-3 inline mr-1" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                        </svg>
+                        Masukkan harga setelah diskon, bukan persentase
+                    `;
+                }
+            }
+        } else {
+            discountPreview.classList.add('hidden');
+            discountInput.classList.remove('border-red-300');
+        }
+    }
     
     // ========== IMAGE UPLOAD FUNCTIONALITY ==========
     const imageUpload = document.getElementById('imageUpload');
@@ -723,8 +840,31 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 3000);
     }
     
-    // Update file input on form submit
+    // ========== FORM SUBMISSION ==========
     document.querySelector('form').addEventListener('submit', function(e) {
+        // Clean rupiah format before submit
+        const priceValue = cleanRupiah(priceInput.value);
+        const discountValue = cleanRupiah(discountInput.value);
+        
+        // Validation
+        if (priceValue <= 0) {
+            e.preventDefault();
+            showAlert('error', 'Harga produk harus lebih dari 0');
+            priceInput.focus();
+            return;
+        }
+        
+        if (discountValue > 0 && discountValue >= priceValue) {
+            e.preventDefault();
+            showAlert('error', 'Harga diskon harus lebih rendah dari harga normal');
+            discountInput.focus();
+            return;
+        }
+        
+        // Set clean numbers to inputs
+        priceInput.value = priceValue;
+        discountInput.value = discountValue || '';
+        
         // Update images files
         const imageDataTransfer = new DataTransfer();
         uploadedImages.forEach(image => {
@@ -751,19 +891,6 @@ document.addEventListener('DOMContentLoaded', function() {
             showAlert('error', 'Harap upload minimal 1 file produk');
             return;
         }
-    });
-    
-    // Price formatting
-    const priceInput = document.querySelector('input[name="price"]');
-    priceInput.addEventListener('blur', function() {
-        if (this.value) {
-            const formatted = new Intl.NumberFormat('id-ID').format(this.value.replace(/\./g, ''));
-            this.value = formatted;
-        }
-    });
-    
-    priceInput.addEventListener('focus', function() {
-        this.value = this.value.replace(/\./g, '');
     });
 });
 </script>
