@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Page;
 use App\Models\Link;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
@@ -11,49 +12,45 @@ use Carbon\Carbon;
 class LinkController extends Controller
 {
     /**
-     * Halaman manajemen link
+     * Halaman manajemen link & pages
      */
-    public function index()
+    public function index(Request $request)
     {
-        $pages = Page::where('user_id', Auth::id())
-            ->orderBy('position')
+        $user = Auth::user();
+
+        // Ambil semua page milik user + blocks
+        $pages = $user->pages()
+            ->with('blocks')
+            ->orderBy('created_at')
             ->get();
 
-        return view('dashboard.links.index', compact('pages'));
+        $selectedPageId = $request->query('page');
+
+        // Jika ada query page, pakai itu
+        if ($selectedPageId) {
+            $activePage = $pages->firstWhere('id', $selectedPageId);
+        } else {
+            // Default ambil page utama (is_default = true)
+            $activePage = $pages->firstWhere('is_default', true);
+        }
+
+        return view('dashboard.links.index', compact('pages', 'activePage'));
     }
 
     /**
      * Redirect short link dan catat klik
      */
-public function redirect($short_code)
-{
-    // LOG: Cek apakah method ini dipanggil
-    \Log::info('Redirect called', ['short_code' => $short_code]);
+    public function redirect($short_code)
+    {
+        $link = Link::where('short_code', $short_code)
+            ->where('is_active', 1)
+            ->firstOrFail();
 
-    // Cari link berdasarkan short_code
-    $link = Link::where('short_code', $short_code)
-        ->where('is_active', 1)
-        ->firstOrFail();
+        $userAgent = request()->userAgent();
+        $deviceType = $this->detectDevice($userAgent);
+        $referrer = request()->header('referer');
+        $referrerSource = $this->detectReferrerSource($referrer);
 
-    \Log::info('Link found', ['link_id' => $link->id, 'url' => $link->original_url]);
-
-    // Deteksi device type
-    $userAgent = request()->userAgent();
-    $deviceType = $this->detectDevice($userAgent);
-
-    // Deteksi referrer source
-    $referrer = request()->header('referer');
-    $referrerSource = $this->detectReferrerSource($referrer);
-
-    \Log::info('About to insert click', [
-        'link_id' => $link->id,
-        'ip' => request()->ip(),
-        'device' => $deviceType,
-        'referrer_source' => $referrerSource
-    ]);
-
-    // Catat klik ke database
-    try {
         DB::table('clicks')->insert([
             'link_id' => $link->id,
             'ip_address' => request()->ip(),
@@ -64,22 +61,16 @@ public function redirect($short_code)
             'created_at' => Carbon::now(),
             'updated_at' => Carbon::now(),
         ]);
-        
-        \Log::info('Click inserted successfully');
-    } catch (\Exception $e) {
-        \Log::error('Failed to insert click', ['error' => $e->getMessage()]);
+
+        return redirect($link->original_url);
     }
 
-    // Redirect ke URL asli
-    return redirect($link->original_url);
-}
-
     /**
-     * Deteksi jenis device
+     * Deteksi device
      */
     private function detectDevice($userAgent)
     {
-        $userAgent = strtolower($userAgent);
+        $userAgent = strtolower($userAgent ?? '');
 
         if (preg_match('/mobile|android|iphone|ipod|blackberry|iemobile|opera mini/i', $userAgent)) {
             return 'mobile';
@@ -93,52 +84,26 @@ public function redirect($short_code)
     }
 
     /**
-     * Deteksi sumber referrer
+     * Deteksi referrer source
      */
     private function detectReferrerSource($referrer)
     {
-        if (empty($referrer)) {
-            return 'direct';
-        }
+        if (empty($referrer)) return 'direct';
 
         $referrer = strtolower($referrer);
 
-        // Social Media
-        if (strpos($referrer, 'facebook.com') !== false || strpos($referrer, 'fb.com') !== false) {
-            return 'facebook';
-        }
-        if (strpos($referrer, 'instagram.com') !== false) {
-            return 'instagram';
-        }
-        if (strpos($referrer, 'twitter.com') !== false || strpos($referrer, 'x.com') !== false) {
-            return 'twitter';
-        }
-        if (strpos($referrer, 'linkedin.com') !== false) {
-            return 'linkedin';
-        }
-        if (strpos($referrer, 'tiktok.com') !== false) {
-            return 'tiktok';
-        }
-        if (strpos($referrer, 'youtube.com') !== false) {
-            return 'youtube';
-        }
-        if (strpos($referrer, 'whatsapp.com') !== false || strpos($referrer, 'wa.me') !== false) {
-            return 'whatsapp';
-        }
-        if (strpos($referrer, 't.me') !== false || strpos($referrer, 'telegram') !== false) {
-            return 'telegram';
-        }
+        if (str_contains($referrer, 'facebook.com')) return 'facebook';
+        if (str_contains($referrer, 'instagram.com')) return 'instagram';
+        if (str_contains($referrer, 'twitter.com') || str_contains($referrer, 'x.com')) return 'twitter';
+        if (str_contains($referrer, 'linkedin.com')) return 'linkedin';
+        if (str_contains($referrer, 'tiktok.com')) return 'tiktok';
+        if (str_contains($referrer, 'youtube.com')) return 'youtube';
+        if (str_contains($referrer, 'whatsapp.com') || str_contains($referrer, 'wa.me')) return 'whatsapp';
+        if (str_contains($referrer, 'telegram') || str_contains($referrer, 't.me')) return 'telegram';
 
-        // Search Engines
-        if (strpos($referrer, 'google.com') !== false) {
-            return 'google';
-        }
-        if (strpos($referrer, 'bing.com') !== false) {
-            return 'bing';
-        }
-        if (strpos($referrer, 'yahoo.com') !== false) {
-            return 'yahoo';
-        }
+        if (str_contains($referrer, 'google.com')) return 'google';
+        if (str_contains($referrer, 'bing.com')) return 'bing';
+        if (str_contains($referrer, 'yahoo.com')) return 'yahoo';
 
         return 'other';
     }

@@ -440,70 +440,81 @@
 </head>
 <body>
 
-<!-- NAVBAR -->
+<!-- ================= NAVBAR ================= -->
 <div class="navbar">
     <div class="navbar-container">
+
+        <!-- LEFT -->
         <div class="navbar-left">
             <div class="hamburger" id="hamburger">
                 <span></span>
                 <span></span>
                 <span></span>
             </div>
-            <div class="navbar-title">{{ $user->name }}</div>
-        </div>
-        <div class="navbar-right">
-            <div class="nav-icon" id="cartBtn">
-                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
-                </svg>
-                <span class="cart-badge">0</span>
+
+            <div class="navbar-title">
+                {{ $user->name }}
             </div>
         </div>
+
+        <!-- RIGHT -->
+        <div class="navbar-right">
+            <div class="nav-icon" id="cartBtn">
+                <!-- ICON CART -->
+                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293
+                             2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0
+                             100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
+                </svg>
+
+                <!-- BADGE -->
+                <span class="cart-badge" id="cartBadge">0</span>
+            </div>
+        </div>
+
     </div>
 </div>
 
-<!-- SIDEBAR OVERLAY -->
+
+<!-- ================= SIDEBAR OVERLAY ================= -->
 <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
-<!-- SIDEBAR -->
+
+<!-- ================= SIDEBAR ================= -->
 <div class="sidebar" id="sidebar">
+
     <div class="sidebar-header">
         <h3>Menu</h3>
     </div>
+
     <div class="sidebar-menu">
+
+        <!-- HOME -->
         <a href="#" class="menu-item active" data-tab="home">
-            <div class="menu-icon">
-                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
-                </svg>
-            </div>
+            <div class="menu-icon">🏠</div>
             <span class="menu-text">Home</span>
         </a>
-        
-        <a href="#" class="menu-item" data-tab="products">
-            <div class="menu-icon">
-                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
-                </svg>
-            </div>
-            <span class="menu-text">Produk</span>
-        </a>
 
-        <!-- Dynamic Pages dari User -->
-        @if(isset($userPages) && $userPages->count() > 0)
-            @foreach($userPages as $userPage)
-                <a href="#" class="menu-item" data-tab="page-{{ $userPage->id }}">
-                    <div class="menu-icon">
-                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                        </svg>
-                    </div>
-                    <span class="menu-text">{{ $userPage->name ?? 'Halaman' }}</span>
-                </a>
-            @endforeach
-        @endif
+        
+
+        <!-- DYNAMIC PAGES -->
+        @foreach($user->pages as $userPage)
+            <a href="#"
+               class="menu-item"
+               data-tab="page-{{ $userPage->id }}">
+                <div class="menu-icon">📄</div>
+                <span class="menu-text">
+                    {{ $userPage->title }}
+                </span>
+            </a>
+        @endforeach
+
     </div>
 </div>
+
 
 <!-- TABS (Hanya untuk custom pages, bukan Home & Produk) -->
 @if(isset($userPages) && $userPages->count() > 0)

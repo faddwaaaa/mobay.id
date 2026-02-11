@@ -38,6 +38,13 @@ class PageController extends Controller
     {
         abort_if($page->user_id !== Auth::id(), 403);
 
+        if ($page->is_default) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Halaman Utama tidak bisa diubah'
+        ], 403);
+    }
+
         $request->validate([
             'title' => 'required|string|max:255',
         ]);
@@ -51,11 +58,16 @@ class PageController extends Controller
     }
 
     public function destroy(Page $page)
-    {
+{
         abort_if($page->user_id !== Auth::id(), 403);
 
-        $page->delete();
-
-        return back()->with('success', 'Halaman berhasil dihapus');
+    if ($page->is_default) {
+        return back()->with('error', 'Halaman Utama tidak bisa dihapus');
     }
+
+    $page->delete();
+
+    return back();
+}
+
 }

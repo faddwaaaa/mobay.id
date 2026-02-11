@@ -11,85 +11,81 @@ use Illuminate\Support\Facades\Storage;
 class BlockController extends Controller
 {
     public function store(Request $request)
-    {
-        $request->validate([
-            'page_id' => 'required|exists:pages,id',
-            'type' => 'required|in:text,link,image,video',
-        ]);
+{
+    $request->validate([
+        'page_id' => 'required|exists:pages,id',
+        'type' => 'required|string'
+    ]);
 
-        $page = Page::findOrFail($request->page_id);
-        abort_if($page->user_id !== Auth::id(), 403);
+    $page = Page::where('id', $request->page_id)
+        ->where('user_id', auth()->id())
+        ->firstOrFail();
 
-        $content = [];
-        
-        if ($request->type === 'text') {
-            $content['text'] = $request->input('content.text');
-        }
-        
-        if ($request->type === 'link') {
-            $content['title'] = $request->input('content.title');
-            $content['url'] = $request->input('content.url');
-        }
-        
-        if ($request->type === 'image' && $request->hasFile('image')) {
-            $path = $request->file('image')->store('blocks/images', 'public');
-            $content['image'] = $path;
-        }
-        
-        if ($request->type === 'video' && $request->hasFile('video')) {
-            $path = $request->file('video')->store('blocks/videos', 'public');
-            $content['video'] = $path;
-        }
+    $position = $page->blocks()->max('position') + 1;
 
-        $lastPosition = Block::where('page_id', $page->id)->max('position') ?? 0;
+    $content = [];
 
-        Block::create([
-            'page_id' => $page->id,
-            'type' => $request->type,
-            'content' => $content,
-            'position' => $lastPosition + 1,
-        ]);
-
-        return response()->json(['success' => true]);
+    if ($request->type === 'text') {
+        $content = ['text' => $request->input('content.text')];
     }
+
+    if ($request->type === 'link') {
+        $content = [
+            'title' => $request->input('content.title'),
+            'url'   => $request->input('content.url'),
+        ];
+    }
+
+    if ($request->type === 'image' && $request->hasFile('image')) {
+        $path = $request->file('image')->store('blocks', 'public');
+        $content = ['image' => $path];
+    }
+
+    if ($request->type === 'video' && $request->hasFile('video')) {
+        $path = $request->file('video')->store('blocks', 'public');
+        $content = ['video' => $path];
+    }
+
+    $page->blocks()->create([
+        'type' => $request->type,
+        'content' => $content,
+        'position' => $position,
+    ]);
+
+    return response()->json(['success' => true]);
+}
+
 
     public function update(Request $request, Block $block)
-    {
-        abort_if($block->page->user_id !== Auth::id(), 403);
+{
+    abort_if($block->page->user_id !== auth()->id(), 403);
 
-        $content = $block->content;
-        
-        if ($request->type === 'text') {
-            $content['text'] = $request->input('content.text');
-        }
-        
-        if ($request->type === 'link') {
-            $content['title'] = $request->input('content.title');
-            $content['url'] = $request->input('content.url');
-        }
-        
-        if ($request->type === 'image' && $request->hasFile('image')) {
-            // Delete old image
-            if (isset($content['image'])) {
-                Storage::disk('public')->delete($content['image']);
-            }
-            $path = $request->file('image')->store('blocks/images', 'public');
-            $content['image'] = $path;
-        }
-        
-        if ($request->type === 'video' && $request->hasFile('video')) {
-            // Delete old video
-            if (isset($content['video'])) {
-                Storage::disk('public')->delete($content['video']);
-            }
-            $path = $request->file('video')->store('blocks/videos', 'public');
-            $content['video'] = $path;
-        }
+    $content = $block->content;
 
-        $block->update(['content' => $content]);
-
-        return response()->json(['success' => true]);
+    if ($block->type === 'text') {
+        $content['text'] = $request->input('content.text');
     }
+
+    if ($block->type === 'link') {
+        $content['title'] = $request->input('content.title');
+        $content['url'] = $request->input('content.url');
+    }
+
+    if ($block->type === 'image' && $request->hasFile('image')) {
+        $path = $request->file('image')->store('blocks', 'public');
+        $content['image'] = $path;
+    }
+
+    if ($block->type === 'video' && $request->hasFile('video')) {
+        $path = $request->file('video')->store('blocks', 'public');
+        $content['video'] = $path;
+    }
+
+    $block->update(['content' => $content]);
+
+    return response()->json(['success' => true]);
+}
+
 
     public function destroy(Block $block)
     {

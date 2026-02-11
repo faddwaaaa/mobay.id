@@ -12,6 +12,7 @@ use App\Models\Link;
 use App\Models\SocialLink;
 use App\Models\Transaction;
 use App\Models\Withdrawal;
+use App\Models\Page;
 
 class User extends Authenticatable
 {
@@ -75,3 +76,4 @@ class User extends Authenticatable
         return $this->hasMany(Withdrawal::class, 'approved_by');
     }
 }
+
