@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Models;
-
+use App\Models\Product;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -75,5 +75,11 @@ class User extends Authenticatable
     {
         return $this->hasMany(Withdrawal::class, 'approved_by');
     }
+
+    public function products()
+    {
+        return $this->hasMany(Product::class);
+    }
+
 }
 

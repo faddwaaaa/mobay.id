@@ -4,10 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\Page;
 use App\Models\Link;
+use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 use Carbon\Carbon;
 
 class LinkController extends Controller
@@ -19,7 +19,7 @@ class LinkController extends Controller
     {
         $user = Auth::user();
 
-        // 🔹 Jika belum punya page sama sekali, buat page Utama
+        // Jika belum punya page sama sekali, buat page Utama
         if ($user->pages()->count() === 0) {
             $user->pages()->create([
                 'title' => 'Utama',
@@ -28,6 +28,7 @@ class LinkController extends Controller
             ]);
         }
 
+        // Ambil semua pages + blocks
         $pages = $user->pages()->with('blocks')->get();
 
         $selectedPageId = $request->query('page');
@@ -36,7 +37,16 @@ class LinkController extends Controller
             ? $pages->where('id', $selectedPageId)->first()
             : $pages->where('is_default', true)->first();
 
-        return view('dashboard.links.index', compact('pages', 'activePage'));
+        // 🔥 Ambil produk user (untuk modal block produk)
+        $products = Product::where('user_id', $user->id)
+            ->latest()
+            ->get();
+
+        return view('dashboard.links.index', [
+            'pages' => $pages,
+            'activePage' => $activePage,
+            'products' => $products,
+        ]);
     }
 
     /**
@@ -84,7 +94,9 @@ class LinkController extends Controller
 
     private function detectReferrerSource($referrer)
     {
-        if (empty($referrer)) return 'direct';
+        if (empty($referrer)) {
+            return 'direct';
+        }
 
         $referrer = strtolower($referrer);
 

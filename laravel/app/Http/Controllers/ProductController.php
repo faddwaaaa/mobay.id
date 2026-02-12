@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
-//use App\Models\Block;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -79,17 +78,6 @@ class ProductController extends Controller
         ]);
 
         /*
-        | AUTO BUAT BLOCK PRODUCT
-        */
-        // Block::create([
-        //     'user_id'    => Auth::id(),
-        //     'type'       => 'product',
-        //     'product_id' => $product->id,
-        //     'order'      => Block::where('user_id', Auth::id())->max('order') + 1,
-        // ]);
-
-
-        /*
         | SIMPAN GAMBAR
         */
         if ($request->hasFile('images')) {
@@ -116,10 +104,18 @@ class ProductController extends Controller
             }
         }
 
+        if ($request->redirect === 'builder') {
         return redirect()
-            ->route('products.manage')
+            ->route('links.index')
+            ->with('openProductModal', true) // 🔥 trigger
             ->with('success', 'Produk berhasil ditambahkan');
     }
+
+    return redirect()
+        ->route('products.manage')
+        ->with('success', 'Produk berhasil ditambahkan');
+    }
+
 
 
     /**

@@ -600,6 +600,37 @@
                         </iframe>
                     </div>
                 @endif
+                 @if($block->type === 'product' && $block->product)
+                    <div class="block">
+                        <div style="border:1px solid #e5e7eb; border-radius:12px; overflow:hidden;">
+                            
+                            {{-- IMAGE --}}
+                            @if($block->product->images && $block->product->images->count() > 0)
+                                <img 
+                                    src="{{ asset('storage/' . $block->product->images->first()->image) }}" 
+                                    width="100%">
+                            @endif
+
+                            {{-- INFO --}}
+                            <div style="padding:12px;">
+                                <h3 style="margin-bottom:6px;">
+                                    {{ $block->product->title }}
+                                </h3>
+
+                                <strong>
+                                    Rp {{ number_format($block->product->discount ?? $block->product->price, 0, ',', '.') }}
+                                </strong>
+
+                                @if($block->product->discount)
+                                    <div style="text-decoration:line-through; font-size:12px; color:#999;">
+                                        Rp {{ number_format($block->product->price, 0, ',', '.') }}
+                                    </div>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                @endif
+
             @endforeach
         @endif
     </div>
@@ -687,6 +718,35 @@
                                 </iframe>
                             </div>
                         @endif
+                        {{-- 🔥 PRODUCT --}}
+                        @if($block->type === 'product' && $block->product)
+                            <div class="block">
+                                <div style="border:1px solid #e5e7eb; border-radius:12px; overflow:hidden;">
+                                    
+                                    @if($block->product->images && $block->product->images->count() > 0)
+                                        <img 
+                                            src="{{ asset('storage/' . $block->product->images->first()->image) }}" 
+                                            width="100%">
+                                    @endif
+
+                                    <div style="padding:12px;">
+                                        <h3 style="margin-bottom:6px;">
+                                            {{ $block->product->title }}
+                                        </h3>
+
+                                        <strong>
+                                            Rp {{ number_format($block->product->discount ?? $block->product->price, 0, ',', '.') }}
+                                        </strong>
+
+                                        @if($block->product->discount)
+                                            <div style="text-decoration:line-through; font-size:12px; color:#999;">
+                                                Rp {{ number_format($block->product->price, 0, ',', '.') }}
+                                            </div>
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+                            @endif
                     @endforeach
                 @else
                     <div class="empty-state">

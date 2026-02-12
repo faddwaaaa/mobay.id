@@ -18,6 +18,11 @@
         action="{{ route('products.store') }}" 
         enctype="multipart/form-data" class="space-y-6">
             @csrf
+
+            @if(request('redirect'))
+                <input type="hidden" name="redirect" value="{{ request('redirect') }}">
+            @endif
+
             
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <!-- Left Column -->

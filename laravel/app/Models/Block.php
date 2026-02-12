@@ -7,20 +7,28 @@ use Illuminate\Database\Eloquent\Model;
 class Block extends Model
 {
     protected $fillable = [
-        'page_id', 'type', 'content', 'position', 'is_active'
+        'page_id',
+        'type',
+        'content',
+        'position',
+        'is_active',
+        'product_id' 
     ];
 
     protected $casts = [
-        'content' => 'array'
+        'content' => 'array',
     ];
 
+    /*
+    | RELATIONS
+    */
     public function page()
     {
         return $this->belongsTo(Page::class);
     }
 
     public function product()
-{
-    return $this->belongsTo(Product::class);
-}
+    {
+        return $this->belongsTo(Product::class);
+    }
 }

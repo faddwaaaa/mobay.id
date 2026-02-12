@@ -121,6 +121,10 @@ Route::middleware('auth')->group(function () {
     Route::resource('blocks', BlockController::class)
         ->only(['store', 'update', 'destroy']);
 
+    Route::post('/blocks/add-product', [BlockController::class, 'addProductBlock'])
+    ->name('blocks.addProduct');
+
+
 
     /*
     |--------------------------------------------------------------------------
@@ -128,7 +132,7 @@ Route::middleware('auth')->group(function () {
     |--------------------------------------------------------------------------
     */
     Route::get('/qr-code', function () {
-        $user = auth()->user();
+        $user = auth::user();
         return view('qr-code', [
             'userSlug'   => $user->username,
             'totalScans' => 0,
