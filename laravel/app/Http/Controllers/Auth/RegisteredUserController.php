@@ -38,20 +38,21 @@ class RegisteredUserController extends Controller
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
-        User::create([
-            'name' => $request->name,
-            'username' => $request->username,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-        ]);
-        
-        Page::create([
+$user = User::create([
+    'name' => $request->name,
+    'username' => $request->username,
+    'email' => $request->email,
+    'password' => Hash::make($request->password),
+]);
+
+Page::create([
     'user_id' => $user->id,
     'title' => 'Utama',
     'slug' => 'utama',
     'is_active' => true,
     'position' => 1,
 ]);
+ 
 
 
 
