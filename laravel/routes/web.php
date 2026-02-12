@@ -13,7 +13,8 @@ use App\Http\Controllers\{
     TransactionController,
     CallbackController,
     ProductController,
-    AnalyticsController
+    AnalyticsController,
+    LinkRedirectController
 };
 
 /*
@@ -230,26 +231,37 @@ Route::get('/preview/{username}', function ($username) {
     $page = $user->pages->first();
 
     return view('preview', compact('user', 'page'));
-});
+})->name('preview.profile');
 
 
 /*
 |--------------------------------------------------------------------------
-| SHORT LINK REDIRECT
+| LINK TRACKING DENGAN PREFIX /go/
+| Format: http://localhost:8000/go/asadtevy94
 |--------------------------------------------------------------------------
 */
-Route::get('/{short_code}', [LinkController::class, 'redirect'])
-    ->where('short_code', '[a-zA-Z0-9]{6,8}')
+Route::get('/go/{username}', [LinkRedirectController::class, 'redirect'])
     ->name('link.redirect');
 
 
 /*
 |--------------------------------------------------------------------------
-| PUBLIC PROFILE (HARUS PALING BAWAH & CUMA SATU)
+| SHORT LINK REDIRECT (untuk short_code 6-8 karakter)
+| Format: http://localhost:8000/abc123
+|--------------------------------------------------------------------------
+*/
+Route::get('/{short_code}', [LinkController::class, 'redirect'])
+    ->where('short_code', '[a-zA-Z0-9]{6,8}')
+    ->name('link.redirect.code');
+
+
+/*
+|--------------------------------------------------------------------------
+| PUBLIC PROFILE (HARUS PALING BAWAH)
+| Format: http://localhost:8000/username
 |--------------------------------------------------------------------------
 */
 Route::get('/{username}', function ($username) {
-
     $user = User::where('username', $username)
         ->with(['pages' => fn ($q) => $q->where('is_active', 1)->with('blocks')])
         ->firstOrFail();
@@ -257,5 +269,26 @@ Route::get('/{username}', function ($username) {
     $page = $user->pages->first();
 
     return view('public.profile', compact('user', 'page'));
+})->where('username', '[a-zA-Z0-9_]+')
+  ->name('public.profile');
 
-})->where('username', '[a-zA-Z0-9_]+');
+
+// ```
+
+// ## Format URL yang Didukung:
+
+// ### 1. **Link Tracking dengan Prefix `/go/`** ✅
+// ```
+// http://localhost:8000/go/asadtevy94
+// ```
+// → Track klik + redirect ke link tujuan
+
+// ### 2. **Short Code Link** ✅
+// ```
+// http://localhost:8000/abc123
+// ```
+// → Short link 6-8 karakter (dari kolom `short_code`)
+
+// ### 3. **Public Profile** ✅
+// ```
+// http://localhost:8000/asadtevy94

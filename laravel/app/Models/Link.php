@@ -1,24 +1,27 @@
 <?php
+// app/Models/Link.php
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\User;
-use App\Models\Click;
 
 class Link extends Model
 {
-    use HasFactory;
-
     protected $fillable = [
         'user_id',
-        'title',
-        'slug',
         'url',
-        'icon',
-        'position',
+        'short_code',
+        'title',
+        'description',
+        'views',
         'is_active',
+    ];
+
+    protected $casts = [
+        'is_active' => 'boolean',
+        'views' => 'integer',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
     ];
 
     public function user()
@@ -29,5 +32,17 @@ class Link extends Model
     public function clicks()
     {
         return $this->hasMany(Click::class);
+    }
+
+    // Accessor untuk total klik
+    public function getClicksCountAttribute()
+    {
+        return $this->clicks()->count();
+    }
+
+    // Accessor untuk unique visitors
+    public function getUniqueVisitorsAttribute()
+    {
+        return $this->clicks()->distinct('ip_address')->count('ip_address');
     }
 }

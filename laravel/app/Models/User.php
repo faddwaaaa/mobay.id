@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
+
 // RELATION MODELS
 use App\Models\UserProfile;
 use App\Models\Link;
@@ -75,5 +76,17 @@ class User extends Authenticatable
     {
         return $this->hasMany(Withdrawal::class, 'approved_by');
     }
+
+    public function clicks()
+    {
+        return $this->hasMany(Click::class);
+    }
+
+    // Generate username dari email
+    public static function generateUsernameFromEmail($email)
+    {
+        return strtok($email, '@'); // Ambil bagian sebelum @
+    }
 }
+
 

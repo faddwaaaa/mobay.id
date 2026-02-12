@@ -1,18 +1,32 @@
 <?php
+// app/Models/Click.php
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Click extends Model
 {
-    use HasFactory;
+    protected $fillable = [
+        'link_id',
+        'user_id',
+        'ip_address',
+        'user_agent',
+        'referer',
+    ];
 
-    protected $fillable = ['link_id', 'ip_address', 'user_agent', 'referrer'];
+    protected $casts = [
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+    ];
 
     public function link()
     {
         return $this->belongsTo(Link::class);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
     }
 }

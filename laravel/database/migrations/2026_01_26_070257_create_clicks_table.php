@@ -1,4 +1,5 @@
 <?php
+// database/migrations/xxxx_xx_xx_create_clicks_table.php
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
@@ -10,11 +11,20 @@ return new class extends Migration
     {
         Schema::create('clicks', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('link_id')->constrained()->onDelete('cascade');
-            $table->string('ip_address')->nullable();
-            $table->string('user_agent')->nullable();
-            $table->string('referrer')->nullable();
-            $table->timestamps();
+            $table->unsignedBigInteger('link_id');
+            $table->unsignedBigInteger('user_id');
+            $table->string('ip_address', 255);
+            $table->string('user_agent', 255);
+            $table->string('referer', 255)->nullable();
+            $table->timestamp('created_at');
+            $table->timestamp('updated_at');
+            
+            $table->foreign('link_id')->references('id')->on('links')->onDelete('cascade');
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+            
+            $table->index(['link_id', 'created_at']);
+            $table->index(['user_id', 'created_at']);
+            $table->index('ip_address');
         });
     }
 
