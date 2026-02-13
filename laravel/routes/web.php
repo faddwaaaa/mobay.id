@@ -14,8 +14,11 @@ use App\Http\Controllers\{
     CallbackController,
     ProductController,
     AnalyticsController,
-    LinkRedirectController
+    LinkRedirectController,
+    LinksController,
+    CheckoutController
 };
+
 
 /*
 |--------------------------------------------------------------------------
@@ -277,6 +280,9 @@ Route::get('/{username}', function ($username) {
   ->name('public.profile');
 
 
+// Route untuk checkout
+Route::get('/checkout/{product}', [CheckoutController::class, 'show'])->name('checkout.show');
+Route::post('/checkout/{product}/process', [CheckoutController::class, 'process'])->name('checkout.process');
 // ```
 
 // ## Format URL yang Didukung:

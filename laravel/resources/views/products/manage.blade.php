@@ -299,9 +299,9 @@ tbody tr:hover { background: #f1f5f9; }
                 <i class="fas fa-box"></i>
             </div>
 
-            <span class="product-status {{ $product->is_active ? 'active' : 'inactive' }}">
+            <!-- <span class="product-status {{ $product->is_active ? 'active' : 'inactive' }}">
                 {{ $product->is_active ? 'Aktif' : 'Nonaktif' }}
-            </span>
+            </span> -->
         </div>
 
         <h3>{{ $product->title }}</h3>
