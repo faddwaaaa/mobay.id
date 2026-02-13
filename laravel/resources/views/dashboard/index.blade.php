@@ -256,27 +256,6 @@
     </div>
 </div>
 
-<!-- ================= LINK TERBARU ================= -->
-<div class="content-section">
-    <div class="section-header">
-        <h2>Link Terbaru</h2>
-    </div>
-
-    <div class="links-grid">
-        @forelse($links ?? [] as $link)
-            <div class="link-card">
-                <h3>{{ $link->title }}</h3>
-                <p style="word-break:break-all;">{{ $link->url }}</p>
-                <div style="font-size:13px;">
-                    {{ $link->clicks_count ?? 0 }} klik
-                </div>
-            </div>
-        @empty
-            <p>Belum ada link.</p>
-        @endforelse
-    </div>
-</div>
-
 <!-- ================= WITHDRAW MODAL ================= -->
 <div id="withdraw-modal"
      style="display:none;position:fixed;inset:0;
