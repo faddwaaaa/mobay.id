@@ -213,55 +213,6 @@
         }
 
         /* =========================================================
-           TABS NAVIGATION (Hanya untuk custom pages user)
-        ========================================================= */
-        .tabs-container {
-            background: #fff;
-            border-bottom: 1px solid #e5e7eb;
-            position: sticky;
-            top: 57px;
-            z-index: 99;
-        }
-
-        .tabs-wrapper {
-            max-width: 420px;
-            margin: 0 auto;
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-        }
-
-        .tabs-wrapper::-webkit-scrollbar {
-            display: none;
-        }
-
-        .tabs {
-            display: flex;
-            padding: 0 16px;
-            gap: 4px;
-            min-width: min-content;
-        }
-
-        .tab {
-            padding: 12px 16px;
-            font-size: 14px;
-            font-weight: 500;
-            color: #6b7280;
-            border-bottom: 2px solid transparent;
-            cursor: pointer;
-            white-space: nowrap;
-            transition: all 0.2s;
-        }
-
-        .tab:hover {
-            color: #374151;
-        }
-
-        .tab.active {
-            color: #2563eb;
-            border-bottom-color: #2563eb;
-        }
-
-        /* =========================================================
            MAIN CONTENT
         ========================================================= */
         .container {
@@ -278,37 +229,65 @@
             display: block;
         }
 
-        .avatar {
-            width: 96px;
-            height: 96px;
-            border-radius: 50%;
-            background: #d1d5db;
-            margin: 0 auto 12px;
-            display: block;
-        }
-
-        h1 {
+        /* =========================================================
+           USER PROFILE — tampil di semua halaman
+        ========================================================= */
+        .user-profile {
             text-align: center;
-            font-size: 20px;
-            margin: 8px 0 4px;
-            color: #111827;
-        }
-
-        .username {
-            text-align: center;
-            color: #6b7280;
-            font-size: 14px;
-            margin-bottom: 12px;
-        }
-
-        .bio {
-            text-align: center;
-            font-size: 14px;
             margin-bottom: 24px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: #e5e7eb;
+            margin: 0 auto 10px;
+            display: block;
+            object-fit: cover;
+            border: 3px solid #fff;
+            box-shadow: 0 0 0 2px #e5e7eb;
+        }
+
+        .avatar-placeholder {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: #e5e7eb;
+            margin: 0 auto 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            color: #9ca3af;
+            border: 3px solid #fff;
+            box-shadow: 0 0 0 2px #e5e7eb;
+        }
+
+        .profile-name {
+            font-size: 17px;
+            font-weight: 700;
+            color: #111827;
+            margin-bottom: 2px;
+        }
+
+        .profile-username {
+            color: #6b7280;
+            font-size: 13px;
+            margin-bottom: 8px;
+        }
+
+        .profile-bio {
+            font-size: 13px;
             color: #374151;
             line-height: 1.5;
         }
 
+        /* =========================================================
+           BLOCKS
+        ========================================================= */
         .block {
             margin-bottom: 12px;
         }
@@ -350,6 +329,133 @@
             border: none;
         }
 
+        /* =========================================================
+           PRODUCT CARD — MINIMALIST BLUE
+        ========================================================= */
+        .block-product {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            overflow: hidden;
+            transition: box-shadow 0.2s, transform 0.2s, border-color 0.2s;
+            cursor: pointer;
+        }
+
+        .block-product:hover {
+            box-shadow: 0 4px 16px rgba(37, 99, 235, 0.1);
+            transform: translateY(-2px);
+            border-color: #bfdbfe;
+        }
+
+        .product-image-wrapper {
+            width: 100%;
+            height: 200px;
+            background: #f3f4f6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .product-image-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .product-image-placeholder {
+            width: 56px;
+            height: 56px;
+            background: #eff6ff;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
+        }
+
+        .product-details {
+            padding: 14px 16px 16px;
+        }
+
+        .product-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: #eff6ff;
+            color: #2563eb;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 3px 8px;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            letter-spacing: 0.3px;
+        }
+
+        .product-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 10px;
+            line-height: 1.4;
+        }
+
+        .product-price-section {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 14px;
+        }
+
+        .product-current-price {
+            font-size: 18px;
+            font-weight: 700;
+            color: #2563eb;
+        }
+
+        .product-original-price {
+            font-size: 13px;
+            color: #9ca3af;
+            text-decoration: line-through;
+        }
+
+        .product-discount-badge {
+            background: #fee2e2;
+            color: #dc2626;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        .product-cta {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            background: #2563eb;
+            color: #fff;
+            font-weight: 600;
+            font-size: 14px;
+            padding: 11px 16px;
+            border-radius: 8px;
+            text-decoration: none;
+            transition: background 0.2s;
+        }
+
+        .product-cta:hover {
+            background: #1d4ed8;
+        }
+
+        .product-cta svg {
+            width: 16px;
+            height: 16px;
+            flex-shrink: 0;
+        }
+
+        /* =========================================================
+           EMPTY STATE
+        ========================================================= */
         .empty-state {
             text-align: center;
             padding: 40px 20px;
@@ -383,6 +489,7 @@
             overflow: hidden;
             border: 1px solid #e5e7eb;
             transition: all 0.2s;
+            cursor: pointer;
         }
 
         .product-card:hover {
@@ -409,7 +516,7 @@
             padding: 12px;
         }
 
-        .product-title {
+        .product-info .product-title {
             font-size: 14px;
             font-weight: 600;
             color: #111827;
@@ -440,226 +547,252 @@
 </head>
 <body>
 
-<!-- ================= NAVBAR ================= -->
 <!-- NAVBAR -->
 <div class="navbar">
     <div class="navbar-container">
-
         <div class="navbar-left">
             <div class="hamburger" id="hamburger">
                 <span></span>
                 <span></span>
                 <span></span>
             </div>
-
-            <div class="navbar-title">
-                {{ $user->name }}
-            </div>
+            <div class="navbar-title">{{ $user->name }}</div>
         </div>
-
         <div class="navbar-right">
             <div class="nav-icon" id="cartBtn">
                 <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round"
-                          stroke-linejoin="round"
-                          stroke-width="2"
-                          d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293
-                             2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0
-                             100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
                 </svg>
                 <span class="cart-badge">0</span>
             </div>
         </div>
-
     </div>
 </div>
 
-<!-- OVERLAY -->
+<!-- SIDEBAR OVERLAY -->
 <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
 <!-- SIDEBAR -->
 <div class="sidebar" id="sidebar">
-
     <div class="sidebar-header">
         <h3>Menu</h3>
     </div>
-
     <div class="sidebar-menu">
-        @foreach($user->pages as $page)
-            <a href="#"
-               class="menu-item {{ $loop->first ? 'active' : '' }}"
-               data-tab="page-{{ $page->id }}">
-                <span class="menu-text">
-                    {{ $page->title }}
-                </span>
-            </a>
-        @endforeach
-    </div>
-
-</div>
-
-
-
-<!-- TABS (Hanya untuk custom pages, bukan Home & Produk) -->
-@if(isset($userPages) && $userPages->count() > 0)
-<div class="tabs-container">
-    <div class="tabs-wrapper">
-        <div class="tabs">
-            @foreach($userPages as $userPage)
-                <div class="tab {{ $loop->first ? 'active' : '' }}" data-tab="page-{{ $userPage->id }}">
-                    {{ $userPage->name ?? 'Halaman' }}
-                </div>
+        @if($user->pages && $user->pages->count() > 0)
+            @foreach($user->pages as $userPage)
+                <a href="#" class="menu-item {{ $loop->first ? 'active' : '' }}" data-tab="page-{{ $userPage->id }}">
+                    <span class="menu-text">{{ $userPage->title }}</span>
+                </a>
             @endforeach
-        </div>
+        @endif
     </div>
 </div>
-@endif
 
 <!-- MAIN CONTENT -->
 <div class="container">
 
-    <!-- PROFILE HEADER (TAMPIL DI SEMUA PAGE) -->
-    <div style="text-align:center; margin-bottom:28px;">
+    @if($user->pages && $user->pages->count() > 0)
+        @foreach($user->pages as $userPage)
+            <div class="tab-content {{ $loop->first ? 'active' : '' }}" id="tab-page-{{ $userPage->id }}">
 
-        @if($user->avatar)
-            <img src="{{ asset('storage/' . $user->avatar) }}"
-                 class="avatar"
-                 style="object-fit:cover; margin:0 auto;">
-        @else
-            <div class="avatar"></div>
-        @endif
-
-        <h1 style="margin-top:12px;">
-            {{ $user->name }}
-        </h1>
-
-        <div class="username">
-            {{ '@' . $user->username }}
-        </div>
-
-        @if($user->bio)
-            <div class="bio">
-                {{ $user->bio }}
-            </div>
-        @endif
-
-    </div>
-
-
-    <!-- SEMUA PAGE -->
-    @foreach($user->pages as $page)
-        <div class="tab-content {{ $loop->first ? 'active' : '' }}"
-             id="tab-page-{{ $page->id }}">
-
-            @if($page->blocks->count() > 0)
-
-                @foreach($page->blocks->sortBy('position') as $block)
-
-                    @if($block->type === 'text')
-                        <div class="block block-text">
-                            {{ $block->content['text'] ?? '' }}
-                        </div>
+                {{-- USER PROFILE — ditampilkan di SEMUA halaman --}}
+                <div class="user-profile">
+                    @if($user->avatar)
+                        <img
+                            src="{{ asset('storage/' . $user->avatar) }}"
+                            class="avatar"
+                            alt="{{ $user->name }}"
+                        >
+                    @else
+                        <div class="avatar-placeholder">👤</div>
                     @endif
 
-                    @if($block->type === 'link')
-                        <div class="block block-link">
-                            <a href="{{ $block->content['url'] ?? '#' }}" target="_blank">
-                                {{ $block->content['title'] ?? 'Link' }}
-                            </a>
-                        </div>
+                    <div class="profile-name">{{ $user->name }}</div>
+                    <div class="profile-username">{{ '@' . $user->username }}</div>
+
+                    @if($user->bio)
+                        <div class="profile-bio">{{ $user->bio }}</div>
                     @endif
-
-                    @if($block->type === 'image')
-                        <div class="block block-image">
-                            <img src="{{ asset('storage/' . $block->content['image']) }}">
-                        </div>
-                    @endif
-
-                    @if($block->type === 'video')
-                        @php
-                            $url = $block->content['url'] ?? '';
-                            parse_str(parse_url($url, PHP_URL_QUERY), $query);
-                            $videoId = $query['v'] ?? '';
-                            if (!$videoId && str_contains($url, 'youtu.be/')) {
-                                $videoId = basename(parse_url($url, PHP_URL_PATH));
-                            }
-                        @endphp
-
-                        <div class="block block-video">
-                            <iframe
-                                src="https://www.youtube.com/embed/{{ $videoId }}"
-                                allowfullscreen>
-                            </iframe>
-                        </div>
-                    @endif
-
-                @endforeach
-
-            @else
-                <div class="empty-state">
-                    <div class="empty-icon">📝</div>
-                    Halaman ini belum memiliki konten.
                 </div>
-            @endif
 
+                @if($userPage->blocks && $userPage->blocks->count() > 0)
+                    @foreach($userPage->blocks->sortBy('position') as $block)
+
+                        {{-- TEXT --}}
+                        @if($block->type === 'text')
+                            <div class="block block-text">
+                                {{ $block->content['text'] ?? '' }}
+                            </div>
+                        @endif
+
+                        {{-- LINK --}}
+                        @if($block->type === 'link')
+                            <div class="block block-link">
+                                <a href="{{ $block->content['url'] ?? '#' }}" target="_blank">
+                                    {{ $block->content['title'] ?? 'Link' }}
+                                </a>
+                            </div>
+                        @endif
+
+                        {{-- IMAGE --}}
+                        @if($block->type === 'image')
+                            <div class="block block-image">
+                                <img src="{{ asset('storage/' . $block->content['image']) }}">
+                            </div>
+                        @endif
+
+                        {{-- VIDEO --}}
+                        @if($block->type === 'video')
+                            @php
+                                $videoId = $block->content['youtube_id'] ?? '';
+                                if (!$videoId) {
+                                    $url = $block->content['youtube_url'] ?? '';
+                                    parse_str(parse_url($url, PHP_URL_QUERY), $query);
+                                    $videoId = $query['v'] ?? '';
+                                    if (!$videoId && str_contains($url, 'youtu.be/')) {
+                                        $videoId = basename(parse_url($url, PHP_URL_PATH));
+                                    }
+                                }
+                            @endphp
+                            <div class="block block-video">
+                                <iframe
+                                    src="https://www.youtube.com/embed/{{ $videoId }}"
+                                    allowfullscreen>
+                                </iframe>
+                            </div>
+                        @endif
+
+                        {{-- PRODUCT — MINIMALIST BLUE --}}
+                        @if($block->type === 'product' && isset($block->content['product']))
+                            @php
+                                $product = $block->content['product'];
+                                $productPrice = $product['price'] ?? 0;
+                                $productDiscount = $product['discount'] ?? null;
+                                $finalPrice = $productDiscount ?? $productPrice;
+                                $hasDiscount = $productDiscount && $productDiscount < $productPrice;
+                                $discountPercent = $hasDiscount ? round((($productPrice - $productDiscount) / $productPrice) * 100) : 0;
+                            @endphp
+
+                            <div class="block block-product" onclick="handleProductClick({{ $block->product_id ?? 'null' }})">
+                                <div class="product-image-wrapper">
+                                    @if(isset($product['image']))
+                                        <img src="{{ asset('storage/' . $product['image']) }}"
+                                             alt="{{ $product['title'] ?? 'Product' }}">
+                                    @else
+                                        <div class="product-image-placeholder">🛍️</div>
+                                    @endif
+                                </div>
+
+                                <div class="product-details">
+                                    @if($hasDiscount)
+                                        <span class="product-badge">🏷️ Diskon {{ $discountPercent }}%</span>
+                                    @endif
+
+                                    <div class="product-title">
+                                        {{ $product['title'] ?? 'Produk' }}
+                                    </div>
+
+                                    <div class="product-price-section">
+                                        <div class="product-current-price">
+                                            Rp {{ number_format($finalPrice, 0, ',', '.') }}
+                                        </div>
+
+                                        @if($hasDiscount)
+                                            <div class="product-original-price">
+                                                Rp {{ number_format($productPrice, 0, ',', '.') }}
+                                            </div>
+                                            <div class="product-discount-badge">-{{ $discountPercent }}%</div>
+                                        @endif
+                                    </div>
+
+                                    <a href="#" class="product-cta" onclick="event.stopPropagation(); handleProductClick({{ $block->product_id ?? 'null' }})">
+                                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
+                                        </svg>
+                                        <span>Beli Sekarang</span>
+                                    </a>
+                                </div>
+                            </div>
+                        @endif
+
+                    @endforeach
+                @else
+                    <div class="empty-state">
+                        <div class="empty-icon">📝</div>
+                        Halaman ini belum memiliki konten.
+                    </div>
+                @endif
+            </div>
+        @endforeach
+    @else
+        <div class="empty-state">
+            <div class="empty-icon">📄</div>
+            Belum ada halaman.
         </div>
-    @endforeach
+    @endif
 
 </div>
 
-
-
-
 <script>
-document.addEventListener("DOMContentLoaded", function () {
+// ========== HAMBURGER MENU ==========
+const hamburger = document.getElementById('hamburger');
+const sidebar = document.getElementById('sidebar');
+const sidebarOverlay = document.getElementById('sidebarOverlay');
 
-    const hamburger = document.getElementById("hamburger");
-    const sidebar = document.getElementById("sidebar");
-    const overlay = document.getElementById("sidebarOverlay");
-    const menuItems = document.querySelectorAll(".menu-item");
-    const tabContents = document.querySelectorAll(".tab-content");
+function toggleSidebar() {
+    hamburger.classList.toggle('active');
+    sidebar.classList.toggle('active');
+    sidebarOverlay.classList.toggle('active');
+}
 
-    function toggleSidebar() {
-        sidebar.classList.toggle("active");
-        overlay.classList.toggle("active");
-        hamburger.classList.toggle("active");
+hamburger.addEventListener('click', toggleSidebar);
+sidebarOverlay.addEventListener('click', toggleSidebar);
+
+// ========== TAB SWITCHING ==========
+const menuItems = document.querySelectorAll('.menu-item');
+const tabContents = document.querySelectorAll('.tab-content');
+
+function switchTab(tabName) {
+    menuItems.forEach(m => m.classList.remove('active'));
+    document.querySelector(`.menu-item[data-tab="${tabName}"]`)?.classList.add('active');
+
+    tabContents.forEach(c => c.classList.remove('active'));
+    document.getElementById(`tab-${tabName}`)?.classList.add('active');
+
+    if (window.innerWidth < 768) {
+        toggleSidebar();
     }
+}
 
-    if (hamburger) {
-        hamburger.addEventListener("click", toggleSidebar);
-    }
-
-    if (overlay) {
-        overlay.addEventListener("click", toggleSidebar);
-    }
-
-    menuItems.forEach(item => {
-        item.addEventListener("click", function (e) {
-            e.preventDefault();
-
-            const tabName = this.dataset.tab;
-
-            menuItems.forEach(m => m.classList.remove("active"));
-            this.classList.add("active");
-
-            tabContents.forEach(content => {
-                content.classList.remove("active");
-            });
-
-            const target = document.getElementById("tab-" + tabName);
-            if (target) {
-                target.classList.add("active");
-            }
-
-            toggleSidebar();
-        });
+menuItems.forEach(item => {
+    item.addEventListener('click', (e) => {
+        e.preventDefault();
+        switchTab(item.dataset.tab);
     });
+});
 
+// ========== PRODUCT CLICK HANDLER ==========
+function handleProductClick(productId) {
+    if (!productId) {
+        console.log('Product ID not found');
+        return;
+    }
+
+    const isPreview = window.location.pathname.includes('/preview/');
+
+    if (isPreview) {
+        console.log('Preview mode - Product ID:', productId);
+    } else {
+        window.location.href = `/checkout/${productId}`;
+    }
+}
+
+// ========== CART BUTTON ==========
+const cartBtn = document.getElementById('cartBtn');
+cartBtn.addEventListener('click', () => {
+    alert('Fitur keranjang akan segera hadir!');
 });
 </script>
 
-
-
 </body>
 </html>
-

@@ -11,6 +11,7 @@ use Illuminate\View\View;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use App\Models\User;
+use App\Models\Product;
 
 class ProfileController extends Controller
 {
@@ -86,5 +87,87 @@ class ProfileController extends Controller
         $request->session()->regenerateToken();
 
         return Redirect::to('/');
+    }
+
+    public function preview($username)
+    {
+        // Get user with pages and blocks
+        // 🔥 PENTING: Load product relationship
+        $user = User::where('username', $username)
+            ->with([
+                'pages.blocks' => function ($query) {
+                    $query->orderBy('position');
+                },
+                'pages.blocks.product.images' // Load product dan images-nya
+            ])
+            ->firstOrFail();
+
+        // Get selected page from query parameter
+        $pageId = request()->query('page');
+        
+        if ($pageId) {
+            $page = $user->pages->where('id', $pageId)->first();
+        } else {
+            $page = $user->pages->first();
+        }
+
+        // Get all products for modal
+        $products = Product::with('images')
+            ->where('user_id', $user->id)
+            ->latest()
+            ->get();
+
+        return view('preview', compact('user', 'page', 'products'));
+    }
+
+    /**
+     * Show public profile
+     * Route: /{username}
+     */
+    public function show($username)
+    {
+        // Get user with pages and blocks
+        // 🔥 PENTING: Load product relationship
+        $user = User::where('username', $username)
+            ->with([
+                'pages.blocks' => function ($query) {
+                    $query->orderBy('position');
+                },
+                'pages.blocks.product.images' // Load product dan images-nya
+            ])
+            ->firstOrFail();
+
+        // Get all products for display
+        $products = Product::with('images')
+            ->where('user_id', $user->id)
+            ->latest()
+            ->get();
+
+        return view('profile.show', compact('user', 'products'));
+    }
+
+    /**
+     * Show specific page
+     * Route: /{username}/{pageSlug}
+     */
+    public function showPage($username, $pageSlug)
+    {
+        $user = User::where('username', $username)
+            ->with([
+                'pages.blocks' => function ($query) {
+                    $query->orderBy('position');
+                },
+                'pages.blocks.product.images'
+            ])
+            ->firstOrFail();
+
+        $page = $user->pages->where('slug', $pageSlug)->firstOrFail();
+
+        $products = Product::with('images')
+            ->where('user_id', $user->id)
+            ->latest()
+            ->get();
+
+        return view('profile.show', compact('user', 'page', 'products'));
     }
 }

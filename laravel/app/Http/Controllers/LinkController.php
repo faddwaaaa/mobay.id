@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
+
 class LinkController extends Controller
 {
     /**
@@ -47,6 +48,26 @@ class LinkController extends Controller
             'activePage' => $activePage,
             'products' => $products,
         ]);
+
+        // Get pages with blocks
+        // 🔥 PENTING: Load product relationship
+        $pages = Page::where('user_id', $user->id)
+            ->with([
+                'blocks' => function ($query) {
+                    $query->orderBy('position');
+                },
+                'blocks.product.images' // Load product dan images-nya
+            ])
+            ->orderBy('created_at')
+            ->get();
+
+        // Get all products for modal
+        $products = Product::with('images')
+            ->where('user_id', $user->id)
+            ->latest()
+            ->get();
+
+        return view('links.index', compact('pages', 'products'));
     }
 
     /**
