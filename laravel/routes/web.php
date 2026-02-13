@@ -286,6 +286,23 @@ Route::get('/{username}', function ($username) {
 // Route untuk checkout
 Route::get('/checkout/{product}', [CheckoutController::class, 'show'])->name('checkout.show');
 Route::post('/checkout/{product}/process', [CheckoutController::class, 'process'])->name('checkout.process');
+
+
+// {{-- ================================================================
+//      ROUTES — Tambahkan ke routes/web.php
+//      ================================================================
+
+Route::get('/checkout/{productId}',  [CheckoutController::class, 'show'])->name('checkout.show');
+Route::post('/checkout/process',     [CheckoutController::class, 'process'])->name('checkout.process');
+Route::get('/checkout/success',      [CheckoutController::class, 'success'])->name('checkout.success');
+Route::get('/checkout/pending',      [CheckoutController::class, 'pending'])->name('checkout.pending');
+
+// Webhook Midtrans — WAJIB exclude dari CSRF middleware
+// Di App\Http\Middleware\VerifyCsrfToken.php tambahkan:
+// protected $except = ['midtrans/webhook'];
+Route::post('/midtrans/webhook',     [CheckoutController::class, 'webhook'])->name('midtrans.webhook');
+
+// ================================================================ --}}
 // ```
 
 // ## Format URL yang Didukung:
