@@ -131,4 +131,26 @@ class ProductController extends Controller
 
         return back()->with('success', 'Produk berhasil dihapus');
     }
+
+    public function update(Request $request, Product $product)
+{
+    $request->validate([
+        'title' => 'required',
+        'price' => 'required|numeric'
+    ]);
+
+    if($request->hasFile('image')){
+        $path = $request->file('image')->store('products','public');
+        $product->image = $path;
+    }
+
+    $product->update([
+        'title' => $request->title,
+        'description' => $request->description,
+        'price' => $request->price
+    ]);
+
+    return back()->with('success','Produk berhasil diupdate');
+}
+
 }

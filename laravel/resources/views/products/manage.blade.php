@@ -1,3 +1,4 @@
+
 @extends('layouts.dashboard')
 
 @section('title', 'Produk')
@@ -246,109 +247,157 @@ tbody tr:hover { background: #f1f5f9; }
 }
 </style>
 
-{{-- ================= HEADER ================= --}}
-@if($products->count() && !$showForm)
-<div class="flex justify-between items-center mb-6">
-    <div>
-        <h1 class="text-xl font-bold">Produk Saya</h1>
-        <p class="text-sm text-gray-500">Kelola semua produk digital kamu</p>
-    </div>
-
-    <a href="{{ route('products.manage', ['tambah' => 1]) }}"
-       class="btn-primary">
-        <i class="fas fa-plus"></i> Tambah Produk
-    </a>
-</div>
-@endif
-
-
-
-{{-- ================= EMPTY STATE ================= --}}
-@if(!$products->count() && !$showForm)
-<div class="empty-state">
-    <div class="empty-icon">
-        <i class="fas fa-box-open"></i>
-    </div>
-    <h3>Belum ada produk</h3>
-    <p>Tambahkan produk pertama kamu untuk mulai berjualan</p>
-
-    <a href="{{ route('products.manage', ['tambah' => 1]) }}"
-       class="btn-primary">
-        <i class="fas fa-plus"></i> Tambah Produk
-    </a>
-</div>
-@endif
-
-
 {{-- ================= ADD PRODUCT FORM ================= --}}
 @if($showForm)
 
-
     @include('products._form')
-</div>
-@endif
+
+@else
+
+    {{-- ================= HEADER ================= --}}
+    @if($products->count())
+    <div class="flex justify-between items-center mb-6">
+        <div>
+            <h1 class="text-xl font-bold">Produk Saya</h1>
+            <p class="text-sm text-gray-500">Kelola semua produk digital kamu</p>
+        </div>
+
+        <a href="{{ route('products.manage', ['tambah' => 1]) }}"
+           class="btn-primary">
+            <i class="fas fa-plus"></i> Tambah Produk
+        </a>
+    </div>
+    @endif
 
 
-{{-- ================= PRODUCT LIST ================= --}}
-@if($products->count() && !$showForm)
-<div class="links-grid">
-@foreach($products as $product)
-    <div class="link-card">
-        <div class="link-card-header">
-            <div class="link-icon">
-                <i class="fas fa-box"></i>
+    {{-- ================= EMPTY STATE ================= --}}
+    @if(!$products->count())
+    <div class="empty-state">
+        <div class="empty-icon">
+            <i class="fas fa-box-open"></i>
+        </div>
+        <h3>Belum ada produk</h3>
+        <p>Tambahkan produk pertama kamu untuk mulai berjualan</p>
+
+        <a href="{{ route('products.manage', ['tambah' => 1]) }}"
+           class="btn-primary">
+            <i class="fas fa-plus"></i> Tambah Produk
+        </a>
+    </div>
+    @endif
+
+
+    {{-- ================= GRID PRODUK ================= --}}
+    @if($products->count())
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-10">
+        @foreach($products as $product)
+        <div class="bg-white rounded-xl shadow hover:shadow-lg transition overflow-hidden">
+
+            <div class="h-40 bg-gray-100">
+                @if($product->image)
+                    <img src="{{ asset('storage/'.$product->image) }}"
+                         class="w-full h-full object-cover">
+                @else
+                    <div class="flex items-center justify-center h-full text-gray-400">
+                        Tidak ada gambar
+                    </div>
+                @endif
             </div>
 
-            <span class="product-status {{ $product->is_active ? 'active' : 'inactive' }}">
-                {{ $product->is_active ? 'Aktif' : 'Nonaktif' }}
-            </span>
-        </div>
+            <div class="p-4">
+                <h3 class="font-semibold text-sm mb-1">
+                    {{ $product->title }}
+                </h3>
 
-        <h3>{{ $product->title }}</h3>
-        <p class="link-description">
-            {{ Str::limit($product->description ?? 'Tidak ada deskripsi', 70) }}
-        </p>
+                <div class="text-xs text-gray-500 mb-2">
+                    {{ Str::limit($product->description, 40) }}
+                </div>
 
-        <div class="product-price">
-            @if($product->discount)
-                <span class="original-price">
+                <div class="font-bold text-blue-600 text-sm mb-3">
                     Rp {{ number_format($product->price,0,',','.') }}
-                </span>
-                <span class="discount-price">
-                    Rp {{ number_format($product->discount,0,',','.') }}
-                </span>
-            @else
-                <span class="normal-price">
-                    Rp {{ number_format($product->price,0,',','.') }}
-                </span>
-            @endif
+                </div>
+
+                <div class="flex justify-between items-center">
+                    <button onclick="openEditModal({{ $product->id }})"
+                        class="text-xs bg-gray-100 px-3 py-1 rounded-lg hover:bg-gray-200">
+                        Edit
+                    </button>
+
+                    <form method="POST" action="{{ route('products.destroy', $product) }}">
+                        @csrf
+                        @method('DELETE')
+                        <button onclick="return confirm('Yakin hapus produk?')"
+                            class="text-xs bg-red-100 text-red-600 px-3 py-1 rounded-lg hover:bg-red-200">
+                            Hapus
+                        </button>
+                    </form>
+                </div>
+            </div>
         </div>
+        @endforeach
+    </div>
+    @endif
 
-        <div class="link-actions">
-            <button class="btn-action edit">
-                <i class="fas fa-pen"></i>
-            </button>
 
-            <form method="POST" action="{{ route('products.destroy', $product) }}">
-                @csrf
-                @method('DELETE')
-                <button class="btn-action delete">
-                    <i class="fas fa-trash"></i>
-                </button>
-            </form>
+    {{-- ================= TABLE REALTIME ================= --}}
+    <div class="bg-white rounded-xl shadow p-6">
+        <h2 class="font-semibold mb-4">Product Lifetime Sales</h2>
+
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead class="bg-gray-50 text-gray-500">
+                    <tr>
+                        <th class="text-left p-3">Produk</th>
+                        <th class="text-center p-3">Views</th>
+                        <th class="text-center p-3">Sold</th>
+                        <th class="text-center p-3">Amount</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @foreach($products as $product)
+                    <tr class="border-t">
+                        <td class="p-3 flex items-center gap-3">
+                            <img src="{{ $product->image ? asset('storage/'.$product->image) : 'https://via.placeholder.com/50' }}"
+                                 class="w-10 h-10 rounded object-cover">
+                            {{ $product->title }}
+                        </td>
+
+                        <td class="text-center">
+                            {{ $product->views ?? 0 }}
+                        </td>
+
+                        <td class="text-center">
+                            {{ $product->sold ?? 0 }}
+                        </td>
+
+                        <td class="text-center">
+                            Rp {{ number_format($product->sold * $product->price,0,',','.') }}
+                        </td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
         </div>
     </div>
-@endforeach
-</div>
-@endif
+
+@endif {{-- INI PENUTUP showForm --}}
+
+@include('products.edit')
 
 <script>
-document.querySelectorAll('.btn-action.copy').forEach(btn => {
-    btn.onclick = () => {
-        navigator.clipboard.writeText(btn.dataset.link);
-        alert('Link produk disalin');
-    }
-});
+function openEditModal(id){
+    const modal = document.getElementById('editModal-'+id);
+    modal.classList.remove('hidden');
+    document.body.classList.add('overflow-hidden');
+}
+
+function closeEditModal(id){
+    const modal = document.getElementById('editModal-'+id);
+    modal.classList.add('hidden');
+    document.body.classList.remove('overflow-hidden');
+}
 </script>
 
 @endsection
+

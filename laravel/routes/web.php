@@ -155,6 +155,9 @@ Route::middleware('auth')->group(function () {
 
     Route::delete('/produk/{produk}', [ProductController::class, 'destroy'])
         ->name('products.destroy');
+  
+    Route::put('/produk/{product}/update', [ProductController::class, 'update'])
+        ->name('products.update');
 
 
     /*
