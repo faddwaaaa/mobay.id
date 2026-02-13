@@ -19,24 +19,28 @@ class PageController extends Controller
         ]);
 
         $slug = Str::slug($request->title);
-        
-        // Check if slug exists
+
         $originalSlug = $slug;
         $counter = 1;
-        while (Page::where('user_id', Auth::id())->where('slug', $slug)->exists()) {
+
+        while (Page::where('user_id', Auth::id())
+                ->where('slug', $slug)
+                ->exists()) {
             $slug = $originalSlug . '-' . $counter;
             $counter++;
         }
 
-        Page::create([
+        $page = Page::create([
             'user_id' => Auth::id(),
             'title' => $request->title,
             'slug' => $slug,
             'is_active' => true,
-            'position' => Page::where('user_id', Auth::id())->max('position') + 1,
+            'position' => (Page::where('user_id', Auth::id())->max('position') ?? 0) + 1,
         ]);
 
-        return redirect()->route('links.index')->with('success', 'Halaman berhasil dibuat!');
+        return redirect()->route('links.index', [
+            'page' => $page->id
+        ])->with('success', 'Halaman berhasil dibuat!');
     }
 
     /**
