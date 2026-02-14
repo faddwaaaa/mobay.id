@@ -294,16 +294,15 @@ tbody tr:hover { background: #f1f5f9; }
         <div class="bg-white rounded-xl shadow hover:shadow-lg transition overflow-hidden">
 
             <div class="h-40 bg-gray-100">
-                @if($product->image)
-                    <img src="{{ asset('storage/'.$product->image) }}"
-                         class="w-full h-full object-cover">
+                @if($product->images->first())
+                    <img src="{{ asset('storage/'.$product->images->first()->image) }}"
+                        class="w-full h-full object-cover">
                 @else
                     <div class="flex items-center justify-center h-full text-gray-400">
                         Tidak ada gambar
                     </div>
                 @endif
             </div>
-
 
             <div class="p-4">
                 <h3 class="font-semibold text-sm mb-1">
@@ -359,8 +358,14 @@ tbody tr:hover { background: #f1f5f9; }
                     @foreach($products as $product)
                     <tr class="border-t">
                         <td class="p-3 flex items-center gap-3">
-                            <img src="{{ $product->image ? asset('storage/'.$product->image) : 'https://via.placeholder.com/50' }}"
-                                 class="w-10 h-10 rounded object-cover">
+                            @php
+                                $firstImage = $product->images->first();
+                            @endphp
+
+                            <img src="{{ $firstImage 
+                                ? asset('storage/'.$firstImage->image) 
+                                : 'https://via.placeholder.com/50' }}"
+                                class="w-10 h-10 rounded object-cover">
                             {{ $product->title }}
                         </td>
 

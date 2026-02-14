@@ -710,7 +710,7 @@
 
                                 <div class="product-details">
                                     @if($hasDiscount)
-                                        <span class="product-badge">🏷️ Diskon {{ $discountPercent }}%</span>
+                                        <span class="product-badge">Diskon {{ $discountPercent }}%</span>
                                     @endif
 
                                     <div class="product-title">

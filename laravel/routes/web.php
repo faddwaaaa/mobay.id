@@ -38,24 +38,51 @@ require __DIR__ . '/auth.php';
 
 /*
 |--------------------------------------------------------------------------
+| CHECKOUT — HARUS DI LUAR AUTH & DI ATAS PUBLIC PROFILE
+|--------------------------------------------------------------------------
+*/
+
+// Statis dulu — WAJIB sebelum {productId}
+Route::get('/checkout/success', [CheckoutController::class, 'success'])->name('checkout.success');
+Route::get('/checkout/pending', [CheckoutController::class, 'pending'])->name('checkout.pending');
+
+// Baru parameter
+Route::get('/checkout/{productId}',   [CheckoutController::class, 'show'])->name('checkout.show');
+Route::post('/checkout/process',      [CheckoutController::class, 'process'])->name('checkout.process');
+
+// Webhook Midtrans (dikecualikan dari CSRF di VerifyCsrfToken.php)
+Route::post('/midtrans/webhook',      [CheckoutController::class, 'webhook'])->name('midtrans.webhook');
+
+
+/*
+|--------------------------------------------------------------------------
+| MIDTRANS CALLBACK (existing)
+|--------------------------------------------------------------------------
+*/
+Route::post('/api/callback/midtrans', [CallbackController::class, 'handleMidtransCallback'])
+    ->name('midtrans.callback');
+
+
+/*
+|--------------------------------------------------------------------------
 | AUTHENTICATED ROUTES
 |--------------------------------------------------------------------------
 */
 Route::middleware('auth')->group(function () {
 
     /*
-    |--------------------------------------------------------------------------
+    |----------------------------------------------------------------------
     | DASHBOARD
-    |--------------------------------------------------------------------------
+    |----------------------------------------------------------------------
     */
     Route::get('/dashboard', [DashboardController::class, 'index'])
         ->name('dashboard');
 
 
     /*
-    |--------------------------------------------------------------------------
+    |----------------------------------------------------------------------
     | ANALYTICS
-    |--------------------------------------------------------------------------
+    |----------------------------------------------------------------------
     */
     Route::prefix('analitik')->name('analitik.')->group(function () {
         Route::get('/', [AnalyticsController::class, 'index'])
@@ -64,9 +91,9 @@ Route::middleware('auth')->group(function () {
 
 
     /*
-    |--------------------------------------------------------------------------
+    |----------------------------------------------------------------------
     | PROFILE
-    |--------------------------------------------------------------------------
+    |----------------------------------------------------------------------
     */
     Route::get('/profile', [ProfileController::class, 'show'])
         ->name('profile.show');
@@ -85,18 +112,18 @@ Route::middleware('auth')->group(function () {
 
 
     /*
-    |--------------------------------------------------------------------------
+    |----------------------------------------------------------------------
     | LINKS
-    |--------------------------------------------------------------------------
+    |----------------------------------------------------------------------
     */
     Route::get('/links', [LinkController::class, 'index'])
         ->name('links.index');
 
 
     /*
-    |--------------------------------------------------------------------------
+    |----------------------------------------------------------------------
     | PAGE
-    |--------------------------------------------------------------------------
+    |----------------------------------------------------------------------
     */
     Route::post('/pages', [PageController::class, 'store'])
         ->name('pages.store');
@@ -112,9 +139,9 @@ Route::middleware('auth')->group(function () {
 
 
     /*
-    |--------------------------------------------------------------------------
-    | BLOCK (FIXED)
-    |--------------------------------------------------------------------------
+    |----------------------------------------------------------------------
+    | BLOCK
+    |----------------------------------------------------------------------
     */
     Route::get('/blocks/create', fn () => view('dashboard.links.blocks.create'))
         ->name('blocks.create');
@@ -126,14 +153,13 @@ Route::middleware('auth')->group(function () {
         ->only(['store', 'update', 'destroy']);
 
     Route::post('/blocks/add-product', [BlockController::class, 'addProductBlock'])
-    ->name('blocks.addProduct');
-
+        ->name('blocks.addProduct');
 
 
     /*
-    |--------------------------------------------------------------------------
+    |----------------------------------------------------------------------
     | QR CODE
-    |--------------------------------------------------------------------------
+    |----------------------------------------------------------------------
     */
     Route::get('/qr-code', function () {
         $user = auth::user();
@@ -146,9 +172,9 @@ Route::middleware('auth')->group(function () {
 
 
     /*
-    |--------------------------------------------------------------------------
+    |----------------------------------------------------------------------
     | PRODUK
-    |--------------------------------------------------------------------------
+    |----------------------------------------------------------------------
     */
     Route::get('/produk', [ProductController::class, 'index'])
         ->name('products.manage');
@@ -158,15 +184,15 @@ Route::middleware('auth')->group(function () {
 
     Route::delete('/produk/{produk}', [ProductController::class, 'destroy'])
         ->name('products.destroy');
-  
+
     Route::put('/produk/{product}/update', [ProductController::class, 'update'])
         ->name('products.update');
 
 
     /*
-    |--------------------------------------------------------------------------
-    | PAYMENT
-    |--------------------------------------------------------------------------
+    |----------------------------------------------------------------------
+    | PAYMENT / TOPUP / WITHDRAW
+    |----------------------------------------------------------------------
     */
     Route::get('/dashboard/topup', [TransactionController::class, 'showTopupForm'])
         ->name('topup.form');
@@ -185,9 +211,9 @@ Route::middleware('auth')->group(function () {
 
 
     /*
-    |--------------------------------------------------------------------------
+    |----------------------------------------------------------------------
     | LOGOUT
-    |--------------------------------------------------------------------------
+    |----------------------------------------------------------------------
     */
     Route::post('/logout', function () {
         Auth::logout();
@@ -221,15 +247,6 @@ Route::prefix('api')->group(function () {
 
 /*
 |--------------------------------------------------------------------------
-| MIDTRANS CALLBACK
-|--------------------------------------------------------------------------
-*/
-Route::post('/api/callback/midtrans', [CallbackController::class, 'handleMidtransCallback'])
-    ->name('midtrans.callback');
-
-
-/*
-|--------------------------------------------------------------------------
 | PREVIEW (PUBLIC)
 |--------------------------------------------------------------------------
 */
@@ -246,8 +263,7 @@ Route::get('/preview/{username}', function ($username) {
 
 /*
 |--------------------------------------------------------------------------
-| LINK TRACKING DENGAN PREFIX /go/
-| Format: http://localhost:8000/go/asadtevy94
+| LINK TRACKING /go/
 |--------------------------------------------------------------------------
 */
 Route::get('/go/{username}', [LinkRedirectController::class, 'redirect'])
@@ -256,8 +272,7 @@ Route::get('/go/{username}', [LinkRedirectController::class, 'redirect'])
 
 /*
 |--------------------------------------------------------------------------
-| SHORT LINK REDIRECT (untuk short_code 6-8 karakter)
-| Format: http://localhost:8000/abc123
+| SHORT LINK REDIRECT (6-8 karakter)
 |--------------------------------------------------------------------------
 */
 Route::get('/{short_code}', [LinkController::class, 'redirect'])
@@ -267,8 +282,7 @@ Route::get('/{short_code}', [LinkController::class, 'redirect'])
 
 /*
 |--------------------------------------------------------------------------
-| PUBLIC PROFILE (HARUS PALING BAWAH)
-| Format: http://localhost:8000/username
+| PUBLIC PROFILE — HARUS PALING BAWAH
 |--------------------------------------------------------------------------
 */
 Route::get('/{username}', function ($username) {
@@ -283,25 +297,41 @@ Route::get('/{username}', function ($username) {
   ->name('public.profile');
 
 
-// Route untuk checkout
-Route::get('/checkout/{product}', [CheckoutController::class, 'show'])->name('checkout.show');
-Route::post('/checkout/{product}/process', [CheckoutController::class, 'process'])->name('checkout.process');
-// ```
 
-// ## Format URL yang Didukung:
 
-// ### 1. **Link Tracking dengan Prefix `/go/`** ✅
-// ```
-// http://localhost:8000/go/asadtevy94
-// ```
-// → Track klik + redirect ke link tujuan
 
-// ### 2. **Short Code Link** ✅
-// ```
-// http://localhost:8000/abc123
-// ```
-// → Short link 6-8 karakter (dari kolom `short_code`)
+  // Tambah sementara di web.php
+Route::get('/debug-checkout', function () {
+    $trx = App\Models\Transaction::where('status', 'settlement')->latest()->first();
+    
+    if (!$trx) return response()->json(['error' => 'Tidak ada transaksi settlement']);
+    
+    $notes = json_decode($trx->notes, true);
+    $product = App\Models\Product::with('files')->find($notes['product_id'] ?? null);
+    $seller = App\Models\User::find($trx->user_id);
+    
+    $hasSale = App\Models\ProductSale::where('product_id', $notes['product_id'] ?? 0)
+        ->whereRaw("JSON_UNQUOTE(JSON_EXTRACT(options, '$.order_id')) = ?", [$trx->order_id])
+        ->exists();
 
-// ### 3. **Public Profile** ✅
-// ```
-// http://localhost:8000/asadtevy94
+    return response()->json([
+        '1_transaksi'        => ['order_id' => $trx->order_id, 'status' => $trx->status, 'amount' => $trx->amount, 'user_id' => $trx->user_id],
+        '2_notes'            => $notes,
+        '3_product_ditemukan'=> $product ? $product->only(['id','title','product_type']) : 'NULL - PRODUCT TIDAK ADA',
+        '4_seller_ditemukan' => $seller ? $seller->only(['id','name','balance']) : 'NULL - SELLER TIDAK ADA',
+        '5_sudah_ada_sale'   => $hasSale,
+        '6_kolom_transactions'=> Schema::getColumnListing('transactions'),
+        '7_kolom_product_sales'=> Schema::getColumnListing('product_sales'),
+    ]);
+});
+
+// Tambah sementara di web.php
+Route::get('/debug-balance', function () {
+    return [
+        'balance'          => App\Models\User::find(1)->balance,
+        'latest_trx'       => App\Models\Transaction::latest()->first(['order_id','status','amount']),
+        'latest_sale'      => App\Models\ProductSale::latest()->first(),
+        'kolom_sales'      => Schema::getColumnListing('product_sales'),
+        'kolom_trx'        => Schema::getColumnListing('transactions'),
+    ];
+});

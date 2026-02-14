@@ -640,7 +640,6 @@ document.addEventListener('DOMContentLoaded', function() {
     imageUpload.addEventListener('change', function(e) {
         const files = Array.from(e.target.files);
         handleImageFiles(files);
-        this.value = ''; // Reset input untuk upload file yang sama lagi
     });
     
     // Handle image files
@@ -734,7 +733,6 @@ document.addEventListener('DOMContentLoaded', function() {
     fileUpload.addEventListener('change', function(e) {
         const files = Array.from(e.target.files);
         handleFileUpload(files);
-        this.value = ''; // Reset input untuk upload file yang sama lagi
     });
     
     // Handle file upload

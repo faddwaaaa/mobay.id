@@ -133,24 +133,42 @@ class ProductController extends Controller
     }
 
     public function update(Request $request, Product $product)
-{
-    $request->validate([
-        'title' => 'required',
-        'price' => 'required|numeric'
-    ]);
+    {
+        abort_if($product->user_id !== Auth::id(), 403);
 
-    if($request->hasFile('image')){
-        $path = $request->file('image')->store('products','public');
-        $product->image = $path;
+        $price = (int) str_replace('.', '', $request->price);
+
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'price' => 'required',
+            'image' => 'nullable|image|max:5120',
+        ]);
+
+        // Update data utama
+        $product->update([
+            'title' => $request->title,
+            'description' => $request->description,
+            'price' => $price,
+        ]);
+
+        /*
+        | UPDATE GAMBAR (JIKA ADA)
+        */
+        if ($request->hasFile('image')) {
+
+            // Hapus gambar lama dari database
+            $product->images()->delete();
+
+            // Simpan gambar baru
+            $path = $request->file('image')->store('products/images', 'public');
+
+            $product->images()->create([
+                'image' => $path
+            ]);
+        }
+
+        return back()->with('success','Produk berhasil diupdate');
     }
-
-    $product->update([
-        'title' => $request->title,
-        'description' => $request->description,
-        'price' => $request->price
-    ]);
-
-    return back()->with('success','Produk berhasil diupdate');
-}
 
 }
