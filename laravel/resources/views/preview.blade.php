@@ -641,26 +641,51 @@
                             </div>
                         @endif
 
-                        {{-- VIDEO --}}
                         @if($block->type === 'video')
-                            @php
-                                $videoId = $block->content['youtube_id'] ?? '';
-                                if (!$videoId) {
-                                    $url = $block->content['youtube_url'] ?? '';
-                                    parse_str(parse_url($url, PHP_URL_QUERY), $query);
-                                    $videoId = $query['v'] ?? '';
-                                    if (!$videoId && str_contains($url, 'youtu.be/')) {
-                                        $videoId = basename(parse_url($url, PHP_URL_PATH));
-                                    }
-                                }
-                            @endphp
-                            <div class="block block-video">
-                                <iframe
-                                    src="https://www.youtube.com/embed/{{ $videoId }}"
-                                    allowfullscreen>
-                                </iframe>
-                            </div>
-                        @endif
+    @php
+        $url = $block->content['url'] ?? '';
+        $videoId = '';
+
+        if ($url) {
+            $parsedUrl = parse_url($url);
+
+            if (isset($parsedUrl['host'])) {
+
+                // youtube.com/watch?v=
+                if (str_contains($parsedUrl['host'], 'youtube.com') && isset($parsedUrl['query'])) {
+                    parse_str($parsedUrl['query'], $query);
+                    $videoId = $query['v'] ?? '';
+                }
+
+                // youtu.be/
+                if (str_contains($parsedUrl['host'], 'youtu.be')) {
+                    $videoId = ltrim($parsedUrl['path'], '/');
+                }
+
+                // youtube.com/shorts/
+                if (str_contains($parsedUrl['path'] ?? '', '/shorts/')) {
+                    $segments = explode('/', trim($parsedUrl['path'], '/'));
+                    $videoId = $segments[1] ?? '';
+                }
+            }
+        }
+    @endphp
+
+    @if($videoId)
+        <div class="block block-video">
+            <iframe
+                src="https://www.youtube.com/embed/{{ $videoId }}"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowfullscreen>
+            </iframe>
+        </div>
+    @else
+        <div class="block block-text">
+            Link video tidak valid.
+        </div>
+    @endif
+@endif
+
 
                         {{-- PRODUCT — MINIMALIST BLUE --}}
                         @if($block->type === 'product' && isset($block->content['product']))
