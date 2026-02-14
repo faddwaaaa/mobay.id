@@ -14,33 +14,30 @@ use Midtrans\Config;
 use Midtrans\Snap;
 use Midtrans\Notification;
 
-
-
 class CheckoutController extends Controller
 {
     public function __construct()
     {
-        // Konfigurasi Midtrans dari config yang sudah ada
-        Config::$serverKey    = config('midtrans.server_key');
-        Config::$clientKey    = config('midtrans.client_key');
-        Config::$isProduction = config('midtrans.is_production');
-        Config::$isSanitized  = config('midtrans.is_sanitized', true);
-        Config::$is3ds        = config('midtrans.is_3ds', true);
+        Config::$serverKey        = config('midtrans.server_key');
+        Config::$clientKey        = config('midtrans.client_key');
+        Config::$isProduction     = config('midtrans.is_production');
+        Config::$isSanitized      = config('midtrans.is_sanitized', true);
+        Config::$is3ds            = config('midtrans.is_3ds', true);
+        Config::$overrideNotifUrl = config('app.url') . '/midtrans/webhook';
     }
 
     // =========================================================
-    // SHOW — halaman checkout
+    // SHOW
     // =========================================================
     public function show($productId)
     {
         $product = Product::with(['images', 'files'])->findOrFail($productId);
         $seller  = User::find($product->user_id);
-
         return view('checkout', compact('product', 'seller'));
     }
 
     // =========================================================
-    // PROCESS — buat transaksi & ambil snap_token
+    // PROCESS
     // =========================================================
     public function process(Request $request)
     {
@@ -51,41 +48,27 @@ class CheckoutController extends Controller
             'buyer_phone'    => 'required|string|max:20',
             'qty'            => 'required|integer|min:1',
             'payment_method' => 'required|string',
-            // Alamat wajib untuk produk fisik, divalidasi di bawah
         ]);
 
         $product = Product::with('files')->findOrFail($request->product_id);
 
-        // === Validasi stok (produk fisik) ===
         if ($product->product_type === 'umkm') {
             if ($product->stock !== null && $product->stock < $request->qty) {
-                return response()->json([
-                    'error'   => true,
-                    'message' => 'Stok tidak mencukupi. Tersedia: ' . $product->stock,
-                ], 422);
+                return response()->json(['error' => true, 'message' => 'Stok tidak mencukupi. Tersedia: ' . $product->stock], 422);
             }
-
             if ($product->purchase_limit && $request->qty > $product->purchase_limit) {
-                return response()->json([
-                    'error'   => true,
-                    'message' => 'Batas pembelian maks. ' . $product->purchase_limit . ' per transaksi.',
-                ], 422);
+                return response()->json(['error' => true, 'message' => 'Batas pembelian maks. ' . $product->purchase_limit . ' per transaksi.'], 422);
             }
-
             if (empty($request->buyer_address)) {
-                return response()->json([
-                    'error'   => true,
-                    'message' => 'Alamat pengiriman wajib diisi untuk produk fisik.',
-                ], 422);
+                return response()->json(['error' => true, 'message' => 'Alamat pengiriman wajib diisi untuk produk fisik.'], 422);
             }
         }
 
-        $qty        = $product->product_type === 'digital' ? 1 : (int) $request->qty;
-        $unitPrice  = (int) ($product->discount ?? $product->price);
-        $amount     = $unitPrice * $qty;
-        $orderId    = 'PAYOU-' . strtoupper(Str::random(8)) . '-' . time();
+        $qty       = $product->product_type === 'digital' ? 1 : (int) $request->qty;
+        $unitPrice = (int) ($product->discount ?? $product->price);
+        $amount    = $unitPrice * $qty;
+        $orderId   = 'PAYOU-' . strtoupper(Str::random(8)) . '-' . time();
 
-        // === Simpan transaksi awal (pending) ===
         $transaction = Transaction::create([
             'user_id'        => $product->user_id,
             'order_id'       => $orderId,
@@ -107,58 +90,36 @@ class CheckoutController extends Controller
             'ip_address' => $request->ip(),
         ]);
 
-        // === Buat payload Midtrans ===
-        $itemDetails = [
-            [
+        $snapParams = [
+            'transaction_details' => [
+                'order_id'     => $orderId,
+                'gross_amount' => $amount,
+            ],
+            'item_details' => [[
                 'id'       => (string) $product->id,
                 'price'    => $unitPrice,
                 'quantity' => $qty,
                 'name'     => substr($product->title, 0, 50),
-            ]
-        ];
-
-        $customerDetails = [
-            'first_name' => $request->buyer_name,
-            'email'      => $request->buyer_email,
-            'phone'      => $request->buyer_phone,
-        ];
-
-        if ($product->product_type === 'umkm' && $request->buyer_address) {
-            $customerDetails['shipping_address'] = [
+            ]],
+            'customer_details' => [
                 'first_name' => $request->buyer_name,
+                'email'      => $request->buyer_email,
                 'phone'      => $request->buyer_phone,
-                'address'    => $request->buyer_address,
-            ];
-        }
-
-        $snapParams = [
-            'transaction_details' => [
-                'order_id'      => $orderId,
-                'gross_amount'  => $amount,
             ],
-            'item_details'       => $itemDetails,
-            'customer_details'   => $customerDetails,
-            'enabled_payments'   => $this->getEnabledPayments($request->payment_method),
         ];
 
         try {
             $snapToken = Snap::getSnapToken($snapParams);
         } catch (\Exception $e) {
             Log::error('Midtrans Snap Error: ' . $e->getMessage());
-            return response()->json([
-                'error'   => true,
-                'message' => 'Gagal menghubungi payment gateway. Coba lagi.',
-            ], 500);
+            return response()->json(['error' => true, 'message' => 'Gagal menghubungi payment gateway. Coba lagi.'], 500);
         }
 
-        return response()->json([
-            'snap_token' => $snapToken,
-            'order_id'   => $orderId,
-        ]);
+        return response()->json(['snap_token' => $snapToken, 'order_id' => $orderId]);
     }
 
     // =========================================================
-    // WEBHOOK — notifikasi dari Midtrans
+    // WEBHOOK
     // =========================================================
     public function webhook(Request $request)
     {
@@ -169,108 +130,181 @@ class CheckoutController extends Controller
             return response('Error', 500);
         }
 
-        $orderId           = $notif->order_id;
-        $transactionStatus = $notif->transaction_status;
-        $fraudStatus       = $notif->fraud_status;
-        $paymentType       = $notif->payment_type;
+        $transaction = Transaction::where('order_id', $notif->order_id)->first();
+        if (!$transaction) return response('Not found', 404);
 
-        $transaction = Transaction::where('order_id', $orderId)->first();
-        if (!$transaction) {
-            return response('Not found', 404);
-        }
+        // Jangan proses ulang yang sudah settlement
+        if ($transaction->status === 'settlement') return response('Already processed', 200);
 
-        // Tentukan status akhir
         $finalStatus = match (true) {
-            $transactionStatus === 'capture' && $fraudStatus === 'accept' => 'settlement',
-            $transactionStatus === 'settlement'                            => 'settlement',
-            $transactionStatus === 'pending'                               => 'pending',
-            in_array($transactionStatus, ['deny', 'cancel', 'expire'])     => $transactionStatus,
-            $transactionStatus === 'failure'                               => 'failed',
-            default                                                        => $transaction->status,
+            $notif->transaction_status === 'capture' && $notif->fraud_status === 'accept' => 'settlement',
+            $notif->transaction_status === 'settlement'                                    => 'settlement',
+            $notif->transaction_status === 'pending'                                       => 'pending',
+            in_array($notif->transaction_status, ['deny', 'cancel', 'expire'])             => $notif->transaction_status,
+            $notif->transaction_status === 'failure'                                       => 'failed',
+            default                                                                        => $transaction->status,
         };
 
         $transaction->update([
-            'status'             => $finalStatus,
-            'payment_method'     => $paymentType ?? $transaction->payment_method,
-            'transaction_id'     => $notif->transaction_id ?? null,
-            'midtrans_response'  => json_encode($notif->getResponse()),
+            'status'            => $finalStatus,
+            'payment_method'    => $notif->payment_type ?? $transaction->payment_method,
+            'transaction_id'    => $notif->transaction_id ?? null,
+            'midtrans_response' => json_encode($notif->getResponse()),
         ]);
 
-        // === Jika pembayaran berhasil ===
         if ($finalStatus === 'settlement') {
-            $this->handleSuccessfulPayment($transaction);
+            $this->handleSuccessfulPayment($transaction->fresh());
         }
 
         return response('OK', 200);
     }
 
     // =========================================================
-    // SUCCESS PAGE
+    // SUCCESS — fallback cek status Midtrans langsung
     // =========================================================
     public function success(Request $request)
     {
-        $transaction = Transaction::where('order_id', $request->order_id)->first();
-        $notes       = $transaction ? json_decode($transaction->notes, true) : [];
+        $orderId     = $request->order_id;
+        $transaction = Transaction::where('order_id', $orderId)->first();
+
+        if (!$transaction) {
+            return view('checkout-success', ['transaction' => null, 'notes' => []]);
+        }
+
+        $notes = is_string($transaction->notes)
+            ? json_decode($transaction->notes, true)
+            : ($transaction->notes ?? []);
+
+        // Jika masih pending, cek langsung ke Midtrans
+        if ($transaction->status === 'pending') {
+            try {
+                $status    = \Midtrans\Transaction::status($orderId);
+                $txStatus  = $status->transaction_status ?? '';
+                $fraud     = $status->fraud_status ?? 'accept';
+                $isSuccess = ($txStatus === 'settlement') ||
+                             ($txStatus === 'capture' && $fraud === 'accept');
+
+                if ($isSuccess) {
+                    $transaction->update([
+                        'status'            => 'settlement',
+                        'payment_method'    => $status->payment_type ?? $transaction->payment_method,
+                        'transaction_id'    => $status->transaction_id ?? null,
+                        'midtrans_response' => json_encode($status),
+                    ]);
+
+                    $this->handleSuccessfulPayment($transaction->fresh());
+                    $transaction = $transaction->fresh();
+                    $notes = is_string($transaction->notes)
+                        ? json_decode($transaction->notes, true)
+                        : ($transaction->notes ?? []);
+                }
+            } catch (\Exception $e) {
+                Log::error('Midtrans status check error: ' . $e->getMessage());
+            }
+        }
 
         return view('checkout-success', compact('transaction', 'notes'));
     }
 
     // =========================================================
-    // PENDING PAGE
+    // PENDING
     // =========================================================
     public function pending(Request $request)
     {
         $transaction = Transaction::where('order_id', $request->order_id)->first();
-        $notes       = $transaction ? json_decode($transaction->notes, true) : [];
+        $notes = $transaction
+            ? (is_string($transaction->notes) ? json_decode($transaction->notes, true) : ($transaction->notes ?? []))
+            : [];
 
         return view('checkout-pending', compact('transaction', 'notes'));
     }
 
     // =========================================================
-    // PRIVATE — Handle setelah pembayaran sukses
+    // HANDLE SUCCESSFUL PAYMENT
+    // Guard: cek transaction_id sudah diset = sudah pernah diproses
     // =========================================================
     private function handleSuccessfulPayment(Transaction $transaction): void
     {
-        $notes   = json_decode($transaction->notes, true);
-        $product = Product::with('files')->find($notes['product_id'] ?? null);
+        if ($transaction->status !== 'settlement') return;
 
-        if (!$product) return;
+        $notes = is_string($transaction->notes)
+            ? json_decode($transaction->notes, true)
+            : ($transaction->notes ?? []);
 
-        // Catat product_sales
-        ProductSale::create([
-            'product_id' => $product->id,
-            'qty'        => $notes['qty'] ?? 1,
-            'options'    => json_encode([
-                'order_id'      => $transaction->order_id,
-                'buyer_name'    => $notes['buyer_name'] ?? '',
-                'buyer_email'   => $notes['buyer_email'] ?? '',
-                'buyer_address' => $notes['buyer_address'] ?? null,
-                'buyer_notes'   => $notes['buyer_notes'] ?? null,
-            ]),
-        ]);
+        $productId = $notes['product_id'] ?? null;
 
-        // Kurangi stok untuk produk fisik
+        // ── Guard double-processing pakai product_sales qty check ──
+        // Cek apakah product_sales untuk order ini sudah ada
+        // Gunakan kolom options jika ada, fallback ke count per product+qty
+        $alreadyProcessed = false;
+
+        try {
+            // Coba cek via JSON (butuh kolom options)
+            $alreadyProcessed = ProductSale::where('product_id', $productId)
+                ->whereRaw("JSON_UNQUOTE(JSON_EXTRACT(options, '$.order_id')) = ?", [$transaction->order_id])
+                ->exists();
+        } catch (\Exception $e) {
+            // Kolom options tidak ada — skip guard, lanjut proses
+            // Migration belum dijalankan
+            Log::warning('Guard check gagal (kolom options belum ada?): ' . $e->getMessage());
+            $alreadyProcessed = false;
+        }
+
+        if ($alreadyProcessed) {
+            Log::info("Order {$transaction->order_id} sudah diproses sebelumnya, skip.");
+            return;
+        }
+
+        $product = Product::with('files')->find($productId);
+        if (!$product) {
+            Log::error("Product id={$productId} tidak ditemukan untuk order {$transaction->order_id}");
+            return;
+        }
+
+        // 1. Catat product_sales
+        try {
+            ProductSale::create([
+                'product_id' => $product->id,
+                'qty'        => $notes['qty'] ?? 1,
+                'options'    => json_encode([
+                    'order_id'      => $transaction->order_id,
+                    'buyer_name'    => $notes['buyer_name'] ?? '',
+                    'buyer_email'   => $notes['buyer_email'] ?? '',
+                    'buyer_address' => $notes['buyer_address'] ?? null,
+                    'buyer_notes'   => $notes['buyer_notes'] ?? null,
+                ]),
+            ]);
+        } catch (\Exception $e) {
+            // Kolom options belum ada — simpan tanpa options
+            Log::warning('ProductSale create tanpa options: ' . $e->getMessage());
+            ProductSale::create([
+                'product_id' => $product->id,
+                'qty'        => $notes['qty'] ?? 1,
+            ]);
+        }
+
+        // 2. Kurangi stok produk fisik
         if ($product->product_type === 'umkm' && $product->stock !== null) {
             $product->decrement('stock', $notes['qty'] ?? 1);
         }
 
-        // Kirim file digital via email
+        // 3. Kirim file digital
         if ($product->product_type === 'digital') {
             $this->sendDigitalFile($product, $notes, $transaction);
         }
 
-        // Tambah saldo seller (sama seperti logika payout yang sudah ada)
+        // 4. Tambah saldo seller
         $seller = User::find($transaction->user_id);
         if ($seller) {
-            // Potong biaya platform jika ada, sisanya masuk balance seller
-            // Sesuaikan dengan logika komisi yang sudah ada di app
-            $sellerAmount = $transaction->amount; // full amount, sesuaikan jika ada komisi
-            $seller->increment('balance', $sellerAmount);
+            $seller->increment('balance', (int) $transaction->amount);
+            Log::info("✅ Saldo {$seller->name} +Rp{$transaction->amount} dari order {$transaction->order_id}");
+        } else {
+            Log::error("❌ Seller user_id={$transaction->user_id} tidak ditemukan.");
         }
     }
 
     // =========================================================
-    // PRIVATE — Kirim file digital via email
+    // KIRIM FILE DIGITAL
     // =========================================================
     private function sendDigitalFile(Product $product, array $notes, Transaction $transaction): void
     {
@@ -282,15 +316,14 @@ class CheckoutController extends Controller
 
         try {
             Mail::send('emails.digital-product', [
-                'buyerName'   => $notes['buyer_name'] ?? 'Pembeli',
-                'productTitle'=> $product->title,
-                'orderId'     => $transaction->order_id,
-                'files'       => $files,
+                'buyerName'    => $notes['buyer_name'] ?? 'Pembeli',
+                'productTitle' => $product->title,
+                'orderId'      => $transaction->order_id,
+                'files'        => $files,
             ], function ($mail) use ($buyerEmail, $notes, $product, $files) {
                 $mail->to($buyerEmail, $notes['buyer_name'] ?? 'Pembeli')
                      ->subject('📦 Produk Digital Anda: ' . $product->title);
 
-                // Lampirkan file
                 foreach ($files as $file) {
                     $filePath = storage_path('app/public/' . $file->file);
                     if (file_exists($filePath)) {
@@ -304,18 +337,5 @@ class CheckoutController extends Controller
         } catch (\Exception $e) {
             Log::error('Gagal kirim email digital: ' . $e->getMessage());
         }
-    }
-
-    // =========================================================
-    // PRIVATE — Daftar metode pembayaran yang dienable di Snap
-    // =========================================================
-    private function getEnabledPayments(string $preferred): array
-    {
-        // Tampilkan semua, biarkan user pilih di Snap jika mau ganti
-        return [
-            'gopay', 'qris', 'shopeepay',
-            'bca_va', 'bni_va', 'bri_va', 'permata_va', 'other_va',
-            'echannel', 'credit_card',
-        ];
     }
 }

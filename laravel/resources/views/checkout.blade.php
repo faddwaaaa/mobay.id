@@ -670,32 +670,32 @@
                 <div class="payment-methods">
                     <label class="payment-option selected" id="pm_gopay">
                         <input type="radio" name="payment_method" value="gopay" checked>
-                        <span class="payment-icon">💚</span>
+                        <span class="payment-icon"></span>
                         <span>GoPay</span>
                     </label>
                     <label class="payment-option" id="pm_qris">
                         <input type="radio" name="payment_method" value="qris">
-                        <span class="payment-icon">📱</span>
+                        <span class="payment-icon"></span>
                         <span>QRIS</span>
                     </label>
                     <label class="payment-option" id="pm_bca">
                         <input type="radio" name="payment_method" value="bca_va">
-                        <span class="payment-icon">🏦</span>
+                        <span class="payment-icon"></span>
                         <span>BCA Virtual</span>
                     </label>
                     <label class="payment-option" id="pm_bni">
                         <input type="radio" name="payment_method" value="bni_va">
-                        <span class="payment-icon">🏦</span>
+                        <span class="payment-icon"></span>
                         <span>BNI Virtual</span>
                     </label>
                     <label class="payment-option" id="pm_mandiri">
                         <input type="radio" name="payment_method" value="echannel">
-                        <span class="payment-icon">🏦</span>
+                        <span class="payment-icon"></span>
                         <span>Mandiri</span>
                     </label>
                     <label class="payment-option" id="pm_shopeepay">
                         <input type="radio" name="payment_method" value="shopeepay">
-                        <span class="payment-icon">🛍️</span>
+                        <span class="payment-icon"></span>
                         <span>ShopeePay</span>
                     </label>
                 </div>

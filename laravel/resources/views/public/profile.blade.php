@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -677,7 +678,7 @@
                                 <div class="product-image-wrapper">
                                     @if(isset($product['image']))
                                         <img src="{{ asset('storage/' . $product['image']) }}"
-                                             alt="{{ $product['title'] ?? 'Product' }}">
+                                            alt="{{ $product['title'] ?? 'Product' }}">
                                     @else
                                         <div class="product-image-placeholder">🛍️</div>
                                     @endif
@@ -685,7 +686,7 @@
 
                                 <div class="product-details">
                                     @if($hasDiscount)
-                                        <span class="product-badge">🏷️ Diskon {{ $discountPercent }}%</span>
+                                        <span class="product-badge">Diskon {{ $discountPercent }}%</span>
                                     @endif
 
                                     <div class="product-title">
@@ -792,6 +793,9 @@ const cartBtn = document.getElementById('cartBtn');
 cartBtn.addEventListener('click', () => {
     alert('Fitur keranjang akan segera hadir!');
 });
+
+
+
 </script>
 
 </body>
