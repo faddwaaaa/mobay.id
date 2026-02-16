@@ -16,10 +16,9 @@ use App\Http\Controllers\{
     AnalyticsController,
     LinkRedirectController,
     LinksController,
-    CheckoutController
+    CheckoutController,
+    LandingController
 };
-
-
 /*
 |--------------------------------------------------------------------------
 | LANDING PAGE
@@ -52,6 +51,27 @@ Route::post('/checkout/process',      [CheckoutController::class, 'process'])->n
 
 // Webhook Midtrans (dikecualikan dari CSRF di VerifyCsrfToken.php)
 Route::post('/midtrans/webhook',      [CheckoutController::class, 'webhook'])->name('midtrans.webhook');
+
+
+/*
+|--------------------------------------------------------------------------
+| SERVICE AND FAQ PAGES (HARUS PALING BAWAH, SEBELUM PUBLIC PROFILE)
+|--------------------------------------------------------------------------
+*/
+
+// Landing pages (public)
+Route::get('/', [LandingController::class, 'index'])->name('home');
+Route::get('/service', [LandingController::class, 'service'])->name('service');
+Route::get('/faq', [LandingController::class, 'faq'])->name('faq');
+
+// Auth routes (dari auth.php)
+require __DIR__.'/auth.php';
+
+// Dashboard (auth required)
+Route::middleware('auth')->group(function () {
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+});
+
 
 
 /*
@@ -209,6 +229,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboard/withdraw', [TransactionController::class, 'showWithdrawForm'])
         ->name('withdraw.form');
 
+    // Route yang cocok dengan form dashboard (POST /withdrawal)
+    Route::post('/withdrawal', [TransactionController::class, 'createWithdraw'])
+        ->name('withdrawal.store');
+
 
     /*
     |----------------------------------------------------------------------
@@ -298,40 +322,3 @@ Route::get('/{username}', function ($username) {
 
 
 
-
-
-  // Tambah sementara di web.php
-Route::get('/debug-checkout', function () {
-    $trx = App\Models\Transaction::where('status', 'settlement')->latest()->first();
-    
-    if (!$trx) return response()->json(['error' => 'Tidak ada transaksi settlement']);
-    
-    $notes = json_decode($trx->notes, true);
-    $product = App\Models\Product::with('files')->find($notes['product_id'] ?? null);
-    $seller = App\Models\User::find($trx->user_id);
-    
-    $hasSale = App\Models\ProductSale::where('product_id', $notes['product_id'] ?? 0)
-        ->whereRaw("JSON_UNQUOTE(JSON_EXTRACT(options, '$.order_id')) = ?", [$trx->order_id])
-        ->exists();
-
-    return response()->json([
-        '1_transaksi'        => ['order_id' => $trx->order_id, 'status' => $trx->status, 'amount' => $trx->amount, 'user_id' => $trx->user_id],
-        '2_notes'            => $notes,
-        '3_product_ditemukan'=> $product ? $product->only(['id','title','product_type']) : 'NULL - PRODUCT TIDAK ADA',
-        '4_seller_ditemukan' => $seller ? $seller->only(['id','name','balance']) : 'NULL - SELLER TIDAK ADA',
-        '5_sudah_ada_sale'   => $hasSale,
-        '6_kolom_transactions'=> Schema::getColumnListing('transactions'),
-        '7_kolom_product_sales'=> Schema::getColumnListing('product_sales'),
-    ]);
-});
-
-// Tambah sementara di web.php
-Route::get('/debug-balance', function () {
-    return [
-        'balance'          => App\Models\User::find(1)->balance,
-        'latest_trx'       => App\Models\Transaction::latest()->first(['order_id','status','amount']),
-        'latest_sale'      => App\Models\ProductSale::latest()->first(),
-        'kolom_sales'      => Schema::getColumnListing('product_sales'),
-        'kolom_trx'        => Schema::getColumnListing('transactions'),
-    ];
-});

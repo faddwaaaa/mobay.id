@@ -104,4 +104,5 @@ class PageController extends Controller
 
         return redirect()->route('links.index')->with('success', 'Halaman berhasil dihapus!');
     }
+
 }
