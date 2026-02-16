@@ -60,6 +60,7 @@
                     <div class="space-y-4">
                         @foreach($pages as $page)
                         <div class="page-item group rounded-lg border p-4 transition cursor-pointer {{ $activePage && $activePage->id == $page->id ? 'bg-blue-50 border-blue-300' : 'bg-gray-50 border-gray-200 hover:border-blue-300 hover:bg-blue-50' }}"
+                             data-page-id="{{ $page->id }}"
                              onclick="selectPage({{ $page->id }})">
                             <div class="flex items-center justify-between">
                                 <div class="flex items-center gap-4">
@@ -302,27 +303,26 @@
             </div>
         </div>
 
-        <!-- KANAN - PREVIEW (UKURAN NORMAL) -->
+        <!-- KANAN - PREVIEW -->
         <div class="w-full lg:w-1/3 flex-shrink-0">
-            <div class="sticky top-6">
+            <div id="preview-sticky-wrapper">
                 <div class="mb-4">
                     <h3 class="font-bold text-gray-900 mb-2">Preview</h3>
                     <p class="text-sm text-gray-600">Tampilan di mobile device</p>
                 </div>
                 
                 <!-- PHONE FRAME -->
-                <div class="relative mx-auto w-[320px]">
+                <div class="relative mx-auto" style="width:300px; margin-left: auto; margin-right: 0;">
                     <!-- Phone Body -->
-                    <div class="relative bg-gray-900 rounded-[40px] p-2 shadow-2xl">
+                    <div class="relative bg-gray-900 rounded-[36px] p-2 shadow-2xl">
                         <!-- Notch -->
                         <div class="mb-4"></div>
                         
                         <!-- Screen -->
-                        <div class="bg-white rounded-[30px] overflow-hidden">
+                        <div class="bg-white rounded-[28px] preview-screen-wrap">
                             <iframe
                                 id="preview"
                                 src="{{ url('/preview/'.$user->username) }}?page={{ $activePage->id ?? '' }}&t={{ time() }}"
-                                class="w-full h-[560px]"
                                 frameborder="0">
                             </iframe>
                         </div>
@@ -566,7 +566,14 @@
     transition: all 0.2s;
 }
 
-/* MODAL STYLES - FIX UNTUK BLUR SELURUH HALAMAN */
+/* Preview sticky wrapper */
+#preview-sticky-wrapper {
+    position: relative;
+}
+
+/* ============================================
+   MODAL STYLES
+   ============================================ */
 .modal {
     display: none;
 }
@@ -575,12 +582,11 @@
     display: flex;
 }
 
-/* GLOBAL MODAL OVERLAY */
 #globalModalOverlay {
     pointer-events: auto;
 }
 
-/* Pastikan semua elemen di belakang modal terblur */
+/* Blur konten saat modal terbuka */
 body.modal-open #main-content,
 body.modal-open .navbar,
 body.modal-open .sidebar,
@@ -592,7 +598,7 @@ body.modal-open footer {
     pointer-events: none;
 }
 
-/* Modal container tidak boleh blur */
+/* Modal tidak boleh blur */
 .modal,
 .modal *,
 #globalModalOverlay {
@@ -615,6 +621,9 @@ body.modal-open footer {
     }
 }
 
+/* ============================================
+   UTILITIES
+   ============================================ */
 .line-clamp-2 {
     display: -webkit-box;
     -webkit-line-clamp: 2;
@@ -622,7 +631,6 @@ body.modal-open footer {
     overflow: hidden;
 }
 
-/* GLOBAL BUTTON STYLE */
 .btn-primary {
     background-color: #2563eb;
     color: white;
@@ -660,17 +668,22 @@ body.modal-open footer {
     transform: rotate(2deg);
 }
 
-/* Preview iframe */
-#preview {
-    background: white;
+/* Screen wrapper - clip iframe agar scrollbar terpotong */
+.preview-screen-wrap {
+    overflow: hidden;
+    position: relative;
+    border-radius: 28px;
 }
 
-/* Responsive */
-@media (max-width: 1024px) {
-    .lg\:w-2\/3,
-    .lg\:w-1\/3 {
-        width: 100%;
-    }
+/* Iframe dibuat lebih lebar dari wrapper sehingga scrollbar 
+   terpotong oleh overflow:hidden pada parent.
+   17px = lebar scrollbar standar browser */
+.preview-screen-wrap iframe {
+    display: block;
+    width: calc(100% + 17px);
+    height: 490px;
+    border: none;
+    background: white;
 }
 </style>
 
@@ -682,20 +695,16 @@ body.modal-open footer {
 let currentPageId = {{ $activePage->id ?? 'null' }};
 
 // ============================================
-// MODAL MANAGEMENT - BLUR SELURUH HALAMAN
+// MODAL MANAGEMENT
 // ============================================
 function showModal(modalId) {
-    // Close all modals first
     closeAllModals();
     
-    // Show global overlay
     const overlay = document.getElementById('globalModalOverlay');
     overlay.classList.remove('hidden');
     
-    // Add blur to body
     document.body.classList.add('modal-open');
     
-    // Show specific modal
     const modal = document.getElementById(modalId);
     modal.classList.remove('hidden');
 }
@@ -706,11 +715,9 @@ function closeAllModals() {
         modal.classList.add('hidden');
     });
     
-    // Hide global overlay
     const overlay = document.getElementById('globalModalOverlay');
     overlay.classList.add('hidden');
     
-    // Remove blur from body
     document.body.classList.remove('modal-open');
 }
 
@@ -718,7 +725,15 @@ function closeAllModals() {
 // PAGE FUNCTIONS
 // ============================================
 function selectPage(pageId) {
+    // Langsung redirect - cara paling simpel dan reliable
     window.location.href = `{{ route('links.index') }}?page=${pageId}`;
+}
+
+function updatePreviewPage(pageId) {
+    // Update iframe preview saja tanpa reload halaman
+    const previewFrame = document.getElementById('preview');
+    const previewBase = '{{ url("/preview/".$user->username) }}';
+    previewFrame.src = previewBase + '?page=' + pageId + '&t=' + Date.now();
 }
 
 function showAddPageForm() {
@@ -737,7 +752,6 @@ function showEditModal(pageId, pageTitle) {
     const titleInput = document.getElementById('edit_page_title');
     const pageIdInput = document.getElementById('edit_page_id');
     
-    // Set form action dengan ID yang benar
     form.action = `/pages/${pageId}`;
     pageIdInput.value = pageId;
     titleInput.value = pageTitle;
@@ -771,14 +785,12 @@ function addBlock(type) {
     document.getElementById('blockId').value = '';
     document.getElementById('submitBtnText').textContent = 'Simpan';
 
-    // Hide all fields
     document.getElementById('textField').classList.add('hidden');
     document.getElementById('linkField').classList.add('hidden');
     document.getElementById('videoField').classList.add('hidden');
     document.getElementById('imageField').classList.add('hidden');
     document.getElementById('currentImage').classList.add('hidden');
 
-    // Clear all values
     document.getElementById('textContent').value = '';
     document.getElementById('linkTitle').value = '';
     document.getElementById('linkUrl').value = '';
@@ -786,19 +798,10 @@ function addBlock(type) {
     document.getElementById('imageFile').value = '';
     document.getElementById('youtubePreview').classList.add('hidden');
 
-    // Show relevant field
-    if (type === 'text') {
-        document.getElementById('textField').classList.remove('hidden');
-    }
-    if (type === 'link') {
-        document.getElementById('linkField').classList.remove('hidden');
-    }
-    if (type === 'video') {
-        document.getElementById('videoField').classList.remove('hidden');
-    }
-    if (type === 'image') {
-        document.getElementById('imageField').classList.remove('hidden');
-    }
+    if (type === 'text') document.getElementById('textField').classList.remove('hidden');
+    if (type === 'link') document.getElementById('linkField').classList.remove('hidden');
+    if (type === 'video') document.getElementById('videoField').classList.remove('hidden');
+    if (type === 'image') document.getElementById('imageField').classList.remove('hidden');
     
     showModal('blockModal');
 }
@@ -810,14 +813,12 @@ function editBlock(blockId, type, content) {
     document.getElementById('blockId').value = blockId;
     document.getElementById('submitBtnText').textContent = 'Update';
 
-    // Hide all fields
     document.getElementById('textField').classList.add('hidden');
     document.getElementById('linkField').classList.add('hidden');
     document.getElementById('videoField').classList.add('hidden');
     document.getElementById('imageField').classList.add('hidden');
     document.getElementById('currentImage').classList.add('hidden');
 
-    // Fill data based on type
     if (type === 'text') {
         document.getElementById('textField').classList.remove('hidden');
         document.getElementById('textContent').value = content.text || '';
@@ -993,10 +994,7 @@ document.getElementById('editPageForm').addEventListener('submit', function(e) {
     });
 });
 
-// ADD PAGE FORM - TANPA FETCH, LANGSUNG SUBMIT BIAR GA ERROR
 document.getElementById('addPageForm').addEventListener('submit', function(e) {
-    // Biarkan form submit normal, tidak perlu preventDefault
-    // Karena kita ingin redirect ke halaman baru
     return true;
 });
 
@@ -1017,7 +1015,6 @@ document.getElementById('blockForm').addEventListener('submit', function(e) {
     formData.append('type', type);
     formData.append('_token', '{{ csrf_token() }}');
 
-    // TEXT
     if (type === 'text') {
         const textContent = document.getElementById('textContent').value;
         if (!textContent && !isEdit) {
@@ -1027,7 +1024,6 @@ document.getElementById('blockForm').addEventListener('submit', function(e) {
         formData.append('content[text]', textContent);
     }
 
-    // LINK
     if (type === 'link') {
         const linkTitle = document.getElementById('linkTitle').value;
         const linkUrl = document.getElementById('linkUrl').value;
@@ -1045,7 +1041,6 @@ document.getElementById('blockForm').addEventListener('submit', function(e) {
         formData.append('content[url]', linkUrl);
     }
 
-    // YOUTUBE
     if (type === 'video') {
         const youtubeUrl = document.getElementById('youtubeUrl').value;
         const videoId = extractYoutubeId(youtubeUrl);
@@ -1064,7 +1059,6 @@ document.getElementById('blockForm').addEventListener('submit', function(e) {
         formData.append('content[youtube_id]', videoId);
     }
 
-    // IMAGE
     if (type === 'image') {
         const imageFile = document.getElementById('imageFile').files[0];
         if (imageFile) {
@@ -1107,7 +1101,6 @@ document.getElementById('blockForm').addEventListener('submit', function(e) {
 // MODAL CLOSE HANDLERS
 // ============================================
 document.addEventListener('click', function(e) {
-    // Close modal when clicking on global overlay
     if (e.target.id === 'globalModalOverlay') {
         closeAllModals();
     }
@@ -1123,7 +1116,6 @@ document.addEventListener('keydown', function(e) {
 // INITIALIZATION
 // ============================================
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize Sortable for blocks
     const blockList = document.getElementById('blockList');
     if (blockList) {
         new Sortable(blockList, {
@@ -1147,7 +1139,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        // Reload preview
                         document.getElementById('preview').contentWindow.location.reload();
                     }
                 });
@@ -1155,7 +1146,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // YouTube URL preview
     const youtubeInput = document.getElementById('youtubeUrl');
     if (youtubeInput) {
         youtubeInput.addEventListener('input', function() {
@@ -1175,16 +1165,63 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // ============================================
+// STICKY PREVIEW FIX
+// ============================================
+document.addEventListener('DOMContentLoaded', function() {
+    var wrapper = document.getElementById('preview-sticky-wrapper');
+    if (!wrapper || window.innerWidth < 1024) return;
+
+    // Cek apakah ada parent dengan overflow yang memblokir sticky
+    var blockedByOverflow = false;
+    var el = wrapper.parentElement;
+    while (el && el !== document.body) {
+        var s = window.getComputedStyle(el);
+        if (/(auto|scroll|hidden)/.test(s.overflow + s.overflowY)) {
+            blockedByOverflow = true;
+            break;
+        }
+        el = el.parentElement;
+    }
+
+    if (blockedByOverflow) {
+        // Fallback: gunakan position fixed agar pasti tidak ikut scroll
+        var rect = wrapper.getBoundingClientRect();
+        wrapper.style.position = 'fixed';
+        wrapper.style.top = '24px';
+        wrapper.style.right = '24px';
+        wrapper.style.width = '340px';
+        wrapper.style.zIndex = '50';
+    } else {
+        // Sticky normal bekerja
+        wrapper.style.position = 'sticky';
+        wrapper.style.top = '24px';
+    }
+});
+
+// Update posisi fixed saat resize
+window.addEventListener('resize', function() {
+    var wrapper = document.getElementById('preview-sticky-wrapper');
+    if (!wrapper) return;
+    if (window.innerWidth < 1024) {
+        wrapper.style.position = '';
+        wrapper.style.top = '';
+        wrapper.style.right = '';
+        wrapper.style.width = '';
+        wrapper.style.zIndex = '';
+    }
+});
+
+// ============================================
 // SESSION HANDLER
 // ============================================
-@if(session('openProductModal'))
+var shouldOpenProductModal = {{ session('openProductModal') ? 'true' : 'false' }};
+
 document.addEventListener("DOMContentLoaded", function() {
-    setTimeout(function() {
-        if (currentPageId) {
+    if (shouldOpenProductModal && currentPageId) {
+        setTimeout(function() {
             openProductModal();
-        }
-    }, 500);
+        }, 500);
+    }
 });
-@endif
 </script>
 @endsection

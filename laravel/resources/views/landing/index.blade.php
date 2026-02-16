@@ -16,8 +16,8 @@
         <div class="nav-container">
             <a href="#" class="logo"><img src="../img/icon.png" alt="payou.id" srcset=""></a>
             <div class="nav-buttons" id="navButtons">
-                <a href="#" class="btn btn-secondary">Service</a>
-                <a href="#" class="btn btn-secondary">FAQ</a>
+                <a href="{{ route('service') }}" class="btn btn-secondary">Service</a>
+                <a href="{{ route('faq') }}" class="btn btn-secondary">FAQ</a>
                 <a href="/login" class="btn btn-secondary">Masuk</a>
                 <a href="/register" class="btn btn-primary">Daftar Gratis</a>
             </div>
