@@ -317,6 +317,37 @@ tbody tr:hover { background: #f1f5f9; }
                     Rp {{ number_format($product->price,0,',','.') }}
                 </div>
 
+                <div class="text-sm mb-3">
+
+                @if($product->discount)
+
+                    @php
+                        $finalPrice = $product->price - ($product->price * $product->discount / 100);
+                    @endphp
+
+                    <div class="text-xs text-gray-400 line-through">
+                        Rp {{ number_format($product->price,0,',','.') }}
+                    </div>
+
+                    <div class="font-bold text-red-600">
+                        Rp {{ number_format($finalPrice,0,',','.') }}
+                    </div>
+
+                    <div class="text-xs text-red-500">
+                        -{{ $product->discount }}%
+                    </div>
+
+                @else
+
+                    <div class="font-bold text-blue-600">
+                        Rp {{ number_format($product->price,0,',','.') }}
+                    </div>
+
+                @endif
+
+            </div>
+
+
                 <div class="flex justify-between items-center">
                     <button onclick="openEditModal({{ $product->id }})"
                         class="text-xs bg-gray-100 px-3 py-1 rounded-lg hover:bg-gray-200">

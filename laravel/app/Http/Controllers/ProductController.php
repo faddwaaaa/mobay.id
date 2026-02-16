@@ -3,15 +3,15 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
+use App\Models\ProductImage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class ProductController extends Controller
 {
     /**
      * INDEX
-     * - Tampilkan daftar produk
-     * - Form tambah produk muncul jika ?tambah=1
      */
     public function index(Request $request)
     {
@@ -29,44 +29,39 @@ class ProductController extends Controller
      * STORE PRODUK
      */
     public function store(Request $request)
-    {
-        // Bersihkan format harga (hapus titik ribuan)
-        $price = (int) str_replace('.', '', $request->price);
-        $discount = $request->discount
-            ? (int) str_replace('.', '', $request->discount)
-            : null;
+{
+    // CLEAN FORMAT RUPIAH DULU
+    $request->merge([
+        'price' => str_replace('.', '', $request->price),
+        'discount' => $request->discount
+            ? str_replace('.', '', $request->discount)
+            : null
+    ]);
 
-        // VALIDASI
-        $request->validate([
-            'product_type'    => 'required|in:umkm,digital',
+    $request->validate([
+        'product_type' => 'required|in:umkm,digital',
 
-            'title'           => 'required|string|max:255',
-            'description'     => 'nullable|string',
+        'title' => 'required|string|max:255',
+        'description' => 'nullable|string',
 
-            'price'           => 'required',
-            'discount'        => 'nullable|numeric|min:0|lt:price',
+        'price' => 'required|numeric|min:0',
+        'discount' => 'nullable|numeric|min:0|lt:price',
 
-            'stock'           => 'nullable|integer|min:1',
-            'purchase_limit'  => 'nullable|integer|min:1',
+        'stock' => 'nullable|integer|min:1',
+        'purchase_limit' => 'nullable|integer|min:1',
 
-            'images.*'        => 'nullable|image|max:5120',
+        'images.*' => 'nullable|image|max:5120',
+    ]);
 
-            // File wajib kalau digital
-            'files.*'         => $request->product_type === 'digital'
-                                ? 'required|file|max:10240'
-                                : 'nullable|file|max:10240',
-        ]);
+    $product = Product::create([
+        'user_id' => Auth::id(),
+        'product_type' => $request->product_type,
 
-        // BUAT PRODUK
-        $product = Product::create([
-            'user_id'        => Auth::id(),
-            'product_type'   => $request->product_type,
+        'title' => $request->title,
+        'description' => $request->description,
 
-            'title'          => $request->title,
-            'description'    => $request->description,
-
-            'price'          => $price,
-            'discount'       => $discount,
+        'price' => $request->price,
+        'discount' => $request->discount,
 
             'stock'          => $request->has('stock_toggle')
                                 ? $request->stock
@@ -75,7 +70,7 @@ class ProductController extends Controller
             'purchase_limit' => $request->has('limit_toggle')
                                 ? $request->purchase_limit
                                 : null,
-        ]);
+    ]);
 
         /*
         | SIMPAN GAMBAR
@@ -90,9 +85,8 @@ class ProductController extends Controller
             }
         }
 
-
         /*
-        | SIMPAN FILE DIGITAL (HANYA JIKA ADA)
+        | SIMPAN FILE DIGITAL
         */
         if ($request->product_type === 'digital' && $request->hasFile('files')) {
             foreach ($request->file('files') as $file) {
@@ -105,17 +99,16 @@ class ProductController extends Controller
         }
 
         if ($request->redirect === 'builder') {
+            return redirect()
+                ->route('links.index')
+                ->with('openProductModal', true)
+                ->with('success', 'Produk berhasil ditambahkan');
+        }
+
         return redirect()
-            ->route('links.index')
-            ->with('openProductModal', true) // 🔥 trigger
+            ->route('products.manage')
             ->with('success', 'Produk berhasil ditambahkan');
     }
-
-    return redirect()
-        ->route('products.manage')
-        ->with('success', 'Produk berhasil ditambahkan');
-    }
-
 
 
     /**
@@ -125,6 +118,15 @@ class ProductController extends Controller
     {
         abort_if($produk->user_id !== Auth::id(), 403);
 
+        // Hapus file storage gambar
+        foreach ($produk->images as $img) {
+            Storage::delete('public/' . $img->image);
+        }
+
+        foreach ($produk->files as $file) {
+            Storage::delete('public/' . $file->file);
+        }
+
         $produk->images()->delete();
         $produk->files()->delete();
         $produk->delete();
@@ -132,43 +134,75 @@ class ProductController extends Controller
         return back()->with('success', 'Produk berhasil dihapus');
     }
 
+
+    /**
+     * UPDATE PRODUK (🔥 MULTI IMAGE + DISCOUNT + DELETE IMAGE)
+     */
     public function update(Request $request, Product $product)
-    {
-        abort_if($product->user_id !== Auth::id(), 403);
+{
+    abort_if($product->user_id !== Auth::id(), 403);
 
-        $price = (int) str_replace('.', '', $request->price);
+    // CLEAN FORMAT RUPIAH
+    $request->merge([
+        'price' => str_replace('.', '', $request->price),
+        'discount' => $request->discount
+            ? str_replace('.', '', $request->discount)
+            : null
+    ]);
 
-        $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'price' => 'required',
-            'image' => 'nullable|image|max:5120',
-        ]);
+    $request->validate([
+        'title' => 'required|string|max:255',
+        'description' => 'nullable|string',
 
-        // Update data utama
-        $product->update([
-            'title' => $request->title,
-            'description' => $request->description,
-            'price' => $price,
+        'price' => 'required|numeric|min:0',
+        'discount' => 'nullable|numeric|min:0|lt:price',
+
+        'new_images.*' => 'nullable|image|max:5120',
+    ]);
+
+    $product->update([
+        'title' => $request->title,
+        'description' => $request->description,
+        'price' => $request->price,
+        'discount' => $request->discount,
+        'stock' => $request->has('stock_toggle')
+                    ? $request->stock
+                    : null,
         ]);
 
         /*
-        | UPDATE GAMBAR (JIKA ADA)
+        | =========================
+        | HAPUS GAMBAR TERTENTU
+        | =========================
         */
-        if ($request->hasFile('image')) {
+        if ($request->delete_images) {
 
-            // Hapus gambar lama dari database
-            $product->images()->delete();
+            $images = ProductImage::whereIn('id', $request->delete_images)->get();
 
-            // Simpan gambar baru
-            $path = $request->file('image')->store('products/images', 'public');
+            foreach ($images as $img) {
+                Storage::delete('public/' . $img->image);
+                $img->delete();
+            }
+        }
 
-            $product->images()->create([
-                'image' => $path
-            ]);
+
+        /*
+        | =========================
+        | TAMBAH GAMBAR BARU MULTI
+        | =========================
+        */
+        if ($request->hasFile('new_images')) {
+
+            foreach ($request->file('new_images') as $file) {
+
+                $path = $file->store('products/images', 'public');
+
+                $product->images()->create([
+                    'image' => $path
+                ]);
+            }
         }
 
         return back()->with('success','Produk berhasil diupdate');
     }
-
 }
