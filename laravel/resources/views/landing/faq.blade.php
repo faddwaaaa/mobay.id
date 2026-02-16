@@ -4,41 +4,38 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FAQ - Payou.id</title>
-    
-    <!-- Tailwind CSS -->
+
+    <!-- Font Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- CSS dari Landing (untuk navbar & footer) -->
+    <link rel="stylesheet" href="{{ asset('css/landing.css') }}">
+
+    <!-- Tailwind CSS (untuk isi service) -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
+
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body class="bg-gray-50">
 
-<!-- Navbar -->
-<nav class="bg-white shadow-sm sticky top-0 z-50">
-    <div class="max-w-7xl mx-auto px-4 py-4">
-        <div class="flex justify-between items-center">
-            <a href="/" class="text-2xl font-bold text-blue-600">
-                Payou.id
-            </a>
-            
-            <div class="flex items-center gap-6">
-                <a href="/service" class="text-gray-600 hover:text-blue-600 transition-colors font-medium">
-                    Layanan
-                </a>
-                <a href="/faq" class="text-gray-600 hover:text-blue-600 transition-colors font-medium">
-                    FAQ
-                </a>
-                
-                <div class="flex gap-3">
-                    <!-- <a href="/login" class="text-gray-600 hover:text-blue-600 transition-colors font-medium">
-                        Login
-                    </a> -->
-                    <a href="/register" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium">
-                        Daftar
-                    </a>
-                </div>
-            </div>
+<!-- ================= NAVBAR ================= -->
+<nav>
+    <div class="nav-container">
+        <a href="/" class="logo">
+            <img src="../img/icon.png" alt="payou.id">
+        </a>
+        <div class="nav-buttons" id="navButtons">
+            <a href="{{ route('service') }}" class="btn btn-secondary">Service</a>
+            <a href="{{ route('faq') }}" class="btn btn-secondary">FAQ</a>
+            <a href="/login" class="btn btn-secondary">Masuk</a>
+            <a href="/register" class="btn btn-primary">Daftar Gratis</a>
         </div>
+        <button class="hamburger" id="hamburger" aria-label="Menu">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
     </div>
 </nav>
 
@@ -218,42 +215,54 @@
         </div>
 
         <!-- CTA -->
-        <div class="mt-12 p-8 bg-gradient-to-r from-blue-600 to-blue-600 rounded-2xl text-white text-center">
-            <h3 class="text-2xl font-bold mb-3">Masih Punya Pertanyaan?</h3>
-            <p class="mb-6 opacity-90">Tim Customer Service kami siap membantu Anda 24/7</p>
-            <a href="https://wa.me/6281234567890?text=Halo%20Payou.id!%20Saya%20punya%20pertanyaan" 
-               target="_blank"
-               class="inline-flex items-center gap-3 bg-white text-blue-600 px-8 py-4 rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-200">
-                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5 -.669 -.5 . - . - . - . - . - . - . - . - . - . - . - . - . - . - . - . - . - . - . - . - . - .
-                </svg>
-                <span>Chat via WhatsApp</span>
-            </a>
+        <div class="mt-16">
+            <div class="p-8 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl text-white text-center shadow-lg">
+                <h3 class="text-2xl font-bold mb-3">Masih Punya Pertanyaan?</h3>
+                <p class="mb-6 opacity-90">Tim Customer Service kami siap membantu Anda 24/7</p>
+                <a href="https://wa.me/6285600489815?text=Halo%20Admin%20Payou.id!%20Saya%20punya%20pertanyaan" 
+                target="_blank"
+                class="inline-flex items-center gap-3 bg-white text-blue-600 px-8 py-4 rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-200">
+                    <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M20.52 3.48A11.8 11.8 0 0012.01 0C5.37 0 .02 5.35.02 11.99c0 2.11.55 4.18 1.6 6.01L0 24l6.17-1.61a11.93 11.93 0 005.84 1.49h.01c6.63 0 11.99-5.35 11.99-11.99 0-3.2-1.25-6.21-3.49-8.41zM12.02 21.6a9.57 9.57 0 01-4.87-1.33l-.35-.21-3.66.96.98-3.56-.23-.37a9.54 9.54 0 01-1.47-5.09c0-5.28 4.3-9.58 9.6-9.58 2.56 0 4.97 1 6.78 2.8a9.5 9.5 0 012.8 6.78c0 5.29-4.3 9.6-9.58 9.6z"/>
+                    </svg>
+                    <span>Chat via WhatsApp</span>
+                </a>
+            </div>
         </div>
-
     </div>
 </div>
 
-<!-- Footer -->
-<footer class="bg-gray-900 text-white py-12 mt-12">
-    <div class="max-w-7xl mx-auto px-4">
-        <div class="text-center text-sm text-gray-400">
-            © 2024 Payou.id. All rights reserved.
+<!-- ================= FOOTER ================= -->
+<footer class="footer">
+    <div class="footer-wrapper">
+        <a href="/" class="logo">
+            <img src="../img/icon.png" alt="payou.id">
+        </a>
+        <div class="footer-links">
+            <a href="#">About Us</a>
+            <a href="#">Contact Us</a>
+            <a href="#">Terms & Conditions</a>
+            <a href="#">Privacy</a>
         </div>
+    </div>
+    <div class="footer-bottom">
+        <p>© 2025 payou.id - Satu Link untuk Semua Kebutuhan Bisnis UMKM</p>
     </div>
 </footer>
 
 <style>
+
+/* ================= CATEGORY BUTTON ================= */
 .category-btn {
     padding: 10px 20px;
-    border-radius: 10px;
+    border-radius: 12px;
     font-size: 14px;
     font-weight: 600;
     color: #6b7280;
-    background: white;
+    background: #fff;
     border: 2px solid #e5e7eb;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.25s ease;
 }
 
 .category-btn:hover {
@@ -263,39 +272,41 @@
 }
 
 .category-btn.active {
-    background: linear-gradient(135deg, #1940ff 0%, #6366f1 100%);
-    color: white;
+    background: linear-gradient(135deg, #1940ff, #6366f1);
+    color: #fff;
     border-color: #1940ff;
-    box-shadow: 0 4px 12px rgba(85, 90, 247, 0.3);
+    box-shadow: 0 6px 16px rgba(25, 64, 255, 0.25);
 }
 
+/* ================= FAQ CARD ================= */
 .faq-item {
-    background: white;
-    border-radius: 12px;
+    background: #fff;
+    border-radius: 14px;
     overflow: hidden;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
     border: 1px solid #e5e7eb;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
     transition: all 0.3s ease;
 }
 
 .faq-item:hover {
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
     border-color: #1940ff;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
 }
 
+/* ================= FAQ QUESTION ================= */
 .faq-question {
     width: 100%;
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 20px;
+    gap: 14px;
+    padding: 22px;
     background: transparent;
     border: none;
     cursor: pointer;
     font-size: 16px;
     font-weight: 600;
     color: #111827;
-    transition: all 0.2s ease;
+    transition: background 0.2s ease;
 }
 
 .faq-question:hover {
@@ -303,14 +314,12 @@
 }
 
 .faq-icon {
-    font-size: 24px;
-    flex-shrink: 0;
+    font-size: 22px;
 }
 
 .faq-chevron {
     width: 20px;
     height: 20px;
-    flex-shrink: 0;
     transition: transform 0.3s ease;
 }
 
@@ -318,27 +327,35 @@
     transform: rotate(180deg);
 }
 
+/* ================= FAQ ANSWER ================= */
 .faq-answer {
     max-height: 0;
     overflow: hidden;
-    transition: max-height 0.3s ease;
-    padding: 0 20px;
+    transition: max-height 0.35s ease;
+    padding: 0 22px;
 }
 
 .faq-item.active .faq-answer {
-    max-height: 1000px;
-    padding: 0 20px 20px 20px;
+    max-height: 500px;
+    padding: 0 22px 22px;
 }
 
 .faq-answer p {
-    color: #4b5563;
     font-size: 14px;
-    line-height: 1.6;
+    line-height: 1.7;
+    color: #4b5563;
 }
 
+/* ================= HIDDEN ================= */
 .faq-item.hidden {
     display: none;
 }
+
+/* ================= FOOTER FIX ================= */
+footer {
+    margin-top: 80px;
+}
+
 </style>
 
 <script>
@@ -388,6 +405,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
-
+<!-- JS Hamburger dari Landing -->
+<script src="{{ asset('js/landing.js') }}"></script>
 </body>
 </html>

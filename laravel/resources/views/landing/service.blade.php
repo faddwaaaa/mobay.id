@@ -4,57 +4,46 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Layanan Kami - Payou.id</title>
-    
-    <!-- Tailwind CSS -->
+
+    <!-- Font Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- CSS dari Landing (untuk navbar & footer) -->
+    <link rel="stylesheet" href="{{ asset('css/landing.css') }}">
+
+    <!-- Tailwind CSS (untuk isi service) -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
+
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body class="bg-gray-50">
 
-<!-- Navbar -->
-<nav class="bg-white shadow-sm sticky top-0 z-50">
-    <div class="max-w-7xl mx-auto px-4 py-4">
-        <div class="flex justify-between items-center">
-            <a href="/" class="text-2xl font-bold text-blue-600">
-                Payou.id
-            </a>
-            
-            <div class="flex items-center gap-6">
-                <a href="/service" class="text-gray-600 hover:text-blue-600 transition-colors font-medium">
-                    Layanan
-                </a>
-                <a href="/faq" class="text-gray-600 hover:text-blue-600 transition-colors font-medium">
-                    FAQ
-                </a>
-                
-                <div class="flex gap-3">
-                    <!-- <a href="/login" class="text-gray-600 hover:text-blue-600 transition-colors font-medium">
-                        Login
-                    </a> -->
-                    <a href="/register" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium">
-                        Daftar
-                    </a>
-                </div>
-            </div>
+<!-- ================= NAVBAR ================= -->
+<nav>
+    <div class="nav-container">
+        <a href="/" class="logo">
+            <img src="../img/icon.png" alt="payou.id">
+        </a>
+        <div class="nav-buttons" id="navButtons">
+            <a href="{{ route('service') }}" class="btn btn-secondary">Service</a>
+            <a href="{{ route('faq') }}" class="btn btn-secondary">FAQ</a>
+            <a href="/login" class="btn btn-secondary">Masuk</a>
+            <a href="/register" class="btn btn-primary">Daftar Gratis</a>
         </div>
+        <button class="hamburger" id="hamburger" aria-label="Menu">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
     </div>
 </nav>
 
+
 <!-- Main Content -->
-<div class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 py-12 px-4">
+<div class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 py-12 px-4 mt-20">
+
     <div class="max-w-6xl mx-auto">
-        
-        <!-- Back to Home -->
-        <div class="mb-8">
-            <a href="/" class="inline-flex items-center gap-2 text-gray-600 hover:text-blue-600 transition-colors">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
-                </svg>
-                <span class="font-medium">Kembali ke Beranda</span>
-            </a>
-        </div>
 
         <!-- Header -->
         <div class="text-center mb-12">
@@ -209,15 +198,15 @@
                     </div>
                     
                     <div class="flex flex-col gap-3">
-                        <a href="https://wa.me/6281234567890?text=Halo%20Payou.id!%20Saya%20tertarik%20dengan%20layanan%20Anda" 
+                        <a href="https://wa.me/6285600489815?text=Halo%20Admin%20Payou.id!%20Saya%20tertarik%20dengan%20layanan%20Anda" 
                            target="_blank"
                            class="group flex items-center gap-3 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-8 py-4 rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-200">
                             <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                                <path d="M20.52 3.48A11.8 11.8 0 0012.01 0C5.37 0 .02 5.35.02 11.99c0 2.11.55 4.18 1.6 6.01L0 24l6.17-1.61a11.93 11.93 0 005.84 1.49h.01c6.63 0 11.99-5.35 11.99-11.99 0-3.2-1.25-6.21-3.49-8.41zM12.02 21.6a9.57 9.57 0 01-4.87-1.33l-.35-.21-3.66.96.98-3.56-.23-.37a9.54 9.54 0 01-1.47-5.09c0-5.28 4.3-9.58 9.6-9.58 2.56 0 4.97 1 6.78 2.8a9.5 9.5 0 012.8 6.78c0 5.29-4.3 9.6-9.58 9.6z"/>
                             </svg>
                             <div class="text-left">
                                 <div class="text-sm opacity-90">Chat via WhatsApp</div>
-                                <div class="text-xs opacity-75">+62 812-3456-7890</div>
+                                <div class="text-xs opacity-75">+62 856-0048-9815</div>
                             </div>
                             <svg class="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
@@ -225,12 +214,12 @@
                         </a>
 
                         <div class="flex gap-3 justify-center">
-                            <a href="mailto:support@payou.id" 
+                            <a href="mailto:smeganemolab@gmail.com?subject=Pertanyaan%20Payou.id&body=Halo%20Admin,%20saya%20ingin%20bertanya%20tentang%20layanan%20Payou.id" 
                                class="flex items-center gap-2 text-gray-600 hover:text-blue-600 transition-colors">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
                                 </svg>
-                                <span class="text-sm font-medium">support@payou.id</span>
+                                <span class="text-sm font-medium">smeganemolab@gmail.com</span>
                             </a>
                         </div>
                     </div>
@@ -240,7 +229,7 @@
 
         <!-- Features Section -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12">
-            <div class="flex items-start gap-4 p-6 bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow">
+            <div class="feature-card flex items-start gap-4 p-6 bg-white rounded-xl">
                 <div class="flex-shrink-0 w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
                     <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
@@ -252,7 +241,7 @@
                 </div>
             </div>
 
-            <div class="flex items-start gap-4 p-6 bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow">
+            <div class="feature-card flex items-start gap-4 p-6 bg-white rounded-xl">
                 <div class="flex-shrink-0 w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
                     <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
@@ -264,7 +253,7 @@
                 </div>
             </div>
 
-            <div class="flex items-start gap-4 p-6 bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow">
+            <div class="feature-card flex items-start gap-4 p-6 bg-white rounded-xl">
                 <div class="flex-shrink-0 w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
                     <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
@@ -280,12 +269,21 @@
     </div>
 </div>
 
-<!-- Footer -->
-<footer class="bg-gray-900 text-white py-12 mt-12">
-    <div class="max-w-7xl mx-auto px-4">
-        <div class="text-center text-sm text-gray-400">
-            © 2024 Payou.id. All rights reserved.
+<!-- ================= FOOTER ================= -->
+<footer class="footer">
+    <div class="footer-wrapper">
+        <a href="/" class="logo">
+            <img src="../img/icon.png" alt="payou.id">
+        </a>
+        <div class="footer-links">
+            <a href="#">About Us</a>
+            <a href="#">Contact Us</a>
+            <a href="#">Terms & Conditions</a>
+            <a href="#">Privacy</a>
         </div>
+    </div>
+    <div class="footer-bottom">
+        <p>© 2025 payou.id - Satu Link untuk Semua Kebutuhan Bisnis UMKM</p>
     </div>
 </footer>
 
@@ -350,7 +348,32 @@
 .service-features li:last-child {
     border-bottom: none;
 }
+
+/* ===== FEATURE CARD ANIMATION ===== */
+
+.feature-card {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+    border: 1px solid rgba(229, 231, 235, 0.5);
+}
+
+.feature-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    border-color: rgba(59, 130, 246, 0.3);
+}
+
+.feature-card svg {
+    transition: transform 0.3s ease;
+}
+
+.feature-card:hover svg {
+    transform: scale(1.15) rotate(5deg);
+}
+
 </style>
 
+<!-- JS Hamburger dari Landing -->
+<script src="{{ asset('js/landing.js') }}"></script>
 </body>
 </html>

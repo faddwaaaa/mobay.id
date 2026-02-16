@@ -278,7 +278,9 @@
     
     <footer class="footer">
         <div class="footer-wrapper">
-            <a href="#" class="footer-logo">payou.id</a>
+            <a href="/" class="logo">
+                <img src="../img/icon.png" alt="payou.id">
+            </a>
             <div class="footer-links">
                 <a href="#">About Us</a>
                 <a href="#">Contact Us</a>
