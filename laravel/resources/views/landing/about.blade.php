@@ -293,5 +293,7 @@
 }
 
 </style>
+<!-- JS Hamburger dari Landing -->
+<script src="{{ asset('js/landing.js') }}"></script>
 </body>
 </html>

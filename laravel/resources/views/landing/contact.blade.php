@@ -112,6 +112,7 @@
         <p>© 2025 payou.id - Satu Link untuk Semua Kebutuhan Bisnis UMKM</p>
     </div>
 </footer>
-
+<!-- JS Hamburger dari Landing -->
+<script src="{{ asset('js/landing.js') }}"></script>
 </body>
 </html>
