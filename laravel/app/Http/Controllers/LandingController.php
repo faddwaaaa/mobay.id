@@ -29,4 +29,20 @@ class LandingController extends Controller
     {
         return view('landing.faq');
     }
+
+    /**
+     * Show about page
+     */
+    public function about()
+    {
+        return view('landing.about');
+    }
+
+    /**
+     * Show contact page
+     */
+    public function contact()
+    {
+        return view('landing.contact');
+    }
 }

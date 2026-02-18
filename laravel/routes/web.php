@@ -63,6 +63,8 @@ Route::post('/midtrans/webhook',      [CheckoutController::class, 'webhook'])->n
 Route::get('/', [LandingController::class, 'index'])->name('home');
 Route::get('/service', [LandingController::class, 'service'])->name('service');
 Route::get('/faq', [LandingController::class, 'faq'])->name('faq');
+Route::get('/about', [LandingController::class, 'about'])->name('about');
+Route::get('/contact', [LandingController::class, 'contact'])->name('contact');
 
 // Auth routes (dari auth.php)
 require __DIR__.'/auth.php';
