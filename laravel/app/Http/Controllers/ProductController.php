@@ -205,4 +205,9 @@ class ProductController extends Controller
 
         return back()->with('success','Produk berhasil diupdate');
     }
+
+    public function edit(Product $product)
+{
+    $product->load('images'); // penting biar gambar muncul
+}
 }

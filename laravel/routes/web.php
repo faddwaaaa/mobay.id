@@ -208,7 +208,7 @@ Route::middleware('auth')->group(function () {
     Route::put('/produk/{product}/update', [ProductController::class, 'update'])
         ->name('products.update');
 
-
+        
     /*
     |----------------------------------------------------------------------
     | PAYMENT / TOPUP / WITHDRAW
