@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
+use App\Models\Product;
 
 use App\Http\Controllers\{
     DashboardController,
@@ -257,18 +258,29 @@ Route::middleware('auth')->group(function () {
 */
 Route::prefix('api')->group(function () {
 
-    Route::post('/topup', [TransactionController::class, 'createTopUp'])
-        ->name('api.topup.create');
+    Route::post('/topup', [TransactionController::class, 'createTopUp']);
+    Route::post('/withdraw', [TransactionController::class, 'createWithdraw']);
+    Route::get('/transactions', [TransactionController::class, 'getTransactionHistory']);
+    Route::get('/withdrawals', [TransactionController::class, 'getWithdrawalHistory']);
 
-    Route::post('/withdraw', [TransactionController::class, 'createWithdraw'])
-        ->name('api.withdraw.create');
+    Route::get('/product/{id}', function ($id) {
+        $product = \App\Models\Product::with('images')->findOrFail($id);
 
-    Route::get('/transactions', [TransactionController::class, 'getTransactionHistory'])
-        ->name('api.transactions.history');
+        return response()->json([
+            'id' => $product->id,
+            'title' => $product->title,
+            'description' => $product->description,
+            'price' => $product->price,
+            'discount' => $product->discount,
+            'stock' => $product->stock,
+            'image_url' => $product->images->first()
+                ? asset('storage/'.$product->images->first()->image)
+                : null,
+        ]);
+    });
 
-    Route::get('/withdrawals', [TransactionController::class, 'getWithdrawalHistory'])
-        ->name('api.withdrawals.history');
 });
+
 
 
 /*

@@ -544,6 +544,155 @@
             color: #9ca3af;
             margin-left: 4px;
         }
+
+        .product-detail-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.45);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            padding: 20px;
+        }
+
+        .product-detail-box {
+            position: relative;
+            background: white;
+            width: 100%;
+            max-width: 420px;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.15);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .product-detail-header {
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            z-index: 10;
+        }
+
+        .product-detail-header button {
+            background: rgba(255,255,255,0.9);
+            backdrop-filter: blur(4px);
+            border: none;
+            border-radius: 50%;
+            width: 35px;
+            height: 35px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .product-detail-image {
+            width: 100%;
+            height: 220px;
+            background: #f3f4f6;
+        }
+
+        .product-detail-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .product-detail-content {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .product-detail-content h2 {
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .detail-price {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .final-price {
+            font-size: 22px;
+            font-weight: 700;
+            color: #2563eb;
+        }
+
+        .original-price {
+            text-decoration: line-through;
+            color: #999;
+            font-size: 14px;
+        }
+
+        .stock-info {
+            font-size: 13px;
+            color: #555;
+        }
+
+        .detail-description {
+            font-size: 14px;
+            color: #444;
+            line-height: 1.6;
+        }
+
+        .detail-buttons {
+            display: flex;
+            gap: 10px;
+            padding: 16px;
+            border-top: 1px solid #e5e7eb;
+            background: #fff;
+        }
+
+        .btn-cart {
+            width: 48px;
+            height: 48px;
+            min-width: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #2563eb;
+            border-radius: 10px;
+            background: #fff;
+            font-size: 20px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-cart:hover {
+            background: #eff6ff;
+        }
+
+        .btn-buy {
+            flex: 1;
+            padding: 12px;
+            background: #2563eb;
+            color: white;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 15px;
+            border: none;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-buy:hover {
+            background: #1d4ed8;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
     </style>
 </head>
 <body>
@@ -705,13 +854,6 @@
                                             <div class="product-discount-badge">-{{ $discountPercent }}%</div>
                                         @endif
                                     </div>
-
-                                    <a href="#" class="product-cta" onclick="event.stopPropagation(); handleProductClick({{ $block->product_id ?? 'null' }})">
-                                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
-                                        </svg>
-                                        <span>Beli Sekarang</span>
-                                    </a>
                                 </div>
                             </div>
                         @endif
@@ -734,6 +876,52 @@
 
 </div>
 
+<div class="product-detail-overlay" id="productDetailModal">
+    <div class="product-detail-box">
+
+        <div class="product-detail-header">
+            <button onclick="closeProductDetail()">✕</button>
+        </div>
+
+        <div class="product-detail-image">
+            <img id="detailImage" src="">
+        </div>
+
+        <div class="product-detail-content">
+
+            <h2 id="detailTitle"></h2>
+
+            <div class="detail-price">
+                <span class="final-price" id="detailFinalPrice"></span>
+                <span class="original-price" id="detailOriginalPrice"></span>
+            </div>
+
+            <div class="stock-info">
+                Stock: <span id="detailStock"></span>
+            </div>
+
+            <div class="detail-description">
+                <h4>DESCRIPTION</h4>
+                <p id="detailDescription"></p>
+            </div>
+
+        </div>
+
+        <div class="detail-buttons">
+            <button class="btn-cart">
+                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
+                </svg>
+            </button>
+            <button class="btn-buy" id="buyNowBtn">
+                Beli Sekarang
+            </button>
+        </div>
+
+    </div>
+</div>
+
+
 <script>
 // ========== HAMBURGER MENU ==========
 const hamburger = document.getElementById('hamburger');
@@ -741,13 +929,14 @@ const sidebar = document.getElementById('sidebar');
 const sidebarOverlay = document.getElementById('sidebarOverlay');
 
 function toggleSidebar() {
-    hamburger.classList.toggle('active');
-    sidebar.classList.toggle('active');
-    sidebarOverlay.classList.toggle('active');
+    hamburger?.classList.toggle('active');
+    sidebar?.classList.toggle('active');
+    sidebarOverlay?.classList.toggle('active');
 }
 
-hamburger.addEventListener('click', toggleSidebar);
-sidebarOverlay.addEventListener('click', toggleSidebar);
+hamburger?.addEventListener('click', toggleSidebar);
+sidebarOverlay?.addEventListener('click', toggleSidebar);
+
 
 // ========== TAB SWITCHING ==========
 const menuItems = document.querySelectorAll('.menu-item');
@@ -772,31 +961,71 @@ menuItems.forEach(item => {
     });
 });
 
-// ========== PRODUCT CLICK HANDLER ==========
+
+// ========== FORMAT RUPIAH ==========
+function formatRupiah(number) {
+    return 'Rp ' + new Intl.NumberFormat('id-ID').format(number);
+}
+
+
+// ========== PRODUCT DETAIL ==========
 function handleProductClick(productId) {
-    if (!productId) {
-        console.log('Product ID not found');
-        return;
-    }
+    if (!productId) return;
 
-    const isPreview = window.location.pathname.includes('/preview/');
+    fetch(`/api/product/${productId}`)
+        .then(res => res.json())
+        .then(product => {
 
-    if (isPreview) {
-        console.log('Preview mode - Product ID:', productId);
-    } else {
-        window.location.href = `/checkout/${productId}`;
-    }
+            document.getElementById('detailTitle').innerText = product.title;
+            document.getElementById('detailDescription').innerText = product.description ?? '';
+
+            // HITUNG FINAL PRICE
+            let finalPrice = product.price;
+
+            if (product.discount && product.discount > 0) {
+                finalPrice = product.price - (product.price * product.discount / 100);
+            }
+
+            document.getElementById('detailFinalPrice').innerText =
+                formatRupiah(finalPrice);
+
+            document.getElementById('detailOriginalPrice').innerText =
+                product.discount && product.discount > 0
+                    ? formatRupiah(product.price)
+                    : '';
+
+            document.getElementById('detailStock').innerText =
+                product.stock ?? 0;
+
+            document.getElementById('detailImage').src =
+                product.image_url ?? 'https://via.placeholder.com/400';
+
+            document.getElementById('buyNowBtn').onclick = function () {
+                window.location.href = `/checkout/${product.id}`;
+            };
+
+            // PENTING: pakai flex supaya center
+          document.getElementById('productDetailModal').style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        })
+        .catch(err => {
+            console.error('Error ambil produk:', err);
+        });
+}
+
+function closeProductDetail() {
+    document.getElementById('productDetailModal').style.display = 'none';
+    document.body.style.overflow = 'auto';
 }
 
 // ========== CART BUTTON ==========
 const cartBtn = document.getElementById('cartBtn');
-cartBtn.addEventListener('click', () => {
+
+cartBtn?.addEventListener('click', () => {
     alert('Fitur keranjang akan segera hadir!');
 });
-
-
-
 </script>
+
 
 </body>
 </html>
