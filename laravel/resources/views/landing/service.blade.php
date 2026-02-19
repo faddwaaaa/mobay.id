@@ -276,8 +276,8 @@
             <img src="../img/icon.png" alt="payou.id">
         </a>
         <div class="footer-links">
-            <a href="#">About Us</a>
-            <a href="#">Contact Us</a>
+            <a href="{{ route('about') }}">About Us</a>
+            <a href="{{ route('contact') }}">Contact Us</a>
             <a href="#">Terms & Conditions</a>
             <a href="#">Privacy</a>
         </div>
