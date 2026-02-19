@@ -349,10 +349,11 @@ tbody tr:hover { background: #f1f5f9; }
 
 
                 <div class="flex justify-between items-center">
-                    <button onclick="openEditModal({{ $product->id }})"
-                        class="text-xs bg-gray-100 px-3 py-1 rounded-lg hover:bg-gray-200">
+                    <a href="{{ route('products.edit', $product->id) }}"
+                        class="btn btn-primary">
                         Edit
-                    </button>
+                    </a>
+
 
                     <form method="POST" action="{{ route('products.destroy', $product) }}">
                         @csrf

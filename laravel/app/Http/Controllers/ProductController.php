@@ -206,8 +206,13 @@ class ProductController extends Controller
         return back()->with('success','Produk berhasil diupdate');
     }
 
-    public function edit(Product $product)
-{
-    $product->load('images'); // penting biar gambar muncul
+    public function edit($id)
+    {
+        $products = Product::where('user_id', auth()->id())->get();
+        $product = Product::with('images')->findOrFail($id);
+
+        return view('products.edit', compact('product'));
+
 }
+
 }

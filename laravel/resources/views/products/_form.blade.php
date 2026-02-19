@@ -8,21 +8,29 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                     </svg>
                 </a>
-                <h1 class="text-xl font-bold text-gray-800">Tambah Produk Baru</h1>
-            </div>
-            <p class="text-sm text-gray-600 ml-10">Lengkapi informasi produk Anda</p>
+                 <h1 class="text-xl font-bold">
+    {{ isset($product) ? 'Edit Produk' : 'Tambah Produk Baru' }}
+</h1>
+<br>
+<p class="text-sm text-gray-500">
+    {{-- {{ isset($product) ? 'Perbarui informasi produk Anda' : 'Lengkapi informasi produk Anda' }} --}}
+</p>
+
         </div>
 
         <!-- Form -->
-        <form method="POST" 
-        action="{{ route('products.store') }}" 
-        enctype="multipart/form-data" class="space-y-6">
-            @csrf
+        <form method="POST"
+      action="{{ isset($product)
+          ? route('products.update', $product->id)
+          : route('products.store') }}"
+      enctype="multipart/form-data"
+      class="space-y-6">
 
-            @if(request('redirect'))
-                <input type="hidden" name="redirect" value="{{ request('redirect') }}">
-            @endif
+    @csrf
 
+    @if(isset($product))
+        @method('PUT')
+    @endif
             
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <!-- Left Column -->
@@ -32,9 +40,16 @@
                         <label class="form-label">Jenis Produk</label>
                         <select name="product_type" id="productType" class="form-input" required>
                             <option value="">Pilih Jenis Produk</option>
-                            <option value="umkm">Produk UMKM (Fisik)</option>
-                            <option value="digital">Produk Digital</option>
+                            <option value="umkm"
+                                {{ old('product_type', $product->product_type ?? '') == 'umkm' ? 'selected' : '' }}>
+                                Produk UMKM (Fisik)
+                            </option>
+                            <option value="digital"
+                                {{ old('product_type', $product->product_type ?? '') == 'digital' ? 'selected' : '' }}>
+                                Produk Digital
+                            </option>
                         </select>
+
                         <p class="text-xs text-gray-500 mt-2">
                             Pilih jenis produk untuk menyesuaikan pengaturan penjualan
                         </p>
@@ -82,6 +97,21 @@
                         <!-- Image Preview Grid -->
                         <div id="imagePreviewContainer" class="mt-4">
                             <div id="imagePreviewGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3"></div>
+                            @if(isset($product) && $product->images)
+    @foreach($product->images as $image)
+        <div class="relative group">
+
+            <img src="{{ asset('storage/'.$image->image_path) }}"
+                 class="w-full h-32 object-cover rounded-lg border">
+
+            <div class="absolute top-1 right-1 bg-green-500 text-white text-xs px-2 py-1 rounded">
+                Existing
+            </div>
+
+        </div>
+    @endforeach
+@endif
+
                         </div>
                     </div>
 
@@ -89,10 +119,13 @@
                     <div class="card-gradient p-5 space-y-5">
                         <div>
                             <label class="form-label">Judul Produk</label>
-                            <input type="text" name="title" 
-                                   class="form-input"
-                                   placeholder="Contoh: Template Website Premium"
-                                   required>
+                            <input type="text" 
+                                name="title"
+                                class="form-input"
+                                value="{{ old('title', $product->title ?? '') }}"
+                                placeholder="Contoh: Template Website Premium"
+                                required>
+
                         </div>
                         <div>
                             <label class="form-label">Deskripsi Produk</label>
@@ -100,13 +133,13 @@
                                       class="form-textarea"
                                       rows="4"
                                       placeholder="Jelaskan detail produk, fitur, dan manfaat yang didapatkan..."
-                                      required></textarea>
+                                      required>{{ old('description', $product->description ?? '') }}</textarea>
                             <p class="text-xs text-gray-500 mt-2">Minimal 100 karakter untuk deskripsi yang optimal</p>
                         </div>
                     </div>
 
                     <!-- Files Upload -->
-                        <div id="fileSection" class="card-gradient p-5 hidden">
+                        <div id="fileSection" class="card-gradient p-5  {{ old('product_type', $product->product_type ?? '') == 'digital' ? '' : 'hidden' }}">
                         <div class="flex items-center justify-between mb-4">
                             <div>
                                 <h3 class="text-lg font-semibold text-gray-800 mb-1">File Produk</h3>
@@ -137,7 +170,16 @@
                         </div>
                         
                         <!-- File List -->
-                        <div id="fileList" class="space-y-2"></div>
+                        <div id="fileList" class="space-y-2">
+                            @if(isset($product) && $product->files)
+                            @foreach(json_decode($product->files) as $file)
+                                <div class="bg-gray-50 border rounded-lg px-3 py-2 text-sm flex justify-between">
+                                    <span>{{ basename($file) }}</span>
+                                    <span class="text-green-600">Existing</span>
+                                </div>
+                            @endforeach
+                        @endif
+                        </div>
                     </div>
                 </div>
 
@@ -157,6 +199,7 @@
             <input type="text" name="price" 
                    id="priceInput"
                    class="form-input pl-12"
+                   value="{{ old('price', isset($product) ? number_format($product->price,0,',','.') : '') }}"
                    placeholder="0"
                    required>
         </div>
@@ -176,6 +219,7 @@
             <input type="text" name="discount" 
                    id="discountInput"
                    class="form-input pl-12"
+                   value="{{ old('discount', isset($product->discount) ? number_format($product->discount,0,',','.') : '') }}"
                    placeholder="0">
         </div>
         <p class="text-xs text-blue-600 mt-1">
@@ -201,14 +245,16 @@
                                     <p class="text-xs text-gray-500">Aktifkan untuk mengatur jumlah stok</p>
                                 </div>
                                 <div class="toggle-container">
-                                    <input type="checkbox" name="stock_toggle" id="stockCheck" class="toggle-checkbox">
+                                    <input type="checkbox" name="stock_toggle" id="stockCheck" class="toggle-checkbox"
+                                    {{ old('stock_toggle', isset($product->stock)) ? 'checked' : '' }}>
                                     <label for="stockCheck" class="toggle-label"></label>
                                 </div>
                             </div>
                             <input type="number" name="stock" 
                                    id="stockInput" 
-                                   class="form-input hidden"
+                                   class="form-input  {{ old('stock_toggle', isset($product->stock)) ? '' : 'hidden' }}"
                                    placeholder="Jumlah stok tersedia"
+                                   value="{{ old('stock', $product->stock ?? '') }}"
                                    min="1">
                         </div>
 
@@ -220,13 +266,14 @@
                                     <p class="text-xs text-gray-500">Batasi pembelian per pengguna</p>
                                 </div>
                                 <div class="toggle-container">
-                                    <input type="checkbox" name="limit_toggle" id="limitCheck" class="toggle-checkbox">
+                                    <input type="checkbox" name="limit_toggle" id="limitCheck" class="toggle-checkbox" {{ old('limit_toggle', isset($product->purchase_limit)) ? 'checked' : '' }}>
                                     <label for="limitCheck" class="toggle-label"></label>
                                 </div>
                             </div>
                             <input type="number" name="purchase_limit" 
                                    id="limitInput" 
-                                   class="form-input hidden"
+                                   class="form-input {{ old('limit_toggle', isset($product->purchase_limit)) ? '' : 'hidden' }}"
+value="{{ old('purchase_limit', $product->purchase_limit ?? '') }}"
                                    placeholder="Maksimal beli per user"
                                    min="1">
                         </div>
@@ -238,7 +285,7 @@
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                         </svg>
-                        Tambah Produk
+                        {{ isset($product) ? 'Update Produk' : 'Tambah Produk' }}
                     </button>
 
                     <!-- Help Text -->
@@ -917,4 +964,89 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
+
+/* ===============================
+   PRODUCT TYPE → FILE TOGGLE
+================================ */
+const productType = document.getElementById('productType');
+const fileSection = document.getElementById('fileSection');
+
+function toggleFileSection(){
+    if(productType.value === 'digital'){
+        fileSection.classList.remove('hidden');
+    }else{
+        fileSection.classList.add('hidden');
+    }
+}
+
+productType?.addEventListener('change', toggleFileSection);
+toggleFileSection();
+
+
+
+/* ===============================
+   STOCK TOGGLE
+================================ */
+const stockCheck = document.getElementById('stockCheck');
+const stockInput = document.getElementById('stockInput');
+
+stockCheck?.addEventListener('change', () => {
+    stockInput.classList.toggle('hidden');
+});
+
+
+
+/* ===============================
+   LIMIT TOGGLE
+================================ */
+const limitCheck = document.getElementById('limitCheck');
+const limitInput = document.getElementById('limitInput');
+
+limitCheck?.addEventListener('change', () => {
+    limitInput.classList.toggle('hidden');
+});
+
+
+@if(isset($product) && $product->images)
+document.addEventListener('DOMContentLoaded', function() {
+    @foreach($product->images as $image)
+        uploadedImages.push({
+            id: {{ $image->id }},
+            name: "{{ $image->filename }}",
+            url: "{{ asset('storage/'.$image->path) }}",
+            file: null // ini existing file
+        });
+    @endforeach
+
+    updateImagePreview();
+});
+@endif
+
+/* ===============================
+   FILE PREVIEW
+================================ */
+const fileUpload = document.getElementById('fileUpload');
+const fileList = document.getElementById('fileList');
+
+fileUpload?.addEventListener('change', function(){
+
+    fileList.innerHTML = "";
+
+    Array.from(this.files).forEach(file => {
+
+        const div = document.createElement('div');
+        div.className =
+        "bg-blue-50 border border-blue-200 rounded-lg px-3 py-2 text-sm flex justify-between";
+
+        div.innerHTML = `
+            <span>${file.name}</span>
+            <span class="text-blue-600">New</span>
+        `;
+
+        fileList.appendChild(div);
+
+    });
+
+});
+
 </script>

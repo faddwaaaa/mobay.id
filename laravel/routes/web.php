@@ -205,6 +205,10 @@ Route::middleware('auth')->group(function () {
     Route::post('/produk', [ProductController::class, 'store'])
         ->name('products.store');
 
+        // form edit (pakai form yang sama)
+    Route::get('/produk/{id}/edit', [ProductController::class, 'edit'])
+        ->name('products.edit');
+
     Route::delete('/produk/{produk}', [ProductController::class, 'destroy'])
         ->name('products.destroy');
 
