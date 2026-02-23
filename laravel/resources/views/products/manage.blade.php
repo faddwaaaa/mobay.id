@@ -250,7 +250,7 @@ tbody tr:hover { background: #f1f5f9; }
 {{-- ================= ADD PRODUCT FORM ================= --}}
 @if($showForm)
 
-    @include('products._form')
+    @include('products._form', ['product' => $product ?? null])
 
 @else
 

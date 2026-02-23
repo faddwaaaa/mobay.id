@@ -71,9 +71,9 @@ Route::get('/contact', [LandingController::class, 'contact'])->name('contact');
 require __DIR__.'/auth.php';
 
 // Dashboard (auth required)
-Route::middleware('auth')->group(function () {
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-});
+// Route::middleware('auth')->group(function () {
+//     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+// });
 
 
 
