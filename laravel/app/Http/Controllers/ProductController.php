@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\Product;
 use App\Models\ProductImage;
-use App\Models\ProductFile;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -14,32 +13,16 @@ class ProductController extends Controller
     /**
      * INDEX
      */
-   public function index(Request $request)
-{
-    $products = Product::where('user_id', Auth::id())
-        ->latest()
-        ->get();
+    public function index(Request $request)
+    {
+        $products = Product::where('user_id', Auth::id())
+            ->latest()
+            ->get();
 
-    $showForm = false;
-    $product = null;
+        $showForm = $request->query('tambah') == 1;
 
-    // tambah
-    if ($request->tambah) {
-        $showForm = true;
+        return view('products.manage', compact('products', 'showForm'));
     }
-
-    // edit
-    if ($request->edit) {
-        $product = Product::where('user_id', Auth::id())
-            ->with('images')
-            ->with('files') // Tambahkan ini untuk memuat relasi files
-            ->findOrFail($request->edit);
-
-        $showForm = true;
-    }
-
-    return view('products.manage', compact('products','showForm','product'));
-}
 
 
     /**
@@ -68,7 +51,6 @@ class ProductController extends Controller
         'purchase_limit' => 'nullable|integer|min:1',
 
         'images.*' => 'nullable|image|max:5120',
-        'files.*' => 'nullable|file|max:10240', // 10MB max untuk file
     ]);
 
     $product = Product::create([
@@ -81,52 +63,52 @@ class ProductController extends Controller
         'price' => $request->price,
         'discount' => $request->discount,
 
-        'stock'          => $request->has('stock_toggle')
-                            ? $request->stock
-                            : null,
+            'stock'          => $request->has('stock_toggle')
+                                ? $request->stock
+                                : null,
 
-        'purchase_limit' => $request->has('limit_toggle')
-                            ? $request->purchase_limit
-                            : null,
+            'purchase_limit' => $request->has('limit_toggle')
+                                ? $request->purchase_limit
+                                : null,
     ]);
 
-    /*
-    | SIMPAN GAMBAR
-    */
-    if ($request->hasFile('images')) {
-        foreach ($request->file('images') as $img) {
-            $path = $img->store('products/images', 'public');
+        /*
+        | SIMPAN GAMBAR
+        */
+        if ($request->hasFile('images')) {
+            foreach ($request->file('images') as $img) {
+                $path = $img->store('products/images', 'public');
 
-            $product->images()->create([
-                'image' => $path
-            ]);
+                $product->images()->create([
+                    'image' => $path
+                ]);
+            }
         }
-    }
 
-    /*
-    | SIMPAN FILE DIGITAL
-    */
-    if ($request->product_type === 'digital' && $request->hasFile('files')) {
-        foreach ($request->file('files') as $file) {
-            $path = $file->store('products/files', 'public');
+        /*
+        | SIMPAN FILE DIGITAL
+        */
+        if ($request->product_type === 'digital' && $request->hasFile('files')) {
+            foreach ($request->file('files') as $file) {
+                $path = $file->store('products/files', 'public');
 
-            $product->files()->create([
-                'file' => $path
-            ]);
+                $product->files()->create([
+                    'file' => $path
+                ]);
+            }
         }
-    }
 
-    if ($request->redirect === 'builder') {
+        if ($request->redirect === 'builder') {
+            return redirect()
+                ->route('links.index')
+                ->with('openProductModal', true)
+                ->with('success', 'Produk berhasil ditambahkan');
+        }
+
         return redirect()
-            ->route('links.index')
-            ->with('openProductModal', true)
+            ->route('products.manage')
             ->with('success', 'Produk berhasil ditambahkan');
     }
-
-    return redirect()
-        ->route('products.manage')
-        ->with('success', 'Produk berhasil ditambahkan');
-}
 
 
     /**
@@ -141,7 +123,6 @@ class ProductController extends Controller
             Storage::delete('public/' . $img->image);
         }
 
-        // Hapus file storage digital
         foreach ($produk->files as $file) {
             Storage::delete('public/' . $file->file);
         }
@@ -155,7 +136,7 @@ class ProductController extends Controller
 
 
     /**
-     * UPDATE PRODUK (🔥 MULTI IMAGE + DISCOUNT + DELETE IMAGE + DELETE FILE)
+     * UPDATE PRODUK (🔥 MULTI IMAGE + DISCOUNT + DELETE IMAGE)
      */
     public function update(Request $request, Product $product)
 {
@@ -170,113 +151,58 @@ class ProductController extends Controller
     ]);
 
     $request->validate([
-        'product_type' => 'required|in:umkm,digital',
         'title' => 'required|string|max:255',
         'description' => 'nullable|string',
 
         'price' => 'required|numeric|min:0',
         'discount' => 'nullable|numeric|min:0|lt:price',
 
-        'stock' => 'nullable|integer|min:1',
-        'purchase_limit' => 'nullable|integer|min:1',
-
-        'images.*' => 'nullable|image|max:5120',
-        'files.*' => 'nullable|file|max:10240', // 10MB max untuk file
+        'new_images.*' => 'nullable|image|max:5120',
     ]);
 
-    // UPDATE DATA PRODUK
     $product->update([
-        'product_type' => $request->product_type,
         'title' => $request->title,
         'description' => $request->description,
         'price' => $request->price,
         'discount' => $request->discount,
-        'stock' => $request->has('stock_toggle') ? $request->stock : null,
-        'purchase_limit' => $request->has('limit_toggle') ? $request->purchase_limit : null,
-    ]);
+        'stock' => $request->has('stock_toggle')
+                    ? $request->stock
+                    : null,
+        ]);
 
-    /*
-    | =========================
-    | HAPUS GAMBAR TERTENTU (delete_images[])
-    | =========================
-    */
-    if ($request->has('delete_images') && is_array($request->delete_images)) {
-        $images = ProductImage::whereIn('id', $request->delete_images)
-            ->where('product_id', $product->id)
-            ->get();
+        /*
+        | =========================
+        | HAPUS GAMBAR TERTENTU
+        | =========================
+        */
+        if ($request->delete_images) {
 
-        foreach ($images as $img) {
-            // Hapus file fisik
-            Storage::delete('public/' . $img->image);
-            // Hapus record dari database
-            $img->delete();
-        }
-    }
+            $images = ProductImage::whereIn('id', $request->delete_images)->get();
 
-    /*
-    | =========================
-    | HAPUS FILE TERTENTU (delete_files[])
-    | =========================
-    */
-    if ($request->has('delete_files') && is_array($request->delete_files)) {
-        foreach ($request->delete_files as $filePath) {
-            // Cari file di database berdasarkan path
-            $file = ProductFile::where('product_id', $product->id)
-                ->where('file', $filePath)
-                ->first();
-                
-            if ($file) {
-                // Hapus file fisik
-                Storage::delete('public/' . $file->file);
-                // Hapus record dari database
-                $file->delete();
+            foreach ($images as $img) {
+                Storage::delete('public/' . $img->image);
+                $img->delete();
             }
         }
-    }
 
-    /*
-    | =========================
-    | TAMBAH GAMBAR BARU (images[])
-    | =========================
-    */
-    if ($request->hasFile('images')) {
-        foreach ($request->file('images') as $img) {
-            $path = $img->store('products/images', 'public');
 
-            $product->images()->create([
-                'image' => $path
-            ]);
+        /*
+        | =========================
+        | TAMBAH GAMBAR BARU MULTI
+        | =========================
+        */
+        if ($request->hasFile('new_images')) {
+
+            foreach ($request->file('new_images') as $file) {
+
+                $path = $file->store('products/images', 'public');
+
+                $product->images()->create([
+                    'image' => $path
+                ]);
+            }
         }
+
+        return back()->with('success','Produk berhasil diupdate');
     }
-
-    /*
-    | =========================
-    | TAMBAH FILE BARU (files[])
-    | =========================
-    */
-    if ($request->hasFile('files') && $request->product_type === 'digital') {
-        foreach ($request->file('files') as $file) {
-            $path = $file->store('products/files', 'public');
-
-            $product->files()->create([
-                'file' => $path
-            ]);
-        }
-    }
-
-    return redirect()
-        ->route('products.manage')
-        ->with('success', 'Produk berhasil diupdate');
-}
-
-    /**
-     * EDIT - Redirect ke halaman manage dengan parameter edit
-     */
-    public function edit($id)
-    {
-        return redirect()->route('products.manage', [
-            'edit' => $id
-        ]);
-    }
-
 }
