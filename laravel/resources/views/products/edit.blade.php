@@ -49,6 +49,99 @@
 
                     <div class="space-y-5">
 
+                        {{-- ===== JENIS PRODUK ===== --}}
+                        <div class="edit-card p-4">
+                            <div class="flex items-center justify-between mb-3">
+                                <div>
+                                    <h3 class="text-sm font-semibold text-gray-800">Jenis Produk</h3>
+                                    <p class="text-xs text-gray-500 mt-0.5">Pilih jenis untuk menyesuaikan pengaturan</p>
+                                </div>
+                                <div class="p-2 bg-purple-50 rounded-lg">
+                                    <svg class="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
+                                    </svg>
+                                </div>
+                            </div>
+                            <select name="product_type"
+                                    id="editProductType-{{ $product->id }}"
+                                    class="edit-input"
+                                    onchange="editToggleFileSection(this, {{ $product->id }})">
+                                <option value="umkm"   {{ ($product->product_type ?? 'umkm') === 'umkm'    ? 'selected' : '' }}>Produk UMKM (Fisik)</option>
+                                <option value="digital" {{ ($product->product_type ?? '') === 'digital'     ? 'selected' : '' }}>Produk Digital</option>
+                            </select>
+                        </div>
+
+                        {{-- ===== FILE PRODUK DIGITAL ===== --}}
+                        <div id="editFileSection-{{ $product->id }}"
+                             class="edit-card p-4 {{ ($product->product_type ?? 'umkm') === 'digital' ? '' : 'hidden' }}">
+
+                            <div class="flex items-center justify-between mb-3">
+                                <div>
+                                    <h3 class="text-sm font-semibold text-gray-800">File Produk Digital</h3>
+                                    <p class="text-xs text-gray-500 mt-0.5">File yang akan diterima pembeli setelah pembelian</p>
+                                </div>
+                                <div class="p-2 bg-green-50 rounded-lg">
+                                    <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                    </svg>
+                                </div>
+                            </div>
+
+                            {{-- File lama --}}
+                            @if(isset($product->files) && $product->files->count())
+                            <div class="mb-4">
+                                <p class="text-xs font-semibold text-gray-600 mb-2">File Saat Ini</p>
+                                <div class="space-y-2" id="editExistingFiles-{{ $product->id }}">
+                                    @foreach($product->files as $file)
+                                    <div class="flex items-center justify-between p-2.5 bg-gray-50 rounded-lg border border-gray-200 group">
+                                        <div class="flex items-center gap-2 min-w-0 flex-1">
+                                            <div class="p-1.5 bg-white rounded border border-gray-200 flex-shrink-0">
+                                                <svg class="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                                </svg>
+                                            </div>
+                                            <span class="text-xs text-gray-700 truncate">{{ basename($file->file_path ?? $file->name ?? 'File') }}</span>
+                                        </div>
+                                        <label class="flex items-center gap-1.5 text-xs text-red-500 cursor-pointer flex-shrink-0 ml-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <input type="checkbox"
+                                                   name="delete_files[]"
+                                                   value="{{ $file->id }}"
+                                                   class="w-3.5 h-3.5 accent-red-500">
+                                            Hapus
+                                        </label>
+                                    </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                            @endif
+
+                            {{-- Upload file baru --}}
+                            <p class="text-xs font-semibold text-gray-600 mb-2">
+                                {{ (isset($product->files) && $product->files->count()) ? 'Tambah File Baru' : 'Upload File Produk' }}
+                            </p>
+                            <div class="border-2 border-dashed border-gray-200 rounded-xl p-4 text-center hover:border-green-400 transition-colors cursor-pointer">
+                                <input type="file"
+                                       id="editFileUpload-{{ $product->id }}"
+                                       name="files[]"
+                                       multiple
+                                       class="hidden"
+                                       onchange="editHandleFiles(event, {{ $product->id }})">
+                                <label for="editFileUpload-{{ $product->id }}" class="cursor-pointer block">
+                                    <div class="mx-auto w-10 h-10 bg-green-50 rounded-full flex items-center justify-center mb-2">
+                                        <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                                        </svg>
+                                    </div>
+                                    <p class="text-sm text-gray-700 font-medium">Klik untuk upload file</p>
+                                    <p class="text-xs text-gray-400 mt-1">ZIP, RAR, PDF, DOC, atau format lainnya</p>
+                                    <p class="text-xs text-green-500 mt-1">※ Bisa upload multiple file sekaligus</p>
+                                </label>
+                            </div>
+
+                            {{-- Preview file baru --}}
+                            <div id="editFileList-{{ $product->id }}" class="space-y-2 mt-3"></div>
+                        </div>
+
                         {{-- ===== GAMBAR LAMA ===== --}}
                         <div class="edit-card p-4">
                             <div class="flex items-center justify-between mb-3">
@@ -413,6 +506,83 @@
 </style>
 
 <script>
+// ================= TOGGLE FILE SECTION =================
+function editToggleFileSection(select, productId) {
+    const fileSection = document.getElementById('editFileSection-' + productId);
+    if (!fileSection) return;
+    if (select.value === 'digital') {
+        fileSection.classList.remove('hidden');
+    } else {
+        fileSection.classList.add('hidden');
+    }
+}
+
+// ================= HANDLE FILE UPLOAD =================
+const _editUploadedFiles = {};
+
+function editHandleFiles(event, productId) {
+    if (!_editUploadedFiles[productId]) _editUploadedFiles[productId] = [];
+
+    const newFiles = Array.from(event.target.files);
+    newFiles.forEach((file, index) => {
+        _editUploadedFiles[productId].push({ id: Date.now() + index, name: file.name, size: file.size, file });
+    });
+
+    editRenderFileList(productId);
+}
+
+function editRenderFileList(productId) {
+    const container = document.getElementById('editFileList-' + productId);
+    if (!container) return;
+    const files = _editUploadedFiles[productId] || [];
+
+    container.innerHTML = '';
+    files.forEach((fileData, index) => {
+        const div = document.createElement('div');
+        div.className = 'flex items-center justify-between p-2.5 bg-green-50 rounded-lg border border-green-200';
+        div.innerHTML = `
+            <div class="flex items-center gap-2 min-w-0 flex-1">
+                <div class="p-1.5 bg-white rounded border border-green-200 flex-shrink-0">
+                    <svg class="w-3.5 h-3.5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                    </svg>
+                </div>
+                <span class="text-xs text-gray-700 truncate">${fileData.name}</span>
+                <span class="text-[10px] text-gray-400 bg-white px-1.5 py-0.5 rounded border flex-shrink-0">${editFormatSize(fileData.size)}</span>
+            </div>
+            <button type="button"
+                    onclick="editRemoveFile(${productId}, ${index})"
+                    class="w-5 h-5 bg-red-100 hover:bg-red-200 rounded-full flex items-center justify-center ml-2 flex-shrink-0 transition-colors">
+                <svg class="w-2.5 h-2.5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+        `;
+        container.appendChild(div);
+    });
+
+    // Sync to file input
+    const input = document.getElementById('editFileUpload-' + productId);
+    if (input) {
+        const dt = new DataTransfer();
+        files.forEach(f => dt.items.add(f.file));
+        input.files = dt.files;
+    }
+}
+
+function editRemoveFile(productId, index) {
+    if (_editUploadedFiles[productId]) {
+        _editUploadedFiles[productId].splice(index, 1);
+        editRenderFileList(productId);
+    }
+}
+
+function editFormatSize(bytes) {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / 1048576).toFixed(1) + ' MB';
+}
+
 // ================= TOGGLE STOCK/LIMIT =================
 function editToggleInput(checkbox, inputId) {
     const input = document.getElementById(inputId);

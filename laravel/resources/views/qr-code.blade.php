@@ -1,5 +1,5 @@
 @extends('layouts.dashboard')
-@section('title', 'QR Code')
+@section('title', 'QR Code | Payou.id')
 
 @section('content')
 <div style="min-height: 100vh; background: #f8fafc; padding: 24px;">

@@ -1,5 +1,5 @@
 @extends('layouts.dashboard')
-@section('title', 'Analitik')
+@section('title', 'Analitik | Payou.id')
 
 @push('styles')
 <link rel="stylesheet" href="{{ asset('css/analitik-darkmode.css') }}">
