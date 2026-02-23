@@ -6,20 +6,21 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::table('product_images', function (Blueprint $table) {
-            $table->timestamps();
+            if (!Schema::hasColumn('product_images', 'created_at')) {
+                $table->timestamps();
+            }
         });
     }
 
     public function down(): void
     {
         Schema::table('product_images', function (Blueprint $table) {
-            $table->dropTimestamps();
+            if (Schema::hasColumn('product_images', 'created_at')) {
+                $table->dropTimestamps();
+            }
         });
     }
 };

@@ -2,13 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ProductViews; 
 use App\Services\PaymentService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use App\Models\Link;
 use App\Models\Click;
-use App\Models\Product; // <-- TAMBAHAN
+use App\Models\Product;
 use Carbon\Carbon;
+
 
 class DashboardController extends Controller
 {
@@ -28,9 +30,7 @@ class DashboardController extends Controller
             ->withCount('clicks')
             ->get();
 
-        $totalClicks = Click::whereHas('link', function ($q) use ($user) {
-            $q->where('user_id', $user->id);
-        })->count();
+       $totalClicks = $user->profile_views ?? 0;
 
         $totalLinks = $links->count();
         $activeLinks = $links->where('is_active', 1)->count();
@@ -61,7 +61,8 @@ class DashboardController extends Controller
             $data[] = $found ? $found->total : 0;
         }
 
-        $maxClick = max($data);
+        // Aman dari error kalau semua data 0
+        $maxClick = !empty($data) ? max($data) : 0;
 
         // ============================
         // PAYMENT SYSTEM DATA
@@ -79,13 +80,19 @@ class DashboardController extends Controller
             ->take(5)
             ->get();
 
+
         // PRODUCT LIFETIME SALES
-$products = Product::where('user_id', $user->id)
-    ->with('images')
-    ->withCount('views')
-    ->withCount('sales as sold')
-    ->withSum('sales as total_qty', 'qty')
-    ->get();
+        $products = Product::where('user_id', $user->id)
+            ->with('images')
+            ->withCount('views')
+            ->withCount('sales as sold')
+            ->withSum('sales as total_qty', 'qty')
+            ->get();
+
+        // Total semua views produk user ini
+        $totalProductViews = ProductViews::whereHas('product', function ($q) use ($user) {
+            $q->where('user_id', $user->id);
+        })->count();
 
         return view('dashboard.index', compact(
             'user',
@@ -100,7 +107,8 @@ $products = Product::where('user_id', $user->id)
             'totalEarned',
             'recentTransactions',
             'recentWithdrawals',
-            'products' // <-- TAMBAHAN
+            'products',
+            'totalProductViews'
         ));
     }
 
@@ -129,4 +137,5 @@ $products = Product::where('user_id', $user->id)
             'active_links' => Link::where('user_id', $user->id)->where('is_active', true)->count(),
         ]);
     }
+
 }

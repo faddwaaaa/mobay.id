@@ -316,7 +316,7 @@
                         <i class="fas fa-user"></i> Profil Saya
                     </a>
                     <a href="#"><i class="fas fa-cog"></i> Pengaturan</a>
-                    <a href="#"><i class="fas fa-question-circle"></i> Bantuan</a>
+                    <a href="{{ route('faq') }}"><i class="fas fa-question-circle"></i> Bantuan</a>
                     <div class="divider"></div>
                     <a href="{{ route('logout') }}"
                        class="logout"
@@ -367,10 +367,10 @@
                     <span>Produk</span>
                 </a>
 
-                <a href="#" class="nav-item">
+                <!-- <a href="#" class="nav-item">
                     <i class="fas fa-credit-card"></i>
                     <span>Pembayaran</span>
-                </a>
+                </a> -->
 
                 <!-- Theme Dropdown -->
                 <div class="theme-dropdown">
@@ -403,10 +403,10 @@
                     </div>
                 </div>
 
-                <a href="#" class="nav-item">
+                <!-- <a href="#" class="nav-item">
                     <i class="fas fa-cog"></i>
                     <span>Pengaturan</span>
-                </a>
+                </a> -->
             </nav>
         </aside>
 

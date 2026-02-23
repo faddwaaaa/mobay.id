@@ -8,4 +8,11 @@ class ProductViews extends Model
 {
     protected $fillable = ['product_id'];
     public $timestamps = true;
+
+    public function product()
+    {
+        return $this->belongsTo(Product::class);
+    }
 }
+
+

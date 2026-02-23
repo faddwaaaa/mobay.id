@@ -8,11 +8,10 @@ use Illuminate\Database\Eloquent\Model;
 class Click extends Model
 {
     protected $fillable = [
-        'link_id',
-        'user_id',
-        'ip_address',
-        'user_agent',
-        'referer',
+    'link_id',
+    'ip_address',
+    'user_agent',
+    'referrer',  
     ];
 
     protected $casts = [

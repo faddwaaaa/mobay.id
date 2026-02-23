@@ -242,13 +242,12 @@
 <!-- ================= RINGKASAN ================= -->
 <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px;margin-bottom:32px;">
     <div class="stat-card">
-        <h4>Total Klik</h4>
+        <h4>Total Views</h4>
         <div class="stat-value">{{ number_format($totalClicks ?? 0) }}</div>
     </div>
     <div class="stat-card">
-        <h4>Total Link</h4>
-        <div class="stat-value">{{ $totalLinks ?? 0 }}</div>
-        <small>{{ $activeLinks ?? 0 }} aktif</small>
+        <h4>Total Klik Produk</h4>
+        <div class="stat-value">{{ number_format($totalProductViews ?? 0) }}</div>
     </div>
     <div class="stat-card">
         <h4>Konversi</h4>

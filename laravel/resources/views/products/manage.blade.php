@@ -1,4 +1,3 @@
-
 @extends('layouts.dashboard')
 
 @section('title', 'Produk')
@@ -55,7 +54,7 @@
 }
 
 /* =========================================================
-   PRODUCT CARD (BERSIH, NO GARIS BIRU)
+   PRODUCT CARD
 ========================================================= */
 .link-card {
     background: #fff;
@@ -298,14 +297,14 @@ tbody tr:hover { background: #f1f5f9; }
                     <img src="{{ asset('storage/'.$product->images->first()->image) }}"
                         class="w-full h-full object-cover">
                 @else
-                    <div class="flex items-center justify-center h-full text-gray-400">
+                    <div class="flex items-center justify-center h-full text-gray-400 text-sm">
                         Tidak ada gambar
                     </div>
                 @endif
             </div>
 
             <div class="p-4">
-                <h3 class="font-semibold text-sm mb-1">
+                <h3 class="font-semibold text-sm mb-1 truncate">
                     {{ $product->title }}
                 </h3>
 
@@ -313,53 +312,54 @@ tbody tr:hover { background: #f1f5f9; }
                     {{ Str::limit($product->description, 40) }}
                 </div>
 
-                <div class="font-bold text-blue-600 text-sm mb-3">
-                    Rp {{ number_format($product->price,0,',','.') }}
+                {{-- ===== HARGA (DIPERBAIKI) ===== --}}
+                {{--
+                    $product->discount = harga SETELAH diskon (bukan persentase)
+                    Jadi jika discount ada, tampilkan:
+                      - harga normal (coret)
+                      - harga diskon (merah)
+                      - persentase hemat = (price - discount) / price * 100
+                --}}
+                <div class="mb-3">
+                    @if($product->discount && $product->discount > 0)
+
+                        @php
+                            $savedAmount  = $product->price - $product->discount;
+                            $savedPercent = round(($savedAmount / $product->price) * 100);
+                        @endphp
+
+                        <div class="text-xs text-gray-400 line-through">
+                            Rp {{ number_format($product->price, 0, ',', '.') }}
+                        </div>
+
+                        <div class="font-bold text-red-600 text-sm">
+                            Rp {{ number_format($product->discount, 0, ',', '.') }}
+                        </div>
+
+                        <div class="text-xs text-red-500">
+                            Hemat {{ $savedPercent }}%
+                        </div>
+
+                    @else
+
+                        <div class="font-bold text-blue-600 text-sm">
+                            Rp {{ number_format($product->price, 0, ',', '.') }}
+                        </div>
+
+                    @endif
                 </div>
 
-                <div class="text-sm mb-3">
-
-                @if($product->discount)
-
-                    @php
-                        $finalPrice = $product->price - ($product->price * $product->discount / 100);
-                    @endphp
-
-                    <div class="text-xs text-gray-400 line-through">
-                        Rp {{ number_format($product->price,0,',','.') }}
-                    </div>
-
-                    <div class="font-bold text-red-600">
-                        Rp {{ number_format($finalPrice,0,',','.') }}
-                    </div>
-
-                    <div class="text-xs text-red-500">
-                        -{{ $product->discount }}%
-                    </div>
-
-                @else
-
-                    <div class="font-bold text-blue-600">
-                        Rp {{ number_format($product->price,0,',','.') }}
-                    </div>
-
-                @endif
-
-            </div>
-
-
                 <div class="flex justify-between items-center">
-                    <a href="{{ route('products.edit', $product->id) }}"
-                        class="btn btn-primary">
+                    <button onclick="openEditModal({{ $product->id }})"
+                            class="text-xs bg-blue-100 text-blue-600 px-3 py-1 rounded-lg hover:bg-blue-200 transition">
                         Edit
-                    </a>
-
+                    </button>
 
                     <form method="POST" action="{{ route('products.destroy', $product) }}">
                         @csrf
                         @method('DELETE')
                         <button onclick="return confirm('Yakin hapus produk?')"
-                            class="text-xs bg-red-100 text-red-600 px-3 py-1 rounded-lg hover:bg-red-200">
+                            class="text-xs bg-red-100 text-red-600 px-3 py-1 rounded-lg hover:bg-red-200 transition">
                             Hapus
                         </button>
                     </form>
@@ -391,8 +391,8 @@ tbody tr:hover { background: #f1f5f9; }
                     <tr class="border-t">
                         <td class="p-3 flex items-center gap-3">
                             @php $firstImage = $product->images->first(); @endphp
-                            <img src="{{ $firstImage 
-                                ? asset('storage/'.$firstImage->image) 
+                            <img src="{{ $firstImage
+                                ? asset('storage/'.$firstImage->image)
                                 : 'https://via.placeholder.com/50' }}"
                                 class="w-10 h-10 rounded object-cover">
                             {{ $product->title }}
@@ -407,7 +407,12 @@ tbody tr:hover { background: #f1f5f9; }
                         </td>
 
                         <td class="text-center p-3">
-                            Rp {{ number_format(($product->total_qty ?? 0) * $product->price, 0, ',', '.') }}
+                            @php
+                                $effectivePrice = ($product->discount && $product->discount > 0)
+                                    ? $product->discount
+                                    : $product->price;
+                            @endphp
+                            Rp {{ number_format(($product->total_qty ?? 0) * $effectivePrice, 0, ',', '.') }}
                         </td>
                     </tr>
                     @endforeach
@@ -435,4 +440,3 @@ function closeEditModal(id){
 </script>
 
 @endsection
-

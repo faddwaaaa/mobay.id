@@ -18,6 +18,8 @@ return [
     'merchant_id' => env('MIDTRANS_MERCHANT_ID', ''),
     'client_key' => env('MIDTRANS_CLIENT_KEY', ''),
     'server_key' => env('MIDTRANS_SERVER_KEY', ''),
+    'testing_mode'  => env('MIDTRANS_TESTING_MODE', false), 
+
 
     // Environment (sandbox or production)
     'is_production' => env('MIDTRANS_IS_PRODUCTION', false),

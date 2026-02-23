@@ -16,7 +16,7 @@ return new class extends Migration
 
             // Tambah kolom notes dan ip_address di transactions jika belum ada
             if (!Schema::hasColumn('transactions', 'notes')) {
-                $table->text('notes')->nullable()->after('midtrans_response');
+                $table->text('notes')->nullable();
             }
             if (!Schema::hasColumn('transactions', 'ip_address')) {
                 $table->string('ip_address', 45)->nullable()->after('notes');
