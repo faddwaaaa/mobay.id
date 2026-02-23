@@ -1,4 +1,4 @@
-@extends('layouts.dashboard')
+{{-- @extends('layouts.dashboard')
 
 @section('title', 'Dashboard | Payou.id')
 
@@ -478,4 +478,4 @@ window.onclick = function(event) {
 </script>
 @endpush
 
-@endsection
+@endsection --}}

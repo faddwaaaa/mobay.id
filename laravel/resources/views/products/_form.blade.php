@@ -8,22 +8,26 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                     </svg>
                 </a>
-                <h1 class="text-xl font-bold text-gray-800">Tambah Produk Baru</h1>
+                <h1 class="text-xl font-bold">
+                    {{ isset($product) ? 'Edit Produk' : 'Tambah Produk Baru' }}
+                </h1>
+                <br>
+                <p class="text-sm text-gray-500">
+                    {{-- {{ isset($product) ? 'Perbarui informasi produk Anda' : 'Lengkapi informasi produk Anda' }} --}}
+                </p>
             </div>
-            <p class="text-sm text-gray-600 ml-10">Lengkapi informasi produk Anda</p>
         </div>
 
         <!-- Form -->
-        <form method="POST" 
-        action="{{ route('products.store') }}" 
-        enctype="multipart/form-data" class="space-y-6">
+        <form method="POST"
+              action="{{ isset($product) ? route('products.update', $product->id) : route('products.store') }}"
+              enctype="multipart/form-data"
+              class="space-y-6">
             @csrf
-
-            @if(request('redirect'))
-                <input type="hidden" name="redirect" value="{{ request('redirect') }}">
+            @if(isset($product))
+                @method('PUT')
             @endif
 
-            
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <!-- Left Column -->
                 <div class="lg:col-span-2 space-y-6">
@@ -32,12 +36,10 @@
                         <label class="form-label">Jenis Produk</label>
                         <select name="product_type" id="productType" class="form-input" required>
                             <option value="">Pilih Jenis Produk</option>
-                            <option value="umkm">Produk UMKM (Fisik)</option>
-                            <option value="digital">Produk Digital</option>
+                            <option value="umkm" {{ old('product_type', $product->product_type ?? '') == 'umkm' ? 'selected' : '' }}>Produk UMKM (Fisik)</option>
+                            <option value="digital" {{ old('product_type', $product->product_type ?? '') == 'digital' ? 'selected' : '' }}>Produk Digital</option>
                         </select>
-                        <p class="text-xs text-gray-500 mt-2">
-                            Pilih jenis produk untuk menyesuaikan pengaturan penjualan
-                        </p>
+                        <p class="text-xs text-gray-500 mt-2">Pilih jenis produk untuk menyesuaikan pengaturan penjualan</p>
                     </div>
 
                     <!-- Images Upload -->
@@ -53,20 +55,16 @@
                                 </svg>
                             </div>
                         </div>
-                        
+
                         <!-- Image Upload Area -->
-                        <div id="imageUploadArea" 
-                            class="border-2 border-dashed border-gray-300 rounded-xl p-4 text-center hover:border-blue-400 transition-colors cursor-pointer mb-4">
-
-                            <input 
-                                type="file" 
-                                id="imageUpload"
-                                name="images[]" 
-                                multiple
-                                accept="image/*"
-                                class="hidden"
-                            >
-
+                        <div id="imageUploadArea"
+                             class="border-2 border-dashed border-gray-300 rounded-xl p-4 text-center hover:border-blue-400 transition-colors cursor-pointer mb-4">
+                            <input type="file"
+                                   id="imageUpload"
+                                   name="images[]"
+                                   multiple
+                                   accept="image/*"
+                                   class="hidden">
                             <label for="imageUpload" class="cursor-pointer block">
                                 <div class="mx-auto w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center mb-3">
                                     <svg class="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -78,7 +76,6 @@
                             </label>
                         </div>
 
-                        
                         <!-- Image Preview Grid -->
                         <div id="imagePreviewContainer" class="mt-4">
                             <div id="imagePreviewGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3"></div>
@@ -89,24 +86,27 @@
                     <div class="card-gradient p-5 space-y-5">
                         <div>
                             <label class="form-label">Judul Produk</label>
-                            <input type="text" name="title" 
+                            <input type="text"
+                                   name="title"
                                    class="form-input"
+                                   value="{{ old('title', $product->title ?? '') }}"
                                    placeholder="Contoh: Template Website Premium"
                                    required>
                         </div>
                         <div>
                             <label class="form-label">Deskripsi Produk</label>
-                            <textarea name="description" 
+                            <textarea name="description"
                                       class="form-textarea"
                                       rows="4"
                                       placeholder="Jelaskan detail produk, fitur, dan manfaat yang didapatkan..."
-                                      required></textarea>
+                                      required>{{ old('description', $product->description ?? '') }}</textarea>
                             <p class="text-xs text-gray-500 mt-2">Minimal 100 karakter untuk deskripsi yang optimal</p>
                         </div>
                     </div>
 
                     <!-- Files Upload -->
-                        <div id="fileSection" class="card-gradient p-5 hidden">
+                    <div id="fileSection"
+                         class="card-gradient p-5 {{ old('product_type', $product->product_type ?? '') == 'digital' ? '' : 'hidden' }}">
                         <div class="flex items-center justify-between mb-4">
                             <div>
                                 <h3 class="text-lg font-semibold text-gray-800 mb-1">File Produk</h3>
@@ -118,12 +118,11 @@
                                 </svg>
                             </div>
                         </div>
-                        
+
                         <!-- File Upload Area -->
-                        <div id="fileUploadArea" class="border-2 border-dashed border-gray-300 rounded-xl p-5 text-center hover:border-green-400 transition-colors cursor-pointer mb-4">
-                            <input type="file" name="files[]" multiple 
-                                   class="hidden" 
-                                   id="fileUpload">
+                        <div id="fileUploadArea"
+                             class="border-2 border-dashed border-gray-300 rounded-xl p-5 text-center hover:border-green-400 transition-colors cursor-pointer mb-4">
+                            <input type="file" name="files[]" multiple class="hidden" id="fileUpload">
                             <label for="fileUpload" class="cursor-pointer block">
                                 <div class="mx-auto w-12 h-12 bg-green-50 rounded-full flex items-center justify-center mb-3">
                                     <svg class="w-6 h-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -135,7 +134,7 @@
                                 <p class="text-xs text-blue-500 mt-2">※ Bisa upload multiple file sekaligus</p>
                             </label>
                         </div>
-                        
+
                         <!-- File List -->
                         <div id="fileList" class="space-y-2"></div>
                     </div>
@@ -144,54 +143,56 @@
                 <!-- Right Column -->
                 <div class="space-y-6">
                     <!-- Pricing & Settings -->
-<div class="card-gradient p-5 space-y-5">
-    <h3 class="text-lg font-semibold text-gray-800 mb-2">Harga & Pengaturan</h3>
-    
-    <!-- Price -->
-    <div>
-        <label class="form-label">Harga Normal (Rp)</label>
-        <div class="relative">
-            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <span class="text-gray-500 text-sm"></span>
-            </div>
-            <input type="text" name="price" 
-                   id="priceInput"
-                   class="form-input pl-12"
-                   placeholder="0"
-                   required>
-        </div>
-        <p class="text-xs text-gray-500 mt-1">Harga akan otomatis diformat: Rp 100.000</p>
-    </div>
+                    <div class="card-gradient p-5 space-y-5">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-2">Harga & Pengaturan</h3>
 
-    <!-- Discount -->
-    <div>
-        <label class="form-label">
-            Harga Setelah Diskon
-            <span class="text-sm font-normal text-gray-500">(opsional)</span>
-        </label>
-        <div class="relative">
-            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <span class="text-gray-500 text-sm"></span>
-            </div>
-            <input type="text" name="discount" 
-                   id="discountInput"
-                   class="form-input pl-12"
-                   placeholder="0">
-        </div>
-        <p class="text-xs text-blue-600 mt-1">
-            <svg class="w-3 h-3 inline mr-1" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
-            </svg>
-            Masukkan harga setelah diskon, bukan persentase
-        </p>
-        <div id="discountPreview" class="hidden mt-2 p-2 bg-green-50 border border-green-200 rounded-md">
-            <p class="text-xs text-green-700">
-                <span class="font-semibold">Hemat:</span> 
-                <span id="discountAmount"></span> 
-                <span id="discountPercentage" class="ml-1"></span>
-            </p>
-        </div>
-    </div>
+                        <!-- Price -->
+                        <div>
+                            <label class="form-label">Harga Normal (Rp)</label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <span class="text-gray-500 text-sm"></span>
+                                </div>
+                                <input type="text" name="price"
+                                       id="priceInput"
+                                       class="form-input pl-12"
+                                       value="{{ old('price', isset($product) ? number_format($product->price,0,',','.') : '') }}"
+                                       placeholder="0"
+                                       required>
+                            </div>
+                            <p class="text-xs text-gray-500 mt-1">Harga akan otomatis diformat: Rp 100.000</p>
+                        </div>
+
+                        <!-- Discount -->
+                        <div>
+                            <label class="form-label">
+                                Harga Setelah Diskon
+                                <span class="text-sm font-normal text-gray-500">(opsional)</span>
+                            </label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <span class="text-gray-500 text-sm"></span>
+                                </div>
+                                <input type="text" name="discount"
+                                       id="discountInput"
+                                       class="form-input pl-12"
+                                       value="{{ old('discount', isset($product->discount) ? number_format($product->discount,0,',','.') : '') }}"
+                                       placeholder="0">
+                            </div>
+                            <p class="text-xs text-blue-600 mt-1">
+                                <svg class="w-3 h-3 inline mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                                </svg>
+                                Masukkan harga setelah diskon, bukan persentase
+                            </p>
+                            <div id="discountPreview" class="hidden mt-2 p-2 bg-green-50 border border-green-200 rounded-md">
+                                <p class="text-xs text-green-700">
+                                    <span class="font-semibold">Hemat:</span>
+                                    <span id="discountAmount"></span>
+                                    <span id="discountPercentage" class="ml-1"></span>
+                                </p>
+                            </div>
+                        </div>
 
                         <!-- Stock Toggle -->
                         <div class="pt-4 border-t border-gray-100">
@@ -201,14 +202,15 @@
                                     <p class="text-xs text-gray-500">Aktifkan untuk mengatur jumlah stok</p>
                                 </div>
                                 <div class="toggle-container">
-                                    <input type="checkbox" name="stock_toggle" id="stockCheck" class="toggle-checkbox">
+                                    <input type="checkbox" name="stock_toggle" id="stockCheck" class="toggle-checkbox" {{ old('stock_toggle', isset($product->stock)) ? 'checked' : '' }}>
                                     <label for="stockCheck" class="toggle-label"></label>
                                 </div>
                             </div>
-                            <input type="number" name="stock" 
-                                   id="stockInput" 
-                                   class="form-input hidden"
+                            <input type="number" name="stock"
+                                   id="stockInput"
+                                   class="form-input {{ old('stock_toggle', isset($product->stock)) ? '' : 'hidden' }}"
                                    placeholder="Jumlah stok tersedia"
+                                   value="{{ old('stock', $product->stock ?? '') }}"
                                    min="1">
                         </div>
 
@@ -220,25 +222,26 @@
                                     <p class="text-xs text-gray-500">Batasi pembelian per pengguna</p>
                                 </div>
                                 <div class="toggle-container">
-                                    <input type="checkbox" name="limit_toggle" id="limitCheck" class="toggle-checkbox">
+                                    <input type="checkbox" name="limit_toggle" id="limitCheck" class="toggle-checkbox" {{ old('limit_toggle', isset($product->purchase_limit)) ? 'checked' : '' }}>
                                     <label for="limitCheck" class="toggle-label"></label>
                                 </div>
                             </div>
-                            <input type="number" name="purchase_limit" 
-                                   id="limitInput" 
-                                   class="form-input hidden"
+                            <input type="number" name="purchase_limit"
+                                   id="limitInput"
+                                   class="form-input {{ old('limit_toggle', isset($product->purchase_limit)) ? '' : 'hidden' }}"
+                                   value="{{ old('purchase_limit', $product->purchase_limit ?? '') }}"
                                    placeholder="Maksimal beli per user"
                                    min="1">
                         </div>
                     </div>
 
                     <!-- Submit Button -->
-                    <button type="submit" 
+                    <button type="submit"
                             class="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white py-3 px-4 rounded-lg font-semibold text-base shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center gap-2">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                         </svg>
-                        Tambah Produk
+                        {{ isset($product) ? 'Update Produk' : 'Tambah Produk' }}
                     </button>
 
                     <!-- Help Text -->
@@ -267,11 +270,11 @@
         border: 1px solid rgba(229, 231, 235, 0.6);
         transition: box-shadow 0.2s ease;
     }
-    
+
     .card-gradient:hover {
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
     }
-    
+
     .form-input {
         width: 100%;
         padding: 10px 12px;
@@ -281,13 +284,13 @@
         transition: all 0.2s ease;
         background: white;
     }
-    
+
     .form-input:focus {
         outline: none;
         border-color: #3b82f6;
         box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
     }
-    
+
     .form-textarea {
         width: 100%;
         padding: 10px 12px;
@@ -299,13 +302,13 @@
         min-height: 100px;
         background: white;
     }
-    
+
     .form-textarea:focus {
         outline: none;
         border-color: #3b82f6;
         box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
     }
-    
+
     .form-label {
         display: block;
         font-size: 13px;
@@ -313,15 +316,15 @@
         color: #374151;
         margin-bottom: 6px;
     }
-    
+
     .toggle-container {
         position: relative;
     }
-    
+
     .toggle-checkbox {
         display: none;
     }
-    
+
     .toggle-label {
         display: block;
         width: 44px;
@@ -332,7 +335,7 @@
         cursor: pointer;
         transition: background 0.2s ease;
     }
-    
+
     .toggle-label::after {
         content: '';
         position: absolute;
@@ -345,15 +348,15 @@
         transition: transform 0.2s ease;
         box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     }
-    
+
     .toggle-checkbox:checked + .toggle-label {
         background: #3b82f6;
     }
-    
+
     .toggle-checkbox:checked + .toggle-label::after {
         transform: translateX(20px);
     }
-    
+
     .preview-image {
         position: relative;
         border-radius: 6px;
@@ -361,18 +364,18 @@
         aspect-ratio: 1;
         background: #f5f5f5;
     }
-    
+
     .preview-image img {
         width: 100%;
         height: 100%;
         object-fit: cover;
         transition: transform 0.3s ease;
     }
-    
+
     .preview-image:hover img {
         transform: scale(1.05);
     }
-    
+
     .remove-btn {
         position: absolute;
         top: 4px;
@@ -388,23 +391,36 @@
         opacity: 0;
         transition: opacity 0.2s, transform 0.2s;
         transform: scale(0.8);
+        z-index: 10;
     }
-    
+
     .preview-image:hover .remove-btn {
         opacity: 1;
         transform: scale(1);
     }
-    
+
     .remove-btn:hover {
         background: rgba(220, 38, 38, 1);
     }
-    
+
     .remove-btn svg {
         width: 12px;
         height: 12px;
         color: white;
     }
-    
+
+    .existing-badge {
+        position: absolute;
+        top: 4px;
+        left: 4px;
+        background: rgba(34, 197, 94, 0.9);
+        color: white;
+        font-size: 10px;
+        padding: 2px 6px;
+        border-radius: 4px;
+        z-index: 10;
+    }
+
     .file-item {
         display: flex;
         align-items: center;
@@ -415,12 +431,12 @@
         border: 1px solid #e2e8f0;
         transition: all 0.2s ease;
     }
-    
+
     .file-item:hover {
         background: #f1f5f9;
         border-color: #cbd5e1;
     }
-    
+
     .file-info {
         display: flex;
         align-items: center;
@@ -428,14 +444,14 @@
         flex: 1;
         min-width: 0;
     }
-    
+
     .file-icon {
         width: 16px;
         height: 16px;
         color: #64748b;
         flex-shrink: 0;
     }
-    
+
     .file-name {
         font-size: 13px;
         color: #334155;
@@ -444,7 +460,7 @@
         white-space: nowrap;
         flex: 1;
     }
-    
+
     .file-size {
         font-size: 11px;
         color: #94a3b8;
@@ -454,7 +470,7 @@
         margin-left: 8px;
         flex-shrink: 0;
     }
-    
+
     .file-remove {
         width: 20px;
         height: 20px;
@@ -468,17 +484,17 @@
         flex-shrink: 0;
         margin-left: 8px;
     }
-    
+
     .file-remove:hover {
         background: #fee2e2;
     }
-    
+
     .file-remove svg {
         width: 10px;
         height: 10px;
         color: #ef4444;
     }
-    
+
     .upload-counter {
         display: inline-block;
         background: #3b82f6;
@@ -492,91 +508,111 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // ========== TOGGLE FUNCTIONALITY ==========
-    function setupToggle(checkboxId, inputId) {
-        const checkbox = document.getElementById(checkboxId);
-        const input = document.getElementById(inputId);
-        
-        checkbox.addEventListener('change', function() {
-            if (this.checked) {
-                input.classList.remove('hidden');
-                input.focus();
-            } else {
-                input.classList.add('hidden');
-                input.value = '';
-            }
-        });
-    }
-    
-    setupToggle('stockCheck', 'stockInput');
-    setupToggle('limitCheck', 'limitInput');
-    
-    // ========== RUPIAH FORMATTING ==========
-    
-    /**
-     * Format number to Rupiah with dots
-     * Example: 100000 -> 100.000
-     */
-    function formatRupiah(angka) {
-        if (!angka) return '';
-        
-        // Remove all non-digits
-        let number = angka.toString().replace(/[^,\d]/g, '');
-        
-        // Add dots as thousand separator
-        let formatted = number.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-        
-        return formatted;
-    }
-    
-    /**
-     * Get clean number from formatted string
-     * Example: "100.000" -> 100000
-     */
-    function cleanRupiah(formatted) {
-        return parseInt(formatted.replace(/\./g, '')) || 0;
-    }
-    
-    // ========== PRICE INPUT ==========
+    // ========== GLOBAL VARIABLES ==========
+    const productType = document.getElementById('productType');
+    const fileSection = document.getElementById('fileSection');
     const priceInput = document.getElementById('priceInput');
     const discountInput = document.getElementById('discountInput');
     const discountPreview = document.getElementById('discountPreview');
     const discountAmount = document.getElementById('discountAmount');
     const discountPercentage = document.getElementById('discountPercentage');
-    
-    // Format price on input
-    priceInput.addEventListener('input', function(e) {
-        let value = e.target.value;
-        let formatted = formatRupiah(value);
-        e.target.value = formatted;
-        
-        // Update discount preview if discount is set
-        updateDiscountPreview();
-    });
-    
-    // ========== DISCOUNT INPUT ==========
-    discountInput.addEventListener('input', function(e) {
-        let value = e.target.value;
-        let formatted = formatRupiah(value);
-        e.target.value = formatted;
-        
-        // Update discount preview
-        updateDiscountPreview();
-    });
-    
+
+    // Image upload variables
+    const imageUpload = document.getElementById('imageUpload');
+    const imageUploadArea = document.getElementById('imageUploadArea');
+    const imagePreviewGrid = document.getElementById('imagePreviewGrid');
+    let uploadedImages = [];
+    let existingImages = [];
+    let imagesToDelete = []; // Array untuk menyimpan ID gambar yang akan dihapus
+
+    // File upload variables
+    const fileUpload = document.getElementById('fileUpload');
+    const fileUploadArea = document.getElementById('fileUploadArea');
+    const fileList = document.getElementById('fileList');
+    let uploadedFiles = [];
+    let existingFiles = [];
+    let filesToDelete = []; // Array untuk menyimpan path file yang akan dihapus
+
+    // ========== INITIALIZE EXISTING DATA ==========
+    @if(isset($product) && $product->images)
+        @foreach($product->images as $image)
+            existingImages.push({
+                id: {{ $image->id }},
+                name: "{{ $image->filename ?? 'gambar' }}",
+                url: "{{ asset('storage/'.$image->image_path) }}",
+                path: "{{ $image->image_path }}",
+                isExisting: true
+            });
+        @endforeach
+    @endif
+
+    @if(isset($product) && $product->files)
+        @php
+            $files = is_array($product->files) ? $product->files : json_decode($product->files, true);
+        @endphp
+        @if(is_array($files))
+            @foreach($files as $file)
+                existingFiles.push({
+                    id: "{{ uniqid() }}",
+                    name: "{{ basename(is_array($file) ? $file['path'] : $file) }}",
+                    path: "{{ is_array($file) ? $file['path'] : $file }}",
+                    isExisting: true
+                });
+            @endforeach
+        @endif
+    @endif
+
+    // ========== FUNCTIONS ==========
+    function formatRupiah(angka) {
+        if (!angka) return '';
+        let number = angka.toString().replace(/[^,\d]/g, '');
+        return number.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    }
+
+    function cleanRupiah(formatted) {
+        return parseInt(formatted.replace(/\./g, '')) || 0;
+    }
+
+    function showAlert(type, message) {
+        const existingAlert = document.querySelector('.custom-alert');
+        if (existingAlert) existingAlert.remove();
+
+        const alert = document.createElement('div');
+        alert.className = `custom-alert fixed top-4 right-4 z-50 px-4 py-3 rounded-lg shadow-lg transition-all duration-300 transform translate-x-full ${type === 'success' ? 'bg-green-50 border border-green-200 text-green-800' : 'bg-red-50 border border-red-200 text-red-800'}`;
+        alert.innerHTML = `
+            <div class="flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    ${type === 'success' ? '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />' : '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />'}
+                </svg>
+                <span class="text-sm font-medium">${message}</span>
+            </div>
+        `;
+        document.body.appendChild(alert);
+
+        setTimeout(() => alert.classList.remove('translate-x-full'), 10);
+        setTimeout(() => {
+            alert.classList.add('translate-x-full');
+            setTimeout(() => alert.remove(), 300);
+        }, 3000);
+    }
+
+    function formatFileSize(bytes) {
+        if (bytes < 1024) return bytes + ' B';
+        else if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+        else return (bytes / 1048576).toFixed(1) + ' MB';
+    }
+
     // ========== UPDATE DISCOUNT PREVIEW ==========
     function updateDiscountPreview() {
         const priceValue = cleanRupiah(priceInput.value);
         const discountValue = cleanRupiah(discountInput.value);
-        
+
         if (priceValue > 0 && discountValue > 0) {
             if (discountValue >= priceValue) {
-                // Invalid: discount price higher than normal price
                 discountPreview.classList.add('hidden');
                 discountInput.classList.add('border-red-300');
                 discountInput.classList.remove('border-gray-300');
-                
-                // Show error
+
                 let errorMsg = discountInput.parentElement.nextElementSibling;
                 if (errorMsg && errorMsg.querySelector('svg')) {
                     errorMsg.innerHTML = `
@@ -587,18 +623,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     `;
                 }
             } else {
-                // Valid discount
                 discountInput.classList.remove('border-red-300');
-                
                 const savings = priceValue - discountValue;
                 const percentage = ((savings / priceValue) * 100).toFixed(0);
-                
+
                 discountAmount.textContent = `Rp ${formatRupiah(savings)}`;
                 discountPercentage.textContent = `(${percentage}% OFF)`;
-                
                 discountPreview.classList.remove('hidden');
-                
-                // Reset error message
+
                 let errorMsg = discountInput.parentElement.nextElementSibling;
                 if (errorMsg) {
                     errorMsg.innerHTML = `
@@ -614,78 +646,19 @@ document.addEventListener('DOMContentLoaded', function() {
             discountInput.classList.remove('border-red-300');
         }
     }
-    
-    // ===== PRODUCT TYPE TOGGLE =====
-    const productType = document.getElementById('productType');
-    const fileSection = document.getElementById('fileSection');
 
-    productType.addEventListener('change', function() {
-        if (this.value === 'digital') {
-            fileSection.classList.remove('hidden');
-        } else {
-            fileSection.classList.add('hidden');
-            uploadedFiles = [];
-            updateFileList();
-            updateFileUploadAreaText();
-        }
-    });
-
-    // ========== IMAGE UPLOAD FUNCTIONALITY ==========
-    const imageUpload = document.getElementById('imageUpload');
-    const imageUploadArea = document.getElementById('imageUploadArea');
-    const imagePreviewGrid = document.getElementById('imagePreviewGrid');
-    let uploadedImages = [];
-    
-    // Handle image selection
-    imageUpload.addEventListener('change', function(e) {
-        const files = Array.from(e.target.files);
-        handleImageFiles(files);
-    });
-    
-    // Handle image files
-    function handleImageFiles(files) {
-        files.forEach((file, index) => {
-            // Validate file type
-            if (!file.type.match('image.*')) {
-                showAlert('error', `File "${file.name}" bukan gambar. Hanya file gambar yang diperbolehkan.`);
-                return;
-            }
-            
-            // Validate file size (5MB max)
-            if (file.size > 5 * 1024 * 1024) {
-                showAlert('error', `File "${file.name}" terlalu besar. Maksimal 5MB per gambar.`);
-                return;
-            }
-            
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                const imageData = {
-                    id: Date.now() + index,
-                    name: file.name,
-                    url: event.target.result,
-                    file: file
-                };
-                
-                uploadedImages.push(imageData);
-                updateImagePreview();
-                
-                // Update upload area text
-                updateUploadAreaText();
-            };
-            reader.readAsDataURL(file);
-        });
-    }
-    
-    // Update image preview
+    // ========== IMAGE PREVIEW FUNCTIONS ==========
     function updateImagePreview() {
         imagePreviewGrid.innerHTML = '';
-        
-        uploadedImages.forEach((image, index) => {
+
+        // Show existing images first
+        existingImages.forEach((image, index) => {
             const div = document.createElement('div');
             div.className = 'preview-image';
             div.innerHTML = `
-                <img src="${image.url}" alt="Preview ${index + 1}" loading="lazy">
-                <div class="remove-btn" data-index="${index}" title="Hapus gambar">
+                <img src="${image.url}" alt="Existing Image ${index + 1}" loading="lazy">
+                <div class="existing-badge">Existing</div>
+                <div class="remove-btn" data-existing-id="${image.id}" data-existing-index="${index}" data-type="existing" title="Hapus gambar">
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                     </svg>
@@ -693,99 +666,77 @@ document.addEventListener('DOMContentLoaded', function() {
             `;
             imagePreviewGrid.appendChild(div);
         });
-        
-        // Add click listener for remove buttons
+
+        // Show new uploaded images
+        uploadedImages.forEach((image, index) => {
+            const div = document.createElement('div');
+            div.className = 'preview-image';
+            div.innerHTML = `
+                <img src="${image.url}" alt="Preview ${index + 1}" loading="lazy">
+                <div class="remove-btn" data-upload-index="${index}" data-type="upload" title="Hapus gambar">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </div>
+            `;
+            imagePreviewGrid.appendChild(div);
+        });
+
+        // Add click listeners for remove buttons
         document.querySelectorAll('.remove-btn').forEach(button => {
             button.addEventListener('click', function(e) {
                 e.stopPropagation();
-                const index = parseInt(this.getAttribute('data-index'));
-                
-                // Remove from array
-                uploadedImages.splice(index, 1);
-                
-                // Update preview
+                const type = this.getAttribute('data-type');
+
+                if (type === 'existing') {
+                    const id = this.getAttribute('data-existing-id');
+                    const index = parseInt(this.getAttribute('data-existing-index'));
+                    
+                    // Tambahkan ke daftar gambar yang akan dihapus
+                    if (id) {
+                        imagesToDelete.push(parseInt(id));
+                    }
+                    
+                    // Hapus dari array existingImages
+                    existingImages.splice(index, 1);
+                    showAlert('success', 'Gambar akan dihapus saat update');
+                } else if (type === 'upload') {
+                    const index = parseInt(this.getAttribute('data-upload-index'));
+                    uploadedImages.splice(index, 1);
+                    showAlert('success', 'Gambar berhasil dihapus');
+                }
+
                 updateImagePreview();
-                
-                // Update upload area text
                 updateUploadAreaText();
-                
-                showAlert('success', 'Gambar berhasil dihapus');
             });
         });
     }
-    
-    // Update upload area text
+
     function updateUploadAreaText() {
         const uploadText = imageUploadArea.querySelector('p:first-of-type');
-        const countText = uploadedImages.length > 0 ? 
-            `<span class="upload-counter">${uploadedImages.length}</span>` : '';
-        
+        const totalCount = existingImages.length + uploadedImages.length;
+        const countText = totalCount > 0 ? `<span class="upload-counter">${totalCount}</span>` : '';
         uploadText.innerHTML = `Klik untuk ${uploadedImages.length > 0 ? 'tambah' : 'upload'} gambar ${countText}`;
     }
-    
-    // ========== FILE UPLOAD FUNCTIONALITY ==========
-    const fileUpload = document.getElementById('fileUpload');
-    const fileUploadArea = document.getElementById('fileUploadArea');
-    const fileList = document.getElementById('fileList');
-    let uploadedFiles = [];
-    
-    // Handle file selection
-    fileUpload.addEventListener('change', function(e) {
-        const files = Array.from(e.target.files);
-        handleFileUpload(files);
-    });
-    
-    // Handle file upload
-    function handleFileUpload(files) {
-        files.forEach((file, index) => {
-            const fileData = {
-                id: Date.now() + index,
-                name: file.name,
-                size: file.size,
-                type: file.type,
-                file: file
-            };
-            
-            uploadedFiles.push(fileData);
-            updateFileList();
-            updateFileUploadAreaText();
-            
-            showAlert('success', `File "${file.name}" berhasil ditambahkan`);
-        });
-    }
-    
-    // Update file list display
+
+    // ========== FILE LIST FUNCTIONS ==========
     function updateFileList() {
         fileList.innerHTML = '';
-        
-        uploadedFiles.forEach((fileData, index) => {
+
+        // Show existing files first
+        existingFiles.forEach((file, index) => {
             const fileItem = document.createElement('div');
             fileItem.className = 'file-item';
-            fileItem.setAttribute('data-index', index);
-            
-            // Get file icon based on extension
-            const extension = fileData.name.split('.').pop().toLowerCase();
-            let iconPath = 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z';
-            
-            if (['zip', 'rar', '7z', 'tar', 'gz'].includes(extension)) {
-                iconPath = 'M12 19l9 2-9-18-9 18 9-2zm0 0v-8';
-            } else if (['pdf'].includes(extension)) {
-                iconPath = 'M10 8v8m4-8v8m6-4A9 9 0 111 12a9 9 0 0118 0z';
-            } else if (['jpg', 'jpeg', 'png', 'gif', 'bmp', 'svg'].includes(extension)) {
-                iconPath = 'M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z';
-            } else if (['mp3', 'wav', 'ogg', 'm4a'].includes(extension)) {
-                iconPath = 'M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3';
-            } else if (['mp4', 'avi', 'mov', 'wmv', 'mkv'].includes(extension)) {
-                iconPath = 'M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z';
-            }
-            
+            fileItem.setAttribute('data-existing-index', index);
+            fileItem.setAttribute('data-existing-path', file.path);
+
             fileItem.innerHTML = `
                 <div class="file-info">
                     <svg class="file-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="${iconPath}" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                     </svg>
-                    <span class="file-name">${fileData.name}</span>
-                    <span class="file-size">${formatFileSize(fileData.size)}</span>
+                    <span class="file-name">${file.name}</span>
+                    <span class="file-size">Existing</span>
                 </div>
                 <div class="file-remove" title="Hapus file">
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -793,128 +744,235 @@ document.addEventListener('DOMContentLoaded', function() {
                     </svg>
                 </div>
             `;
-            
             fileList.appendChild(fileItem);
         });
-        
-        // Add click listener for remove buttons
+
+        // Show new uploaded files
+        uploadedFiles.forEach((file, index) => {
+            const fileItem = document.createElement('div');
+            fileItem.className = 'file-item';
+            fileItem.setAttribute('data-upload-index', index);
+
+            fileItem.innerHTML = `
+                <div class="file-info">
+                    <svg class="file-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <span class="file-name">${file.name}</span>
+                    <span class="file-size">${formatFileSize(file.size)}</span>
+                </div>
+                <div class="file-remove" title="Hapus file">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </div>
+            `;
+            fileList.appendChild(fileItem);
+        });
+
+        // Add click listeners for remove buttons
         document.querySelectorAll('.file-remove').forEach(button => {
             button.addEventListener('click', function(e) {
                 e.stopPropagation();
                 const fileItem = this.closest('.file-item');
-                const index = parseInt(fileItem.getAttribute('data-index'));
-                
-                // Remove from array
-                const removedFile = uploadedFiles.splice(index, 1)[0];
-                
-                // Update list
+
+                if (fileItem.hasAttribute('data-existing-index')) {
+                    const index = parseInt(fileItem.getAttribute('data-existing-index'));
+                    const path = fileItem.getAttribute('data-existing-path');
+                    
+                    // Tambahkan ke daftar file yang akan dihapus
+                    if (path) {
+                        filesToDelete.push(path);
+                    }
+                    
+                    // Hapus dari array existingFiles
+                    existingFiles.splice(index, 1);
+                    showAlert('success', 'File existing akan dihapus saat update');
+                } else if (fileItem.hasAttribute('data-upload-index')) {
+                    const index = parseInt(fileItem.getAttribute('data-upload-index'));
+                    const removed = uploadedFiles.splice(index, 1)[0];
+                    showAlert('success', `File "${removed.name}" berhasil dihapus`);
+                }
+
                 updateFileList();
                 updateFileUploadAreaText();
-                
-                showAlert('success', `File "${removedFile.name}" berhasil dihapus`);
             });
         });
     }
-    
-    // Update file upload area text
+
     function updateFileUploadAreaText() {
         const uploadText = fileUploadArea.querySelector('p:first-of-type');
-        const countText = uploadedFiles.length > 0 ? 
-            `<span class="upload-counter">${uploadedFiles.length}</span>` : '';
-        
+        const totalCount = existingFiles.length + uploadedFiles.length;
+        const countText = totalCount > 0 ? `<span class="upload-counter">${totalCount}</span>` : '';
         uploadText.innerHTML = `Klik untuk ${uploadedFiles.length > 0 ? 'tambah' : 'upload'} file ${countText}`;
     }
-    
-    // Format file size
-    function formatFileSize(bytes) {
-        if (bytes < 1024) return bytes + ' B';
-        else if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
-        else return (bytes / 1048576).toFixed(1) + ' MB';
-    }
-    
-    // Alert notification
-    function showAlert(type, message) {
-        // Remove existing alert
-        const existingAlert = document.querySelector('.custom-alert');
-        if (existingAlert) {
-            existingAlert.remove();
+
+    // ========== EVENT LISTENERS ==========
+
+    // Product type toggle
+    function toggleFileSection() {
+        if (productType.value === 'digital') {
+            fileSection.classList.remove('hidden');
+        } else {
+            fileSection.classList.add('hidden');
+            uploadedFiles = [];
+            existingFiles = [];
+            updateFileList();
+            updateFileUploadAreaText();
         }
-        
-        // Create alert
-        const alert = document.createElement('div');
-        alert.className = `custom-alert fixed top-4 right-4 z-50 px-4 py-3 rounded-lg shadow-lg transition-all duration-300 transform translate-x-full ${type === 'success' ? 'bg-green-50 border border-green-200 text-green-800' : 'bg-red-50 border border-red-200 text-red-800'}`;
-        alert.innerHTML = `
-            <div class="flex items-center gap-2">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    ${type === 'success' ? 
-                        '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />' : 
-                        '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />'}
-                </svg>
-                <span class="text-sm font-medium">${message}</span>
-            </div>
-        `;
-        
-        document.body.appendChild(alert);
-        
-        // Show alert
-        setTimeout(() => {
-            alert.classList.remove('translate-x-full');
-            alert.classList.add('translate-x-0');
-        }, 10);
-        
-        // Hide after 3 seconds
-        setTimeout(() => {
-            alert.classList.remove('translate-x-0');
-            alert.classList.add('translate-x-full');
-            setTimeout(() => alert.remove(), 300);
-        }, 3000);
     }
-    
-    // ========== FORM SUBMISSION ==========
+
+    productType.addEventListener('change', toggleFileSection);
+    toggleFileSection();
+
+    // Price formatting
+    priceInput.addEventListener('input', function(e) {
+        e.target.value = formatRupiah(e.target.value);
+        updateDiscountPreview();
+    });
+
+    discountInput.addEventListener('input', function(e) {
+        e.target.value = formatRupiah(e.target.value);
+        updateDiscountPreview();
+    });
+
+    // Stock toggle
+    const stockCheck = document.getElementById('stockCheck');
+    const stockInput = document.getElementById('stockInput');
+    stockCheck.addEventListener('change', () => stockInput.classList.toggle('hidden'));
+
+    // Limit toggle
+    const limitCheck = document.getElementById('limitCheck');
+    const limitInput = document.getElementById('limitInput');
+    limitCheck.addEventListener('change', () => limitInput.classList.toggle('hidden'));
+
+    // Image upload handling
+    imageUpload.addEventListener('change', function(e) {
+        const files = Array.from(e.target.files);
+        files.forEach((file, index) => {
+            if (!file.type.match('image.*')) {
+                showAlert('error', `File "${file.name}" bukan gambar. Hanya file gambar yang diperbolehkan.`);
+                return;
+            }
+            if (file.size > 5 * 1024 * 1024) {
+                showAlert('error', `File "${file.name}" terlalu besar. Maksimal 5MB per gambar.`);
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                uploadedImages.push({
+                    id: Date.now() + index,
+                    name: file.name,
+                    url: event.target.result,
+                    file: file
+                });
+                updateImagePreview();
+                updateUploadAreaText();
+            };
+            reader.readAsDataURL(file);
+        });
+        this.value = '';
+    });
+
+    // File upload handling
+    fileUpload.addEventListener('change', function(e) {
+        const files = Array.from(e.target.files);
+        files.forEach((file, index) => {
+            uploadedFiles.push({
+                id: Date.now() + index,
+                name: file.name,
+                size: file.size,
+                type: file.type,
+                file: file
+            });
+        });
+        updateFileList();
+        updateFileUploadAreaText();
+        showAlert('success', `${files.length} file berhasil ditambahkan`);
+        this.value = '';
+    });
+
+    // Form submission
     document.querySelector('form').addEventListener('submit', function(e) {
-        // Clean rupiah format before submit
         const priceValue = cleanRupiah(priceInput.value);
         const discountValue = cleanRupiah(discountInput.value);
-        
-        // Validation
+
         if (priceValue <= 0) {
             e.preventDefault();
             showAlert('error', 'Harga produk harus lebih dari 0');
             priceInput.focus();
             return;
         }
-        
+
         if (discountValue > 0 && discountValue >= priceValue) {
             e.preventDefault();
             showAlert('error', 'Harga diskon harus lebih rendah dari harga normal');
             discountInput.focus();
             return;
         }
-        
-        // Set clean numbers to inputs
+
         priceInput.value = priceValue;
         discountInput.value = discountValue || '';
-        
-        // Update images files
+
+        // Handle image files
         const imageDataTransfer = new DataTransfer();
-        uploadedImages.forEach(image => {
-            imageDataTransfer.items.add(image.file);
-        });
+        uploadedImages.forEach(image => imageDataTransfer.items.add(image.file));
         imageUpload.files = imageDataTransfer.files;
-        
-        // Update files files
+
+        // Handle product files
         const fileDataTransfer = new DataTransfer();
-        uploadedFiles.forEach(fileData => {
-            fileDataTransfer.items.add(fileData.file);
-        });
+        uploadedFiles.forEach(fileData => fileDataTransfer.items.add(fileData.file));
         fileUpload.files = fileDataTransfer.files;
-        
-        // Validation
-        if (productType.value === 'digital' && uploadedFiles.length === 0) {
+
+        // Validation for digital products
+        if (productType.value === 'digital' && uploadedFiles.length === 0 && existingFiles.length === 0) {
             e.preventDefault();
             showAlert('error', 'Produk digital wajib memiliki file');
             return;
         }
+
+        // Add hidden inputs for existing images to be kept
+        existingImages.forEach(image => {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'keep_images[]';
+            input.value = image.id;
+            this.appendChild(input);
+        });
+
+        // Add hidden inputs for images to be deleted
+        imagesToDelete.forEach(id => {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'delete_images[]';
+            input.value = id;
+            this.appendChild(input);
+        });
+
+        // Add hidden inputs for existing files to be kept
+        existingFiles.forEach(file => {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'keep_files[]';
+            input.value = file.path;
+            this.appendChild(input);
+        });
+
+        // Add hidden inputs for files to be deleted
+        filesToDelete.forEach(path => {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'delete_files[]';
+            input.value = path;
+            this.appendChild(input);
+        });
     });
+
+    // Initialize previews with existing data
+    updateImagePreview();
+    updateUploadAreaText();
+    updateFileList();
+    updateFileUploadAreaText();
 });
 </script>
