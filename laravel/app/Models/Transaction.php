@@ -113,4 +113,9 @@ class Transaction extends Model
     {
         return 'Rp ' . number_format($this->amount, 0, ',', '.');
     }
+
+    public function product()
+    {
+        return $this->belongsTo(Product::class);
+    }
 }

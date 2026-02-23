@@ -390,10 +390,7 @@ tbody tr:hover { background: #f1f5f9; }
                     @foreach($products as $product)
                     <tr class="border-t">
                         <td class="p-3 flex items-center gap-3">
-                            @php
-                                $firstImage = $product->images->first();
-                            @endphp
-
+                            @php $firstImage = $product->images->first(); @endphp
                             <img src="{{ $firstImage 
                                 ? asset('storage/'.$firstImage->image) 
                                 : 'https://via.placeholder.com/50' }}"
@@ -401,16 +398,16 @@ tbody tr:hover { background: #f1f5f9; }
                             {{ $product->title }}
                         </td>
 
-                        <td class="text-center">
-                            {{ $product->views ?? 0 }}
+                        <td class="text-center p-3">
+                            {{ $product->views_count ?? 0 }}
                         </td>
 
-                        <td class="text-center">
+                        <td class="text-center p-3">
                             {{ $product->sold ?? 0 }}
                         </td>
 
-                        <td class="text-center">
-                            Rp {{ number_format($product->sold * $product->price,0,',','.') }}
+                        <td class="text-center p-3">
+                            Rp {{ number_format(($product->total_qty ?? 0) * $product->price, 0, ',', '.') }}
                         </td>
                     </tr>
                     @endforeach

@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use App\Models\Link;
 use App\Models\Click;
+use App\Models\Product; // <-- TAMBAHAN
 use Carbon\Carbon;
 
 class DashboardController extends Controller
@@ -60,7 +61,6 @@ class DashboardController extends Controller
             $data[] = $found ? $found->total : 0;
         }
 
-        // ⬇️ PENTING: nilai tertinggi untuk tinggi bar
         $maxClick = max($data);
 
         // ============================
@@ -69,17 +69,23 @@ class DashboardController extends Controller
         $balance = $user->balance ?? 0;
         $totalEarned = $this->paymentService->getTotalEarned($user);
 
-        // Get recent transactions (last 5)
         $recentTransactions = $user->transactions()
             ->latest()
             ->take(5)
             ->get();
 
-        // Get recent withdrawals (last 5)
         $recentWithdrawals = $user->withdrawals()
             ->latest()
             ->take(5)
             ->get();
+
+        // PRODUCT LIFETIME SALES
+$products = Product::where('user_id', $user->id)
+    ->with('images')
+    ->withCount('views')
+    ->withCount('sales as sold')
+    ->withSum('sales as total_qty', 'qty')
+    ->get();
 
         return view('dashboard.index', compact(
             'user',
@@ -93,7 +99,8 @@ class DashboardController extends Controller
             'balance',
             'totalEarned',
             'recentTransactions',
-            'recentWithdrawals'
+            'recentWithdrawals',
+            'products' // <-- TAMBAHAN
         ));
     }
 

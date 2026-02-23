@@ -1,6 +1,8 @@
 <?php
 
 namespace App\Models;
+use App\Models\ProductSale;
+use App\Models\ProductViews;
 
 use Illuminate\Database\Eloquent\Model;
 
@@ -30,4 +32,18 @@ class Product extends Model
     return $this->hasOne(Block::class);
 }
 
+public function views()
+{
+    return $this->hasMany(ProductViews::class);
+}
+
+public function transaction()
+{
+    return $this->hasMany(Transaction::class);
+}
+
+public function sales()
+{
+    return $this->hasMany(ProductSale::class);
+}
 }

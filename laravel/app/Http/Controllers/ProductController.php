@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Product;
 use App\Models\ProductImage;
 use App\Models\ProductFile;
+use App\Models\ProductViews;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -14,31 +15,33 @@ class ProductController extends Controller
     /**
      * INDEX
      */
-   public function index(Request $request)
+  public function index(Request $request)
 {
     $products = Product::where('user_id', Auth::id())
+        ->with('images')
+        ->withCount('views')
+        ->withCount('sales as sold')
+        ->withSum('sales as total_qty', 'qty')
         ->latest()
         ->get();
 
     $showForm = false;
     $product = null;
 
-    // tambah
     if ($request->tambah) {
         $showForm = true;
     }
 
-    // edit
     if ($request->edit) {
         $product = Product::where('user_id', Auth::id())
             ->with('images')
-            ->with('files') // Tambahkan ini untuk memuat relasi files
+            ->with('files')
             ->findOrFail($request->edit);
 
         $showForm = true;
     }
 
-    return view('products.manage', compact('products','showForm','product'));
+    return view('products.manage', compact('products', 'showForm', 'product'));
 }
 
 
@@ -278,5 +281,16 @@ class ProductController extends Controller
             'edit' => $id
         ]);
     }
+
+    public function show($id)
+{
+    $product = Product::findOrFail($id);
+
+    ProductViews::create([
+        'product_id' => $product->id
+    ]);
+
+    return view('products.show', compact('product'));
+}
 
 }
