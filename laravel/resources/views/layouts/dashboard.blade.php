@@ -273,18 +273,18 @@
             </div>
         </div>
 
-        <div class="navbar-center">
+        <!-- <div class="navbar-center">
             <div class="search-container">
                 <i class="fas fa-search"></i>
                 <input type="text" placeholder="Cari link, analitik, atau pengaturan...">
             </div>
-        </div>
+        </div> -->
 
         <div class="navbar-right">
-            <button class="btn-upgrade">
+            <!-- <button class="btn-upgrade">
                 <i class="fas fa-crown"></i>
                 <span>Upgrade Premium</span>
-            </button>
+            </button> -->
 
             <div class="notification-bell">
                 <i class="fas fa-bell"></i>

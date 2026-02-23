@@ -340,3 +340,13 @@ Route::get('/{username}', function ($username) {
 
 
 
+Route::get('/debug-last-trx', function () {
+    $trx = App\Models\Transaction::latest()->first();
+    return [
+        'order_id' => $trx->order_id ?? null,
+        'status' => $trx->status ?? null,
+        'amount' => $trx->amount ?? null,
+        'notes' => is_string($trx->notes ?? null) ? json_decode($trx->notes, true) : $trx->notes,
+        'created_at' => $trx->created_at ?? null,
+    ];
+})->middleware('auth');

@@ -335,50 +335,6 @@
         }
 
         /* =========================================================
-           PAYMENT METHOD SELECTOR
-        ========================================================= */
-        .payment-methods {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 8px;
-        }
-
-        .payment-option {
-            border: 1px solid #e5e7eb;
-            border-radius: 8px;
-            padding: 10px 12px;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 13px;
-            font-weight: 500;
-            color: #374151;
-            user-select: none;
-        }
-
-        .payment-option:hover {
-            border-color: #93c5fd;
-            background: #f8faff;
-        }
-
-        .payment-option.selected {
-            border-color: #2563eb;
-            background: #eff6ff;
-            color: #2563eb;
-        }
-
-        .payment-option input[type="radio"] {
-            display: none;
-        }
-
-        .payment-icon {
-            font-size: 18px;
-            line-height: 1;
-        }
-
-        /* =========================================================
            CTA BUTTON
         ========================================================= */
         .btn-pay {
@@ -511,7 +467,7 @@
     {{-- Info produk digital --}}
     @if($product->product_type === 'digital')
         <div class="alert alert-info" style="max-width:500px;margin:0 auto 16px;">
-            <span></span>
+            <span>📦</span>
             <span>Produk digital. File akan dikirim otomatis ke email Anda setelah pembayaran berhasil.</span>
         </div>
     @endif
@@ -545,9 +501,9 @@
                 <div class="product-meta">
                     <span class="product-type-badge {{ $product->product_type }}">
                         @if($product->product_type === 'digital')
-                            Produk Digital
+                            💾 Digital
                         @else
-                            Produk Fisik
+                            📦 Fisik
                         @endif
                     </span>
                     <h2>{{ $product->title }}</h2>
@@ -619,7 +575,7 @@
                            value="{{ auth()->user()->email ?? '' }}"
                            required>
                     @if($product->product_type === 'digital')
-                        <div class="field-hint">File digital akan dikirim ke email ini.</div>
+                        <div class="field-hint">📧 File digital akan dikirim ke email ini.</div>
                     @endif
                 </div>
                 <div class="form-group">
@@ -651,7 +607,6 @@
                                min="1"
                                max="{{ $product->purchase_limit ?? ($product->stock ?? 99) }}"
                                value="1"
-                               style="max-width: 100px;"
                                required>
                         @if($product->purchase_limit)
                             <div class="field-hint">Maks. {{ $product->purchase_limit }} per transaksi</div>
@@ -663,44 +618,8 @@
             </div>
         </div>
 
-        {{-- METODE PEMBAYARAN --}}
-        <div class="card">
-            <div class="card-header">Metode Pembayaran</div>
-            <div class="card-body">
-                <div class="payment-methods">
-                    <label class="payment-option selected" id="pm_gopay">
-                        <input type="radio" name="payment_method" value="gopay" checked>
-                        <span class="payment-icon"></span>
-                        <span>GoPay</span>
-                    </label>
-                    <label class="payment-option" id="pm_qris">
-                        <input type="radio" name="payment_method" value="qris">
-                        <span class="payment-icon"></span>
-                        <span>QRIS</span>
-                    </label>
-                    <label class="payment-option" id="pm_bca">
-                        <input type="radio" name="payment_method" value="bca_va">
-                        <span class="payment-icon"></span>
-                        <span>BCA Virtual</span>
-                    </label>
-                    <label class="payment-option" id="pm_bni">
-                        <input type="radio" name="payment_method" value="bni_va">
-                        <span class="payment-icon"></span>
-                        <span>BNI Virtual</span>
-                    </label>
-                    <label class="payment-option" id="pm_mandiri">
-                        <input type="radio" name="payment_method" value="echannel">
-                        <span class="payment-icon"></span>
-                        <span>Mandiri</span>
-                    </label>
-                    <label class="payment-option" id="pm_shopeepay">
-                        <input type="radio" name="payment_method" value="shopeepay">
-                        <span class="payment-icon"></span>
-                        <span>ShopeePay</span>
-                    </label>
-                </div>
-            </div>
-        </div>
+        {{-- Hidden payment method - akan dipilih di Snap Midtrans --}}
+        <input type="hidden" name="payment_method" value="gopay">
 
         {{-- RINGKASAN PEMBAYARAN --}}
         <div class="card">
@@ -741,25 +660,12 @@
     @endif {{-- end out of stock check --}}
     @endif {{-- end product check --}}
 
-    {{-- Midtrans Snap JS Production--}}
-    <!-- <script src="https://app.midtrans.com/snap/snap.js"
-            data-client-key="{{ config('midtrans.client_key') }}"></script> -->
-    {{-- Midtrans Snap JS Sandbox--}}
-    <!-- Sandbox -->
-<script src="https://app.sandbox.midtrans.com/snap/snap.js"
-        data-client-key="{{ config('midtrans.client_key') }}"></script>
+    {{-- Midtrans Snap JS --}}
+    <script src="https://app.sandbox.midtrans.com/snap/snap.js"
+            data-client-key="{{ config('midtrans.client_key') }}"></script>
 
     <script>
         const UNIT_PRICE = {{ $product->discount ?? $product->price ?? 0 }};
-
-        // ===== PAYMENT METHOD SELECTION =====
-        document.querySelectorAll('.payment-option').forEach(option => {
-            option.addEventListener('click', function () {
-                document.querySelectorAll('.payment-option').forEach(o => o.classList.remove('selected'));
-                this.classList.add('selected');
-                this.querySelector('input[type="radio"]').checked = true;
-            });
-        });
 
         // ===== QTY → UPDATE TOTAL =====
         const qtyInput = document.getElementById('qty');
@@ -794,7 +700,7 @@
             const data = Object.fromEntries(formData.entries());
 
             try {
-                    const res = await fetch('{{ route("checkout.process", ["product" => $product->id]) }}', {
+                const res = await fetch('{{ route("checkout.process") }}', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
