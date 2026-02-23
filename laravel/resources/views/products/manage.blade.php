@@ -255,16 +255,21 @@ tbody tr:hover { background: #f1f5f9; }
 
     {{-- ================= HEADER ================= --}}
     @if($products->count())
-    <div class="flex justify-between items-center mb-6">
-        <div>
-            <h1 class="text-xl font-bold">Produk Saya</h1>
-            <p class="text-sm text-gray-500">Kelola semua produk digital kamu</p>
+    <div style="margin-bottom: 24px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 8px;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <a href="{{ route('dashboard') }}" style="width: 36px; height: 36px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; display: flex; align-items: center; justify-content: center; text-decoration: none; transition: all 0.2s;">
+                    <i class="fas fa-arrow-left" style="font-size: 14px; color: #475569;"></i>
+                </a>
+                <div>
+                    <h1 style="margin: 0; font-size: 24px; font-weight: 600; color: #000000;">Produk Saya</h1>
+                    <p style="margin: 0; font-size: 14px; color: #797979;">Kelola semua produk digital kamu</p>
+                </div>
+            </div>
+            <a href="{{ route('products.manage', ['tambah' => 1]) }}" class="btn-primary">
+                <i class="fas fa-plus"></i> Tambah Produk
+            </a>
         </div>
-
-        <a href="{{ route('products.manage', ['tambah' => 1]) }}"
-           class="btn-primary">
-            <i class="fas fa-plus"></i> Tambah Produk
-        </a>
     </div>
     @endif
 
