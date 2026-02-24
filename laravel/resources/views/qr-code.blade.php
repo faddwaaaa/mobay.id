@@ -42,7 +42,7 @@
                 <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 16px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
                     <i class="fas fa-link" style="color: #94a3b8; font-size: 14px;"></i>
                     <p style="margin: 0; font-size: 14px; color: #475569; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1;" id="qr-url-text">
-                        payou.id/{{ $userSlug ?? 'username' }}
+                        {{ url('/' . ($userSlug ?? 'username')) }}
                     </p>
                 </div>
 
@@ -177,8 +177,8 @@
             
             <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;">
                 {{-- Use Case 1 --}}
-                <div style="text-align: center; padding: 20px; background: #f8fafc; border-radius: 10px; border: 1px solid #e2e8f0;">
-                    <div style="width: 48px; height: 48px; background: #eff6ff; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 12px;">
+                <div class="use-case-card" style="text-align: center; padding: 20px; background: #f8fafc; border-radius: 10px; border: 1px solid #e2e8f0;">
+                    <div class="use-case-icon" style="width: 48px; height: 48px; background: #eff6ff; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 12px;">
                         <i class="fas fa-utensils" style="font-size: 20px; color: #3b82f6;"></i>
                     </div>
                     <h4 style="margin: 0 0 6px 0; font-size: 14px; font-weight: 600; color: #0f172a;">Menu Digital</h4>
@@ -186,8 +186,8 @@
                 </div>
 
                 {{-- Use Case 2 --}}
-                <div style="text-align: center; padding: 20px; background: #f8fafc; border-radius: 10px; border: 1px solid #e2e8f0;">
-                    <div style="width: 48px; height: 48px; background: #f0fdf4; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 12px;">
+                <div class="use-case-card" style="text-align: center; padding: 20px; background: #f8fafc; border-radius: 10px; border: 1px solid #e2e8f0;">
+                    <div class="use-case-icon" style="width: 48px; height: 48px; background: #f0fdf4; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 12px;">
                         <i class="fas fa-store" style="font-size: 20px; color: #10b981;"></i>
                     </div>
                     <h4 style="margin: 0 0 6px 0; font-size: 14px; font-weight: 600; color: #0f172a;">Etalase Toko</h4>
@@ -195,8 +195,8 @@
                 </div>
 
                 {{-- Use Case 3 --}}
-                <div style="text-align: center; padding: 20px; background: #f8fafc; border-radius: 10px; border: 1px solid #e2e8f0;">
-                    <div style="width: 48px; height: 48px; background: #fef3c7; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 12px;">
+                <div class="use-case-card" style="text-align: center; padding: 20px; background: #f8fafc; border-radius: 10px; border: 1px solid #e2e8f0;">
+                    <div class="use-case-icon" style="width: 48px; height: 48px; background: #fef3c7; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 12px;">
                         <i class="fas fa-bullhorn" style="font-size: 20px; color: #f59e0b;"></i>
                     </div>
                     <h4 style="margin: 0 0 6px 0; font-size: 14px; font-weight: 600; color: #0f172a;">Media Promosi</h4>
@@ -204,8 +204,8 @@
                 </div>
 
                 {{-- Use Case 4 --}}
-                <div style="text-align: center; padding: 20px; background: #f8fafc; border-radius: 10px; border: 1px solid #e2e8f0;">
-                    <div style="width: 48px; height: 48px; background: #fce7f3; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 12px;">
+                <div class="use-case-card" style="text-align: center; padding: 20px; background: #f8fafc; border-radius: 10px; border: 1px solid #e2e8f0;">
+                    <div class="use-case-icon" style="width: 48px; height: 48px; background: #fce7f3; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 12px;">
                         <i class="fas fa-id-card" style="font-size: 20px; color: #ec4899;"></i>
                     </div>
                     <h4 style="margin: 0 0 6px 0; font-size: 14px; font-weight: 600; color: #0f172a;">Kartu Nama</h4>
@@ -300,6 +300,36 @@ a[href*="dashboard"]:hover {
     border-radius: 8px;
 }
 
+/* ── Animasi cenat-cenut icon use case ── */
+@keyframes iconBounce {
+    0%, 100% { transform: translateY(0); }
+    50%       { transform: translateY(-7px); }
+}
+
+@keyframes iconPulse {
+    0%, 100% { transform: scale(1); }
+    50%       { transform: scale(1.2); }
+}
+
+.use-case-card:nth-child(1) .use-case-icon { animation: iconBounce 2s ease-in-out infinite 0s; }
+.use-case-card:nth-child(2) .use-case-icon { animation: iconBounce 2s ease-in-out infinite 0.35s; }
+.use-case-card:nth-child(3) .use-case-icon { animation: iconPulse  1.8s ease-in-out infinite 0.7s; }
+.use-case-card:nth-child(4) .use-case-icon { animation: iconBounce 2s ease-in-out infinite 1.05s; }
+
+.use-case-card {
+    transition: box-shadow 0.3s ease, transform 0.3s ease;
+    cursor: default;
+}
+
+.use-case-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.10) !important;
+}
+
+.use-case-card:hover .use-case-icon {
+    animation: iconBounce 0.5s ease-in-out infinite !important;
+}
+
 /* Responsive */
 @media (max-width: 1024px) {
     div[style*="grid-template-columns: 1fr 1fr"] {
@@ -322,7 +352,7 @@ a[href*="dashboard"]:hover {
 <script>
 // Global Variables
 let qrCodeInstance = null;
-let currentUrl = 'https://payou.id/{{ $userSlug ?? 'username' }}';
+let currentUrl = '{{ url("/" . ($userSlug ?? "username")) }}';
 let currentSize = 180;
 let currentFormat = 'png';
 
@@ -407,7 +437,7 @@ function downloadQR() {
         const link = document.createElement('a');
         const username = currentUrl.split('/').pop();
         
-        link.download = `qrcode-payou-${username}-${currentSize}x${currentSize}.${currentFormat}`;
+        link.download = `qrcode-${username}-${currentSize}x${currentSize}.${currentFormat}`;
         link.href = url;
         document.body.appendChild(link);
         link.click();
@@ -424,20 +454,14 @@ function downloadQR() {
  * Share to WhatsApp
  */
 function shareWhatsApp() {
-    // Format pesan WhatsApp
     const message = `Halo,
 Saya ingin membagikan tautan resmi saya melalui pesan ini:
 ${currentUrl}
 Silakan diakses sesuai kebutuhan.
 Terima kasih.`;
     
-    // Encode message untuk URL
     const encodedMessage = encodeURIComponent(message);
-    
-    // WhatsApp Web/App URL
     const whatsappUrl = `https://wa.me/?text=${encodedMessage}`;
-    
-    // Buka WhatsApp di tab baru
     window.open(whatsappUrl, '_blank');
     
     console.log('Sharing to WhatsApp:', currentUrl);
@@ -450,8 +474,8 @@ async function shareQR() {
     if (navigator.share) {
         try {
             await navigator.share({
-                title: 'QR Code Payou.id',
-                text: 'Scan QR Code ini untuk mengunjungi halaman saya di Payou.id',
+                title: 'QR Code',
+                text: 'Scan QR Code ini untuk mengunjungi halaman saya',
                 url: currentUrl
             });
         } catch (err) {

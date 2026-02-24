@@ -337,7 +337,7 @@ tbody tr:hover { background: #f1f5f9; }
                             Rp {{ number_format($product->price, 0, ',', '.') }}
                         </div>
 
-                        <div class="font-bold text-red-600 text-sm">
+                        <div class="font-bold text-blue-600 text-sm">
                             Rp {{ number_format($product->discount, 0, ',', '.') }}
                         </div>
 
