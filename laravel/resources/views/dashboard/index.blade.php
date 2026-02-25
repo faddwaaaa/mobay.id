@@ -193,7 +193,7 @@
     ">
     <div>
         <div style="font-size:14px;opacity:.85;">Saldo Tersedia</div>
-        <div style="font-size:44px;font-weight:700;margin:8px 0;font-family: 'poppins';">
+        <div style="font-size:45px;font-weight:700;margin:8px 0;font-family: 'poppins';">
             Rp {{ number_format($balance ?? 0,0,',','.') }}
         </div>
         <div style="font-size:13px;opacity:.85;">

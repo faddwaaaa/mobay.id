@@ -69,6 +69,7 @@
             font-family: var(--nav-font) !important;
             -webkit-font-smoothing: antialiased;
         }
+        
 
         /* ─── SIDEBAR SHELL ───────────────────────────────────────────── */
         .s-sidebar {
@@ -89,10 +90,11 @@
 
         /* ─── LOGO ────────────────────────────────────────────────────── */
         .s-logo {
-            padding: 15px 17px 13px;
-            border-bottom: 1px solid var(--sidebar-border);
-            flex-shrink: 0;
-        }
+    padding: 25px 17px 13px;
+    border-bottom: 1px solid var(--sidebar-border);
+    flex-shrink: 0;
+    text-align: center;
+}
 
         .s-logo a {
             display: inline-flex;
@@ -100,10 +102,12 @@
         }
 
         .s-logo img {
-            height: 23px;
-            width: auto;
-            object-fit: contain;
-        }
+    height: 23px;
+    width: auto;
+    object-fit: contain;
+    display: block;
+    margin: 0 auto;
+}
 
         /* ─── SECTION LABEL ───────────────────────────────────────────── */
         .s-label {
