@@ -507,12 +507,20 @@ function escHtml(str) {
     return d.innerHTML;
 }
 
-// Fetch semua product block saat halaman load
+// ✅ FIX: Fetch render produk pakai /data — TIDAK mencatat view
+// View baru dicatat saat user benar-benar KLIK produk (di handleProductClick)
 document.addEventListener('DOMContentLoaded', function() {
+    // ✅ FIX: Catat kunjungan halaman profil (untuk Views di dashboard)
+    fetch(`/api/profile/{{ $user->username }}/view`, {
+        method: 'POST',
+        headers: { 'X-CSRF-TOKEN': csrfToken, 'Content-Type': 'application/json' }
+    }).catch(() => {});
+
     const productBlocks = document.querySelectorAll('[data-product-id]');
     productBlocks.forEach(container => {
         const productId = container.getAttribute('data-product-id');
-        fetch(`/api/product/${productId}`)
+        // ✅ FIX: Pakai /data — hanya ambil data produk, tidak catat view
+        fetch(`/api/product/${productId}/data`)
             .then(r => r.json())
             .then(product => renderProductBlock(container, product))
             .catch(() => {
@@ -574,8 +582,14 @@ let currentProductId = null;
 
 function handleProductClick(productId) {
     if (!productId) return;
-    // Selalu fetch live — bukan dari cache
-    fetch(`/api/product/${productId}`)
+    // ✅ FIX: Catat view produk karena user benar-benar klik produk ini
+    fetch(`/api/product/${productId}/view`, {
+        method: 'POST',
+        headers: { 'X-CSRF-TOKEN': csrfToken, 'Content-Type': 'application/json' }
+    }).catch(() => {});
+
+    // Ambil data detail produk (tanpa tracking ulang)
+    fetch(`/api/product/${productId}/data`)
         .then(r => r.json())
         .then(product => {
             currentProductId = product.id;

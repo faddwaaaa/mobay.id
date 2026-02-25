@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Models\UserProfile;
 use App\Models\Click;
+use App\Models\ProfileView;
 use Illuminate\Http\Request;
 
 class PublicProfileController extends Controller
@@ -18,13 +19,25 @@ class PublicProfileController extends Controller
             ])
             ->firstOrFail();
 
-        // Default page pertama
         $page = $user->pages->first();
 
-        return view('public.index', compact(
+        return view('public.profile', compact(
             'user',
             'page'
         ));
+    }
+
+    /**
+     * ✅ BARU: Catat kunjungan halaman profil publik
+     * Dipanggil via AJAX dari halaman publik saat pertama kali dibuka
+     */
+    public function trackProfileView($username)
+    {
+        $user = User::where('username', $username)->firstOrFail();
+
+        ProfileView::create(['user_id' => $user->id]);
+
+        return response()->json(['success' => true]);
     }
 
     public function redirect($username, $linkId)
@@ -38,10 +51,8 @@ class PublicProfileController extends Controller
             ->where('is_active', true)
             ->firstOrFail();
 
-        // Increment counter
         $link->increment('clicks');
 
-        // Record detail click
         Click::create([
             'link_id'    => $link->id,
             'ip_address' => request()->ip(),
