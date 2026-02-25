@@ -77,6 +77,7 @@ Route::prefix('api')->group(function () {
 
     // Ambil data produk untuk render kartu — TIDAK mencatat view
     Route::get('/product/{id}/data', [ProductController::class, 'apiShow']);
+    Route::get('/product/{id}', [ProductController::class, 'apiShow']);
 
     // Catat klik produk — dipanggil HANYA saat user benar-benar klik produk
     Route::post('/product/{id}/view', [ProductController::class, 'trackView']);

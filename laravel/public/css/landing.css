@@ -110,6 +110,7 @@ nav {
     transform: rotate(-45deg) translateY(-10px);
 }
 
+/* ── Base Button ── */
 .btn {
     padding: 0.625rem 1.5rem;
     border-radius: 8px;
@@ -132,24 +133,78 @@ nav {
     transform: scale(1.08);
 }
 
+/* ── Primary Button (nav "Daftar Gratis") ── */
 .btn-primary {
-    background: var(--primary-blue);
+    background: linear-gradient(135deg, var(--primary-blue) 0%, #1d4ed8 100%);
     color: var(--white);
+    border-radius: 50px;
+    padding: 0.6rem 1.4rem;
+    font-weight: 700;
+    font-size: 0.9rem;
+    box-shadow:
+        0 4px 14px rgba(37, 99, 235, 0.35),
+        inset 0 1px 0 rgba(255,255,255,0.15);
+    letter-spacing: 0.01em;
 }
 
 .btn-primary:hover {
-    background: var(--dark-blue);
-    transform: scale(1.08);
-    box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35);
+    background: linear-gradient(135deg, #1d4ed8 0%, #1e3a8a 100%);
+    transform: translateY(-2px) scale(1.05);
+    box-shadow:
+        0 8px 22px rgba(37, 99, 235, 0.5),
+        inset 0 1px 0 rgba(255,255,255,0.15);
 }
 
+.btn-primary:active {
+    transform: translateY(0) scale(1.02);
+}
+
+
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #1d4ed8 0%, #1e3a8a 100%);
+    transform: translateY(-2px) scale(1.05);
+    box-shadow:
+        0 8px 22px rgba(37, 99, 235, 0.5),
+        inset 0 1px 0 rgba(255,255,255,0.15);
+}
+
+.btn-primary:active {
+    transform: translateY(0) scale(1.02);
+}
+
+/* ── Large CTA Button (Hero "Daftar Gratis") ── */
+.btn-large {
+    padding: 0.9rem 2.2rem;
+    font-size: 1rem;
+    font-weight: 700;
+    border-radius: 50px;
+    background: linear-gradient(135deg, var(--primary-blue) 0%, #1d4ed8 100%);
+    color: var(--white);
+    box-shadow:
+        0 6px 20px rgba(37, 99, 235, 0.4),
+        inset 0 1px 0 rgba(255,255,255,0.15);
+    letter-spacing: 0.01em;
+}
+
+.btn-large:hover {
+    background: linear-gradient(135deg, #1d4ed8 0%, #1e3a8a 100%);
+    transform: translateY(-2px) scale(1.03);
+    box-shadow:
+        0 10px 28px rgba(37, 99, 235, 0.50),
+        inset 0 1px 0 rgba(255,255,255,0.15);
+}
+
+.btn-large:active {
+    transform: translateY(0) scale(1.01);
+}
 
 /* Hero Section */
 .hero {
     min-height: 100vh;
     display: flex;
     align-items: center;
-    padding-top: 80px;
+    padding-top: 50px;
     background: linear-gradient(135deg, #f9fafb 0%, #ffffff 100%);
     position: relative;
     overflow: hidden;
@@ -195,12 +250,14 @@ nav {
     margin-bottom: 1.5rem;
 }
 
+/* ── Hero H1 ── */
 .hero h1 {
-    font-size: 3rem;
+    font-size: 3.3rem;
     font-weight: 800;
-    line-height: 1.2;
+    line-height: 1.25;
     margin-bottom: 1.5rem;
     color: var(--gray-900);
+    letter-spacing: -0.01em;
 }
 
 .hero h1 .highlight {
@@ -208,7 +265,7 @@ nav {
 }
 
 .hero p {
-    font-size: 1.0rem;
+    font-size: 1.05rem;
     color: var(--gray-600);
     margin-bottom: 2.5rem;
     line-height: 1.7;
@@ -218,11 +275,6 @@ nav {
     display: flex;
     gap: 1rem;
     flex-wrap: wrap;
-}
-
-.btn-large {
-    padding: 1rem 2rem;
-    font-size: 1rem;
 }
 
 .hero-visual {
@@ -315,7 +367,6 @@ nav {
     object-fit: contain;
     max-width: 1050px;
     filter: drop-shadow(0 30px 60px rgba(0, 0, 0, 0.15));
-    /* animation: gentleFloat 4s ease-in-out infinite; */
 }
 
 /* img2 - Animasi naik turun dengan border-radius */
@@ -338,11 +389,9 @@ nav {
     height: auto;
     object-fit: contain;
     max-width: 300px;
-    filter: drop-shadow(0 20px 50px rgba(37, 99, 235, 0.25));
     transform: rotate(-2deg);
     border-radius: 20px;
     filter: drop-shadow(0 30px 60px rgba(0, 102, 255, 0.15));
-
 }
 
 /* img3 - 3 elemen terbang keluar dari img2 */
@@ -365,7 +414,6 @@ nav {
     will-change: transform;
 }
 
-/* Gambar 1 - Top right, floating out */
 .img3 img:nth-child(1) {
     width: 160px;
     height: auto;
@@ -375,7 +423,6 @@ nav {
     transform: rotate(18deg) translateY(0);
 }
 
-/* Gambar 2 - Left middle, gentle float */
 .img3 img:nth-child(2) {
     width: 150px;
     height: auto;
@@ -385,7 +432,6 @@ nav {
     transform: rotate(-22deg) translateY(-50%);
 }
 
-/* Gambar 3 - Bottom right, dynamic float */
 .img3 img:nth-child(3) {
     width: 170px;
     height: auto;
@@ -393,16 +439,6 @@ nav {
     right: 5%;
     animation: floatUpDown 3s ease-in-out infinite;
     transform: rotate(15deg) translateY(0);
-}
-
-/* Animasi */
-@keyframes gentleFloat {
-    0%, 100% {
-        transform: translateY(0px);
-    }
-    50% {
-        transform: translateY(-15px);
-    }
 }
 
 @keyframes bounceFloat {
@@ -451,61 +487,53 @@ nav {
     color: var(--gray-600);
 }
 
- .trust-stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 2rem;
-            margin-bottom: 4rem;
-        }
+.trust-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 2rem;
+    margin-bottom: 4rem;
+}
 
-        .stat-card {
-            text-align: center;
-            padding: 2rem;
-            background: white;
-            border-radius: 16px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
+.stat-card {
+    text-align: center;
+    padding: 2rem;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
 
-        .stat-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
-        }
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+}
 
-        .stat-number {
-            font-size: 3rem;
-            font-weight: 800;
-            color: var(--primary-blue);
-            margin-bottom: 0.5rem;
-            height: 70px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .stat-label {
-            font-size: 1rem;
-            color: var(--gray-600);
-            font-weight: 500;
-    }
-
-    .stat-number {
+.stat-number {
     font-size: 3rem;
     font-weight: 800;
     color: var(--primary-blue);
     margin-bottom: 0.5rem;
-    transition: all 0.3s ease; /* Tambahkan ini */
+    height: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
 }
 
-/* INI TETAP: */
+.stat-label {
+    font-size: 1rem;
+    color: var(--gray-600);
+    font-weight: 500;
+}
+
 .trust-logos {
-    padding: 2rem 0; 
-    margin-top: 1rem; 
+    padding: 2rem 0;
+    margin-top: 1rem;
     margin-bottom: 1rem;
 }
 
 .umkm-card {
-     background: white;
+    background: white;
     padding: 1.5rem;
     border-radius: 16px;
     text-align: center;
@@ -556,7 +584,6 @@ nav {
     max-width: 800px;
     margin: 0 auto;
 }
-
 
 .umkm-card::before {
     content: '';
@@ -636,7 +663,6 @@ nav {
     margin-top: 0.25rem;
 }
 
-/* Animasi fade in */
 @keyframes fadeInUp {
     from {
         opacity: 0;
@@ -658,17 +684,16 @@ nav {
 .umkm-card:nth-child(3) { animation-delay: 0.3s; }
 .umkm-card:nth-child(4) { animation-delay: 0.4s; }
 
-/* Responsive */
 @media (max-width: 768px) {
     .trust-logos {
         padding: 2rem 1rem;
     }
-    
+
     .logos-grid {
         grid-template-columns: repeat(2, 1fr);
         gap: 1rem;
     }
-    
+
     .umkm-card {
         padding: 1.25rem;
     }
@@ -722,7 +747,6 @@ nav {
     margin: 0 auto;
 }
 
-/* CARD */
 .testimonial-card {
     position: relative;
     background: #ffffff;
@@ -740,7 +764,6 @@ nav {
     animation: fadeInUp 0.8s ease;
 }
 
-
 .testimonial-card:hover {
     transform: scale(1.05);
     border-color: rgba(37, 99, 235, 0.35);
@@ -753,7 +776,6 @@ nav {
     transform: scale(1.02);
 }
 
-/* USER */
 .testimonial-user {
     display: flex;
     align-items: center;
@@ -785,7 +807,6 @@ nav {
     line-height: 1.7;
 }
 
-/* RESPONSIVE */
 @media (max-width: 1024px) {
     .testimonial-columns {
         column-count: 2;
@@ -801,7 +822,6 @@ nav {
         transform: none;
     }
 }
-
 
 /* Features Section */
 .features {
@@ -848,21 +868,15 @@ nav {
         box-shadow 0.35s ease;
 }
 
-
 .feature-card:hover {
     transform: translateY(-10px);
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.10);
 }
 
-
 .feature-icon {
     width: 64px;
     height: 64px;
-    background: linear-gradient(
-        135deg,
-        var(--primary-blue),
-        var(--light-blue)
-    );
+    background: linear-gradient(135deg, var(--primary-blue), var(--light-blue));
     border-radius: 16px;
     display: flex;
     align-items: center;
@@ -909,7 +923,6 @@ nav {
     color: var(--gray-600);
 }
 
-
 /* Footer */
 .footer {
     background: #ffffff;
@@ -923,7 +936,6 @@ nav {
     display: flex;
     align-items: flex-start;
     gap: 7rem;
-
     padding-left: 3rem;
 }
 
@@ -933,6 +945,9 @@ nav {
     justify-content: center;
     text-decoration: none;
     transition: transform 0.3s ease;
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--primary-blue);
 }
 
 .footer-logo img {
@@ -942,7 +957,6 @@ nav {
     transition: transform 0.3s ease, filter 0.3s ease;
 }
 
-/* hover effect halus */
 .footer-logo:hover {
     transform: scale(1.05);
 }
@@ -950,15 +964,6 @@ nav {
 .footer-logo:hover img {
     transform: scale(1.08);
     filter: drop-shadow(0 4px 10px rgba(37, 99, 235, 0.3));
-
-}
-
-.footer-logo {
-    font-size: 1.5rem;
-    font-weight: 800;
-    color: var(--primary-blue);
-    text-decoration: none;
-
 }
 
 .footer-links {
@@ -991,7 +996,6 @@ nav {
     font-size: 0.875rem;
     color: #9ca3af;
 }
-
 
 .reveal {
     opacity: 0;
@@ -1069,7 +1073,6 @@ nav {
     .cta-container h2 {
         font-size: 2rem;
     }
-
 
     .mockup-container {
         max-width: 350px;
@@ -1152,7 +1155,7 @@ nav {
     }
 
     .hero h1 {
-        font-size: 1.875rem;
+        font-size: 2rem;
         line-height: 1.3;
     }
 
@@ -1171,9 +1174,10 @@ nav {
     }
 
     .btn-large {
-        padding: 0.875rem 1.5rem;
-        font-size: 0.9375rem;
+        padding: 1rem 1.75rem;
+        font-size: 1rem;
         width: 100%;
+        text-align: center;
     }
 
     .stat-number {

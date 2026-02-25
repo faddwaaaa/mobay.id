@@ -14,7 +14,7 @@
     
     <nav>
         <div class="nav-container">
-            <a href="#" class="logo"><img src="../img/icon.png" alt="payou.id" srcset=""></a>
+            <a href="/" class="logo"><img src="../img/icon.png" alt="payou.id" srcset=""></a>
             <div class="nav-buttons" id="navButtons">
                 <a href="{{ route('service') }}" class="btn btn-secondary">Service</a>
                 <a href="{{ route('faq') }}" class="btn btn-secondary">FAQ</a>
@@ -34,11 +34,10 @@
         <div class="hero-container">
             <div class="hero-content">
                 <span class="hero-badge">✨ Untuk UMKM Indonesia</span>
-                <h1>Satu Link untuk <span class="highlight">Semua Kebutuhan</span> Bisnis Online UMKM</h1>
+                <h1>Satu Link untuk <br><span class="highlight">Semua Kebutuhan</span> Bisnis Online UMKM</h1>
                 <p>Kelola link bio, terima pembayaran, tampilkan katalog produk, dan hubungkan semua sosial media dalam satu halaman profesional</p>
                 <div class="hero-cta">
-                    <a href="#" class="btn btn-primary btn-large">Daftar Gratis</a>
-                    <a href="#" class="btn btn-secondary btn-large">Lihat Contoh</a>
+                    <a href="/register" class="btn btn-primary btn-large">Daftar Gratis</a>
                 </div>
             </div>
             <div class="hero-visual">

@@ -59,11 +59,6 @@
                     </div>
 
                     <div class="profile-item">
-                        <label>Login</label>
-                        <span class="badge badge-google">Google</span>
-                    </div>
-
-                    <div class="profile-item">
                         <label>Bergabung</label>
                         <p>{{ $user->created_at->format('d F Y') }}</p>
                     </div>
