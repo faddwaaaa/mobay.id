@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 use App\Models\Product;
+use App\Models\ProfileView;
 
 use App\Http\Controllers\{
     DashboardController,
@@ -71,26 +72,17 @@ Route::prefix('api')->group(function () {
     Route::get('/transactions', [TransactionController::class, 'getTransactionHistory']);
     Route::get('/withdrawals', [TransactionController::class, 'getWithdrawalHistory']);
 
-    // Product detail
-    Route::get('/product/{id}', function ($id) {
-        $product = \App\Models\Product::with('images')->findOrFail($id);
+    // ✅ FIX: Pisah endpoint render produk (tanpa tracking) dari endpoint catat klik
+    // HAPUS route lama: Route::get('/product/{id}', ...) yang langsung catat ProductViews
 
-        try {
-            \App\Models\ProductViews::create(['product_id' => $product->id]);
-        } catch (\Exception $e) {}
+    // Ambil data produk untuk render kartu — TIDAK mencatat view
+    Route::get('/product/{id}/data', [ProductController::class, 'apiShow']);
 
-        return response()->json([
-            'id'          => $product->id,
-            'title'       => $product->title,
-            'description' => $product->description,
-            'price'       => $product->price,
-            'discount'    => $product->discount ?? 0,
-            'stock'       => $product->stock,
-            'image_url'   => $product->images->first()
-                                ? asset('storage/' . $product->images->first()->image)
-                                : null,
-        ]);
-    });
+    // Catat klik produk — dipanggil HANYA saat user benar-benar klik produk
+    Route::post('/product/{id}/view', [ProductController::class, 'trackView']);
+
+    // ✅ FIX: Catat kunjungan halaman profil publik — dipanggil via AJAX saat halaman dibuka
+    Route::post('/profile/{username}/view', [App\Http\Controllers\PublicProfileController::class, 'trackProfileView']);
 
     // Cart
     Route::get('/cart',          [CartController::class, 'index']);
@@ -110,6 +102,8 @@ Route::middleware('auth')->group(function () {
 
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+    Route::get('/dashboard/chart-data', [DashboardController::class, 'chartData'])->middleware('auth');
 
     // Analytics
     Route::prefix('analitik')->name('analitik.')->group(function () {
@@ -222,7 +216,9 @@ Route::get('/{short_code}', function ($short_code) {
             ->firstOrFail();
 
         $page = $user->pages->first();
-        $user->increment('profile_views');
+
+        // ✅ FIX: Tracking views dilakukan via AJAX dari blade, bukan di sini
+        // Hapus: $user->increment('profile_views');
 
         return view('public.profile', compact('user', 'page'));
     }
@@ -244,8 +240,8 @@ Route::get('/{username}', function ($username) {
 
     $page = $user->pages->first();
 
-    // Catat views profil
-    $user->increment('profile_views');
+    // ✅ FIX: Tracking views dilakukan via AJAX dari blade, bukan di sini
+    // Hapus: $user->increment('profile_views');
 
     return view('public.profile', compact('user', 'page'));
 })->where('username', '[a-zA-Z0-9_]+')

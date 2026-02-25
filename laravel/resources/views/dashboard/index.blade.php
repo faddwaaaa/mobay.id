@@ -226,7 +226,7 @@
     </div>
 </div>
 
-<!-- ================= CHART KLIK 7 HARI ================= -->
+<!-- ================= CHART VIEWS & KLIK ================= -->
 <div class="chart-card"
      style="
         background:#ffffff;
@@ -236,36 +236,80 @@
         box-shadow:0 10px 30px rgba(0,0,0,.06);
     ">
 
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
-        <h3 style="font-size:16px;font-weight:700;">
-            Performa Klik 7 Hari Terakhir
-        </h3>
-        <span style="font-size:13px;color:#6b7280;">
-            Total {{ number_format($totalClicks) }} klik
-        </span>
+    <!-- HEADER -->
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:12px;">
+        <div>
+            <h3 style="font-size:16px;font-weight:700;margin:0 0 8px;">
+                Total Views & Clicks
+            </h3>
+            <div style="display:flex;gap:20px;">
+                <div style="display:flex;align-items:center;gap:8px;">
+                    <span style="width:12px;height:12px;border-radius:50%;background:#f59e0b;display:inline-block;"></span>
+                    <span style="font-size:13px;color:#6b7280;">Views</span>
+                    <span style="font-size:22px;font-weight:800;color:#111;" id="total-views-label">{{ number_format(array_sum($data)) }}</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px;">
+                    <span style="width:12px;height:12px;border-radius:50%;background:#2563eb;display:inline-block;"></span>
+                    <span style="font-size:13px;color:#6b7280;">Clicks</span>
+                    <span style="font-size:22px;font-weight:800;color:#111;" id="total-click-label">{{ number_format(array_sum($clicksData)) }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- DATE RANGE PICKER -->
+        <div style="display:flex;align-items:center;gap:8px;">
+            <div style="
+                display:flex;
+                align-items:center;
+                gap:8px;
+                padding:10px 14px;
+                border:1.5px solid #e5e7eb;
+                border-radius:12px;
+                background:#f9fafb;
+                cursor:pointer;
+                font-size:13px;
+                color:#374151;
+            " onclick="toggleDatePicker()">
+                <i class="fas fa-calendar-alt" style="color:#6b7280;"></i>
+                <span id="date-range-label">7 Hari Terakhir</span>
+                <i class="fas fa-chevron-down" style="color:#6b7280;font-size:11px;"></i>
+            </div>
+
+            <!-- DROPDOWN -->
+            <div id="date-picker-dropdown" style="
+                display:none;
+                position:absolute;
+                background:#fff;
+                border:1.5px solid #e5e7eb;
+                border-radius:14px;
+                padding:8px;
+                box-shadow:0 10px 40px rgba(0,0,0,.12);
+                z-index:1000;
+                min-width:200px;
+            ">
+                <div onclick="selectRange(7, '7 Hari Terakhir')" class="range-option" style="padding:10px 14px;border-radius:8px;cursor:pointer;font-size:13px;">7 Hari Terakhir</div>
+                <div onclick="selectRange(14, '14 Hari Terakhir')" class="range-option" style="padding:10px 14px;border-radius:8px;cursor:pointer;font-size:13px;">14 Hari Terakhir</div>
+                <div onclick="selectRange(30, '30 Hari Terakhir')" class="range-option" style="padding:10px 14px;border-radius:8px;cursor:pointer;font-size:13px;">30 Hari Terakhir</div>
+                <hr style="margin:6px 0;border:none;border-top:1px solid #f3f4f6;">
+                <div style="padding:10px 14px;font-size:13px;color:#374151;font-weight:600;">Pilih Tanggal:</div>
+                <div style="padding:0 14px 10px;display:flex;flex-direction:column;gap:8px;">
+                    <input type="date" id="date-start" style="padding:8px;border:1.5px solid #e5e7eb;border-radius:8px;font-size:12px;width:100%;">
+                    <input type="date" id="date-end" style="padding:8px;border:1.5px solid #e5e7eb;border-radius:8px;font-size:12px;width:100%;">
+                    <button onclick="applyCustomRange()" style="padding:8px;background:#2563eb;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;">
+                        Terapkan
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <!-- WRAPPER DENGAN HEIGHT -->
-    <div style="height:260px; width:100%;">
+    <!-- CANVAS -->
+    <div style="height:260px;width:100%;">
         <canvas id="clickChart"></canvas>
     </div>
 </div>
 
-<!-- ================= RINGKASAN ================= -->
-<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px;margin-bottom:32px;">
-    <div class="stat-card">
-        <h4>Total Views</h4>
-        <div class="stat-value">{{ number_format($totalClicks ?? 0) }}</div>
-    </div>
-    <div class="stat-card">
-        <h4>Total Klik Produk</h4>
-        <div class="stat-value">{{ number_format($totalProductViews ?? 0) }}</div>
-    </div>
-    <div class="stat-card">
-        <h4>Konversi</h4>
-        <div class="stat-value">0%</div>
-    </div>
-</div>
+
 
 <!-- ================= WITHDRAW MODAL ================= -->
 <div id="withdraw-modal"
@@ -454,42 +498,123 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
-document.addEventListener('DOMContentLoaded', function () {
+let chartInstance = null;
+
+// Data awal dari blade
+const initialLabels = @json($labels);
+const initialViews  = @json($data);          // data klik/views halaman
+const initialClicks = @json($clicksData);
+
+function buildChart(labels, views, clicks) {
     const ctx = document.getElementById('clickChart').getContext('2d');
 
-    new Chart(ctx, {
-        type: 'line',
+    if (chartInstance) chartInstance.destroy();
+
+    chartInstance = new Chart(ctx, {
+        type: 'bar',
         data: {
-            labels: @json($labels),
-            datasets: [{
-                label: 'Klik',
-                data: @json($data),
-                borderColor: '#2563eb',
-                backgroundColor: 'rgba(37,99,235,0.15)',
-                fill: true,
-                tension: 0.4,
-                pointRadius: 4,
-                pointHoverRadius: 6,
-                pointBackgroundColor: '#2563eb',
-            }]
+            labels,
+            datasets: [
+                {
+                    label: 'Views',
+                    data: views,
+                    backgroundColor: '#f59e0b',
+                    borderRadius: 6,
+                    barPercentage: 0.5,
+                    categoryPercentage: 0.6,
+                },
+                {
+                    label: 'Klik Produk',
+                    data: clicks,
+                    backgroundColor: '#2563eb',
+                    borderRadius: 6,
+                    barPercentage: 0.5,
+                    categoryPercentage: 0.6,
+                }
+            ]
         },
         options: {
             responsive: true,
-            maintainAspectRatio: true,
+            maintainAspectRatio: false,
             plugins: {
-                legend: { display: false }
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y}`
+                    }
+                }
             },
             scales: {
                 y: {
                     beginAtZero: true,
-                    ticks: {
-                        precision: 0
-                    }
+                    ticks: { precision: 0 },
+                    grid: { color: '#f3f4f6' }
+                },
+                x: {
+                    grid: { display: false }
                 }
             }
         }
     });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    buildChart(initialLabels, initialViews, initialClicks);
 });
+
+// ===== DATE PICKER =====
+function toggleDatePicker() {
+    const dd = document.getElementById('date-picker-dropdown');
+    dd.style.display = dd.style.display === 'none' ? 'block' : 'none';
+}
+
+document.addEventListener('click', e => {
+    const dd = document.getElementById('date-picker-dropdown');
+    if (!e.target.closest('#date-picker-dropdown') && !e.target.closest('[onclick="toggleDatePicker()"]')) {
+        dd.style.display = 'none';
+    }
+});
+
+function selectRange(days, label) {
+    document.getElementById('date-range-label').textContent = label;
+    document.getElementById('date-picker-dropdown').style.display = 'none';
+    fetchChartData(days, null, null);
+}
+
+function applyCustomRange() {
+    const start = document.getElementById('date-start').value;
+    const end   = document.getElementById('date-end').value;
+    if (!start || !end) return alert('Pilih tanggal mulai dan akhir');
+    document.getElementById('date-range-label').textContent = `${start} – ${end}`;
+    document.getElementById('date-picker-dropdown').style.display = 'none';
+    fetchChartData(null, start, end);
+}
+
+async function fetchChartData(days, start, end) {
+    const params = new URLSearchParams();
+    if (days)  params.append('days', days);
+    if (start) params.append('start', start);
+    if (end)   params.append('end', end);
+
+    try {
+        const res  = await fetch(`/dashboard/chart-data?${params}`);
+        const json = await res.json();
+
+        buildChart(json.labels, json.views, json.clicks);
+
+        document.getElementById('total-views-label').textContent  = json.total_views.toLocaleString('id-ID');
+        document.getElementById('total-clicks-label').textContent = json.total_clicks.toLocaleString('id-ID');
+    } catch(e) {
+        console.error(e);
+    }
+}
+
+// ===== RANGE OPTION HOVER =====
+document.querySelectorAll('.range-option').forEach(el => {
+    el.addEventListener('mouseenter', () => el.style.background = '#f3f4f6');
+    el.addEventListener('mouseleave', () => el.style.background = 'transparent');
+});
+//--------
 
 function openWithdrawModal() {
     const modal = document.getElementById('withdraw-modal');
