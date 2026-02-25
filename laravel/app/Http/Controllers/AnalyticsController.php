@@ -20,11 +20,9 @@ class AnalyticsController extends Controller
         $startDate = Carbon::now()->subDays(89)->startOfDay();
         $endDate   = Carbon::now()->endOfDay();
 
-        // ── Total Clicks (link clicks) ────────────────────────
-        $totalClicks = DB::table('clicks')
-            ->join('links', 'clicks.link_id', '=', 'links.id')
-            ->where('links.user_id', $user->id)
-            ->whereBetween('clicks.created_at', [$startDate, $endDate])
+        // ── Total Clicks (klik produk) ────────────────────────
+        $totalClicks = \App\Models\ProductViews::whereHas('product', fn($q) => $q->where('user_id', $user->id))
+            ->whereBetween('created_at', [$startDate, $endDate])
             ->count();
 
         // ── Total Profile Views ───────────────────────────────
@@ -74,12 +72,10 @@ class AnalyticsController extends Controller
 
     private function getClicksPerDay($userId, $startDate, $endDate)
     {
-        // Klik link per hari
-        $clicksData = DB::table('clicks')
-            ->join('links', 'clicks.link_id', '=', 'links.id')
-            ->where('links.user_id', $userId)
-            ->whereBetween('clicks.created_at', [$startDate, $endDate])
-            ->selectRaw('DATE(clicks.created_at) as date, COUNT(*) as clicks')
+        // Klik produk per hari (dari product_views)
+        $clicksData = \App\Models\ProductViews::whereHas('product', fn($q) => $q->where('user_id', $userId))
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->selectRaw('DATE(created_at) as date, COUNT(*) as clicks')
             ->groupBy('date')
             ->orderBy('date')
             ->pluck('clicks', 'date');
