@@ -3,6 +3,7 @@
         <h2 class="text-lg font-semibold text-gray-900">Hapus Akun</h2>
         <p class="mt-1 text-sm text-gray-500">
             Jika akun dihapus, seluruh data dan informasi akan dihapus secara permanen dan tidak dapat dipulihkan. Pastikan untuk mencadangkan data penting sebelum melanjutkan.
+        </p>
     </header>
 
     <button type="button" onclick="openDeleteModal()"
@@ -14,26 +15,30 @@
     </button>
 </section>
 
-{{-- BACKDROP --}}
+@push('modals')
+
+{{-- OVERLAY --}}
 <div id="deleteModalBackdrop"
-     class="fixed inset-0 z-[199] hidden"
-     style="background: rgba(15,23,42,0.5); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); opacity: 0; transition: opacity 0.2s ease;"
+     class="fixed inset-0 hidden"
+     style="z-index:9990; background:rgba(15,23,42,0.5); backdrop-filter:blur(5px); -webkit-backdrop-filter:blur(5px);
+            opacity:0; transition:opacity 0.2s ease;"
      onclick="closeDeleteModal()">
 </div>
 
 {{-- MODAL --}}
 <div id="deleteModal"
-     class="fixed inset-0 z-[200] hidden items-center justify-center p-4 pointer-events-none">
+     class="fixed inset-0 hidden"
+     style="z-index:9999; display:none; align-items:center; justify-content:center; padding:16px; pointer-events:none;">
 
     <div id="deleteModalCard"
          class="bg-white w-full max-w-md rounded-2xl pointer-events-auto"
-         style="opacity: 0; transform: translateY(20px); transition: opacity 0.2s ease, transform 0.2s ease;
-                box-shadow: 0 20px 60px -10px rgba(0,0,0,0.25), 0 0 0 1px rgba(0,0,0,0.05);">
+         style="opacity:0; transform:translateY(20px); transition:opacity 0.2s ease, transform 0.2s ease;
+                box-shadow:0 20px 60px -10px rgba(0,0,0,0.25), 0 0 0 1px rgba(0,0,0,0.05);">
 
         {{-- Header --}}
         <div class="px-6 pt-6 pb-5 flex items-start gap-4">
             <div class="flex-shrink-0 w-11 h-11 rounded-xl flex items-center justify-center"
-                 style="background: linear-gradient(135deg, #fee2e2, #fecaca);">
+                 style="background:linear-gradient(135deg,#fee2e2,#fecaca);">
                 <i class="fa-solid fa-trash-can text-red-500" style="font-size:15px;"></i>
             </div>
             <div class="flex-1 min-w-0">
@@ -54,7 +59,7 @@
 
         {{-- Warning banner --}}
         <div class="mx-6 mb-5 px-4 py-3 rounded-xl flex items-center gap-3"
-             style="background: #fff7ed; border: 1px solid #fed7aa;">
+             style="background:#fff7ed;border:1px solid #fed7aa;">
             <i class="fa-solid fa-triangle-exclamation text-orange-400 text-xs flex-shrink-0"></i>
             <p class="text-xs text-orange-700 leading-relaxed">
                 Akun yang dihapus <strong>tidak dapat dipulihkan</strong>.
@@ -79,7 +84,7 @@
                                placeholder-gray-400 transition-all duration-150
                                focus:outline-none focus:ring-2 focus:ring-red-400/25 focus:border-red-400
                                @error('password', 'userDeletion') border-red-300 bg-red-50 @else border-gray-200 bg-gray-50 focus:bg-white @enderror"
-                        style="font-size: 13.5px;">
+                        style="font-size:13.5px;">
                     <button type="button" onclick="toggleDelPass()" tabindex="-1"
                         class="absolute inset-y-0 right-0 flex items-center px-3.5 text-gray-400 hover:text-gray-600 transition-colors">
                         <i id="delPassIcon" class="fa-solid fa-eye text-xs"></i>
@@ -103,8 +108,8 @@
                 </button>
                 <button type="submit"
                     class="flex-1 py-2.5 text-sm font-semibold text-white rounded-xl transition-all duration-150 active:scale-95"
-                    style="background: linear-gradient(135deg, #ef4444, #dc2626);
-                           box-shadow: 0 4px 14px -2px rgba(220,38,38,0.4);">
+                    style="background:linear-gradient(135deg,#ef4444,#dc2626);
+                           box-shadow:0 4px 14px -2px rgba(220,38,38,0.4);">
                     <i class="fa-solid fa-trash-can text-xs mr-1.5"></i>
                     Hapus Akun
                 </button>
@@ -119,18 +124,15 @@ function openDeleteModal() {
     const modal    = document.getElementById('deleteModal');
     const card     = document.getElementById('deleteModalCard');
 
-    // Tampilkan elemen dulu
     backdrop.classList.remove('hidden');
     modal.classList.remove('hidden');
-    modal.style.display = 'flex';
+    modal.style.display      = 'flex';
+    modal.style.pointerEvents = 'auto';
 
-    // Force reflow agar transisi berjalan dari nilai awal
-    card.getBoundingClientRect();
-
-    // Animasi masuk
-    backdrop.style.opacity       = '1';
-    card.style.opacity           = '1';
-    card.style.transform         = 'translateY(0)';
+    card.getBoundingClientRect(); // force reflow
+    backdrop.style.opacity = '1';
+    card.style.opacity     = '1';
+    card.style.transform   = 'translateY(0)';
 
     document.body.style.overflow = 'hidden';
     setTimeout(() => document.getElementById('del_password').focus(), 200);
@@ -141,7 +143,6 @@ function closeDeleteModal() {
     const modal    = document.getElementById('deleteModal');
     const card     = document.getElementById('deleteModalCard');
 
-    // Animasi keluar
     backdrop.style.opacity = '0';
     card.style.opacity     = '0';
     card.style.transform   = 'translateY(20px)';
@@ -174,3 +175,4 @@ document.addEventListener('keydown', function(e) {
     document.addEventListener('DOMContentLoaded', () => openDeleteModal());
 @endif
 </script>
+@endpush

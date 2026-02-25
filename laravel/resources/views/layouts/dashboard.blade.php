@@ -14,8 +14,6 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
-    {{-- Font hanya untuk sidebar/nav, TIDAK global --}}
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <link rel="stylesheet" href="{{ asset('css/dashboard.css') }}">
@@ -24,10 +22,6 @@
     <link rel="stylesheet" href="{{ asset('css/darkmode.css') }}">
 
     <style>
-        /* ─── TOKENS ──────────────────────────────────────────────────────
-           Semua variabel di-scope ke .s-sidebar dan .m-topbar
-           TIDAK menyentuh body/html agar tidak ganggu halaman lain
-        ────────────────────────────────────────────────────────────────── */
         :root {
             --sidebar-w:          220px;
             --sidebar-bg:         #ffffff;
@@ -50,10 +44,7 @@
             --ease:               0.17s ease;
         }
 
-        /* ─── BACKGROUND HALAMAN (hanya wrapper) ─────────────────────── */
-        html, body {
-            min-height: 100vh;
-        }
+        html, body { min-height: 100vh; }
 
         .s-page-bg {
             position: fixed;
@@ -63,15 +54,11 @@
             z-index: -1;
         }
 
-        /* ─── SEMUA ELEMEN SIDEBAR PAKAI FONT SCOPED ─────────────────── */
-        .s-sidebar,
-        .m-topbar {
+        .s-sidebar, .m-topbar {
             font-family: var(--nav-font) !important;
             -webkit-font-smoothing: antialiased;
         }
-        
 
-        /* ─── SIDEBAR SHELL ───────────────────────────────────────────── */
         .s-sidebar {
             position: fixed;
             top: 0; left: 0;
@@ -83,33 +70,26 @@
             flex-direction: column;
             z-index: 200;
             overflow: hidden;
-            box-shadow:
-                1px 0 0 var(--sidebar-border),
-                6px 0 30px rgba(35, 86, 232, .05);
+            box-shadow: 1px 0 0 var(--sidebar-border), 6px 0 30px rgba(35, 86, 232, .05);
         }
 
-        /* ─── LOGO ────────────────────────────────────────────────────── */
         .s-logo {
-    padding: 25px 17px 13px;
-    border-bottom: 1px solid var(--sidebar-border);
-    flex-shrink: 0;
-    text-align: center;
-}
-
-        .s-logo a {
-            display: inline-flex;
-            align-items: center;
+            padding: 25px 17px 13px;
+            border-bottom: 1px solid var(--sidebar-border);
+            flex-shrink: 0;
+            text-align: center;
         }
+
+        .s-logo a { display: inline-flex; align-items: center; }
 
         .s-logo img {
-    height: 23px;
-    width: auto;
-    object-fit: contain;
-    display: block;
-    margin: 0 auto;
-}
+            height: 23px;
+            width: auto;
+            object-fit: contain;
+            display: block;
+            margin: 0 auto;
+        }
 
-        /* ─── SECTION LABEL ───────────────────────────────────────────── */
         .s-label {
             padding: 14px 17px 4px;
             font-size: 10px;
@@ -120,7 +100,6 @@
             font-family: var(--nav-font);
         }
 
-        /* ─── NAV SCROLL AREA ─────────────────────────────────────────── */
         .s-nav {
             flex: 1;
             padding: 4px 7px;
@@ -133,7 +112,6 @@
 
         .s-nav::-webkit-scrollbar { width: 0; }
 
-        /* ─── NAV ITEM ────────────────────────────────────────────────── */
         .s-nav-item {
             display: flex;
             align-items: center;
@@ -155,7 +133,6 @@
             line-height: 1;
         }
 
-        /* Icon bubble */
         .s-icon {
             width: 29px;
             height: 29px;
@@ -170,35 +147,13 @@
             transition: background var(--ease), color var(--ease);
         }
 
-        .s-nav-item:hover {
-            background: var(--nav-hover-bg);
-            color: var(--accent);
-        }
+        .s-nav-item:hover { background: var(--nav-hover-bg); color: var(--accent); }
+        .s-nav-item:hover .s-icon { background: var(--accent-light); color: var(--accent); }
+        .s-nav-item.active { background: var(--nav-active-bg); color: var(--nav-active-color); font-weight: 600; }
+        .s-nav-item.active .s-icon { background: var(--accent); color: #fff; }
 
-        .s-nav-item:hover .s-icon {
-            background: var(--accent-light);
-            color: var(--accent);
-        }
+        .s-divider { height: 1px; background: var(--sidebar-border); margin: 5px 7px; }
 
-        .s-nav-item.active {
-            background: var(--nav-active-bg);
-            color: var(--nav-active-color);
-            font-weight: 600;
-        }
-
-        .s-nav-item.active .s-icon {
-            background: var(--accent);
-            color: #fff;
-        }
-
-        /* ─── DIVIDER ─────────────────────────────────────────────────── */
-        .s-divider {
-            height: 1px;
-            background: var(--sidebar-border);
-            margin: 5px 7px;
-        }
-
-        /* ─── TEMA DROPDOWN ───────────────────────────────────────────── */
         .s-theme-toggle {
             display: flex;
             align-items: center;
@@ -214,37 +169,13 @@
             user-select: none;
         }
 
-        .s-theme-toggle:hover {
-            background: var(--nav-hover-bg);
-            color: var(--accent);
-        }
-
-        .s-theme-toggle:hover .s-icon {
-            background: var(--accent-light);
-            color: var(--accent);
-        }
-
-        .s-theme-toggle .s-left {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .s-arrow {
-            font-size: 9px;
-            color: #c4cdd9;
-            transition: transform var(--ease);
-        }
-
+        .s-theme-toggle:hover { background: var(--nav-hover-bg); color: var(--accent); }
+        .s-theme-toggle:hover .s-icon { background: var(--accent-light); color: var(--accent); }
+        .s-theme-toggle .s-left { display: flex; align-items: center; gap: 8px; }
+        .s-arrow { font-size: 9px; color: #c4cdd9; transition: transform var(--ease); }
         .s-theme-toggle.open .s-arrow { transform: rotate(180deg); }
 
-        .s-theme-menu {
-            display: none;
-            flex-direction: column;
-            margin: 2px 0 2px 38px;
-            gap: 1px;
-        }
-
+        .s-theme-menu { display: none; flex-direction: column; margin: 2px 0 2px 38px; gap: 1px; }
         .s-theme-menu.open { display: flex; }
 
         .s-theme-opt {
@@ -267,12 +198,7 @@
         .s-theme-opt:hover { background: var(--nav-hover-bg); color: var(--accent); }
         .s-theme-opt .check-icon { margin-left: auto; opacity: 0; font-size: 10px; }
 
-        /* ─── FOOTER (Profile + Logout) ───────────────────────────────── */
-        .s-footer {
-            flex-shrink: 0;
-            padding: 7px 7px 12px;
-            border-top: 1px solid var(--sidebar-border);
-        }
+        .s-footer { flex-shrink: 0; padding: 7px 7px 12px; border-top: 1px solid var(--sidebar-border); }
 
         .s-profile-link {
             display: flex;
@@ -296,12 +222,7 @@
             border: 1.5px solid #e4eaf4;
         }
 
-        .s-avatar img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
+        .s-avatar img { width: 100%; height: 100%; object-fit: cover; }
         .s-profile-info { flex: 1; min-width: 0; }
 
         .s-profile-name {
@@ -324,11 +245,7 @@
             text-overflow: ellipsis;
         }
 
-        .s-profile-arrow {
-            font-size: 9px;
-            color: #c8d4e0;
-            flex-shrink: 0;
-        }
+        .s-profile-arrow { font-size: 9px; color: #c8d4e0; flex-shrink: 0; }
 
         .s-logout {
             display: flex;
@@ -349,30 +266,12 @@
         }
 
         .s-logout:hover { background: var(--danger-light); }
+        .s-logout .s-icon { color: var(--danger); font-size: 12px; }
+        .s-logout:hover .s-icon { background: var(--danger-light); color: var(--danger); }
 
-        .s-logout .s-icon {
-            color: var(--danger);
-            font-size: 12px;
-        }
+        .main-wrap { margin-left: var(--sidebar-w); min-height: 100vh; }
+        .content-pad { padding: 28px 30px; min-height: 100vh; background: transparent; }
 
-        .s-logout:hover .s-icon {
-            background: var(--danger-light);
-            color: var(--danger);
-        }
-
-        /* ─── MAIN CONTENT AREA ───────────────────────────────────────── */
-        .main-wrap {
-            margin-left: var(--sidebar-w);
-            min-height: 100vh;
-        }
-
-        .content-pad {
-            padding: 28px 30px;
-            min-height: 100vh;
-            background: transparent;
-        }
-
-        /* ─── MOBILE TOPBAR ───────────────────────────────────────────── */
         .m-topbar {
             display: none;
             position: fixed;
@@ -408,7 +307,6 @@
 
         .m-hamburger:hover { background: var(--nav-hover-bg); }
 
-        /* ─── OVERLAY ─────────────────────────────────────────────────── */
         .s-overlay {
             display: none;
             position: fixed;
@@ -420,33 +318,17 @@
 
         .s-overlay.active { display: block; }
 
-        /* ─── RESPONSIVE ──────────────────────────────────────────────── */
         @media (max-width: 768px) {
             .m-topbar { display: flex; }
-
-            .s-sidebar {
-                transform: translateX(-100%);
-                transition: transform 0.24s cubic-bezier(.4,0,.2,1);
-            }
-
+            .s-sidebar { transform: translateX(-100%); transition: transform 0.24s cubic-bezier(.4,0,.2,1); }
             .s-sidebar.active { transform: translateX(0); }
-
-            .main-wrap {
-                margin-left: 0;
-                margin-top: 50px;
-            }
-
+            .main-wrap { margin-left: 0; margin-top: 50px; }
             .content-pad { padding: 16px 15px; }
         }
 
-        @media (max-width: 480px) {
-            .content-pad { padding: 13px 11px; }
-        }
+        @media (max-width: 480px) { .content-pad { padding: 13px 11px; } }
 
-        /* ─── FADE IN ─────────────────────────────────────────────────── */
-        body:not(.preload) .content-pad {
-            animation: pgFadeUp .3s ease both;
-        }
+        body:not(.preload) .content-pad { animation: pgFadeUp .3s ease both; }
 
         @keyframes pgFadeUp {
             from { opacity: 0; transform: translateY(7px); }
@@ -456,13 +338,9 @@
 </head>
 <body class="preload">
 
-<!-- Background layer -->
 <div class="s-page-bg"></div>
-
-<!-- Overlay -->
 <div class="s-overlay" id="sOverlay"></div>
 
-<!-- ── MOBILE TOPBAR ─────────────────────────────────────────── -->
 <div class="m-topbar">
     <button class="m-hamburger" id="mHamburger" aria-label="Buka menu">
         <i class="fas fa-bars"></i>
@@ -474,19 +352,14 @@
     </div>
 </div>
 
-<!-- ── SIDEBAR ───────────────────────────────────────────────── -->
 <aside class="s-sidebar" id="sSidebar">
-
-    <!-- Logo -->
     <div class="s-logo">
         <a href="{{ route('dashboard') }}">
             <img src="{{ asset('img/icon.png') }}" alt="Payou.id">
         </a>
     </div>
 
-    <!-- Nav -->
     <nav class="s-nav">
-
         <div class="s-label">Menu</div>
 
         <a href="{{ route('dashboard') }}"
@@ -522,7 +395,6 @@
         <div class="s-divider"></div>
         <div class="s-label">Preferensi</div>
 
-        <!-- Tema Dropdown -->
         <div>
             <div class="s-theme-toggle" id="sThemeToggle">
                 <div class="s-left">
@@ -542,10 +414,8 @@
                 </button>
             </div>
         </div>
-
     </nav>
 
-    <!-- Profile + Logout -->
     <div class="s-footer">
         <a href="{{ route('dashboard.profile') }}" class="s-profile-link">
             <div class="s-avatar">
@@ -574,10 +444,8 @@
             @csrf
         </form>
     </div>
-
 </aside>
 
-<!-- ── CONTENT ───────────────────────────────────────────────── -->
 <div class="main-wrap">
     <main class="content-pad">
         @yield('content')
@@ -586,6 +454,11 @@
 
 <script src="{{ asset('js/dashboard.js') }}"></script>
 <script src="{{ asset('js/darkmode.js') }}"></script>
+
+{{-- ⚠️  WAJIB ADA: Stack modal dari halaman child (links, dll.)
+     Posisi di sini (langsung child <body>) memastikan overlay
+     bisa menutupi sidebar (z-index: 200) tanpa terhalang stacking context --}}
+@stack('modals')
 
 <script>
 window.addEventListener('load', function () {
@@ -597,17 +470,8 @@ document.addEventListener('DOMContentLoaded', function () {
     const sidebar   = document.getElementById('sSidebar');
     const overlay   = document.getElementById('sOverlay');
 
-    function openSidebar()  {
-        sidebar.classList.add('active');
-        overlay.classList.add('active');
-        document.body.style.overflow = 'hidden';
-    }
-
-    function closeSidebar() {
-        sidebar.classList.remove('active');
-        overlay.classList.remove('active');
-        document.body.style.overflow = '';
-    }
+    function openSidebar()  { sidebar.classList.add('active'); overlay.classList.add('active'); document.body.style.overflow = 'hidden'; }
+    function closeSidebar() { sidebar.classList.remove('active'); overlay.classList.remove('active'); document.body.style.overflow = ''; }
 
     hamburger && hamburger.addEventListener('click', function (e) {
         e.stopPropagation();
@@ -617,20 +481,12 @@ document.addEventListener('DOMContentLoaded', function () {
     overlay && overlay.addEventListener('click', closeSidebar);
 
     sidebar.querySelectorAll('a.s-nav-item, a.s-profile-link, a.s-logout').forEach(function (el) {
-        el.addEventListener('click', function () {
-            if (window.innerWidth <= 768) closeSidebar();
-        });
+        el.addEventListener('click', function () { if (window.innerWidth <= 768) closeSidebar(); });
     });
 
-    window.addEventListener('resize', function () {
-        if (window.innerWidth > 768) closeSidebar();
-    });
+    window.addEventListener('resize', function () { if (window.innerWidth > 768) closeSidebar(); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeSidebar(); });
 
-    document.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape') closeSidebar();
-    });
-
-    // Theme dropdown
     var themeToggle = document.getElementById('sThemeToggle');
     var themeMenu   = document.getElementById('sThemeMenu');
 

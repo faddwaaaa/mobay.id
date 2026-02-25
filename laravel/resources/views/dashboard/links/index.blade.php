@@ -127,7 +127,7 @@
                     </div>
                 </div>
 
-                <!-- ADD BLOCK (hanya muncul jika ada halaman yang dipilih) -->
+                <!-- ADD BLOCK -->
                 @if($activePage)
                 <div class="p-6 border-b border-gray-200">
                     <h3 class="font-medium text-gray-900 mb-4">Tambahkan blok baru</h3>
@@ -139,7 +139,6 @@
                                 <span class="text-sm font-medium">Teks</span>
                             </div>
                         </button>
-                        
                         <button type="button" onclick="addBlock('image')" 
                                 class="border border-gray-300 rounded-xl p-4 hover:bg-green-50 hover:border-green-300 transition text-center">
                             <div class="flex flex-col items-center">
@@ -147,7 +146,6 @@
                                 <span class="text-sm font-medium">Gambar</span>
                             </div>
                         </button>
-                        
                         <button type="button" onclick="addBlock('link')" 
                                 class="border border-gray-300 rounded-xl p-4 hover:bg-purple-50 hover:border-purple-300 transition text-center">
                             <div class="flex flex-col items-center">
@@ -155,7 +153,6 @@
                                 <span class="text-sm font-medium">Link</span>
                             </div>
                         </button>
-                        
                         <button type="button" onclick="addBlock('video')" 
                                 class="border border-gray-300 rounded-xl p-4 hover:bg-red-50 hover:border-red-300 transition text-center">
                             <div class="flex flex-col items-center">
@@ -163,7 +160,6 @@
                                 <span class="text-sm font-medium">Video</span>
                             </div>
                         </button>
-                        
                         <button type="button" onclick="openProductModal()" 
                                 class="border border-gray-300 rounded-xl p-4 hover:bg-yellow-50 hover:border-yellow-300 transition text-center">
                             <div class="flex flex-col items-center">
@@ -220,38 +216,23 @@
                                                 </div>
                                                 
                                                 @if($block->type === 'text' && isset($block->content['text']))
-                                                    <p class="text-sm text-gray-600 line-clamp-2">
-                                                        {{ $block->content['text'] }}
-                                                    </p>
-                                                
+                                                    <p class="text-sm text-gray-600 line-clamp-2">{{ $block->content['text'] }}</p>
                                                 @elseif($block->type === 'link' && isset($block->content['title']))
-                                                    <p class="text-sm text-gray-600 font-medium">
-                                                        {{ $block->content['title'] }}
-                                                    </p>
-                                                    <p class="text-xs text-gray-400 truncate">
-                                                        {{ $block->content['url'] ?? '' }}
-                                                    </p>
-                                                
+                                                    <p class="text-sm text-gray-600 font-medium">{{ $block->content['title'] }}</p>
+                                                    <p class="text-xs text-gray-400 truncate">{{ $block->content['url'] ?? '' }}</p>
                                                 @elseif($block->type === 'image' && isset($block->content['image']))
                                                     <div class="flex items-center gap-3">
                                                         <img src="{{ asset('storage/' . $block->content['image']) }}" 
-                                                             class="w-16 h-16 object-cover rounded-lg"
-                                                             alt="Block image">
+                                                             class="w-16 h-16 object-cover rounded-lg" alt="Block image">
                                                     </div>
-                                                
                                                 @elseif($block->type === 'video' && isset($block->content['youtube_url']))
                                                     <div class="flex items-center gap-2">
                                                         <i class="fab fa-youtube text-red-500"></i>
-                                                        <p class="text-xs text-gray-600 truncate">
-                                                            {{ $block->content['youtube_url'] }}
-                                                        </p>
+                                                        <p class="text-xs text-gray-600 truncate">{{ $block->content['youtube_url'] }}</p>
                                                     </div>
                                                     @if(isset($block->content['youtube_id']))
-                                                        <p class="text-xs text-gray-400 mt-1">
-                                                            Video ID: {{ $block->content['youtube_id'] }}
-                                                        </p>
+                                                        <p class="text-xs text-gray-400 mt-1">Video ID: {{ $block->content['youtube_id'] }}</p>
                                                     @endif
-                                                
                                                 @elseif($block->type === 'product')
                                                     <div id="block-product-info-{{ $block->id }}"
                                                          data-product-id="{{ $block->product_id ?? '' }}">
@@ -270,7 +251,6 @@
                                         </div>
                                         
                                         <div class="flex items-center gap-1">
-                                            {{-- Tombol edit produk: buka modal ganti produk --}}
                                             @if($block->type === 'product')
                                                 <button type="button"
                                                         onclick="openReplaceProductModal({{ $block->id }})"
@@ -322,12 +302,8 @@
                 
                 <!-- PHONE FRAME -->
                 <div class="relative mx-auto" style="width:300px; margin-left: auto; margin-right: 0;">
-                    <!-- Phone Body -->
                     <div class="relative bg-gray-900 rounded-[36px] p-2 shadow-2xl">
-                        <!-- Notch -->
                         <div class="mb-4"></div>
-                        
-                        <!-- Screen -->
                         <div class="bg-white rounded-[28px] preview-screen-wrap">
                             <iframe
                                 id="preview"
@@ -335,8 +311,6 @@
                                 frameborder="0">
                             </iframe>
                         </div>
-                        
-                        <!-- Home Indicator -->
                         <div class="h-1 w-24 bg-gray-800 rounded-full mx-auto mt-2"></div>
                     </div>
                 </div>
@@ -345,51 +319,48 @@
     </div>
 </div>
 
-<!-- GLOBAL MODAL OVERLAY -->
-<div id="globalModalOverlay" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-[199] hidden transition-all duration-300"></div>
+@push('modals')
+{{-- ============================================================
+     MODAL SYSTEM — dirender langsung di <body> via @stack('modals')
+     sehingga overlay bisa menutupi sidebar (z-index: 200) sepenuhnya
+============================================================ --}}
+
+{{-- OVERLAY GLOBAL — z-index 9990 > sidebar z-index 200
+     Karena ini direct child <body>, tidak ada stacking context yang menghalangi --}}
+<div id="globalModalOverlay"
+     class="fixed inset-0 hidden"
+     style="z-index:9990; background:rgba(15,23,42,0.5); backdrop-filter:blur(5px); -webkit-backdrop-filter:blur(5px);"
+     onclick="closeAllModals()">
+</div>
 
 <!-- MODAL EDIT PAGE -->
-<div id="editPageModal" class="modal fixed inset-0 z-[200] flex items-center justify-center p-4 hidden">
-    <div class="modal-container bg-white rounded-xl shadow-lg w-full max-w-md relative">
-        <div class="p-6 border-b border-gray-200">
+<div id="editPageModal"
+     class="modal fixed inset-0 z-[9999] hidden items-center justify-center p-4"
+     style="pointer-events:none;">
+    <div class="modal-container bg-white rounded-xl shadow-2xl w-full max-w-md relative" style="pointer-events:auto;">
+        <div class="p-6 border-b border-gray-200 flex items-center justify-between">
             <h3 class="text-lg font-bold text-gray-900">Edit Halaman</h3>
-            <button type="button" onclick="closeEditModal()" 
-                    class="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
+            <button type="button" onclick="closeAllModals()" class="text-gray-400 hover:text-gray-600 w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 transition">
                 <i class="fas fa-times"></i>
             </button>
         </div>
-        
-        <form id="editPageForm" method="POST" action="{{ route('pages.update', ['page' => '__ID__']) }}">
+        <form id="editPageForm" method="POST" action="">
             @csrf
             @method('PUT')
             <div class="p-6">
                 <input type="hidden" name="page_id" id="edit_page_id">
                 <div class="mb-4">
-                    <label for="edit_page_title" class="block text-sm font-medium text-gray-700 mb-2">
-                        Judul Halaman
-                    </label>
-                    <input type="text" 
-                           id="edit_page_title" 
-                           name="title"
+                    <label for="edit_page_title" class="block text-sm font-medium text-gray-700 mb-2">Judul Halaman</label>
+                    <input type="text" id="edit_page_title" name="title"
                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                           placeholder="Masukkan nama page"
-                           required>
-                    <p class="text-xs text-gray-500 mt-2">
-                        Nama ini akan ditampilkan di dashboard dan URL
-                    </p>
+                           placeholder="Masukkan nama page" required>
+                    <p class="text-xs text-gray-500 mt-2">Nama ini akan ditampilkan di dashboard dan URL</p>
                 </div>
             </div>
-            
             <div class="p-6 border-t border-gray-200 bg-gray-50 rounded-b-xl">
                 <div class="flex justify-end gap-3">
-                    <button type="button" onclick="closeEditModal()"
-                            class="px-4 py-2 rounded-lg btn-secondary">
-                        Batal
-                    </button>
-                    <button type="submit"
-                            class="px-4 py-2 rounded-lg btn-primary">
-                        Simpan
-                    </button>
+                    <button type="button" onclick="closeAllModals()" class="px-4 py-2 rounded-lg btn-secondary">Batal</button>
+                    <button type="submit" class="px-4 py-2 rounded-lg btn-primary">Simpan</button>
                 </div>
             </div>
         </form>
@@ -397,45 +368,31 @@
 </div>
 
 <!-- MODAL ADD PAGE -->
-<div id="addPageModal" class="modal fixed inset-0 z-[200] flex items-center justify-center p-4 hidden">
-    <div class="modal-container bg-white rounded-xl shadow-lg w-full max-w-md relative">
-        <div class="p-6 border-b border-gray-200">
+<div id="addPageModal"
+     class="modal fixed inset-0 z-[9999] hidden items-center justify-center p-4"
+     style="pointer-events:none;">
+    <div class="modal-container bg-white rounded-xl shadow-2xl w-full max-w-md relative" style="pointer-events:auto;">
+        <div class="p-6 border-b border-gray-200 flex items-center justify-between">
             <h3 class="text-lg font-bold text-gray-900">Tambah Halaman Baru</h3>
-            <button type="button" onclick="closeAddModal()" 
-                    class="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
+            <button type="button" onclick="closeAllModals()" class="text-gray-400 hover:text-gray-600 w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 transition">
                 <i class="fas fa-times"></i>
             </button>
         </div>
-        
         <form id="addPageForm" action="{{ route('pages.store') }}" method="POST">
             @csrf
             <div class="p-6">
                 <div class="mb-4">
-                    <label for="new_page_title" class="block text-sm font-medium text-gray-700 mb-2">
-                        Judul Halaman
-                    </label>
-                    <input type="text" 
-                           id="new_page_title" 
-                           name="title"
+                    <label for="new_page_title" class="block text-sm font-medium text-gray-700 mb-2">Judul Halaman</label>
+                    <input type="text" id="new_page_title" name="title"
                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                           placeholder="Masukkan nama halaman baru"
-                           required>
-                    <p class="text-xs text-gray-500 mt-2">
-                        Nama ini akan ditampilkan di dashboard dan URL
-                    </p>
+                           placeholder="Masukkan nama halaman baru" required>
+                    <p class="text-xs text-gray-500 mt-2">Nama ini akan ditampilkan di dashboard dan URL</p>
                 </div>
             </div>
-            
             <div class="p-6 border-t border-gray-200 bg-gray-50 rounded-b-xl">
                 <div class="flex justify-end gap-3">
-                    <button type="button" onclick="closeAddModal()"
-                            class="px-4 py-2 rounded-lg btn-secondary">
-                        Batal
-                    </button>
-                    <button type="submit"
-                            class="px-4 py-2 rounded-lg btn-primary">
-                        Buat Halaman
-                    </button>
+                    <button type="button" onclick="closeAllModals()" class="px-4 py-2 rounded-lg btn-secondary">Batal</button>
+                    <button type="submit" class="px-4 py-2 rounded-lg btn-primary">Buat Halaman</button>
                 </div>
             </div>
         </form>
@@ -443,15 +400,16 @@
 </div>
 
 <!-- MODAL ADD/EDIT BLOCK -->
-<div id="blockModal" class="modal fixed inset-0 z-[200] flex items-center justify-center p-4 hidden">
-    <div class="bg-white rounded-xl shadow-lg w-full max-w-md relative">
+<div id="blockModal"
+     class="modal fixed inset-0 z-[9999] hidden items-center justify-center p-4"
+     style="pointer-events:none;">
+    <div class="bg-white rounded-xl shadow-2xl w-full max-w-md relative" style="pointer-events:auto;">
         <div class="p-6 border-b flex justify-between items-center">
             <h3 id="blockModalTitle" class="font-bold text-lg">Tambah Blok</h3>
-            <button type="button" onclick="closeBlockModal()" class="text-gray-400 hover:text-gray-600">
+            <button type="button" onclick="closeAllModals()" class="text-gray-400 hover:text-gray-600 w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 transition">
                 <i class="fas fa-times"></i>
             </button>
         </div>
-
         <form id="blockForm" class="p-6 space-y-4">
             @csrf
             <input type="hidden" id="blockType">
@@ -460,21 +418,16 @@
             <input type="hidden" id="selectedProductId" name="product_id">
             <input type="hidden" id="currentPageId" value="{{ $activePage->id ?? '' }}">
 
-            <!-- TEXT -->
             <div id="textField" class="hidden">
                 <label class="block text-sm font-medium mb-1">Teks</label>
                 <textarea id="textContent" class="w-full border rounded-lg p-3" rows="4" placeholder="Masukkan teks Anda..."></textarea>
             </div>
-
-            <!-- LINK -->
             <div id="linkField" class="hidden">
                 <label class="block text-sm font-medium mb-1">Judul</label>
                 <input id="linkTitle" class="w-full border rounded-lg p-2 mb-3" placeholder="Nama link">
                 <label class="block text-sm font-medium mb-1">URL</label>
                 <input id="linkUrl" class="w-full border rounded-lg p-2" placeholder="https://example.com">
             </div>
-
-            <!-- YOUTUBE -->
             <div id="videoField" class="hidden">
                 <label class="block text-sm font-medium mb-1">URL Video</label>
                 <input id="youtubeUrl" class="w-full border rounded-lg p-2" placeholder="https://youtube.com/watch?v=...">
@@ -486,8 +439,6 @@
                     </div>
                 </div>
             </div>
-
-            <!-- IMAGE -->
             <div id="imageField" class="hidden">
                 <label class="block text-sm font-medium mb-1">Upload Gambar</label>
                 <input type="file" id="imageFile" accept="image/*" class="w-full border rounded-lg p-2">
@@ -499,9 +450,7 @@
             </div>
 
             <div class="flex justify-end gap-3 pt-4">
-                <button type="button" onclick="closeBlockModal()" class="px-4 py-2 rounded-lg btn-secondary">
-                    Batal
-                </button>
+                <button type="button" onclick="closeAllModals()" class="px-4 py-2 rounded-lg btn-secondary">Batal</button>
                 <button type="submit" class="px-4 py-2 rounded-lg btn-primary">
                     <span id="submitBtnText">Simpan</span>
                 </button>
@@ -510,46 +459,37 @@
     </div>
 </div>
 
-<!-- ============================================================
-     MODAL PRODUK (dipakai untuk Tambah & Ganti Produk)
-============================================================ -->
-<div id="productModal" class="modal fixed inset-0 z-[200] flex items-center justify-center p-4 hidden">
-    <div class="bg-white rounded-xl w-[450px] relative shadow-xl overflow-hidden">
-
-        {{-- Header --}}
+<!-- MODAL PRODUK -->
+<div id="productModal"
+     class="modal fixed inset-0 z-[9999] hidden items-center justify-center p-4"
+     style="pointer-events:none;">
+    <div class="bg-white rounded-xl w-[450px] relative shadow-2xl overflow-hidden" style="pointer-events:auto;">
         <div class="p-6 pb-0">
             <button type="button" onclick="closeProductModal()" 
-                    class="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
+                    class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 transition">
                 <i class="fas fa-times"></i>
             </button>
             <h2 id="productModalTitle" class="text-lg font-bold mb-4">Pilih Produk</h2>
 
-            {{-- Tab Filter --}}
             <div class="flex gap-1 border-b border-gray-200">
-                <button type="button" id="prodTabAll"
-                        onclick="switchProdTab('all')"
+                <button type="button" id="prodTabAll" onclick="switchProdTab('all')"
                         class="prod-tab-btn px-4 py-2 text-sm font-semibold rounded-t-lg transition-all duration-150
                                text-blue-600 border-b-2 border-blue-600 bg-blue-50 mb-[-1px]">
                     Semua
                 </button>
-                <button type="button" id="prodTabUmkm"
-                        onclick="switchProdTab('umkm')"
+                <button type="button" id="prodTabUmkm" onclick="switchProdTab('umkm')"
                         class="prod-tab-btn px-4 py-2 text-sm font-semibold rounded-t-lg transition-all duration-150
-                               text-gray-500 border-b-2 border-transparent mb-[-1px] hover:text-gray-700 hover:bg-gray-50
-                               flex items-center gap-1.5">
+                               text-gray-500 border-b-2 border-transparent mb-[-1px] hover:text-gray-700 hover:bg-gray-50 flex items-center gap-1.5">
                     <i class="fas fa-box text-xs"></i> Fisik
                 </button>
-                <button type="button" id="prodTabDigital"
-                        onclick="switchProdTab('digital')"
+                <button type="button" id="prodTabDigital" onclick="switchProdTab('digital')"
                         class="prod-tab-btn px-4 py-2 text-sm font-semibold rounded-t-lg transition-all duration-150
-                               text-gray-500 border-b-2 border-transparent mb-[-1px] hover:text-gray-700 hover:bg-gray-50
-                               flex items-center gap-1.5">
+                               text-gray-500 border-b-2 border-transparent mb-[-1px] hover:text-gray-700 hover:bg-gray-50 flex items-center gap-1.5">
                     <i class="fas fa-download text-xs"></i> Digital
                 </button>
             </div>
         </div>
 
-        {{-- Product List --}}
         <div class="p-6 pt-4">
             @if($products->count() > 0)
                 <div class="space-y-3 max-h-[360px] overflow-y-auto pr-1" id="productListContainer">
@@ -569,9 +509,7 @@
                                 <h4 class="font-semibold text-sm">{{ $product->title }}</h4>
                                 <p class="text-xs text-gray-600">Rp {{ number_format($product->price,0,',','.') }}</p>
                                 <span class="inline-block mt-0.5 px-1.5 py-0.5 rounded text-[10px] font-medium
-                                             {{ ($product->product_type ?? 'umkm') === 'digital'
-                                                ? 'bg-blue-50 text-blue-600'
-                                                : 'bg-orange-50 text-orange-600' }}">
+                                             {{ ($product->product_type ?? 'umkm') === 'digital' ? 'bg-blue-50 text-blue-600' : 'bg-orange-50 text-orange-600' }}">
                                     {{ ($product->product_type ?? 'umkm') === 'digital' ? 'Digital' : 'Fisik' }}
                                 </span>
                             </div>
@@ -583,8 +521,6 @@
                         </button>
                     </div>
                     @endforeach
-
-                    {{-- Empty state per tab (tersembunyi, ditampilkan via JS) --}}
                     <div id="prodEmptyState" class="hidden text-center py-10">
                         <div class="w-14 h-14 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-3">
                             <i class="fas fa-box-open text-2xl text-gray-300"></i>
@@ -604,7 +540,6 @@
             @endif
         </div>
 
-        {{-- Footer --}}
         @if($products->count() > 0)
         <div class="px-6 py-4 border-t border-gray-100">
             <a href="{{ route('products.manage', ['tambah' => 1, 'redirect' => 'builder']) }}" 
@@ -618,37 +553,56 @@
 </div>
 
 <style>
-.page-item { transition: all 0.2s; }
+/* ============================================================
+   MODAL STYLES — Tidak ada filter/blur pada elemen halaman.
+   Blur hanya via overlay backdrop-filter.
+============================================================ */
 
-#preview-sticky-wrapper { position: relative; }
-
+/* Default: modal tersembunyi */
 .modal { display: none; }
-.modal:not(.hidden) { display: flex; }
 
-#globalModalOverlay { pointer-events: auto; }
-
-body.modal-open #main-content,
-body.modal-open .navbar,
-body.modal-open .sidebar,
-body.modal-open .dashboard-sidebar,
-body.modal-open header,
-body.modal-open footer {
-    filter: blur(3px);
-    transition: filter 0.3s ease;
-    pointer-events: none;
+/* Saat aktif: tampil sebagai flex */
+.modal.is-open {
+    display: flex !important;
 }
 
-.modal, .modal *, #globalModalOverlay {
-    filter: none !important;
-    pointer-events: auto !important;
+/* Animasi masuk untuk modal container */
+.modal.is-open > div {
+    animation: modalSlideIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
-
-.modal-container { animation: modalSlideIn 0.3s ease-out; }
 
 @keyframes modalSlideIn {
-    from { opacity: 0; transform: translateY(-10px); }
-    to   { opacity: 1; transform: translateY(0); }
+    from { opacity: 0; transform: translateY(-12px) scale(0.97); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
 }
+
+/* Utility */
+.page-item { transition: all 0.2s; }
+
+.btn-primary {
+    background-color: #2563eb;
+    color: white;
+    transition: all 0.2s ease;
+    border: none;
+}
+.btn-primary:hover {
+    background-color: #1d4ed8;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(37,99,235,0.28);
+}
+
+.btn-secondary {
+    background-color: white;
+    border: 1px solid #d1d5db;
+    color: #374151;
+    transition: all 0.2s ease;
+}
+.btn-secondary:hover {
+    background-color: #f9fafb;
+}
+
+.sortable-ghost { opacity: 0.4; background: #dbeafe; }
+.sortable-drag  { opacity: 0.8; transform: rotate(2deg); }
 
 .line-clamp-2 {
     display: -webkit-box;
@@ -657,33 +611,18 @@ body.modal-open footer {
     overflow: hidden;
 }
 
-.btn-primary {
-    background-color: #2563eb; color: white;
-    transition: all 0.2s ease; border: none;
-}
-.btn-primary:hover {
-    background-color: #1d4ed8;
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(37,99,235,0.3);
-}
-
-.btn-secondary {
-    background-color: white; border: 1px solid #d1d5db;
-    color: #374151; transition: all 0.2s ease;
-}
-.btn-secondary:hover {
-    background-color: #f9fafb;
-    transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(0,0,0,0.08);
-}
-
-.sortable-ghost { opacity: 0.4; background: #dbeafe; }
-.sortable-drag  { opacity: 0.8; transform: rotate(2deg); }
-
 .preview-screen-wrap { overflow: hidden; position: relative; border-radius: 28px; }
 .preview-screen-wrap iframe {
     display: block; width: calc(100% + 17px); height: 490px;
     border: none; background: white;
+}
+
+/* Sticky preview */
+@media (min-width: 1024px) {
+    #preview-sticky-wrapper {
+        position: sticky;
+        top: 24px;
+    }
 }
 </style>
 
@@ -696,7 +635,6 @@ function loadBlockProductInfos() {
     document.querySelectorAll('[id^="block-product-info-"]').forEach(container => {
         const productId = container.getAttribute('data-product-id');
         if (!productId) return;
-
         fetch(`/api/product/${productId}`)
             .then(r => r.json())
             .then(prod => {
@@ -704,28 +642,21 @@ function loadBlockProductInfos() {
                 const discount = prod.discount ?? null;
                 const final    = (discount && discount > 0 && discount < price) ? discount : price;
                 const hasDis   = final < price;
-
-                const imgHtml = prod.image_url
+                const imgHtml  = prod.image_url
                     ? `<img src="${prod.image_url}" class="w-12 h-12 object-cover rounded-lg" alt="">`
                     : `<div style="width:48px;height:48px;background:#fefce8;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
                            <i class="fas fa-box" style="color:#ca8a04;font-size:14px;"></i>
                        </div>`;
-
                 const priceHtml = hasDis
                     ? `<span style="font-size:11px;color:#2563eb;font-weight:600;">Rp ${fmtNum(final)}</span>
                        <span style="font-size:10px;color:#9ca3af;text-decoration:line-through;margin-left:3px;">Rp ${fmtNum(price)}</span>`
                     : `<span style="font-size:11px;color:#2563eb;font-weight:600;">Rp ${fmtNum(final)}</span>`;
-
                 container.innerHTML = `
                     <div style="display:flex;align-items:center;gap:10px;">
                         <div style="flex-shrink:0;">${imgHtml}</div>
                         <div style="min-width:0;">
-                            <p style="font-size:13px;font-weight:500;color:#111827;
-                                       white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-                                       max-width:180px;">${escHtml(prod.title)}</p>
-                            <div style="display:flex;align-items:center;gap:4px;margin-top:2px;">
-                                ${priceHtml}
-                            </div>
+                            <p style="font-size:13px;font-weight:500;color:#111827;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px;">${escHtml(prod.title)}</p>
+                            <div style="display:flex;align-items:center;gap:4px;margin-top:2px;">${priceHtml}</div>
                         </div>
                     </div>`;
             })
@@ -735,10 +666,7 @@ function loadBlockProductInfos() {
     });
 }
 
-function fmtNum(n) {
-    return new Intl.NumberFormat('id-ID').format(Math.round(n));
-}
-
+function fmtNum(n) { return new Intl.NumberFormat('id-ID').format(Math.round(n)); }
 function escHtml(str) {
     if (!str) return '';
     return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -747,28 +675,48 @@ function escHtml(str) {
 // ============================================
 // GLOBAL VARIABLES
 // ============================================
-let currentPageId  = {{ $activePage->id ?? 'null' }};
+let currentPageId     = {{ $activePage->id ?? 'null' }};
 let _replacingBlockId = null;
+
+// ============================================
+// MODAL MANAGEMENT
+// ============================================
+function showModal(modalId) {
+    closeAllModals();
+
+    const overlay = document.getElementById('globalModalOverlay');
+    const modal   = document.getElementById(modalId);
+
+    overlay.classList.remove('hidden');
+    modal.classList.add('is-open');
+
+    // Kunci scroll halaman, TANPA filter/blur
+    document.body.style.overflow = 'hidden';
+}
+
+function closeAllModals() {
+    document.querySelectorAll('.modal.is-open').forEach(m => m.classList.remove('is-open'));
+    document.getElementById('globalModalOverlay').classList.add('hidden');
+    document.body.style.overflow = '';
+}
 
 // ============================================
 // PRODUCT TAB FILTER
 // ============================================
 function switchProdTab(tab) {
-    // Update style tiap tab
     const tabs = { all: 'prodTabAll', umkm: 'prodTabUmkm', digital: 'prodTabDigital' };
     Object.entries(tabs).forEach(([key, id]) => {
         const el = document.getElementById(id);
         if (!el) return;
         if (key === tab) {
-            el.classList.add('text-blue-600', 'border-blue-600', 'bg-blue-50');
-            el.classList.remove('text-gray-500', 'border-transparent');
+            el.classList.add('text-blue-600','border-blue-600','bg-blue-50');
+            el.classList.remove('text-gray-500','border-transparent');
         } else {
-            el.classList.remove('text-blue-600', 'border-blue-600', 'bg-blue-50');
-            el.classList.add('text-gray-500', 'border-transparent');
+            el.classList.remove('text-blue-600','border-blue-600','bg-blue-50');
+            el.classList.add('text-gray-500','border-transparent');
         }
     });
 
-    // Filter item
     const items = document.querySelectorAll('#productListContainer .product-item');
     let visibleCount = 0;
     items.forEach(item => {
@@ -778,7 +726,6 @@ function switchProdTab(tab) {
         if (show) visibleCount++;
     });
 
-    // Empty state
     const emptyState = document.getElementById('prodEmptyState');
     const emptyText  = document.getElementById('prodEmptyText');
     if (emptyState) {
@@ -786,7 +733,7 @@ function switchProdTab(tab) {
             emptyState.classList.remove('hidden');
             if (emptyText) emptyText.textContent =
                 tab === 'umkm' ? 'Tidak ada produk fisik' :
-                tab === 'digital'  ? 'Tidak ada produk digital' : 'Tidak ada produk';
+                tab === 'digital' ? 'Tidak ada produk digital' : 'Tidak ada produk';
         } else {
             emptyState.classList.add('hidden');
         }
@@ -811,30 +758,13 @@ function showBuilderToast(msg, type) {
     }
     toast.textContent = msg;
     toast.style.background = type === 'success' ? '#16a34a' : '#dc2626';
-    toast.style.opacity = '1';
-    toast.style.transform = 'translateX(-50%) translateY(0)';
+    toast.style.opacity    = '1';
+    toast.style.transform  = 'translateX(-50%) translateY(0)';
     clearTimeout(toast._t);
     toast._t = setTimeout(() => {
-        toast.style.opacity = '0';
+        toast.style.opacity   = '0';
         toast.style.transform = 'translateX(-50%) translateY(80px)';
     }, 3000);
-}
-
-// ============================================
-// MODAL MANAGEMENT
-// ============================================
-function showModal(modalId) {
-    closeAllModals();
-    const overlay = document.getElementById('globalModalOverlay');
-    overlay.classList.remove('hidden');
-    document.body.classList.add('modal-open');
-    document.getElementById(modalId).classList.remove('hidden');
-}
-
-function closeAllModals() {
-    document.querySelectorAll('.modal').forEach(m => m.classList.add('hidden'));
-    document.getElementById('globalModalOverlay').classList.add('hidden');
-    document.body.classList.remove('modal-open');
 }
 
 // ============================================
@@ -849,23 +779,16 @@ function showAddPageForm() {
     setTimeout(() => document.getElementById('new_page_title').focus(), 100);
 }
 
-function closeAddModal() { closeAllModals(); }
-
 function showEditModal(pageId, pageTitle) {
-    const form = document.getElementById('editPageForm');
-    document.getElementById('edit_page_id').value = pageId;
+    document.getElementById('edit_page_id').value    = pageId;
     document.getElementById('edit_page_title').value = pageTitle;
-    form.action = `/pages/${pageId}`;
+    document.getElementById('editPageForm').action   = `/pages/${pageId}`;
     showModal('editPageModal');
     setTimeout(() => document.getElementById('edit_page_title').focus(), 100);
 }
 
-function closeEditModal() { closeAllModals(); }
-
 function confirmDelete(button) {
-    if (confirm('Yakin ingin menghapus halaman ini?')) {
-        button.closest('form').submit();
-    }
+    if (confirm('Yakin ingin menghapus halaman ini?')) button.closest('form').submit();
 }
 
 // ============================================
@@ -875,15 +798,14 @@ function addBlock(type) {
     if (!currentPageId) { alert('Silakan pilih halaman terlebih dahulu'); return; }
     document.getElementById('blockModalTitle').textContent = 'Tambah Blok ' + getBlockTypeName(type);
     document.getElementById('blockType').value = type;
-    document.getElementById('isEdit').value = '0';
-    document.getElementById('blockId').value = '';
+    document.getElementById('isEdit').value    = '0';
+    document.getElementById('blockId').value   = '';
     document.getElementById('submitBtnText').textContent = 'Simpan';
 
     ['textField','linkField','videoField','imageField','currentImage'].forEach(id =>
         document.getElementById(id).classList.add('hidden'));
-
     ['textContent','linkTitle','linkUrl','youtubeUrl','imageFile'].forEach(id =>
-        document.getElementById(id).value = '');
+        { const el = document.getElementById(id); if (el) el.value = ''; });
     document.getElementById('youtubePreview').classList.add('hidden');
 
     if (type === 'text')  document.getElementById('textField').classList.remove('hidden');
@@ -897,8 +819,8 @@ function addBlock(type) {
 function editBlock(blockId, type, content) {
     document.getElementById('blockModalTitle').textContent = 'Edit Blok ' + getBlockTypeName(type);
     document.getElementById('blockType').value = type;
-    document.getElementById('isEdit').value = '1';
-    document.getElementById('blockId').value = blockId;
+    document.getElementById('isEdit').value    = '1';
+    document.getElementById('blockId').value   = blockId;
     document.getElementById('submitBtnText').textContent = 'Update';
 
     ['textField','linkField','videoField','imageField','currentImage'].forEach(id =>
@@ -947,13 +869,8 @@ function deleteBlock(blockId) {
     .catch(() => alert('Terjadi kesalahan saat menghapus blok'));
 }
 
-function closeBlockModal() {
-    document.getElementById('blockForm').reset();
-    closeAllModals();
-}
-
 // ============================================
-// YOUTUBE FUNCTIONS
+// YOUTUBE
 // ============================================
 function extractYoutubeId(url) {
     if (!url) return null;
@@ -974,7 +891,7 @@ function openProductModal() {
     if (!currentPageId) { alert('Silakan pilih halaman terlebih dahulu'); return; }
     _replacingBlockId = null;
     document.getElementById('productModalTitle').textContent = 'Pilih Produk';
-    switchProdTab('all'); // reset ke tab Semua setiap kali buka
+    switchProdTab('all');
     showModal('productModal');
 }
 
@@ -1002,7 +919,6 @@ function selectProduct(productId, productData) {
         formData.append('page_id', currentPageId);
 
         const blockId = _replacingBlockId;
-
         fetch(`/blocks/${blockId}`, {
             method: 'POST',
             headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
@@ -1024,7 +940,6 @@ function selectProduct(productId, productData) {
             }
         })
         .catch(() => alert('Terjadi kesalahan saat mengganti produk'));
-
     } else {
         const formData = new FormData();
         formData.append('page_id', currentPageId);
@@ -1065,9 +980,9 @@ document.getElementById('blockForm').addEventListener('submit', function(e) {
     e.preventDefault();
     if (!currentPageId) { alert('Silakan pilih halaman terlebih dahulu'); return; }
 
-    const type   = document.getElementById('blockType').value;
-    const isEdit = document.getElementById('isEdit').value === '1';
-    const blockId= document.getElementById('blockId').value;
+    const type    = document.getElementById('blockType').value;
+    const isEdit  = document.getElementById('isEdit').value === '1';
+    const blockId = document.getElementById('blockId').value;
     const formData = new FormData();
 
     formData.append('page_id', currentPageId);
@@ -1106,22 +1021,19 @@ document.getElementById('blockForm').addEventListener('submit', function(e) {
 
     fetch(url, { method: 'POST', headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' }, body: formData })
     .then(r => r.json())
-    .then(data => { if (data.success) { closeBlockModal(); location.reload(); } else alert('Gagal menyimpan blok'); })
+    .then(data => { if (data.success) { closeAllModals(); location.reload(); } else alert('Gagal menyimpan blok'); })
     .catch(() => alert('Terjadi kesalahan saat menyimpan blok'));
 });
 
 // ============================================
-// MODAL CLOSE HANDLERS
+// KEYBOARD & INIT
 // ============================================
-document.addEventListener('click', e => { if (e.target.id === 'globalModalOverlay') closeAllModals(); });
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeAllModals(); });
 
-// ============================================
-// INITIALIZATION
-// ============================================
 document.addEventListener('DOMContentLoaded', function() {
     loadBlockProductInfos();
 
+    // Sortable
     const blockList = document.getElementById('blockList');
     if (blockList) {
         new Sortable(blockList, {
@@ -1141,6 +1053,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // YouTube preview
     const youtubeInput = document.getElementById('youtubeUrl');
     if (youtubeInput) {
         youtubeInput.addEventListener('input', function() {
@@ -1154,43 +1067,11 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
-});
 
-// ============================================
-// STICKY PREVIEW
-// ============================================
-document.addEventListener('DOMContentLoaded', function() {
-    var wrapper = document.getElementById('preview-sticky-wrapper');
-    if (!wrapper || window.innerWidth < 1024) return;
-    var blockedByOverflow = false;
-    var el = wrapper.parentElement;
-    while (el && el !== document.body) {
-        var s = window.getComputedStyle(el);
-        if (/(auto|scroll|hidden)/.test(s.overflow + s.overflowY)) { blockedByOverflow = true; break; }
-        el = el.parentElement;
-    }
-    if (blockedByOverflow) {
-        wrapper.style.position = 'fixed'; wrapper.style.top = '24px';
-        wrapper.style.right = '24px'; wrapper.style.width = '340px'; wrapper.style.zIndex = '50';
-    } else {
-        wrapper.style.position = 'sticky'; wrapper.style.top = '24px';
-    }
-});
-
-window.addEventListener('resize', function() {
-    var wrapper = document.getElementById('preview-sticky-wrapper');
-    if (!wrapper) return;
-    if (window.innerWidth < 1024) {
-        wrapper.style.position = wrapper.style.top = wrapper.style.right = wrapper.style.width = wrapper.style.zIndex = '';
-    }
-});
-
-// ============================================
-// SESSION HANDLER
-// ============================================
-var shouldOpenProductModal = {{ session('openProductModal') ? 'true' : 'false' }};
-document.addEventListener("DOMContentLoaded", function() {
+    // Auto-open product modal dari session
+    var shouldOpenProductModal = {{ session('openProductModal') ? 'true' : 'false' }};
     if (shouldOpenProductModal && currentPageId) setTimeout(openProductModal, 500);
 });
 </script>
+@endpush
 @endsection

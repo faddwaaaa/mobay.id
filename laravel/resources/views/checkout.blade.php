@@ -19,9 +19,6 @@
             padding: 20px 16px 40px;
         }
 
-        /* =========================================================
-           HEADER / NAVBAR
-        ========================================================= */
         .top-bar {
             max-width: 500px;
             margin: 0 auto 20px;
@@ -58,9 +55,6 @@
             color: #111827;
         }
 
-        /* =========================================================
-           CARD
-        ========================================================= */
         .card {
             max-width: 500px;
             margin: 0 auto 16px;
@@ -84,9 +78,6 @@
             padding: 16px;
         }
 
-        /* =========================================================
-           PRODUCT SUMMARY
-        ========================================================= */
         .product-row {
             display: flex;
             gap: 14px;
@@ -182,9 +173,6 @@
             border-radius: 4px;
         }
 
-        /* =========================================================
-           SELLER INFO
-        ========================================================= */
         .seller-row {
             display: flex;
             align-items: center;
@@ -225,9 +213,6 @@
             color: #111827;
         }
 
-        /* =========================================================
-           FORM
-        ========================================================= */
         .form-group {
             margin-bottom: 14px;
         }
@@ -289,7 +274,6 @@
             margin-top: 4px;
         }
 
-        /* Stock info */
         .stock-info {
             display: flex;
             align-items: center;
@@ -307,6 +291,110 @@
         .stock-dot.in-stock { background: #16a34a; }
         .stock-dot.low-stock { background: #f59e0b; }
         .stock-dot.out-stock { background: #ef4444; }
+
+        /* =========================================================
+           QTY STEPPER
+        ========================================================= */
+        .qty-stepper-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 6px 8px;
+            gap: 8px;
+        }
+
+        .qty-info {
+            font-size: 12px;
+            color: #6b7280;
+        }
+
+        .qty-controls {
+            display: flex;
+            align-items: center;
+            gap: 0;
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .qty-btn {
+            width: 36px;
+            height: 36px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #374151;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.15s;
+            flex-shrink: 0;
+            user-select: none;
+        }
+
+        .qty-btn:hover:not(:disabled) {
+            background: #eff6ff;
+            color: #2563eb;
+        }
+
+        .qty-btn:active:not(:disabled) {
+            background: #dbeafe;
+            transform: scale(0.92);
+        }
+
+        .qty-btn:disabled {
+            color: #d1d5db;
+            cursor: not-allowed;
+        }
+
+        /* Input qty yang bisa diklik & diketik */
+        .qty-input-editable {
+            min-width: 52px;
+            width: 52px;
+            text-align: center;
+            font-size: 15px;
+            font-weight: 700;
+            color: #111827;
+            border: none !important;
+            border-left: 1px solid #e5e7eb !important;
+            border-right: 1px solid #e5e7eb !important;
+            border-radius: 0 !important;
+            padding: 0 4px !important;
+            height: 36px;
+            line-height: 36px;
+            background: #fff;
+            box-shadow: none !important;
+            outline: none;
+            cursor: text;
+            transition: background 0.15s, color 0.15s;
+            -moz-appearance: textfield;
+        }
+
+        .qty-input-editable::-webkit-inner-spin-button,
+        .qty-input-editable::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .qty-input-editable:focus {
+            background: #eff6ff !important;
+            color: #2563eb !important;
+            box-shadow: none !important;
+            border-color: transparent !important;
+            border-left-color: #bfdbfe !important;
+            border-right-color: #bfdbfe !important;
+        }
+
+        /* Hidden input untuk submit */
+        input#qty {
+            display: none;
+        }
 
         /* =========================================================
            ORDER SUMMARY
@@ -334,9 +422,6 @@
             font-size: 18px;
         }
 
-        /* =========================================================
-           CTA BUTTON
-        ========================================================= */
         .btn-pay {
             width: 100%;
             max-width: 500px;
@@ -379,9 +464,6 @@
             to { transform: rotate(360deg); }
         }
 
-        /* =========================================================
-           ALERT
-        ========================================================= */
         .alert {
             max-width: 500px;
             margin: 0 auto 16px;
@@ -405,9 +487,6 @@
             color: #92400e;
         }
 
-        /* =========================================================
-           OUT OF STOCK
-        ========================================================= */
         .out-of-stock-overlay {
             text-align: center;
             padding: 32px 20px;
@@ -430,9 +509,6 @@
             color: #6b7280;
         }
 
-        /* =========================================================
-           SECURE BADGE
-        ========================================================= */
         .secure-note {
             max-width: 500px;
             margin: 12px auto 0;
@@ -464,7 +540,6 @@
         </div>
     @else
 
-    {{-- Info produk digital --}}
     @if($product->product_type === 'digital')
         <div class="alert alert-info" style="max-width:500px;margin:0 auto 16px;">
             <span>📦</span>
@@ -472,7 +547,6 @@
         </div>
     @endif
 
-    {{-- Out of stock --}}
     @if($product->product_type === 'umkm' && $product->stock !== null && $product->stock <= 0)
         <div class="card">
             <div class="card-body">
@@ -485,7 +559,6 @@
         </div>
     @else
 
-    {{-- ======================== PRODUCT CARD ======================== --}}
     <div class="card">
         <div class="card-header">Detail Produk</div>
         <div class="card-body">
@@ -522,7 +595,6 @@
                         @endif
                     </div>
 
-                    {{-- Stok untuk produk fisik --}}
                     @if($product->product_type === 'umkm' && $product->stock !== null)
                         <div class="stock-info">
                             @if($product->stock > 10)
@@ -537,7 +609,6 @@
                 </div>
             </div>
 
-            {{-- Seller --}}
             @if($seller)
                 <div class="seller-row">
                     @if($seller->avatar)
@@ -553,11 +624,9 @@
         </div>
     </div>
 
-    {{-- ======================== FORM CHECKOUT ======================== --}}
     <form id="checkoutForm" autocomplete="off">
         @csrf
 
-        {{-- DATA PEMBELI --}}
         <div class="card">
             <div class="card-header">Data Pembeli</div>
             <div class="card-body">
@@ -584,7 +653,6 @@
                            placeholder="08xxxxxxxxxx" required>
                 </div>
 
-                {{-- Alamat hanya untuk produk fisik --}}
                 @if($product->product_type === 'umkm')
                     <div class="form-group">
                         <label>Alamat Pengiriman <span class="required">*</span></label>
@@ -599,18 +667,54 @@
                     </div>
                 @endif
 
-                {{-- Qty untuk produk fisik --}}
                 @if($product->product_type === 'umkm')
+                    @php
+                        $maxQty = $product->purchase_limit ?? ($product->stock ?? 99);
+                    @endphp
                     <div class="form-group">
                         <label>Jumlah <span class="required">*</span></label>
-                        <input type="number" name="qty" id="qty"
-                               min="1"
-                               max="{{ $product->purchase_limit ?? ($product->stock ?? 99) }}"
-                               value="1"
-                               required>
-                        @if($product->purchase_limit)
-                            <div class="field-hint">Maks. {{ $product->purchase_limit }} per transaksi</div>
-                        @endif
+
+                        {{-- Stepper UI --}}
+                        <div class="qty-stepper-wrapper">
+                            <div class="qty-info">
+                                @if($product->purchase_limit)
+                                    Maks. {{ $product->purchase_limit }} per transaksi
+                                @elseif($product->stock)
+                                    Stok: {{ $product->stock }} tersedia
+                                @else
+                                    Pilih jumlah
+                                @endif
+                            </div>
+                            <div class="qty-controls">
+                                <button type="button" class="qty-btn" id="qtyMinus" onclick="changeQty(-1)" disabled>
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                        <path d="M5 12h14"/>
+                                    </svg>
+                                </button>
+                                {{-- Input yang bisa diklik & diketik langsung, menggantikan div display --}}
+                                <input
+                                    type="number"
+                                    id="qtyDisplayInput"
+                                    class="qty-input-editable"
+                                    value="1"
+                                    min="1"
+                                    max="{{ $maxQty }}"
+                                    inputmode="numeric"
+                                    pattern="[0-9]*"
+                                    autocomplete="off"
+                                    title="Ketik jumlah atau gunakan tombol +/-"
+                                >
+                                <button type="button" class="qty-btn" id="qtyPlus" onclick="changeQty(1)">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                        <path d="M12 5v14M5 12h14"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+
+                        {{-- Hidden input yang dikirim ke server --}}
+                        <input type="number" name="qty" id="qty" value="1"
+                               min="1" max="{{ $maxQty }}" required>
                     </div>
                 @else
                     <input type="hidden" name="qty" value="1">
@@ -618,10 +722,8 @@
             </div>
         </div>
 
-        {{-- Hidden payment method - akan dipilih di Snap Midtrans --}}
         <input type="hidden" name="payment_method" value="gopay">
 
-        {{-- RINGKASAN PEMBAYARAN --}}
         <div class="card">
             <div class="card-header">Ringkasan Pembayaran</div>
             <div class="card-body">
@@ -646,7 +748,6 @@
             </div>
         </div>
 
-        {{-- TOMBOL BAYAR --}}
         <button type="submit" class="btn-pay" id="btnPay">
             <span class="spinner" id="paySpinner"></span>
             <span id="btnPayText">Bayar Sekarang</span>
@@ -657,47 +758,113 @@
         🔒 Pembayaran aman & terenkripsi melalui Midtrans
     </div>
 
-    @endif {{-- end out of stock check --}}
-    @endif {{-- end product check --}}
+    @endif
+    @endif
 
-    {{-- Midtrans Snap JS --}}
     <script src="https://app.sandbox.midtrans.com/snap/snap.js"
             data-client-key="{{ config('midtrans.client_key') }}"></script>
 
     <script>
         const UNIT_PRICE = {{ $product->discount ?? $product->price ?? 0 }};
+        const MAX_QTY    = {{ $product->purchase_limit ?? ($product->stock ?? 99) }};
+        let currentQty   = 1;
 
-        // ===== QTY → UPDATE TOTAL =====
-        const qtyInput = document.getElementById('qty');
-        if (qtyInput) {
-            qtyInput.addEventListener('input', updateTotal);
+        const qtyDisplayInput = document.getElementById('qtyDisplayInput');
+        const qtyHidden       = document.getElementById('qty');
+        const qtyMinus        = document.getElementById('qtyMinus');
+        const qtyPlus         = document.getElementById('qtyPlus');
+
+        /** Terapkan qty baru: update semua UI & hidden field */
+        function applyQty(newQty) {
+            // Clamp ke range valid
+            if (isNaN(newQty) || newQty < 1) newQty = 1;
+            if (newQty > MAX_QTY) newQty = MAX_QTY;
+
+            currentQty = newQty;
+
+            // Sync semua elemen
+            if (qtyDisplayInput) qtyDisplayInput.value = currentQty;
+            if (qtyHidden)       qtyHidden.value        = currentQty;
+
+            // State tombol
+            if (qtyMinus) qtyMinus.disabled = currentQty <= 1;
+            if (qtyPlus)  qtyPlus.disabled  = currentQty >= MAX_QTY;
+
+            updateTotal();
         }
 
-        function updateTotal() {
-            const qty = parseInt(qtyInput?.value || 1);
-            const total = UNIT_PRICE * qty;
-            const fmt = new Intl.NumberFormat('id-ID').format(total);
-            if (document.getElementById('summary_qty')) {
-                document.getElementById('summary_qty').textContent = qty;
-            }
+        /** Dipanggil oleh tombol +/- */
+        function changeQty(delta) {
+            applyQty(currentQty + delta);
+        }
+
+        /** Handler untuk input langsung */
+        if (qtyDisplayInput) {
+            // Saat mengetik: sinkron real-time (boleh kosong sementara)
+            qtyDisplayInput.addEventListener('input', function () {
+                const raw = parseInt(this.value, 10);
+                if (!isNaN(raw)) {
+                    // Update currentQty tanpa clamp dulu agar tidak menginterrupt pengetikan
+                    currentQty = raw;
+                    // Tapi tetap update tombol & total pakai nilai yang sudah di-clamp
+                    const clamped = Math.min(Math.max(raw, 1), MAX_QTY);
+                    if (qtyHidden) qtyHidden.value = clamped;
+                    if (qtyMinus)  qtyMinus.disabled = clamped <= 1;
+                    if (qtyPlus)   qtyPlus.disabled  = clamped >= MAX_QTY;
+                    updateTotal(clamped);
+                }
+            });
+
+            // Saat blur (klik di luar): paksa nilai valid & sinkron
+            qtyDisplayInput.addEventListener('blur', function () {
+                applyQty(parseInt(this.value, 10));
+            });
+
+            // Enter = konfirmasi dan blur
+            qtyDisplayInput.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    this.blur();
+                }
+                // Blokir karakter non-angka kecuali Backspace, Delete, Arrow, Tab
+                const allowed = ['Backspace','Delete','ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Tab','Home','End'];
+                if (!allowed.includes(e.key) && !/^[0-9]$/.test(e.key)) {
+                    e.preventDefault();
+                }
+            });
+
+            // Pilih semua teks saat diklik agar mudah diganti
+            qtyDisplayInput.addEventListener('focus', function () {
+                this.select();
+            });
+        }
+
+        function updateTotal(overrideQty) {
+            const q     = overrideQty ?? currentQty;
+            const clamped = Math.min(Math.max(q, 1), MAX_QTY);
+            const total = UNIT_PRICE * clamped;
+            const fmt   = new Intl.NumberFormat('id-ID').format(total);
+            const summaryQty = document.getElementById('summary_qty');
+            if (summaryQty) summaryQty.textContent = clamped;
             document.getElementById('summary_total').textContent = 'Rp ' + fmt;
         }
 
-        // ===== FORM SUBMIT =====
         document.getElementById('checkoutForm').addEventListener('submit', async function (e) {
             e.preventDefault();
 
-            const btn = document.getElementById('btnPay');
+            // Pastikan qty valid sebelum submit
+            applyQty(parseInt(qtyDisplayInput ? qtyDisplayInput.value : 1, 10));
+
+            const btn     = document.getElementById('btnPay');
             const spinner = document.getElementById('paySpinner');
             const btnText = document.getElementById('btnPayText');
 
-            // Loading state
             btn.disabled = true;
             spinner.style.display = 'inline-block';
             btnText.textContent = 'Memproses...';
 
             const formData = new FormData(this);
-            const data = Object.fromEntries(formData.entries());
+            const data     = Object.fromEntries(formData.entries());
 
             try {
                 const res = await fetch('{{ route("checkout.process") }}', {
@@ -707,10 +874,7 @@
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
                         'Accept': 'application/json',
                     },
-                    body: JSON.stringify({
-                        product_id: {{ $product->id }},
-                        ...data
-                    })
+                    body: JSON.stringify({ product_id: {{ $product->id }}, ...data })
                 });
 
                 const result = await res.json();
@@ -719,21 +883,18 @@
                     throw new Error(result.message || 'Terjadi kesalahan.');
                 }
 
-                // Buka Midtrans Snap
                 snap.pay(result.snap_token, {
-                    onSuccess: function (snapResult) {
+                    onSuccess: function () {
                         window.location.href = '{{ route("checkout.success") }}?order_id=' + result.order_id;
                     },
-                    onPending: function (snapResult) {
+                    onPending: function () {
                         window.location.href = '{{ route("checkout.pending") }}?order_id=' + result.order_id;
                     },
-                    onError: function (snapResult) {
+                    onError: function () {
                         alert('Pembayaran gagal. Silakan coba lagi.');
                         resetBtn();
                     },
-                    onClose: function () {
-                        resetBtn();
-                    }
+                    onClose: function () { resetBtn(); }
                 });
 
             } catch (err) {
