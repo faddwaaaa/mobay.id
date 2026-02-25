@@ -14,592 +14,626 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    {{-- Font hanya untuk sidebar/nav, TIDAK global --}}
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
     <link rel="stylesheet" href="{{ asset('css/dashboard.css') }}">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <link rel="stylesheet" href="{{ asset('css/profile.css') }}">
     <link rel="stylesheet" href="{{ asset('css/darkmode.css') }}">
-    
+
     <style>
-        /* ========== MOBILE FIXES ========== */
+        /* ─── TOKENS ──────────────────────────────────────────────────────
+           Semua variabel di-scope ke .s-sidebar dan .m-topbar
+           TIDAK menyentuh body/html agar tidak ganggu halaman lain
+        ────────────────────────────────────────────────────────────────── */
+        :root {
+            --sidebar-w:          220px;
+            --sidebar-bg:         #ffffff;
+            --sidebar-border:     #eff2f7;
+            --nav-font:           'Plus Jakarta Sans', sans-serif;
+            --nav-hover-bg:       #f3f7ff;
+            --nav-active-bg:      #e8f0fe;
+            --nav-active-color:   #2356e8;
+            --nav-color:          #556070;
+            --nav-icon-color:     #9aaabb;
+            --accent:             #2356e8;
+            --accent-light:       #e8f0fe;
+            --danger:             #e53e3e;
+            --danger-light:       #fff5f5;
+            --page-bg:            linear-gradient(145deg, #ffffff 0%, #f4f8ff 52%, #deeaff 100%);
+            --text-primary:       #111827;
+            --text-muted:         #6b7c93;
+            --r-nav:              8px;
+            --r-card:             10px;
+            --ease:               0.17s ease;
+        }
+
+        /* ─── BACKGROUND HALAMAN (hanya wrapper) ─────────────────────── */
+        html, body {
+            min-height: 100vh;
+        }
+
+        .s-page-bg {
+            position: fixed;
+            inset: 0;
+            background: var(--page-bg);
+            background-attachment: fixed;
+            z-index: -1;
+        }
+
+        /* ─── SEMUA ELEMEN SIDEBAR PAKAI FONT SCOPED ─────────────────── */
+        .s-sidebar,
+        .m-topbar {
+            font-family: var(--nav-font) !important;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ─── SIDEBAR SHELL ───────────────────────────────────────────── */
+        .s-sidebar {
+            position: fixed;
+            top: 0; left: 0;
+            width: var(--sidebar-w);
+            height: 100vh;
+            background: var(--sidebar-bg);
+            border-right: 1px solid var(--sidebar-border);
+            display: flex;
+            flex-direction: column;
+            z-index: 200;
+            overflow: hidden;
+            box-shadow:
+                1px 0 0 var(--sidebar-border),
+                6px 0 30px rgba(35, 86, 232, .05);
+        }
+
+        /* ─── LOGO ────────────────────────────────────────────────────── */
+        .s-logo {
+            padding: 15px 17px 13px;
+            border-bottom: 1px solid var(--sidebar-border);
+            flex-shrink: 0;
+        }
+
+        .s-logo a {
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .s-logo img {
+            height: 23px;
+            width: auto;
+            object-fit: contain;
+        }
+
+        /* ─── SECTION LABEL ───────────────────────────────────────────── */
+        .s-label {
+            padding: 14px 17px 4px;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: .09em;
+            text-transform: uppercase;
+            color: #c4cdd9;
+            font-family: var(--nav-font);
+        }
+
+        /* ─── NAV SCROLL AREA ─────────────────────────────────────────── */
+        .s-nav {
+            flex: 1;
+            padding: 4px 7px;
+            display: flex;
+            flex-direction: column;
+            gap: 1px;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .s-nav::-webkit-scrollbar { width: 0; }
+
+        /* ─── NAV ITEM ────────────────────────────────────────────────── */
+        .s-nav-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 9px;
+            border-radius: var(--r-nav);
+            color: var(--nav-color);
+            font-size: 13px;
+            font-weight: 500;
+            font-family: var(--nav-font);
+            text-decoration: none;
+            transition: background var(--ease), color var(--ease);
+            white-space: nowrap;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            width: 100%;
+            text-align: left;
+            line-height: 1;
+        }
+
+        /* Icon bubble */
+        .s-icon {
+            width: 29px;
+            height: 29px;
+            border-radius: 7px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: var(--nav-icon-color);
+            background: transparent;
+            flex-shrink: 0;
+            transition: background var(--ease), color var(--ease);
+        }
+
+        .s-nav-item:hover {
+            background: var(--nav-hover-bg);
+            color: var(--accent);
+        }
+
+        .s-nav-item:hover .s-icon {
+            background: var(--accent-light);
+            color: var(--accent);
+        }
+
+        .s-nav-item.active {
+            background: var(--nav-active-bg);
+            color: var(--nav-active-color);
+            font-weight: 600;
+        }
+
+        .s-nav-item.active .s-icon {
+            background: var(--accent);
+            color: #fff;
+        }
+
+        /* ─── DIVIDER ─────────────────────────────────────────────────── */
+        .s-divider {
+            height: 1px;
+            background: var(--sidebar-border);
+            margin: 5px 7px;
+        }
+
+        /* ─── TEMA DROPDOWN ───────────────────────────────────────────── */
+        .s-theme-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 9px;
+            border-radius: var(--r-nav);
+            color: var(--nav-color);
+            font-size: 13px;
+            font-weight: 500;
+            font-family: var(--nav-font);
+            cursor: pointer;
+            transition: background var(--ease), color var(--ease);
+            user-select: none;
+        }
+
+        .s-theme-toggle:hover {
+            background: var(--nav-hover-bg);
+            color: var(--accent);
+        }
+
+        .s-theme-toggle:hover .s-icon {
+            background: var(--accent-light);
+            color: var(--accent);
+        }
+
+        .s-theme-toggle .s-left {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .s-arrow {
+            font-size: 9px;
+            color: #c4cdd9;
+            transition: transform var(--ease);
+        }
+
+        .s-theme-toggle.open .s-arrow { transform: rotate(180deg); }
+
+        .s-theme-menu {
+            display: none;
+            flex-direction: column;
+            margin: 2px 0 2px 38px;
+            gap: 1px;
+        }
+
+        .s-theme-menu.open { display: flex; }
+
+        .s-theme-opt {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 7px 10px;
+            border-radius: 7px;
+            border: none;
+            background: transparent;
+            color: var(--nav-color);
+            font-size: 12.5px;
+            font-family: var(--nav-font);
+            cursor: pointer;
+            width: 100%;
+            text-align: left;
+            transition: background var(--ease);
+        }
+
+        .s-theme-opt:hover { background: var(--nav-hover-bg); color: var(--accent); }
+        .s-theme-opt .check-icon { margin-left: auto; opacity: 0; font-size: 10px; }
+
+        /* ─── FOOTER (Profile + Logout) ───────────────────────────────── */
+        .s-footer {
+            flex-shrink: 0;
+            padding: 7px 7px 12px;
+            border-top: 1px solid var(--sidebar-border);
+        }
+
+        .s-profile-link {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            padding: 8px 9px;
+            border-radius: var(--r-card);
+            text-decoration: none;
+            transition: background var(--ease);
+            margin-bottom: 2px;
+        }
+
+        .s-profile-link:hover { background: var(--nav-hover-bg); }
+
+        .s-avatar {
+            width: 31px;
+            height: 31px;
+            border-radius: 50%;
+            overflow: hidden;
+            flex-shrink: 0;
+            border: 1.5px solid #e4eaf4;
+        }
+
+        .s-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .s-profile-info { flex: 1; min-width: 0; }
+
+        .s-profile-name {
+            font-size: 12.5px;
+            font-weight: 600;
+            font-family: var(--nav-font);
+            color: var(--text-primary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            line-height: 1.35;
+        }
+
+        .s-profile-uname {
+            font-size: 11px;
+            font-family: var(--nav-font);
+            color: var(--text-muted);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .s-profile-arrow {
+            font-size: 9px;
+            color: #c8d4e0;
+            flex-shrink: 0;
+        }
+
+        .s-logout {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            width: 100%;
+            padding: 8px 9px;
+            border-radius: var(--r-nav);
+            border: none;
+            background: transparent;
+            color: var(--danger);
+            font-size: 13px;
+            font-weight: 500;
+            font-family: var(--nav-font);
+            cursor: pointer;
+            text-decoration: none;
+            transition: background var(--ease);
+        }
+
+        .s-logout:hover { background: var(--danger-light); }
+
+        .s-logout .s-icon {
+            color: var(--danger);
+            font-size: 12px;
+        }
+
+        .s-logout:hover .s-icon {
+            background: var(--danger-light);
+            color: var(--danger);
+        }
+
+        /* ─── MAIN CONTENT AREA ───────────────────────────────────────── */
+        .main-wrap {
+            margin-left: var(--sidebar-w);
+            min-height: 100vh;
+        }
+
+        .content-pad {
+            padding: 28px 30px;
+            min-height: 100vh;
+            background: transparent;
+        }
+
+        /* ─── MOBILE TOPBAR ───────────────────────────────────────────── */
+        .m-topbar {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            height: 50px;
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border-bottom: 1px solid var(--sidebar-border);
+            z-index: 300;
+            align-items: center;
+            padding: 0 13px;
+            gap: 10px;
+        }
+
+        .m-topbar-logo img { height: 21px; }
+
+        .m-hamburger {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px; height: 32px;
+            border-radius: 7px;
+            border: none;
+            background: transparent;
+            color: #5a6a85;
+            font-size: 15px;
+            cursor: pointer;
+            flex-shrink: 0;
+            transition: background var(--ease);
+            font-family: inherit;
+        }
+
+        .m-hamburger:hover { background: var(--nav-hover-bg); }
+
+        /* ─── OVERLAY ─────────────────────────────────────────────────── */
+        .s-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(8, 18, 48, .28);
+            z-index: 199;
+            backdrop-filter: blur(3px);
+        }
+
+        .s-overlay.active { display: block; }
+
+        /* ─── RESPONSIVE ──────────────────────────────────────────────── */
         @media (max-width: 768px) {
-            /* Reset semua margin/padding yang membuat konten tertutup */
-            body, html {
-                overflow-x: hidden;
-            }
-            
-            /* Navbar mobile fix - lebih kompak */
-            .top-navbar {
-                height: 56px !important;
-                padding: 0 12px !important;
-                position: fixed;
-                top: 0;
-                left: 0;
-                right: 0;
-                z-index: 1000;
-                background: white;
-                box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            }
-            
-            /* Menu toggle - pastikan muncul */
-            .menu-toggle {
-                display: flex !important;
-                width: 40px;
-                height: 40px;
-                align-items: center;
-                justify-content: center;
-                cursor: pointer;
-                margin-right: 8px;
-                color: #475569;
-            }
-            
-            /* Logo lebih kecil dan Sembunyikan logo di mobile */
-            .logo {
-                display: none !important;
-            }
-            
-            /* Atau jika hanya ingin image yang hilang, teks tetap ada */
-            .logo-icon img {
-                display: none !important;
-            }
-            
-            /* Sembunyikan search di mobile */
-            .navbar-center {
-                display: none !important;
-            }
-            
-            /* Perbaiki navbar kanan untuk mobile */
-            .navbar-right {
-                gap: 8px !important;
-            }
-            
-            .btn-upgrade span {
-                display: none !important;
-            }
-            
-            .btn-upgrade {
-                padding: 6px 8px !important;
-                min-width: auto !important;
-            }
-            
-            .user-name {
-                display: none !important;
-            }
-            
-            /* ========== SIDEBAR FIX ========== */
-            /* Sembunyikan sidebar default */
-            .sidebar {
-                display: none !important;
-            }
-            
-            /* Buat sidebar mobile khusus */
-            .sidebar.mobile-sidebar {
-                display: block !important;
-                position: fixed !important;
-                top: 56px !important;
-                left: -280px !important;
-                width: 280px !important;
-                height: calc(100vh - 56px) !important;
-                z-index: 999 !important;
-                background: white;
-                box-shadow: 2px 0 10px rgba(0,0,0,0.1);
-                transition: transform 0.3s ease;
+            .m-topbar { display: flex; }
+
+            .s-sidebar {
                 transform: translateX(-100%);
-                overflow-y: auto;
-            }
-            
-            .sidebar.mobile-sidebar.active {
-                transform: translateX(0);
-                left: 0 !important;
-            }
-            
-            /* Main container reset */
-            .main-container {
-                margin-left: 0 !important;
-                width: 100% !important;
-                margin-top: 56px !important;
-            }
-            
-            /* Content area fill full width */
-            .content-area {
-                width: 100% !important;
-                padding: 16px !important;
-                margin: 0 !important;
-                min-height: calc(100vh - 56px);
-                background: #f8fafc;
-            }
-            
-            /* Overlay untuk sidebar */
-            .sidebar-overlay {
-                display: none;
-                position: fixed;
-                top: 56px;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                background: rgba(0,0,0,0.5);
-                z-index: 998;
-                backdrop-filter: blur(2px);
-            }
-            
-            .sidebar-overlay.active {
-                display: block;
-            }
-            
-            /* Atau jika Anda ingin navbar-left lebih kompak */
-            .navbar-left {
-                min-width: auto;
-                justify-content: flex-start;
-            }
-            
-            /* Style untuk sidebar mobile header */
-            .mobile-sidebar-header {
-                padding: 20px 16px;
-                border-bottom: 1px solid #e2e8f0;
-                background: #f8fafc;
-            }
-            
-            .mobile-user-info {
-                display: flex;
-                align-items: center;
-                gap: 12px;
-            }
-            
-            .mobile-user-avatar {
-                width: 48px;
-                height: 48px;
-                border-radius: 50%;
-                overflow: hidden;
-            }
-            
-            .mobile-user-avatar img {
-                width: 100%;
-                height: 100%;
-                object-fit: cover;
-            }
-            
-            .mobile-user-name {
-                margin: 0;
-                font-size: 16px;
-                font-weight: 600;
-                color: #0f172a;
-            }
-            
-            .mobile-user-email {
-                margin: 4px 0 0 0;
-                font-size: 12px;
-                color: #64748b;
-            }
-            
-            /* Style untuk sidebar mobile footer */
-            .mobile-sidebar-footer {
-                margin-top: auto;
-                padding: 16px;
-                border-top: 1px solid #e2e8f0;
-            }
-            
-            .logout-mobile {
-                color: #ef4444 !important;
-            }
-            
-            .logout-mobile:hover {
-                background: #fef2f2 !important;
-            }
-        }
-        
-        /* Tablet - Sembunyikan logo jika perlu */
-        @media (max-width: 1024px) and (min-width: 769px) {
-            /* Jika ingin logo lebih kecil di tablet */
-            .logo-icon img {
-                height: 28px !important;
-            }
-            
-            .menu-toggle {
-                display: none !important;
-            }
-        }
-        
-        /* ========== DESKTOP ========== */
-        @media (min-width: 769px) {
-            .menu-toggle {
-                display: none !important;
-            }
-            
-            .sidebar-overlay {
-                display: none !important;
-            }
-            
-            .sidebar.mobile-sidebar {
-                display: none !important;
-            }
-            
-            /* Tampilkan sidebar desktop */
-            .sidebar:not(.mobile-sidebar) {
-                display: block !important;
-            }
-            
-            /* Tampilkan logo di desktop */
-            .logo {
-                display: block !important;
-            }
-            
-            .logo-icon img {
-                display: block !important;
+                transition: transform 0.24s cubic-bezier(.4,0,.2,1);
             }
 
-            .tem{
-                margin-left: 8px;
+            .s-sidebar.active { transform: translateX(0); }
+
+            .main-wrap {
+                margin-left: 0;
+                margin-top: 50px;
             }
+
+            .content-pad { padding: 16px 15px; }
+        }
+
+        @media (max-width: 480px) {
+            .content-pad { padding: 13px 11px; }
+        }
+
+        /* ─── FADE IN ─────────────────────────────────────────────────── */
+        body:not(.preload) .content-pad {
+            animation: pgFadeUp .3s ease both;
+        }
+
+        @keyframes pgFadeUp {
+            from { opacity: 0; transform: translateY(7px); }
+            to   { opacity: 1; transform: translateY(0); }
         }
     </style>
 </head>
 <body class="preload">
 
-<div class="dashboard-wrapper">
-    
-    <!-- Overlay untuk sidebar di mobile -->
-    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+<!-- Background layer -->
+<div class="s-page-bg"></div>
 
-    <!-- ================= TOP NAVBAR ================= -->
-    <nav class="top-navbar">
-        <div class="navbar-left">
-            <div class="menu-toggle" id="menuToggle">
-                <i class="fas fa-bars"></i>
+<!-- Overlay -->
+<div class="s-overlay" id="sOverlay"></div>
+
+<!-- ── MOBILE TOPBAR ─────────────────────────────────────────── -->
+<div class="m-topbar">
+    <button class="m-hamburger" id="mHamburger" aria-label="Buka menu">
+        <i class="fas fa-bars"></i>
+    </button>
+    <div class="m-topbar-logo">
+        <a href="{{ route('dashboard') }}">
+            <img src="{{ asset('img/icon.png') }}" alt="Payou.id">
+        </a>
+    </div>
+</div>
+
+<!-- ── SIDEBAR ───────────────────────────────────────────────── -->
+<aside class="s-sidebar" id="sSidebar">
+
+    <!-- Logo -->
+    <div class="s-logo">
+        <a href="{{ route('dashboard') }}">
+            <img src="{{ asset('img/icon.png') }}" alt="Payou.id">
+        </a>
+    </div>
+
+    <!-- Nav -->
+    <nav class="s-nav">
+
+        <div class="s-label">Menu</div>
+
+        <a href="{{ route('dashboard') }}"
+           class="s-nav-item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
+            <span class="s-icon"><i class="fas fa-house"></i></span>
+            Dashboard
+        </a>
+
+        <a href="{{ route('links.index') }}"
+           class="s-nav-item {{ request()->routeIs('links.*') ? 'active' : '' }}">
+            <span class="s-icon"><i class="fas fa-link"></i></span>
+            Link Saya
+        </a>
+
+        <a href="{{ route('analitik.index') }}"
+           class="s-nav-item {{ request()->routeIs('analitik.*') ? 'active' : '' }}">
+            <span class="s-icon"><i class="fas fa-chart-bar"></i></span>
+            Analitik
+        </a>
+
+        <a href="{{ route('qrcode.show') }}"
+           class="s-nav-item {{ request()->routeIs('qrcode.show') ? 'active' : '' }}">
+            <span class="s-icon"><i class="fas fa-qrcode"></i></span>
+            QR Code
+        </a>
+
+        <a href="{{ route('products.manage') }}"
+           class="s-nav-item {{ request()->routeIs('products.manage') ? 'active' : '' }}">
+            <span class="s-icon"><i class="fas fa-shopping-bag"></i></span>
+            Produk
+        </a>
+
+        <div class="s-divider"></div>
+        <div class="s-label">Preferensi</div>
+
+        <!-- Tema Dropdown -->
+        <div>
+            <div class="s-theme-toggle" id="sThemeToggle">
+                <div class="s-left">
+                    <span class="s-icon"><i class="fas fa-swatchbook"></i></span>
+                    Tema
+                </div>
+                <i class="fas fa-chevron-down s-arrow"></i>
             </div>
-            <div class="logo">
-                <a href="{{ route('dashboard') }}" class="logo-icon">
-                    <img src="{{ asset('img/icon.png') }}" alt="payou.id">
-                </a>
+            <div class="s-theme-menu" id="sThemeMenu">
+                <button class="s-theme-opt" data-theme="light">
+                    <i class="fas fa-sun"></i> Terang
+                    <i class="fas fa-check check-icon"></i>
+                </button>
+                <button class="s-theme-opt" data-theme="dark">
+                    <i class="fas fa-moon"></i> Gelap
+                    <i class="fas fa-check check-icon"></i>
+                </button>
             </div>
         </div>
 
-        <!-- <div class="navbar-center">
-            <div class="search-container">
-                <i class="fas fa-search"></i>
-                <input type="text" placeholder="Cari link, analitik, atau pengaturan...">
-            </div>
-        </div> -->
-
-        <div class="navbar-right">
-            <!-- <button class="btn-upgrade">
-                <i class="fas fa-crown"></i>
-                <span>Upgrade Premium</span>
-            </button> -->
-
-            <div class="notification-bell">
-                <i class="fas fa-bell"></i>
-                <span class="notification-dot"></span>
-            </div>
-
-            <div class="user-profile-dropdown">
-                <div class="user-avatar">
-                    @if ($avatar)
-                        <img
-                            src="{{ Str::startsWith($avatar, ['http://', 'https://'])
-                                    ? $avatar
-                                    : asset('storage/'.$avatar) }}"
-                            alt="{{ Auth::user()->name }}"
-                        >
-                    @else
-                        <img src="{{ asset('img/default-avatar.jpg') }}" alt="Default Avatar">
-                    @endif
-                </div>
-
-                <div class="user-name">
-                    {{ Auth::user()->name }}
-                </div>
-
-                <i class="fas fa-chevron-down"></i>
-
-                <div class="dropdown-menu">
-                    <a href="{{ route('dashboard.profile') }}">
-                        <i class="fas fa-user"></i> Profil Saya
-                    </a>
-                    <a href="#"><i class="fas fa-cog"></i> Pengaturan</a>
-                    <a href="{{ route('faq') }}"><i class="fas fa-question-circle"></i> Bantuan</a>
-                    <div class="divider"></div>
-                    <a href="{{ route('logout') }}"
-                       class="logout"
-                       onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                        <i class="fas fa-sign-out-alt"></i> Keluar
-                    </a>
-
-                    <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display:none;">
-                        @csrf
-                    </form>
-                </div>
-            </div>
-        </div>
     </nav>
 
-    <!-- ================= MAIN CONTAINER ================= -->
-    <div class="main-container">
+    <!-- Profile + Logout -->
+    <div class="s-footer">
+        <a href="{{ route('dashboard.profile') }}" class="s-profile-link">
+            <div class="s-avatar">
+                @if ($avatar)
+                    <img src="{{ Str::startsWith($avatar, ['http://','https://']) ? $avatar : asset('storage/'.$avatar) }}"
+                         alt="{{ Auth::user()->name }}">
+                @else
+                    <img src="{{ asset('img/default-avatar.jpg') }}" alt="Avatar">
+                @endif
+            </div>
+            <div class="s-profile-info">
+                <div class="s-profile-name">{{ Auth::user()->name }}</div>
+                <div class="s-profile-uname">&#64;{{ $user->username }}</div>
+            </div>
+            <i class="fas fa-chevron-right s-profile-arrow"></i>
+        </a>
 
-        <!-- ================= SIDEBAR DESKTOP ================= -->
-        <aside class="sidebar" id="sidebarDesktop">
-            <nav class="sidebar-nav">
-                <a href="{{ route('dashboard') }}"
-                   class="nav-item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
-                    <i class="fas fa-home"></i>
-                    <span>Dashboard</span>
-                </a>
-                <a href="{{ route('links.index') }}"
-                    class="nav-item {{ request()->routeIs('links.*') ? 'active ' : '' }}">
-                    <i class="fas fa-link"></i>
-                    <span>Link Saya</span>
-                </a>
+        <a href="{{ route('logout') }}"
+           class="s-logout"
+           onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+            <span class="s-icon"><i class="fas fa-right-from-bracket"></i></span>
+            Keluar
+        </a>
 
-                <a href="{{ route('analitik.index') }}" 
-                    class="nav-item {{ request()->routeIs('analitik.show') ? 'active' : '' }}">
-                    <i class="fas fa-chart-bar"></i>
-                    <span>Analitik</span>
-                </a>
-
-                <a href="{{ route('qrcode.show') }}"
-                class="nav-item {{ request()->routeIs('qrcode.show') ? 'active' : '' }}">
-                    <i class="fas fa-qrcode"></i>
-                    <span>QR Code</span>
-                </a>
-
-                <a href="{{ route('products.manage') }}"
-                class="nav-item {{ request()->routeIs('products.manage') ? 'active' : '' }}">
-                    <i class="fas fa-shopping-cart"></i>
-                    <span>Produk</span>
-                </a>
-
-                <!-- <a href="#" class="nav-item">
-                    <i class="fas fa-credit-card"></i>
-                    <span>Pembayaran</span>
-                </a> -->
-
-                <!-- Theme Dropdown -->
-                <div class="theme-dropdown">
-                    <div class="nav-item theme-dropdown-toggle">
-                        <div class="nav-left">
-                            <i class="fas fa-paint-brush"></i>
-                            <span class="tem"> Tema</span>
-                        </div>
-                        <i class="fas fa-chevron-down arrow"></i>
-                    </div>
-
-                    <div class="theme-dropdown-menu">
-                        <button class="theme-option" data-theme="light">
-                            <i class="fas fa-sun"></i>
-                            <div class="theme-option-text">
-                                <span class="theme-label">Terang</span>
-                                <!-- <span class="theme-desc">Tampilan cerah untuk siang hari</span> -->
-                            </div>
-                            <i class="fas fa-check check-icon"></i>
-                        </button>
-
-                        <button class="theme-option" data-theme="dark">
-                            <i class="fas fa-moon"></i>
-                            <div class="theme-option-text">
-                                <span class="theme-label">Gelap</span>
-                                <!-- <span class="theme-desc">Tampilan nyaman untuk malam hari</span> -->
-                            </div>
-                            <i class="fas fa-check check-icon"></i>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- <a href="#" class="nav-item">
-                    <i class="fas fa-cog"></i>
-                    <span>Pengaturan</span>
-                </a> -->
-            </nav>
-        </aside>
-
-        <!-- ================= SIDEBAR MOBILE ================= -->
-        <aside class="sidebar mobile-sidebar" id="sidebarMobile">
-            <nav class="sidebar-nav">
-                <div class="mobile-sidebar-header">
-                    <div class="mobile-user-info">
-                        <div class="mobile-user-avatar">
-                            @if ($avatar)
-                                <img
-                                    src="{{ Str::startsWith($avatar, ['http://', 'https://'])
-                                            ? $avatar
-                                            : asset('storage/'.$avatar) }}"
-                                    alt="{{ Auth::user()->name }}"
-                                >
-                            @else
-                                <img src="{{ asset('img/default-avatar.jpg') }}" alt="Default Avatar">
-                            @endif
-                        </div>
-                        <div>
-                            <p class="mobile-user-name">{{ Auth::user()->name }}</p>
-                            <p class="mobile-user-email">{{ Auth::user()->email }}</p>
-                        </div>
-                    </div>
-                </div>
-                
-                <a href="{{ route('dashboard') }}"
-                   class="nav-item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
-                    <i class="fas fa-home"></i>
-                    <span>Dashboard</span>
-                </a>
-                <a href="{{ route('links.index') }}"
-                    class="nav-item {{ request()->routeIs('links.*') ? 'active ' : '' }}">
-                    <i class="fas fa-link"></i>
-                    <span>Link Saya</span>
-                </a>
-
-                <a href="{{ route('analitik.index') }}" 
-                    class="nav-item {{ request()->routeIs('analitik.show') ? 'active' : '' }}">
-                    <i class="fas fa-chart-bar"></i>
-                    <span>Analitik</span>
-                </a>
-
-                <a href="{{ route('qrcode.show') }}"
-                class="nav-item {{ request()->routeIs('qrcode.show') ? 'active' : '' }}">
-                    <i class="fas fa-qrcode"></i>
-                    <span>QR Code</span>
-                </a>
-
-                <a href="{{ route('products.manage') }}"
-                class="nav-item {{ request()->routeIs('products.manage') ? 'active' : '' }}">
-                    <i class="fas fa-box"></i>
-                    <span>Produk</span>
-                </a>
-
-                <a href="#" class="nav-item">
-                    <i class="fas fa-credit-card"></i>
-                    <span>Pembayaran</span>
-                </a>
-
-                <!-- Theme Dropdown Mobile -->
-                <div class="theme-dropdown">
-                    <div class="nav-item theme-dropdown-toggle">
-                        <div class="nav-left">
-                            <i class="fas fa-paint-brush"></i>
-                            <span>Tema</span>
-                        </div>
-                        <i class="fas fa-chevron-down arrow"></i>
-                    </div>
-
-                    <div class="theme-dropdown-menu">
-                        <button class="theme-option" data-theme="light">
-                            <i class="fas fa-sun"></i>
-                            <div class="theme-option-text">
-                                <span class="theme-label">Terang</span>
-                                <span class="theme-desc">Tampilan cerah untuk siang hari</span>
-                            </div>
-                            <i class="fas fa-check check-icon"></i>
-                        </button>
-
-                        <button class="theme-option" data-theme="dark">
-                            <i class="fas fa-moon"></i>
-                            <div class="theme-option-text">
-                                <span class="theme-label">Gelap</span>
-                                <span class="theme-desc">Tampilan nyaman untuk malam hari</span>
-                            </div>
-                            <i class="fas fa-check check-icon"></i>
-                        </button>
-                    </div>
-                </div>
-
-                <a href="#" class="nav-item">
-                    <i class="fas fa-cog"></i>
-                    <span>Pengaturan</span>
-                </a>
-                
-                <div class="mobile-sidebar-footer">
-                    <a href="{{ route('logout') }}" 
-                       class="nav-item logout-mobile"
-                       onclick="event.preventDefault(); document.getElementById('logout-form-mobile').submit();">
-                        <i class="fas fa-sign-out-alt"></i>
-                        <span>Keluar</span>
-                    </a>
-                    <form id="logout-form-mobile" action="{{ route('logout') }}" method="POST" style="display:none;">
-                        @csrf
-                    </form>
-                </div>
-            </nav>
-        </aside>
-
-        <!-- ================= CONTENT ================= -->
-        <main class="content-area">
-            @yield('content')
-        </main>
-
+        <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display:none;">
+            @csrf
+        </form>
     </div>
+
+</aside>
+
+<!-- ── CONTENT ───────────────────────────────────────────────── -->
+<div class="main-wrap">
+    <main class="content-pad">
+        @yield('content')
+    </main>
 </div>
 
 <script src="{{ asset('js/dashboard.js') }}"></script>
 <script src="{{ asset('js/darkmode.js') }}"></script>
+
 <script>
-// Remove preload class after page load to enable transitions
-window.addEventListener('load', function() {
+window.addEventListener('load', function () {
     document.body.classList.remove('preload');
 });
 
-// Mobile sidebar toggle
-document.addEventListener('DOMContentLoaded', function() {
-    const menuToggle = document.getElementById('menuToggle');
-    const sidebarMobile = document.getElementById('sidebarMobile');
-    const sidebarOverlay = document.getElementById('sidebarOverlay');
-    
-    if (menuToggle && sidebarMobile) {
-        // Toggle sidebar mobile
-        menuToggle.addEventListener('click', function(e) {
-            e.stopPropagation();
-            sidebarMobile.classList.toggle('active');
-            if (sidebarOverlay) {
-                sidebarOverlay.classList.toggle('active');
-            }
-            
-            // Toggle body overflow
-            if (sidebarMobile.classList.contains('active')) {
-                document.body.style.overflow = 'hidden';
-            } else {
-                document.body.style.overflow = '';
-            }
-        });
-        
-        // Close sidebar when overlay is clicked
-        if (sidebarOverlay) {
-            sidebarOverlay.addEventListener('click', function() {
-                sidebarMobile.classList.remove('active');
-                sidebarOverlay.classList.remove('active');
-                document.body.style.overflow = '';
-            });
-        }
-        
-        // Close sidebar when menu item is clicked
-        const navItems = sidebarMobile.querySelectorAll('.nav-item:not(.theme-dropdown-toggle), .nav-sub-item');
-        navItems.forEach(item => {
-            item.addEventListener('click', function() {
-                sidebarMobile.classList.remove('active');
-                if (sidebarOverlay) {
-                    sidebarOverlay.classList.remove('active');
-                }
-                document.body.style.overflow = '';
-            });
-        });
-        
-        // Close sidebar on window resize (if going to desktop)
-        window.addEventListener('resize', function() {
-            if (window.innerWidth > 768) {
-                sidebarMobile.classList.remove('active');
-                if (sidebarOverlay) {
-                    sidebarOverlay.classList.remove('active');
-                }
-                document.body.style.overflow = '';
-            }
-        });
-        
-        // Close sidebar with ESC key
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape' && sidebarMobile.classList.contains('active')) {
-                sidebarMobile.classList.remove('active');
-                if (sidebarOverlay) {
-                    sidebarOverlay.classList.remove('active');
-                }
-                document.body.style.overflow = '';
-            }
-        });
+document.addEventListener('DOMContentLoaded', function () {
+    const hamburger = document.getElementById('mHamburger');
+    const sidebar   = document.getElementById('sSidebar');
+    const overlay   = document.getElementById('sOverlay');
+
+    function openSidebar()  {
+        sidebar.classList.add('active');
+        overlay.classList.add('active');
+        document.body.style.overflow = 'hidden';
     }
+
+    function closeSidebar() {
+        sidebar.classList.remove('active');
+        overlay.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+
+    hamburger && hamburger.addEventListener('click', function (e) {
+        e.stopPropagation();
+        sidebar.classList.contains('active') ? closeSidebar() : openSidebar();
+    });
+
+    overlay && overlay.addEventListener('click', closeSidebar);
+
+    sidebar.querySelectorAll('a.s-nav-item, a.s-profile-link, a.s-logout').forEach(function (el) {
+        el.addEventListener('click', function () {
+            if (window.innerWidth <= 768) closeSidebar();
+        });
+    });
+
+    window.addEventListener('resize', function () {
+        if (window.innerWidth > 768) closeSidebar();
+    });
+
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') closeSidebar();
+    });
+
+    // Theme dropdown
+    var themeToggle = document.getElementById('sThemeToggle');
+    var themeMenu   = document.getElementById('sThemeMenu');
+
+    themeToggle && themeToggle.addEventListener('click', function () {
+        themeMenu.classList.toggle('open');
+        themeToggle.classList.toggle('open');
+    });
 });
 </script>
 </body>
