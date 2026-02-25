@@ -114,7 +114,7 @@
                 @endif
             @endif
 
-            <a href="javascript:history.go(-3)" class="btn">← Kembali ke Toko</a>
+            <a href="javascript:history.go(-5)" class="btn">← Kembali ke Toko</a>
         </div>
     </div>
 </body>

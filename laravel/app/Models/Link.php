@@ -29,7 +29,7 @@ class Link extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function clicks()
+    public function click()
     {
         return $this->hasMany(Click::class);
     }
@@ -37,12 +37,12 @@ class Link extends Model
     // Accessor untuk total klik
     public function getClicksCountAttribute()
     {
-        return $this->clicks()->count();
+        return $this->click()->count();
     }
 
     // Accessor untuk unique visitors
     public function getUniqueVisitorsAttribute()
     {
-        return $this->clicks()->distinct('ip_address')->count('ip_address');
+        return $this->click()->distinct('ip_address')->count('ip_address');
     }
 }
