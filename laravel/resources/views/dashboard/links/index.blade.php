@@ -514,59 +514,105 @@
      MODAL PRODUK (dipakai untuk Tambah & Ganti Produk)
 ============================================================ -->
 <div id="productModal" class="modal fixed inset-0 z-[200] flex items-center justify-center p-4 hidden">
-    <div class="bg-white p-6 rounded-xl w-[450px] relative shadow-xl">
-        <button type="button" onclick="closeProductModal()" 
-                class="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
-            <i class="fas fa-times"></i>
-        </button>
+    <div class="bg-white rounded-xl w-[450px] relative shadow-xl overflow-hidden">
 
-        <h2 id="productModalTitle" class="text-lg font-bold mb-4">Pilih Produk</h2>
+        {{-- Header --}}
+        <div class="p-6 pb-0">
+            <button type="button" onclick="closeProductModal()" 
+                    class="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
+                <i class="fas fa-times"></i>
+            </button>
+            <h2 id="productModalTitle" class="text-lg font-bold mb-4">Pilih Produk</h2>
 
-        @if($products->count() > 0)
-            <div class="space-y-3 max-h-[400px] overflow-y-auto pr-1">
-                @foreach($products as $product)
-                <div class="product-item flex justify-between items-center p-3 border rounded-lg hover:bg-gray-50">
-                    <div class="flex items-center gap-3">
-                        @if($product->image)
-                            <img src="{{ asset('storage/' . $product->image) }}" class="w-12 h-12 object-cover rounded-lg" alt="{{ $product->title }}">
-                        @else
-                            <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
-                                <i class="fas fa-box text-yellow-600"></i>
+            {{-- Tab Filter --}}
+            <div class="flex gap-1 border-b border-gray-200">
+                <button type="button" id="prodTabAll"
+                        onclick="switchProdTab('all')"
+                        class="prod-tab-btn px-4 py-2 text-sm font-semibold rounded-t-lg transition-all duration-150
+                               text-blue-600 border-b-2 border-blue-600 bg-blue-50 mb-[-1px]">
+                    Semua
+                </button>
+                <button type="button" id="prodTabUmkm"
+                        onclick="switchProdTab('umkm')"
+                        class="prod-tab-btn px-4 py-2 text-sm font-semibold rounded-t-lg transition-all duration-150
+                               text-gray-500 border-b-2 border-transparent mb-[-1px] hover:text-gray-700 hover:bg-gray-50
+                               flex items-center gap-1.5">
+                    <i class="fas fa-box text-xs"></i> Fisik
+                </button>
+                <button type="button" id="prodTabDigital"
+                        onclick="switchProdTab('digital')"
+                        class="prod-tab-btn px-4 py-2 text-sm font-semibold rounded-t-lg transition-all duration-150
+                               text-gray-500 border-b-2 border-transparent mb-[-1px] hover:text-gray-700 hover:bg-gray-50
+                               flex items-center gap-1.5">
+                    <i class="fas fa-download text-xs"></i> Digital
+                </button>
+            </div>
+        </div>
+
+        {{-- Product List --}}
+        <div class="p-6 pt-4">
+            @if($products->count() > 0)
+                <div class="space-y-3 max-h-[360px] overflow-y-auto pr-1" id="productListContainer">
+                    @foreach($products as $product)
+                    <div class="product-item flex justify-between items-center p-3 border rounded-lg hover:bg-gray-50 transition"
+                         data-type="{{ $product->product_type ?? 'umkm' }}">
+                        <div class="flex items-center gap-3">
+                            @if($product->image)
+                                <img src="{{ asset('storage/' . $product->image) }}" class="w-12 h-12 object-cover rounded-lg flex-shrink-0" alt="{{ $product->title }}">
+                            @else
+                                <div class="w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0
+                                            {{ ($product->product_type ?? 'umkm') === 'digital' ? 'bg-blue-50' : 'bg-yellow-100' }}">
+                                    <i class="fas {{ ($product->product_type ?? 'umkm') === 'digital' ? 'fa-download text-blue-500' : 'fa-box text-yellow-600' }}"></i>
+                                </div>
+                            @endif
+                            <div>
+                                <h4 class="font-semibold text-sm">{{ $product->title }}</h4>
+                                <p class="text-xs text-gray-600">Rp {{ number_format($product->price,0,',','.') }}</p>
+                                <span class="inline-block mt-0.5 px-1.5 py-0.5 rounded text-[10px] font-medium
+                                             {{ ($product->product_type ?? 'umkm') === 'digital'
+                                                ? 'bg-blue-50 text-blue-600'
+                                                : 'bg-orange-50 text-orange-600' }}">
+                                    {{ ($product->product_type ?? 'umkm') === 'digital' ? 'Digital' : 'Fisik' }}
+                                </span>
                             </div>
-                        @endif
-                        <div>
-                            <h4 class="font-semibold text-sm">{{ $product->title }}</h4>
-                            <p class="text-xs text-gray-600">
-                                Rp {{ number_format($product->price,0,',','.') }}
-                            </p>
                         </div>
+                        <button type="button"
+                            onclick="selectProduct({{ $product->id }}, {{ json_encode($product) }})"
+                            class="flex-shrink-0 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm transition active:scale-95">
+                            Pilih
+                        </button>
                     </div>
+                    @endforeach
 
-                    <button type="button"
-                        onclick="selectProduct({{ $product->id }}, {{ json_encode($product) }})"
-                        class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm transition">
-                        Pilih
-                    </button>
+                    {{-- Empty state per tab (tersembunyi, ditampilkan via JS) --}}
+                    <div id="prodEmptyState" class="hidden text-center py-10">
+                        <div class="w-14 h-14 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <i class="fas fa-box-open text-2xl text-gray-300"></i>
+                        </div>
+                        <p class="text-sm font-medium text-gray-500" id="prodEmptyText">Tidak ada produk</p>
+                    </div>
                 </div>
-                @endforeach
-            </div>
-            
-            <div class="mt-4 pt-3 border-t">
-                <a href="{{ route('products.manage', ['tambah' => 1, 'redirect' => 'builder']) }}" 
-                   class="text-blue-600 hover:text-blue-800 text-sm flex items-center gap-1">
-                    <i class="fas fa-plus-circle"></i>
-                    Tambah Produk Baru
-                </a>
-            </div>
-        @else
-            <div class="text-center py-8">
-                <i class="fas fa-box-open text-4xl text-gray-300 mb-3"></i>
-                <p class="mb-3 text-gray-500">Belum ada produk</p>
-                <a href="{{ route('products.manage', ['tambah' => 1, 'redirect' => 'builder']) }}" 
-                   class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm inline-block">
-                   + Tambah Produk
-                </a>
-            </div>
+            @else
+                <div class="text-center py-8">
+                    <i class="fas fa-box-open text-4xl text-gray-300 mb-3"></i>
+                    <p class="mb-3 text-gray-500">Belum ada produk</p>
+                    <a href="{{ route('products.manage', ['tambah' => 1, 'redirect' => 'builder']) }}" 
+                       class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm inline-block">
+                       + Tambah Produk
+                    </a>
+                </div>
+            @endif
+        </div>
+
+        {{-- Footer --}}
+        @if($products->count() > 0)
+        <div class="px-6 py-4 border-t border-gray-100">
+            <a href="{{ route('products.manage', ['tambah' => 1, 'redirect' => 'builder']) }}" 
+               class="text-blue-600 hover:text-blue-800 text-sm flex items-center gap-1">
+                <i class="fas fa-plus-circle"></i>
+                Tambah Produk Baru
+            </a>
+        </div>
         @endif
     </div>
 </div>
@@ -702,7 +748,50 @@ function escHtml(str) {
 // GLOBAL VARIABLES
 // ============================================
 let currentPageId  = {{ $activePage->id ?? 'null' }};
-let _replacingBlockId = null; // null = tambah baru, angka = ganti produk di blok ini
+let _replacingBlockId = null;
+
+// ============================================
+// PRODUCT TAB FILTER
+// ============================================
+function switchProdTab(tab) {
+    // Update style tiap tab
+    const tabs = { all: 'prodTabAll', umkm: 'prodTabUmkm', digital: 'prodTabDigital' };
+    Object.entries(tabs).forEach(([key, id]) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        if (key === tab) {
+            el.classList.add('text-blue-600', 'border-blue-600', 'bg-blue-50');
+            el.classList.remove('text-gray-500', 'border-transparent');
+        } else {
+            el.classList.remove('text-blue-600', 'border-blue-600', 'bg-blue-50');
+            el.classList.add('text-gray-500', 'border-transparent');
+        }
+    });
+
+    // Filter item
+    const items = document.querySelectorAll('#productListContainer .product-item');
+    let visibleCount = 0;
+    items.forEach(item => {
+        const type = item.getAttribute('data-type') || 'umkm';
+        const show = tab === 'all' || type === tab;
+        item.style.display = show ? '' : 'none';
+        if (show) visibleCount++;
+    });
+
+    // Empty state
+    const emptyState = document.getElementById('prodEmptyState');
+    const emptyText  = document.getElementById('prodEmptyText');
+    if (emptyState) {
+        if (visibleCount === 0) {
+            emptyState.classList.remove('hidden');
+            if (emptyText) emptyText.textContent =
+                tab === 'umkm' ? 'Tidak ada produk fisik' :
+                tab === 'digital'  ? 'Tidak ada produk digital' : 'Tidak ada produk';
+        } else {
+            emptyState.classList.add('hidden');
+        }
+    }
+}
 
 // ============================================
 // TOAST
@@ -881,19 +970,18 @@ function extractYoutubeId(url) {
 // ============================================
 // PRODUCT FUNCTIONS
 // ============================================
-
-// Buka modal untuk TAMBAH blok produk baru
 function openProductModal() {
     if (!currentPageId) { alert('Silakan pilih halaman terlebih dahulu'); return; }
     _replacingBlockId = null;
     document.getElementById('productModalTitle').textContent = 'Pilih Produk';
+    switchProdTab('all'); // reset ke tab Semua setiap kali buka
     showModal('productModal');
 }
 
-// Buka modal untuk GANTI produk di blok yang sudah ada
 function openReplaceProductModal(blockId) {
     _replacingBlockId = blockId;
     document.getElementById('productModalTitle').textContent = 'Ganti Produk';
+    switchProdTab('all');
     showModal('productModal');
 }
 
@@ -906,7 +994,6 @@ function selectProduct(productId, productData) {
     if (!currentPageId) { alert('Silakan pilih halaman terlebih dahulu'); closeProductModal(); return; }
 
     if (_replacingBlockId) {
-        // ── MODE GANTI: update product_id di blok yang sudah ada ──
         const formData = new FormData();
         formData.append('_method', 'PUT');
         formData.append('_token', '{{ csrf_token() }}');
@@ -914,7 +1001,7 @@ function selectProduct(productId, productData) {
         formData.append('type', 'product');
         formData.append('page_id', currentPageId);
 
-        const blockId = _replacingBlockId; // simpan dulu sebelum closeProductModal reset
+        const blockId = _replacingBlockId;
 
         fetch(`/blocks/${blockId}`, {
             method: 'POST',
@@ -939,7 +1026,6 @@ function selectProduct(productId, productData) {
         .catch(() => alert('Terjadi kesalahan saat mengganti produk'));
 
     } else {
-        // ── MODE TAMBAH: buat blok produk baru ──
         const formData = new FormData();
         formData.append('page_id', currentPageId);
         formData.append('type', 'product');
