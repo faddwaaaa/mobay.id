@@ -11,9 +11,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
-/**
- * TransactionController - Handle top-up and withdrawal transactions
- */
 class TransactionController extends Controller
 {
     protected PaymentService $paymentService;
@@ -25,13 +22,89 @@ class TransactionController extends Controller
     }
 
     /**
-     * Show top-up page
-     * GET /dashboard/topup
+     * Show transaction history page
+     * GET /riwayat
      */
-    public function showTopupForm()
+    public function history()
     {
         $user = auth()->user();
 
+        // Ambil transaksi pembayaran (checkout)
+        $payments = \App\Models\Transaction::where('user_id', $user->id)
+            ->whereIn('payment_method', ['gopay', 'qris', 'bca_va', 'bni_va', 'echannel', 'shopeepay', 'credit_card'])
+            ->latest()
+            ->paginate(10, ['*'], 'payments');
+
+        // Ambil transaksi penarikan
+        $withdrawals = Withdrawal::where('user_id', $user->id)
+            ->latest()
+            ->paginate(10, ['*'], 'withdrawals');
+
+        return view('transactions.history', compact('payments', 'withdrawals'));
+    }
+
+    /**
+     * Get payment detail
+     * GET /riwayat/pembayaran/{id}
+     */
+    public function paymentDetail($id)
+    {
+        $transaction = \App\Models\Transaction::where('user_id', auth()->id())
+            ->where('id', $id)
+            ->firstOrFail();
+
+        $notes = is_string($transaction->notes) 
+            ? json_decode($transaction->notes, true) 
+            : ($transaction->notes ?? []);
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'id' => $transaction->id,
+                'order_id' => $transaction->order_id,
+                'transaction_id' => $transaction->transaction_id,
+                'amount' => $transaction->amount,
+                'status' => $transaction->status,
+                'payment_method' => $transaction->payment_method,
+                'notes' => $notes,
+                'created_at' => $transaction->created_at->format('d/m/Y H:i'),
+            ]
+        ]);
+    }
+
+    /**
+     * Get withdrawal detail
+     * GET /riwayat/penarikan/{id}
+     */
+    public function withdrawalDetail($id)
+    {
+        $withdrawal = Withdrawal::where('user_id', auth()->id())
+            ->where('id', $id)
+            ->firstOrFail();
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'id' => $withdrawal->id,
+                'payout_id' => $withdrawal->payout_id,
+                'amount' => $withdrawal->amount,
+                'status' => $withdrawal->status,
+                'bank_name' => $withdrawal->bank_name,
+                'account_number' => $withdrawal->account_number,
+                'account_name' => $withdrawal->account_name,
+                'notes' => $withdrawal->notes,
+                'rejection_reason' => $withdrawal->rejection_reason,
+                'created_at' => $withdrawal->created_at->format('d/m/Y H:i'),
+                'approved_at' => $withdrawal->approved_at?->format('d/m/Y H:i'),
+            ]
+        ]);
+    }
+
+    // ... method lain tetap sama (showTopupForm, createTopUp, dll)
+
+    public function showTopupForm()
+    {
+        $user = auth()->user();
         return view('dashboard.topup', [
             'user'      => $user,
             'balance'   => $user->balance,
@@ -41,21 +114,14 @@ class TransactionController extends Controller
         ]);
     }
 
-    /**
-     * Create top-up transaction
-     * POST /api/topup
-     */
     public function createTopUp(TopUpRequest $request)
     {
         try {
             $user      = auth()->user();
             $amount    = $request->validated('amount');
             $ipAddress = $request->ip();
-
             Log::info('Top-up requested', ['user_id' => $user->id, 'amount' => $amount]);
-
             $response = $this->paymentService->createTopUp($user, $amount, $ipAddress);
-
             return response()->json([
                 'success'    => true,
                 'snap_token' => $response['snap_token'],
@@ -63,71 +129,47 @@ class TransactionController extends Controller
             ]);
         } catch (Exception $e) {
             Log::error('Top-up creation failed', ['user_id' => auth()->id(), 'error' => $e->getMessage()]);
-
             return response()->json(['success' => false, 'message' => $e->getMessage()], 400);
         }
     }
 
-    /**
-     * Handle top-up success
-     * GET /dashboard/topup/success
-     */
     public function topupSuccess(Request $request)
     {
         $orderId = $request->query('order_id');
         if (!$orderId) return redirect('/dashboard')->with('error', 'Transaction ID not found');
-
         $transaction = \App\Models\Transaction::where('order_id', $orderId)
             ->where('user_id', auth()->id())
             ->firstOrFail();
-
         return view('dashboard.topup-success', [
             'transaction' => $transaction,
             'balance'     => auth()->user()->balance,
         ]);
     }
 
-    /**
-     * Handle top-up error
-     * GET /dashboard/topup/error
-     */
     public function topupError(Request $request)
     {
         $orderId = $request->query('order_id');
         if (!$orderId) return redirect('/dashboard')->with('error', 'Transaction ID not found');
-
         $transaction = \App\Models\Transaction::where('order_id', $orderId)
             ->where('user_id', auth()->id())
             ->firstOrFail();
-
         return view('dashboard.topup-error', compact('transaction'));
     }
 
-    /**
-     * Handle top-up pending
-     * GET /dashboard/topup/pending
-     */
     public function topupPending(Request $request)
     {
         $orderId = $request->query('order_id');
         if (!$orderId) return redirect('/dashboard')->with('error', 'Transaction ID not found');
-
         $transaction = \App\Models\Transaction::where('order_id', $orderId)
             ->where('user_id', auth()->id())
             ->firstOrFail();
-
         return view('dashboard.topup-pending', compact('transaction'));
     }
 
-    /**
-     * Get transaction history
-     * GET /api/transactions
-     */
     public function getTransactionHistory(Request $request)
     {
         $user         = auth()->user();
         $transactions = $user->transactions()->latest()->take($request->query('limit', 10))->get();
-
         return response()->json([
             'success'      => true,
             'balance'      => $user->balance,
@@ -143,14 +185,9 @@ class TransactionController extends Controller
         ]);
     }
 
-    /**
-     * Show withdrawal form
-     * GET /dashboard/withdraw
-     */
     public function showWithdrawForm()
     {
         $user = auth()->user();
-
         return view('dashboard.withdraw', [
             'user'        => $user,
             'balance'     => $user->balance,
@@ -160,11 +197,6 @@ class TransactionController extends Controller
         ]);
     }
 
-    /**
-     * Create withdrawal request
-     * POST /withdrawal  ← cocok dengan form dashboard
-     * POST /api/withdraw ← route lama (tetap berfungsi)
-     */
     public function createWithdraw(WithdrawRequest $request)
     {
         try {
@@ -172,7 +204,6 @@ class TransactionController extends Controller
             $data   = $request->validated();
             $amount = (int) $data['amount'];
 
-            // Validasi saldo cukup
             if ((int) $user->balance < $amount) {
                 return response()->json([
                     'success' => false,
@@ -180,7 +211,6 @@ class TransactionController extends Controller
                 ], 400);
             }
 
-            // Validasi minimal
             $minAmount = config('midtrans.withdrawal.min_amount', 50000);
             if ($amount < $minAmount) {
                 return response()->json([
@@ -189,13 +219,8 @@ class TransactionController extends Controller
                 ], 400);
             }
 
-            // Simpan & kurangi saldo dalam satu DB transaction
             $withdrawal = DB::transaction(function () use ($user, $data, $amount) {
-
-                // 1. Kurangi saldo (hold)
                 $user->decrement('balance', $amount);
-
-                // 2. Simpan withdrawal request
                 return Withdrawal::create([
                     'user_id'        => $user->id,
                     'amount'         => $amount,
@@ -234,15 +259,10 @@ class TransactionController extends Controller
         }
     }
 
-    /**
-     * Get withdrawal history
-     * GET /api/withdrawals
-     */
     public function getWithdrawalHistory(Request $request)
     {
         $user        = auth()->user();
         $withdrawals = $user->withdrawals()->latest()->take($request->query('limit', 10))->get();
-
         return response()->json([
             'success'     => true,
             'withdrawals' => $withdrawals->map(fn ($w) => [

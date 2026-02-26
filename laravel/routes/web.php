@@ -93,6 +93,18 @@ Route::prefix('api')->group(function () {
     Route::delete('/cart/{id}',  [CartController::class, 'remove']);
 });
 
+// HISTORY & DETAIL TRANSAKSI — HARUS DI LUAR AUTH & DI ATAS PUBLIC PROFILE
+// HISTORY & DETAIL TRANSAKSI — HARUS DI LUAR AUTH & DI ATAS PUBLIC PROFILE
+// HISTORY & DETAIL TRANSAKSI — HARUS DI LUAR AUTH & DI ATAS PUBLIC PROFILE
+Route::middleware('auth')->group(function () {
+    // ... route lain
+    
+    // Riwayat Transaksi
+    Route::get('/riwayat', [TransactionController::class, 'history'])->name('transactions.history');
+    Route::get('/riwayat/pembayaran/{id}', [TransactionController::class, 'paymentDetail'])->name('transactions.payment-detail');
+    Route::get('/riwayat/penarikan/{id}', [TransactionController::class, 'withdrawalDetail'])->name('transactions.withdrawal-detail');
+});
+
 
 /*
 |--------------------------------------------------------------------------

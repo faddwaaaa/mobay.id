@@ -392,6 +392,12 @@
             Produk
         </a>
 
+        <a href="{{ route('transactions.history') }}"
+   class="s-nav-item {{ request()->routeIs('transactions.*') ? 'active' : '' }}">
+    <span class="s-icon"><i class="fas fa-file-lines"></i></span>
+    Riwayat Transaksi
+</a>
+
         <div class="s-divider"></div>
         <div class="s-label">Preferensi</div>
 
