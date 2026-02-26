@@ -64,7 +64,7 @@
             padding:32px;margin-bottom:32px;display:grid;grid-template-columns:2fr 1fr;gap:24px;align-items:center;">
     <div>
         <div style="font-size:14px;opacity:.85;">Saldo Tersedia</div>
-        <div style="font-size:45px;font-weight:700;margin:8px 0;font-family:'Poppins',sans-serif;">
+        <div style="font-size:50px;font-weight:700;margin:8px 0;font-family:'Poppins',sans-serif;">
             Rp {{ number_format($balance ?? 0,0,',','.') }}
         </div>
         <div style="font-size:13px;opacity:.85;">Penghasilan siap ditarik</div>
