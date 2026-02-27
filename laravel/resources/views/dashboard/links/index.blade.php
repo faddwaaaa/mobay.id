@@ -442,9 +442,9 @@
             <div id="imageField" class="hidden">
                 <label class="block text-sm font-medium mb-1">Upload Gambar</label>
                 <input type="file" id="imageFile" accept="image/*" class="w-full border rounded-lg p-2">
-                <p class="text-xs text-gray-500 mt-1">PNG, JPG, JPEG (Max 5MB)</p>
+                <p class="text-xs text-gray-500 mt-1">PNG, JPG, JPEG — Gambar akan dikompres otomatis sebelum upload</p>
                 <div id="currentImage" class="mt-2 hidden">
-                    <p class="text-xs font-medium mb-1">Gambar saat ini:</p>
+                    <p class="text-xs font-medium mb-1">Preview:</p>
                     <img id="currentImagePreview" src="" class="w-20 h-20 object-cover rounded-lg">
                 </div>
             </div>
@@ -808,6 +808,12 @@ function addBlock(type) {
         { const el = document.getElementById(id); if (el) el.value = ''; });
     document.getElementById('youtubePreview').classList.add('hidden');
 
+    // Reset compression state saat buka modal baru
+    const imageInput = document.getElementById('imageFile');
+    if (imageInput) imageInput._compressedFile = null;
+    const compressionInfo = document.getElementById('compressionInfo');
+    if (compressionInfo) compressionInfo.remove();
+
     if (type === 'text')  document.getElementById('textField').classList.remove('hidden');
     if (type === 'link')  document.getElementById('linkField').classList.remove('hidden');
     if (type === 'video') document.getElementById('videoField').classList.remove('hidden');
@@ -825,6 +831,12 @@ function editBlock(blockId, type, content) {
 
     ['textField','linkField','videoField','imageField','currentImage'].forEach(id =>
         document.getElementById(id).classList.add('hidden'));
+
+    // Reset compression state
+    const imageInput = document.getElementById('imageFile');
+    if (imageInput) imageInput._compressedFile = null;
+    const compressionInfo = document.getElementById('compressionInfo');
+    if (compressionInfo) compressionInfo.remove();
 
     if (type === 'text') {
         document.getElementById('textField').classList.remove('hidden');
@@ -882,6 +894,75 @@ function extractYoutubeId(url) {
     ];
     for (let p of patterns) { const m = url.match(p); if (m) return m[1]; }
     return null;
+}
+
+// ============================================
+// IMAGE COMPRESSION
+// ============================================
+function compressImage(file, maxSizeKB = 80, maxWidth = 800, quality = 0.65) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onerror = () => reject(new Error('Gagal membaca file'));
+        reader.onload = function(e) {
+            const img = new Image();
+            img.onerror = () => reject(new Error('Gagal memuat gambar'));
+            img.onload = function() {
+                const canvas = document.createElement('canvas');
+                let { width, height } = img;
+
+                // Scale down jika terlalu lebar
+                if (width > maxWidth) {
+                    height = Math.round(height * maxWidth / width);
+                    width  = maxWidth;
+                }
+
+                canvas.width  = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+
+                // Kompresi iteratif sampai ukuran target tercapai
+                let q = quality;
+                function tryCompress() {
+                    canvas.toBlob(blob => {
+                        if (!blob) { reject(new Error('Kompresi gagal')); return; }
+                        const sizeKB = blob.size / 1024;
+                        if (sizeKB > maxSizeKB && q > 0.2) {
+                            q -= 0.08;
+                            tryCompress();
+                        } else {
+                            const compressedFile = new File(
+                                [blob],
+                                file.name.replace(/\.[^.]+$/, '.jpg'),
+                                { type: 'image/jpeg', lastModified: Date.now() }
+                            );
+                            resolve({
+                                file:         compressedFile,
+                                originalKB:   (file.size / 1024).toFixed(0),
+                                compressedKB: sizeKB.toFixed(0),
+                                savedKB:      ((file.size - blob.size) / 1024).toFixed(0)
+                            });
+                        }
+                    }, 'image/jpeg', q);
+                }
+                tryCompress();
+            };
+            img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    });
+}
+
+function showCompressionInfo(originalKB, compressedKB, savedKB) {
+    // Hapus info lama jika ada
+    const old = document.getElementById('compressionInfo');
+    if (old) old.remove();
+
+    const el = document.createElement('div');
+    el.id = 'compressionInfo';
+    el.style.cssText = 'margin-top:8px;padding:7px 12px;border-radius:8px;font-size:12px;display:flex;align-items:center;gap:6px;background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0;';
+    el.innerHTML = `<i class="fas fa-check-circle"></i> Dikompres: <b>${originalKB} KB</b>&nbsp;→&nbsp;<b>${compressedKB} KB</b>&nbsp;<span style="color:#86efac;">(hemat ${savedKB} KB)</span>`;
+    document.getElementById('imageFile').parentNode.appendChild(el);
 }
 
 // ============================================
@@ -1011,7 +1092,9 @@ document.getElementById('blockForm').addEventListener('submit', function(e) {
         formData.append('content[youtube_id]', id);
     }
     if (type === 'image') {
-        const f = document.getElementById('imageFile').files[0];
+        const imageInput = document.getElementById('imageFile');
+        // Gunakan file terkompresi jika ada, fallback ke file asli
+        const f = imageInput._compressedFile || imageInput.files[0];
         if (f)            { formData.append('image', f); }
         else if (!isEdit) { alert('Silakan pilih gambar'); return; }
     }
@@ -1064,6 +1147,54 @@ document.addEventListener('DOMContentLoaded', function() {
                     `<img src="https://img.youtube.com/vi/${id}/mqdefault.jpg" class="w-full h-32 object-cover rounded-lg">`;
             } else {
                 document.getElementById('youtubePreview').classList.add('hidden');
+            }
+        });
+    }
+
+    // ============================================
+    // AUTO-COMPRESS GAMBAR SAAT DIPILIH
+    // ============================================
+    const imageFileInput = document.getElementById('imageFile');
+    if (imageFileInput) {
+        imageFileInput._compressedFile = null;
+
+        imageFileInput.addEventListener('change', async function() {
+            const file = this.files[0];
+            if (!file) return;
+
+            // Bersihkan info kompresi lama
+            const oldInfo = document.getElementById('compressionInfo');
+            if (oldInfo) oldInfo.remove();
+
+            // Tampilkan loading state
+            const loadingEl = document.createElement('div');
+            loadingEl.id = 'compressionInfo';
+            loadingEl.style.cssText = 'margin-top:8px;padding:7px 12px;border-radius:8px;font-size:12px;display:flex;align-items:center;gap:6px;background:#eff6ff;color:#2563eb;border:1px solid #bfdbfe;';
+            loadingEl.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Sedang mengompres gambar...`;
+            this.parentNode.appendChild(loadingEl);
+
+            try {
+                const result = await compressImage(file);
+                imageFileInput._compressedFile = result.file;
+                showCompressionInfo(result.originalKB, result.compressedKB, result.savedKB);
+
+                // Preview gambar hasil kompresi
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    document.getElementById('currentImage').classList.remove('hidden');
+                    document.getElementById('currentImagePreview').src = ev.target.result;
+                };
+                reader.readAsDataURL(result.file);
+            } catch (err) {
+                imageFileInput._compressedFile = null;
+                const errEl = document.getElementById('compressionInfo');
+                if (errEl) {
+                    errEl.style.background = '#fef2f2';
+                    errEl.style.color      = '#dc2626';
+                    errEl.style.borderColor = '#fecaca';
+                    errEl.innerHTML = `<i class="fas fa-exclamation-circle"></i> Kompresi gagal, file asli akan digunakan`;
+                }
+                console.error('Kompresi gagal:', err);
             }
         });
     }

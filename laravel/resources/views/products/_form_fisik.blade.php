@@ -12,9 +12,9 @@
                 <div>
                     <div class="flex items-center gap-2">
                         <h1 class="text-xl font-bold text-gray-800">Tambah Produk Fisik</h1>
-                        <span style="font-size: 12px; background: #f0fdf4; color: #16a34a; padding: 3px 10px; border-radius: 999px; font-weight: 600;">UMKM</span>
+                        <span style="font-size: 12px; background: #f0fdf4; color: #16a34a; padding: 3px 10px; border-radius: 999px; font-weight: 600;">Fisik</span>
                     </div>
-                    <p class="text-sm text-gray-500 mt-0.5">Produk fisik, barang, dan produk UMKM lainnya</p>
+                    <p class="text-sm text-gray-500 mt-0.5">Produk fisik, barang, dan produk lainnya</p>
                 </div>
             </div>
         </div>
@@ -22,8 +22,8 @@
         {{-- Form --}}
         <form method="POST" action="{{ route('products.store') }}" enctype="multipart/form-data" class="space-y-6">
             @csrf
-            {{-- Tipe produk sudah fixed: umkm --}}
-            <input type="hidden" name="product_type" value="umkm">
+            {{-- Tipe produk sudah fixed: fisik --}}
+            <input type="hidden" name="product_type" value="fisik">
 
             @if(request('redirect'))
                 <input type="hidden" name="redirect" value="{{ request('redirect') }}">
@@ -75,7 +75,7 @@
                         </div>
                     </div>
 
-                    {{-- Catatan: Tidak ada section File Produk untuk UMKM --}}
+                    {{-- Catatan: Tidak ada section File Produk untuk Fisik --}}
 
                 </div>
 

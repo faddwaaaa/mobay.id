@@ -26,11 +26,11 @@ class ProductController extends Controller
             ->get();
 
         $showForm        = false;
-        $productTypeForm = null; // 'digital' | 'umkm' | null
+        $productTypeForm = null; // 'digital' | 'fisik' | null
         $product         = null;
 
-        // Tambah produk baru — harus digital atau umkm
-        if (in_array($request->tambah, ['digital', 'umkm'])) {
+        // Tambah produk baru — harus digital atau fisik
+        if (in_array($request->tambah, ['digital', 'fisik'])) {
             $showForm        = true;
             $productTypeForm = $request->tambah;
         }
@@ -42,7 +42,7 @@ class ProductController extends Controller
                 ->with('files')
                 ->findOrFail($request->edit);
             $showForm        = true;
-            $productTypeForm = $product->product_type; // 'digital' atau 'umkm'
+            $productTypeForm = $product->product_type; // 'digital' atau 'fisik'
         }
 
         return view('products.manage', compact('products', 'showForm', 'product', 'productTypeForm'));
@@ -96,7 +96,7 @@ class ProductController extends Controller
         ]);
 
         $request->validate([
-            'product_type'   => 'required|in:umkm,digital',
+            'product_type'   => 'required|in:fisik,digital',
             'title'          => 'required|string|max:255',
             'description'    => 'nullable|string',
             'price'          => 'required|numeric|min:0',
@@ -181,7 +181,7 @@ class ProductController extends Controller
         ]);
 
         $request->validate([
-            'product_type'   => 'required|in:umkm,digital',
+            'product_type'   => 'required|in:fisik,digital',
             'title'          => 'required|string|max:255',
             'description'    => 'nullable|string',
             'price'          => 'required|numeric|min:0',

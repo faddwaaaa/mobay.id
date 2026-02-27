@@ -106,7 +106,7 @@
                     Pesanan akan otomatis dibatalkan jika tidak dibayar.
                 </div>
             @endif
-            <a href="javascript:history.go(-2)" class="btn">← Kembali ke Toko</a>
+            <a href="{{ url('/' . ($transaction->user->username ?? '')) }}" class="btn">← Kembali ke Toko</a>
         </div>
     </div>
 </body>
