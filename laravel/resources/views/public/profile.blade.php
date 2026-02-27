@@ -9,14 +9,12 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
-        /* ── Body: background abu di luar, page putih di tengah ── */
         body {
             font-family: system-ui, -apple-system, sans-serif;
             background: #f9fafb;
             min-height: 100vh;
         }
 
-        /* Wrapper utama — lebar 420px, center, seperti tampilan HP */
         .page-wrapper {
             max-width: 420px;
             margin: 0 auto;
@@ -73,28 +71,37 @@
         }
         .cart-badge.visible { display: flex; }
 
-        /* Hamburger button */
         .hamburger {
-            width: 36px; height: 36px;
-            display: flex; flex-direction: column; justify-content: center; gap: 5px;
-            cursor: pointer; padding: 6px; border-radius: 8px; transition: background 0.2s;
+            width: 34px; height: 34px;
+            display: grid;
+            grid-template-columns: repeat(3, 5px);
+            grid-template-rows: repeat(3, 5px);
+            gap: 3.5px;
+            place-content: center;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: background 0.2s, transform 0.15s;
         }
-        .hamburger:hover { background: #f3f4f6; }
+        .hamburger:hover { background: #f3f4f6; transform: scale(1.05); }
+        .hamburger:active { transform: scale(0.93); }
         .hamburger span {
-            width: 100%; height: 2px; background: #374151; border-radius: 2px;
-            transition: all 0.3s ease; display: block;
+            width: 5px; height: 5px;
+            background: #374151;
+            border-radius: 50%;
+            display: block;
+            transition: background 0.2s;
         }
+        .hamburger:hover span { background: #2563eb; }
 
         /* ═══════════════════════════════════════
-           SEARCH BAR (slide-down)
+           SEARCH BAR
         ═══════════════════════════════════════ */
         .search-bar-wrap {
             position: sticky; top: 61px; z-index: 99;
             background: #fff;
             border-bottom: 1px solid #e5e7eb;
             max-height: 0; overflow: hidden;
-            transition: max-height 0.35s cubic-bezier(.4,0,.2,1),
-                        box-shadow 0.35s ease;
+            transition: max-height 0.35s cubic-bezier(.4,0,.2,1), box-shadow 0.35s ease;
         }
         .search-bar-wrap.open {
             max-height: 72px;
@@ -118,18 +125,33 @@
             border: 1.5px solid #e5e7eb; border-radius: 10px;
             font-size: 14px; color: #111827; background: #f9fafb;
             outline: none; transition: border-color 0.2s, background 0.2s;
+            /* FIX: hilangkan tombol X bawaan browser */
+            -webkit-appearance: none;
+            appearance: none;
         }
         .search-input:focus { border-color: #2563eb; background: #fff; }
         .search-input::placeholder { color: #9ca3af; }
+        /* FIX: sembunyikan cancel button bawaan Chrome/Safari */
+        .search-input::-webkit-search-decoration,
+        .search-input::-webkit-search-cancel-button,
+        .search-input::-webkit-search-results-button,
+        .search-input::-webkit-search-results-decoration {
+            -webkit-appearance: none;
+            appearance: none;
+            display: none !important;
+        }
         .search-clear-btn {
             position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
-            width: 18px; height: 18px; border-radius: 50%;
-            background: #9ca3af; color: #fff; font-size: 11px; font-weight: 700;
+            width: 20px; height: 20px; border-radius: 50%;
+            background: #d1d5db; color: #fff;
             border: none; cursor: pointer; display: none;
-            align-items: center; justify-content: center; transition: background 0.2s;
+            align-items: center; justify-content: center;
+            transition: background 0.2s;
+            padding: 0;
         }
+        .search-clear-btn svg { width: 10px; height: 10px; }
         .search-clear-btn.visible { display: flex; }
-        .search-clear-btn:hover { background: #6b7280; }
+        .search-clear-btn:hover { background: #9ca3af; }
 
         /* ═══════════════════════════════════════
            SEARCH RESULTS
@@ -144,10 +166,9 @@
         }
         .search-results-overlay.active { opacity: 1; visibility: visible; }
 
-        /* Panel hasil — ikut page-wrapper, bukan full-screen */
         .search-results-panel {
             position: absolute;
-            top: 133px; /* navbar(61) + searchbar(72) */
+            top: 133px;
             left: 0; right: 0;
             max-height: calc(100vh - 153px);
             background: #fff; border-radius: 0 0 16px 16px;
@@ -171,12 +192,19 @@
         }
         .search-result-item:last-child { border-bottom: none; }
         .search-result-item:hover { background: #f9fafb; }
+
+        /* FIX: thumb dengan warna per tipe, no emoji */
         .search-result-thumb {
             width: 46px; height: 46px; border-radius: 10px;
-            background: #f3f4f6; flex-shrink: 0; overflow: hidden;
-            display: flex; align-items: center; justify-content: center; font-size: 20px;
+            flex-shrink: 0; overflow: hidden;
+            display: flex; align-items: center; justify-content: center;
         }
         .search-result-thumb img { width: 100%; height: 100%; object-fit: cover; }
+        .thumb-product { background: #eff6ff; color: #2563eb; }
+        .thumb-link    { background: #f0fdf4; color: #16a34a; }
+        .thumb-text    { background: #fffbeb; color: #d97706; }
+        .thumb-other   { background: #f3f4f6; color: #6b7280; }
+
         .search-result-info { flex: 1; min-width: 0; }
         .search-result-title {
             font-size: 14px; font-weight: 600; color: #111827;
@@ -186,7 +214,7 @@
             background: #dbeafe; color: #1d4ed8;
             border-radius: 2px; padding: 0 1px; font-weight: 700;
         }
-        .search-result-meta  { font-size: 12px; color: #6b7280; }
+        .search-result-meta  { font-size: 12px; color: #6b7280; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .search-result-price { font-size: 13px; font-weight: 700; color: #2563eb; }
         .search-result-type-badge {
             font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 20px;
@@ -195,13 +223,14 @@
         .badge-product { background: #dbeafe; color: #2563eb; }
         .badge-link    { background: #dcfce7; color: #16a34a; }
         .badge-text    { background: #fef9c3; color: #a16207; }
+        .badge-other   { background: #f3f4f6; color: #6b7280; }
 
         .search-state {
             display: flex; flex-direction: column; align-items: center;
             justify-content: center; padding: 32px 20px; gap: 8px;
             color: #9ca3af; text-align: center;
         }
-        .search-state-icon { font-size: 32px; margin-bottom: 4px; }
+        .search-state-icon { margin-bottom: 4px; display: flex; align-items: center; justify-content: center; }
         .search-state p { font-size: 13px; }
         .search-state strong { display: block; font-size: 15px; color: #374151; margin-bottom: 4px; }
         .search-section-label {
@@ -301,7 +330,7 @@
             width: 80px; height: 80px; border-radius: 50%;
             background: #e5e7eb; margin: 0 auto 10px;
             display: flex; align-items: center; justify-content: center;
-            font-size: 28px; color: #9ca3af;
+            color: #9ca3af;
             border: 3px solid #fff; box-shadow: 0 0 0 2px #e5e7eb;
         }
         .profile-name     { font-size: 17px; font-weight: 700; color: #111827; margin-bottom: 2px; }
@@ -340,7 +369,7 @@
         .block-product:hover { box-shadow: 0 4px 16px rgba(37,99,235,0.1); transform: translateY(-2px); border-color: #bfdbfe; }
         .product-image-wrapper { width: 100%; height: 200px; background: #f3f4f6; display: flex; align-items: center; justify-content: center; overflow: hidden; }
         .product-image-wrapper img { width: 100%; height: 100%; object-fit: cover; }
-        .product-image-placeholder { width: 56px; height: 56px; background: #eff6ff; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 26px; }
+        .product-image-placeholder { width: 56px; height: 56px; background: #eff6ff; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #2563eb; }
         .product-details { padding: 14px 16px 16px; }
         .product-badge { display: inline-flex; align-items: center; gap: 4px; background: #eff6ff; color: #2563eb; font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 6px; margin-bottom: 8px; letter-spacing: 0.3px; }
         .product-title  { font-size: 15px; font-weight: 600; color: #111827; margin-bottom: 10px; line-height: 1.4; }
@@ -350,7 +379,7 @@
         .product-discount-badge { background: #fee2e2; color: #dc2626; font-size: 11px; font-weight: 600; padding: 2px 6px; border-radius: 4px; }
 
         .empty-state { text-align: center; padding: 40px 20px; color: #9ca3af; }
-        .empty-icon  { width: 64px; height: 64px; background: #f3f4f6; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; font-size: 24px; }
+        .empty-icon  { width: 64px; height: 64px; background: #f3f4f6; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; color: #d1d5db; }
 
         /* ═══════════════════════════════════════
            PRODUCT DETAIL MODAL
@@ -406,7 +435,7 @@
         .cart-item { display: flex; gap: 12px; padding: 12px 0; border-bottom: 1px solid #f3f4f6; animation: fadeInUp 0.2s ease; }
         .cart-item-img { width: 64px; height: 64px; border-radius: 10px; background: #f3f4f6; flex-shrink: 0; overflow: hidden; }
         .cart-item-img img { width: 100%; height: 100%; object-fit: cover; }
-        .cart-item-img-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 24px; }
+        .cart-item-img-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: #9ca3af; }
         .cart-item-info { flex: 1; min-width: 0; }
         .cart-item-title { font-size: 13px; font-weight: 600; color: #111827; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 4px; }
         .cart-item-price { font-size: 13px; font-weight: 700; color: #2563eb; margin-bottom: 8px; }
@@ -418,7 +447,6 @@
         .cart-item-remove { align-self: flex-start; margin-top: 2px; flex-shrink: 0; width: 26px; height: 26px; border-radius: 6px; background: none; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #9ca3af; transition: all 0.2s; }
         .cart-item-remove:hover { background: #fee2e2; color: #dc2626; }
         .cart-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 200px; gap: 12px; color: #9ca3af; }
-        .cart-empty-icon { font-size: 40px; }
         .cart-empty p { font-size: 14px; }
         .cart-footer { padding: 16px 20px; border-top: 1px solid #e5e7eb; flex-shrink: 0; background: #fff; }
         .cart-summary { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
@@ -445,18 +473,18 @@
         <div class="navbar-left">
             <div class="hamburger" id="hamburger">
                 <span></span><span></span><span></span>
+                <span></span><span></span><span></span>
+                <span></span><span></span><span></span>
             </div>
             <div class="navbar-title">{{ $user->name }}</div>
         </div>
         <div class="navbar-right">
-            {{-- Tombol Search --}}
             <div class="nav-icon" id="searchBtn" title="Cari">
                 <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                           d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z"/>
                 </svg>
             </div>
-            {{-- Tombol Cart --}}
             <div class="nav-icon" id="cartBtn" title="Keranjang">
                 <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -468,7 +496,7 @@
     </div>
 </div>
 
-{{-- ═══════════ SEARCH BAR (slide-down) ═══════════ --}}
+{{-- ═══════════ SEARCH BAR ═══════════ --}}
 <div class="search-bar-wrap" id="searchBarWrap">
     <div class="search-bar-inner">
         <button class="search-back-btn" id="searchBackBtn" title="Tutup">
@@ -477,9 +505,14 @@
             </svg>
         </button>
         <div class="search-input-wrap">
-            <input type="search" class="search-input" id="searchInput"
+            {{-- FIX: type="text" bukan type="search" agar tidak ada X bawaan browser --}}
+            <input type="text" class="search-input" id="searchInput"
                    placeholder="Cari produk, link, konten..." autocomplete="off">
-            <button class="search-clear-btn" id="searchClearBtn" title="Hapus">✕</button>
+            <button class="search-clear-btn" id="searchClearBtn" title="Hapus">
+                <svg viewBox="0 0 10 10" fill="currentColor">
+                    <path d="M6.41 5l2.3-2.29a1 1 0 00-1.42-1.42L5 3.59 2.71 1.29A1 1 0 001.29 2.71L3.59 5 1.29 7.29a1 1 0 001.42 1.42L5 6.41l2.29 2.3a1 1 0 001.42-1.42z"/>
+                </svg>
+            </button>
         </div>
     </div>
 </div>
@@ -488,15 +521,12 @@
 <div class="search-results-overlay" id="searchResultsOverlay"></div>
 <div class="search-results-panel" id="searchResultsPanel"></div>
 
-{{-- ═══════════ FULLSCREEN MENU OVERLAY ═══════════ --}}
+{{-- ═══════════ FULLSCREEN MENU ═══════════ --}}
 <div class="fullmenu-overlay" id="fullmenuOverlay">
-
     <div class="fullmenu-close-wrap">
         <button class="fullmenu-close" id="fullmenuClose">✕</button>
     </div>
-
     <div class="fullmenu-body">
-
         @if($user->pages && $user->pages->count() > 0)
             <div class="fullmenu-section-label">Pages</div>
             @foreach($user->pages as $userPage)
@@ -510,9 +540,7 @@
                 </div>
             @endforeach
         @endif
-
         <div class="fullmenu-divider"></div>
-
         <div class="fullmenu-section-label">Member Area</div>
         <div class="fullmenu-item" onclick="window.location.href='/login'">
             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -521,7 +549,6 @@
             </svg>
             Login
         </div>
-
     </div>
 </div>
 
@@ -536,7 +563,12 @@
                     @if($user->avatar)
                         <img src="{{ asset('storage/' . $user->avatar) }}" class="avatar" alt="{{ $user->name }}">
                     @else
-                        <div class="avatar-placeholder">👤</div>
+                        <div class="avatar-placeholder">
+                            <svg width="32" height="32" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                            </svg>
+                        </div>
                     @endif
                     <div class="profile-name">{{ $user->name }}</div>
                     <div class="profile-username">{{ '@' . $user->username }}</div>
@@ -547,7 +579,6 @@
 
                 @if($userPage->blocks && $userPage->blocks->count() > 0)
                     @foreach($userPage->blocks->sortBy('position') as $block)
-
                         @if($block->type === 'text')
                             <div class="block block-text" id="block-{{ $block->id }}">{{ $block->content['text'] ?? '' }}</div>
 
@@ -579,9 +610,7 @@
                             </div>
 
                         @elseif($block->type === 'product' && isset($block->product_id) && $block->product_id)
-                            <div class="block"
-                                 id="product-block-{{ $block->id }}"
-                                 data-product-id="{{ $block->product_id }}">
+                            <div class="block" id="product-block-{{ $block->id }}" data-product-id="{{ $block->product_id }}">
                                 <div class="product-skeleton">
                                     <div class="skeleton-img"></div>
                                     <div class="skeleton-body">
@@ -592,11 +621,15 @@
                                 </div>
                             </div>
                         @endif
-
                     @endforeach
                 @else
                     <div class="empty-state">
-                        <div class="empty-icon">📝</div>
+                        <div class="empty-icon">
+                            <svg width="28" height="28" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                            </svg>
+                        </div>
                         Halaman ini belum memiliki konten.
                     </div>
                 @endif
@@ -604,7 +637,12 @@
         @endforeach
     @else
         <div class="empty-state">
-            <div class="empty-icon">📄</div>
+            <div class="empty-icon">
+                <svg width="28" height="28" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                          d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                </svg>
+            </div>
             Belum ada halaman.
         </div>
     @endif
@@ -645,7 +683,7 @@
 <div class="cart-overlay" id="cartOverlay"></div>
 <div class="cart-drawer" id="cartDrawer">
     <div class="cart-header">
-        <h3>🛒 Keranjang Belanja</h3>
+        <h3>Keranjang Belanja</h3>
         <button class="cart-close" onclick="closeCart()">✕</button>
     </div>
     <div class="cart-items" id="cartItems">
@@ -678,7 +716,10 @@ function showToast(msg, type = 'default') {
     toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
 }
 async function apiCall(url, method = 'GET', body = null) {
-    const opts = { method, headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' } };
+    const opts = {
+        method,
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' }
+    };
     if (body) opts.body = JSON.stringify(body);
     const res  = await fetch(url, opts);
     const data = await res.json();
@@ -692,6 +733,20 @@ function escHtml(str) {
     return d.innerHTML;
 }
 
+// ─── SVG ICONS untuk search results (ganti emoji) ────────────────
+const SEARCH_ICONS = {
+    product: `<svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>`,
+    link:    `<svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>`,
+    text:    `<svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>`,
+    other:   `<svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 10h16M4 14h8m-8 4h4"/></svg>`,
+};
+const THUMB_CLASS = { product: 'thumb-product', link: 'thumb-link', text: 'thumb-text', other: 'thumb-other' };
+
+// SVG untuk product placeholder (ganti emoji 🛍️)
+const PRODUCT_PLACEHOLDER_SVG = `<svg width="28" height="28" fill="none" stroke="#2563eb" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>`;
+const CART_PLACEHOLDER_SVG    = `<svg width="24" height="24" fill="none" stroke="#9ca3af" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>`;
+const CART_EMPTY_SVG          = `<svg width="40" height="40" fill="none" stroke="#d1d5db" stroke-width="1.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>`;
+
 // ─── FULLSCREEN MENU ─────────────────────────────────────────────
 const hamburger       = document.getElementById('hamburger');
 const fullmenuOverlay = document.getElementById('fullmenuOverlay');
@@ -702,7 +757,6 @@ function closeMenu() { fullmenuOverlay.classList.remove('active'); document.body
 hamburger.addEventListener('click', openMenu);
 fullmenuClose.addEventListener('click', closeMenu);
 
-// ─── TAB SWITCHING ────────────────────────────────────────────────
 document.querySelectorAll('.fullmenu-item[data-tab]').forEach(item => {
     item.addEventListener('click', () => {
         const tab = item.dataset.tab;
@@ -718,13 +772,13 @@ document.querySelectorAll('.fullmenu-item[data-tab]').forEach(item => {
 function renderProductBlock(container, product) {
     const price      = product.price    ?? 0;
     const discount   = product.discount ?? null;
-    const finalPrice = (discount && discount > 0 && discount < price) ? discount : price;
+    const finalPrice = product.final_price ?? ((discount && discount > 0 && discount < price) ? discount : price);
     const hasDis     = finalPrice < price;
     const discPct    = hasDis ? Math.round(((price - finalPrice) / price) * 100) : 0;
 
     const imgHtml   = product.image_url
         ? `<img src="${product.image_url}" alt="${escHtml(product.title)}">`
-        : `<div class="product-image-placeholder">🛍️</div>`;
+        : `<div class="product-image-placeholder">${PRODUCT_PLACEHOLDER_SVG}</div>`;
     const badgeHtml = hasDis ? `<span class="product-badge">Diskon ${discPct}%</span>` : '';
     const priceHtml = hasDis
         ? `<div class="product-current-price">${formatRupiah(finalPrice)}</div>
@@ -743,22 +797,49 @@ function renderProductBlock(container, product) {
         </div>`;
 }
 
-// ─── DOMContentLoaded ─────────────────────────────────────────────
+// ─── DOMContentLoaded — BATCH LOAD ────────────────────────────────
 document.addEventListener('DOMContentLoaded', function () {
+    // Tracking profile view
     fetch(`/api/profile/{{ $user->username }}/view`, {
-        method: 'POST', headers: { 'X-CSRF-TOKEN': csrfToken, 'Content-Type': 'application/json' }
+        method: 'POST',
+        headers: { 'X-CSRF-TOKEN': csrfToken, 'Content-Type': 'application/json' }
     }).catch(() => {});
 
-    document.querySelectorAll('[data-product-id]').forEach(container => {
-        const pid = container.getAttribute('data-product-id');
-        fetch(`/api/product/${pid}/data`)
-            .then(r => r.json())
-            .then(p  => renderProductBlock(container, p))
-            .catch(() => {
-                container.innerHTML = `<div style="background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:20px;text-align:center;color:#9ca3af;font-size:13px;">Produk tidak tersedia</div>`;
-            });
-    });
+    // ── BATCH: 1 request untuk semua produk ──
+    const productContainers = document.querySelectorAll('[data-product-id]');
+    if (productContainers.length > 0) {
+        const ids = [...new Set(
+            [...productContainers].map(el => el.getAttribute('data-product-id'))
+        )].join(',');
 
+        fetch(`/api/products/batch?ids=${ids}`)
+            .then(r => r.json())
+            .then(productsMap => {
+                productContainers.forEach(container => {
+                    const pid     = container.getAttribute('data-product-id');
+                    const product = productsMap[pid];
+                    if (product) {
+                        renderProductBlock(container, product);
+                    } else {
+                        container.innerHTML = `<div style="background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:20px;text-align:center;color:#9ca3af;font-size:13px;">Produk tidak tersedia</div>`;
+                    }
+                });
+            })
+            .catch(() => {
+                // Fallback: fetch satu per satu jika batch gagal
+                productContainers.forEach(container => {
+                    const pid = container.getAttribute('data-product-id');
+                    fetch(`/api/product/${pid}/data`)
+                        .then(r => r.json())
+                        .then(p  => renderProductBlock(container, p))
+                        .catch(() => {
+                            container.innerHTML = `<div style="background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:20px;text-align:center;color:#9ca3af;font-size:13px;">Produk tidak tersedia</div>`;
+                        });
+                });
+            });
+    }
+
+    // Cart badge
     apiCall('/api/cart').then(d => updateBadge(d.total_items)).catch(() => {});
 });
 
@@ -775,7 +856,8 @@ let currentProductId = null;
 function handleProductClick(productId) {
     if (!productId) return;
     fetch(`/api/product/${productId}/view`, {
-        method: 'POST', headers: { 'X-CSRF-TOKEN': csrfToken, 'Content-Type': 'application/json' }
+        method: 'POST',
+        headers: { 'X-CSRF-TOKEN': csrfToken, 'Content-Type': 'application/json' }
     }).catch(() => {});
 
     fetch(`/api/product/${productId}/data`)
@@ -784,7 +866,7 @@ function handleProductClick(productId) {
             currentProductId = product.id;
             const price      = product.price    ?? 0;
             const discount   = product.discount ?? null;
-            const finalPrice = (discount && discount > 0 && discount < price) ? discount : price;
+            const finalPrice = product.final_price ?? ((discount && discount > 0 && discount < price) ? discount : price);
             const hasDis     = finalPrice < price;
 
             document.getElementById('detailTitle').textContent         = product.title;
@@ -797,7 +879,9 @@ function handleProductClick(productId) {
             if (product.image_url) { img.src = product.image_url; img.style.display = 'block'; }
             else img.style.display = 'none';
 
-            document.getElementById('buyNowBtn').onclick = () => { window.location.href = `/checkout/${product.id}`; };
+            document.getElementById('buyNowBtn').onclick = () => {
+                window.location.href = `/checkout/${product.id}`;
+            };
             document.getElementById('productDetailModal').style.display = 'flex';
             document.body.style.overflow = 'hidden';
         })
@@ -817,7 +901,7 @@ document.getElementById('btnAddToCart').addEventListener('click', async () => {
     try {
         const data = await apiCall('/api/cart/add', 'POST', { product_id: currentProductId, quantity: 1 });
         updateBadge(data.total_items);
-        showToast('✓ Produk ditambahkan ke keranjang!', 'success');
+        showToast('Produk ditambahkan ke keranjang!', 'success');
     } catch (err) { showToast(err.message, 'error'); }
     finally { btn.classList.remove('loading'); }
 });
@@ -837,7 +921,7 @@ async function loadCart() {
     container.innerHTML = `<div class="cart-loading"><div class="spinner"></div> Memuat...</div>`;
     footer.style.display = 'none';
     try { renderCartItems(await apiCall('/api/cart')); }
-    catch { container.innerHTML = `<div class="cart-empty"><div class="cart-empty-icon">⚠️</div><p>Gagal memuat keranjang.</p></div>`; }
+    catch { container.innerHTML = `<div class="cart-empty">${CART_EMPTY_SVG}<p>Gagal memuat keranjang.</p></div>`; }
 }
 
 function renderCartItems(data) {
@@ -847,7 +931,7 @@ function renderCartItems(data) {
     const checkoutBtn = document.getElementById('btnCheckout');
 
     if (!data.items || data.items.length === 0) {
-        container.innerHTML = `<div class="cart-empty"><div class="cart-empty-icon">🛒</div><p>Keranjangmu masih kosong.</p></div>`;
+        container.innerHTML = `<div class="cart-empty">${CART_EMPTY_SVG}<p>Keranjangmu masih kosong.</p></div>`;
         footer.style.display = 'none'; return;
     }
 
@@ -855,11 +939,11 @@ function renderCartItems(data) {
         <div class="cart-item" id="cart-item-${item.id}">
             <div class="cart-item-img">
                 ${item.image_url
-                    ? `<img src="${item.image_url}" alt="${item.title}">`
-                    : `<div class="cart-item-img-placeholder">🛍️</div>`}
+                    ? `<img src="${item.image_url}" alt="${escHtml(item.title)}">`
+                    : `<div class="cart-item-img-placeholder">${CART_PLACEHOLDER_SVG}</div>`}
             </div>
             <div class="cart-item-info">
-                <div class="cart-item-title">${item.title}</div>
+                <div class="cart-item-title">${escHtml(item.title)}</div>
                 <div class="cart-item-price">
                     ${formatRupiah(item.final_price)}
                     ${item.has_discount ? `<span style="font-size:11px;color:#9ca3af;text-decoration:line-through;margin-left:4px;">${formatRupiah(item.original_price)}</span>` : ''}
@@ -925,119 +1009,112 @@ const searchResultsPanel   = document.getElementById('searchResultsPanel');
 
 let searchDebounce = null;
 
-function openSearch() {
-    searchBarWrap.classList.add('open');
-    setTimeout(() => searchInput.focus(), 350);
-}
-function closeSearch() {
-    searchBarWrap.classList.remove('open');
-    hideResults();
-    searchInput.value = '';
-    searchClearBtn.classList.remove('visible');
-}
-function showResults() {
-    searchResultsOverlay.classList.add('active');
-    searchResultsPanel.classList.add('active');
-}
-function hideResults() {
-    searchResultsOverlay.classList.remove('active');
-    searchResultsPanel.classList.remove('active');
-}
+function openSearch()  { searchBarWrap.classList.add('open'); setTimeout(() => searchInput.focus(), 350); }
+function closeSearch() { searchBarWrap.classList.remove('open'); hideResults(); searchInput.value = ''; searchClearBtn.classList.remove('visible'); }
+function showResults() { searchResultsOverlay.classList.add('active'); searchResultsPanel.classList.add('active'); }
+function hideResults() { searchResultsOverlay.classList.remove('active'); searchResultsPanel.classList.remove('active'); }
 
 searchBtn.addEventListener('click', openSearch);
 searchBackBtn.addEventListener('click', closeSearch);
 searchResultsOverlay.addEventListener('click', closeSearch);
+searchClearBtn.addEventListener('click', () => { searchInput.value = ''; searchClearBtn.classList.remove('visible'); hideResults(); searchInput.focus(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && searchBarWrap.classList.contains('open')) closeSearch(); });
 
-searchClearBtn.addEventListener('click', () => {
-    searchInput.value = '';
-    searchClearBtn.classList.remove('visible');
-    hideResults();
-    searchInput.focus();
-});
-
-document.addEventListener('keydown', e => {
-    if (e.key === 'Escape' && searchBarWrap.classList.contains('open')) closeSearch();
-});
-
-// Highlight teks yang cocok
 function highlight(text, query) {
     if (!query || !text) return escHtml(text);
     const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     return escHtml(text).replace(new RegExp(escaped, 'gi'), m => `<mark>${m}</mark>`);
 }
 
-// Render state (loading / kosong / error)
-function renderState(icon, title, sub) {
+// ─── renderState: SVG, no emoji ───────────────────────────────────
+function renderState(stateType, title, sub) {
+    const icons = {
+        loading:   `<svg width="28" height="28" fill="none" stroke="#9ca3af" stroke-width="1.8" viewBox="0 0 24 24" style="animation:spin .8s linear infinite"><path stroke-linecap="round" stroke-linejoin="round" d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"/></svg>`,
+        noresult:  `<svg width="28" height="28" fill="none" stroke="#9ca3af" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 115 11a6 6 0 0112 0z"/></svg>`,
+        error:     `<svg width="28" height="28" fill="none" stroke="#ef4444" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>`,
+    };
     searchResultsPanel.innerHTML = `
         <div class="search-state">
-            <div class="search-state-icon">${icon}</div>
+            <div class="search-state-icon">${icons[stateType] || icons.noresult}</div>
             <strong>${escHtml(title)}</strong>
             ${sub ? `<p>${escHtml(sub)}</p>` : ''}
         </div>`;
 }
 
-// Render hasil pencarian
+// ─── normalizeItem ────────────────────────────────────────────────
+function normalizeItem(raw) {
+    const type  = raw.type || 'other';
+    const title = raw.title || raw.url || '(tanpa judul)';
+    return {
+        id:          raw.id          ?? null,
+        type,
+        title,
+        subtitle:    raw.subtitle    ?? null,
+        image_url:   raw.image_url   ?? null,
+        url:         raw.url         ?? null,
+        price:       raw.price       ?? 0,
+        final_price: raw.final_price ?? raw.price ?? 0,
+        block_id:    raw.block_id    ?? raw.id    ?? null,
+    };
+}
+
+// ─── renderResults: SVG thumb, no emoji ──────────────────────────
 function renderResults(results, query) {
-    if (!results || results.length === 0) {
-        renderState('🔍', 'Tidak ditemukan', `Tidak ada hasil untuk "${query}"`);
+    if (!Array.isArray(results) || !results.length) {
+        renderState('noresult', 'Tidak ditemukan', `Tidak ada hasil untuk "${query}"`);
         return;
     }
 
-    const groups   = { product: [], link: [], text: [], other: [] };
     const labelMap = { product: 'Produk', link: 'Link', text: 'Konten', other: 'Lainnya' };
-
-    results.forEach(r => {
-        const key = groups[r.type] !== undefined ? r.type : 'other';
-        groups[key].push(r);
+    const groups   = { product: [], link: [], text: [], other: [] };
+    results.map(normalizeItem).forEach(item => {
+        const key = groups[item.type] !== undefined ? item.type : 'other';
+        groups[key].push(item);
     });
 
     let html = '';
     for (const [type, items] of Object.entries(groups)) {
         if (!items.length) continue;
-        html += `<div class="search-section-label">${labelMap[type]}</div>`;
+        html += `<div class="search-section-label">${labelMap[type] || 'Lainnya'}</div>`;
         items.forEach(item => {
-            const thumb = item.image_url
+            const thumbClass = THUMB_CLASS[type] || THUMB_CLASS.other;
+            const thumbInner = item.image_url
                 ? `<img src="${item.image_url}" alt="">`
-                : `<span>${type === 'product' ? '🛍️' : type === 'link' ? '🔗' : '📝'}</span>`;
-            const badge    = `<span class="search-result-type-badge badge-${type}">${labelMap[type]}</span>`;
-            const subHtml  = type === 'product'
-                ? `<div class="search-result-price">${formatRupiah(item.final_price ?? item.price ?? 0)}</div>`
-                : item.subtitle
-                    ? `<div class="search-result-meta">${escHtml(item.subtitle)}</div>`
-                    : '';
-            const itemJson = JSON.stringify(item).replace(/</g, '\\u003c').replace(/>/g, '\\u003e').replace(/&/g, '\\u0026');
-            html += `
-                <div class="search-result-item" onclick='handleSearchResultClick(${itemJson})'>
-                    <div class="search-result-thumb">${thumb}</div>
-                    <div class="search-result-info">
-                        <div class="search-result-title">${highlight(item.title, query)}</div>
-                        ${subHtml}
-                    </div>
-                    ${badge}
-                </div>`;
+                : SEARCH_ICONS[type] || SEARCH_ICONS.other;
+            const badge   = `<span class="search-result-type-badge badge-${type in groups ? type : 'other'}">${labelMap[type] || 'Lainnya'}</span>`;
+            const subHtml = type === 'product'
+                ? `<div class="search-result-price">${formatRupiah(item.final_price)}</div>`
+                : (item.subtitle ? `<div class="search-result-meta">${escHtml(String(item.subtitle))}</div>` : '');
+
+            const itemJson = JSON.stringify(item)
+                .replace(/</g, '\\u003c').replace(/>/g, '\\u003e').replace(/&/g, '\\u0026');
+
+            html += `<div class="search-result-item" onclick='handleSearchResultClick(${itemJson})'>
+                <div class="search-result-thumb ${item.image_url ? '' : thumbClass}">${thumbInner}</div>
+                <div class="search-result-info">
+                    <div class="search-result-title">${highlight(String(item.title), query)}</div>
+                    ${subHtml}
+                </div>
+                ${badge}
+            </div>`;
         });
     }
     searchResultsPanel.innerHTML = html;
 }
 
-// Klik hasil pencarian
 function handleSearchResultClick(item) {
     if (item.type === 'product') {
-        closeSearch();
-        handleProductClick(item.id);
+        closeSearch(); handleProductClick(item.id);
     } else if (item.type === 'link') {
         window.open(item.url, '_blank');
     } else {
-        // Scroll ke blok konten
         closeSearch();
         const blockEl = document.getElementById(`block-${item.block_id}`);
         if (blockEl) {
-            // Pastikan tab yang benar aktif dulu
             const tabContent = blockEl.closest('.tab-content');
             if (tabContent && !tabContent.classList.contains('active')) {
                 document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
                 tabContent.classList.add('active');
-                // Update active state di menu juga
                 const tabId = tabContent.id.replace('tab-', '');
                 document.querySelectorAll('.fullmenu-item[data-tab]').forEach(n => {
                     n.classList.toggle('active', n.dataset.tab === tabId);
@@ -1048,44 +1125,42 @@ function handleSearchResultClick(item) {
     }
 }
 
-// Input pencarian dengan debounce
 searchInput.addEventListener('input', () => {
     const q = searchInput.value.trim();
     searchClearBtn.classList.toggle('visible', q.length > 0);
     clearTimeout(searchDebounce);
-
     if (!q) { hideResults(); return; }
-
     showResults();
-    renderState('⏳', 'Mencari...', '');
-
+    renderState('loading', 'Mencari...', '');
     searchDebounce = setTimeout(() => doSearch(q), 350);
 });
 
-// Panggil API search
+// ─── doSearch ─────────────────────────────────────────────────────
 async function doSearch(query) {
     try {
-        const res = await fetch(`/api/search?username=${encodeURIComponent(USERNAME)}&q=${encodeURIComponent(query)}`, {
-            headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': csrfToken }
-        });
-
-        // Kalau response bukan JSON (misal HTML 404/redirect), tangkap duluan
+        const res = await fetch(
+            `/search?username=${encodeURIComponent(USERNAME)}&q=${encodeURIComponent(query)}`,
+            { headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': csrfToken } }
+        );
         const contentType = res.headers.get('content-type') || '';
         if (!contentType.includes('application/json')) {
-            renderState('⚠️', 'Route tidak ditemukan', `Status ${res.status} — pastikan Route::get('/api/search') sudah didaftarkan di routes/api.php`);
+            renderState('error', 'Route tidak ditemukan', `Status ${res.status}`);
             return;
         }
-
-        const data = await res.json();
-        renderResults(data.results ?? data, query);
+        const json = await res.json();
+        let results = Array.isArray(json) ? json : (json.results ?? json.data ?? json.items ?? []);
+        if (!results.length && typeof json === 'object') {
+            for (const val of Object.values(json)) {
+                if (Array.isArray(val) && val.length > 0) { results = val; break; }
+            }
+        }
+        renderResults(results, query);
     } catch (err) {
-        renderState('⚠️', 'Gagal mencari', err && err.message ? err.message : 'Terjadi kesalahan');
-        console.error('Search error:', err);
+        renderState('error', 'Gagal mencari', err?.message || 'Terjadi kesalahan');
     }
 }
-// ─── END SEARCH FEATURE ───────────────────────────────────────────
 </script>
 
-</div>{{-- end .page-wrapper --}}
+</div>
 </body>
 </html>

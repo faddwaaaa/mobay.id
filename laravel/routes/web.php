@@ -213,8 +213,9 @@ Route::get('/preview/{username}', function ($username) {
 |--------------------------------------------------------------------------
 */
 Route::get('/go/{username}', [LinkRedirectController::class, 'redirect'])
-    ->name('link.redirect');
+->name('link.redirect');
 
+Route::get('/search', [SearchController::class, 'search']);
 
 /*
 |--------------------------------------------------------------------------
@@ -230,9 +231,6 @@ Route::get('/{short_code}', function ($short_code) {
 
         $page = $user->pages->first();
 
-        // ✅ FIX: Tracking views dilakukan via AJAX dari blade, bukan di sini
-        // Hapus: $user->increment('profile_views');
-
         return view('public.profile', compact('user', 'page'));
     }
 
@@ -240,7 +238,6 @@ Route::get('/{short_code}', function ($short_code) {
 })->where('short_code', '[a-zA-Z0-9]{6,8}')
   ->name('link.redirect.code');
 
-  Route::get('/search', [SearchController::class, 'search']);
 
 /*
 |--------------------------------------------------------------------------
