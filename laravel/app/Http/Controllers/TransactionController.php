@@ -44,7 +44,7 @@ class TransactionController extends Controller
     }
 
     /**
-     * Get payment detail
+     * Show payment detail page
      * GET /riwayat/pembayaran/{id}
      */
     public function paymentDetail($id)
@@ -57,23 +57,11 @@ class TransactionController extends Controller
             ? json_decode($transaction->notes, true) 
             : ($transaction->notes ?? []);
 
-        return response()->json([
-            'success' => true,
-            'data' => [
-                'id' => $transaction->id,
-                'order_id' => $transaction->order_id,
-                'transaction_id' => $transaction->transaction_id,
-                'amount' => $transaction->amount,
-                'status' => $transaction->status,
-                'payment_method' => $transaction->payment_method,
-                'notes' => $notes,
-                'created_at' => $transaction->created_at->format('d/m/Y H:i'),
-            ]
-        ]);
+        return view('transactions.payment-detail', compact('transaction', 'notes'));
     }
 
     /**
-     * Get withdrawal detail
+     * Show withdrawal detail page
      * GET /riwayat/penarikan/{id}
      */
     public function withdrawalDetail($id)
@@ -82,22 +70,7 @@ class TransactionController extends Controller
             ->where('id', $id)
             ->firstOrFail();
 
-        return response()->json([
-            'success' => true,
-            'data' => [
-                'id' => $withdrawal->id,
-                'payout_id' => $withdrawal->payout_id,
-                'amount' => $withdrawal->amount,
-                'status' => $withdrawal->status,
-                'bank_name' => $withdrawal->bank_name,
-                'account_number' => $withdrawal->account_number,
-                'account_name' => $withdrawal->account_name,
-                'notes' => $withdrawal->notes,
-                'rejection_reason' => $withdrawal->rejection_reason,
-                'created_at' => $withdrawal->created_at->format('d/m/Y H:i'),
-                'approved_at' => $withdrawal->approved_at?->format('d/m/Y H:i'),
-            ]
-        ]);
+        return view('transactions.withdrawal-detail', compact('withdrawal'));
     }
 
     // ... method lain tetap sama (showTopupForm, createTopUp, dll)
