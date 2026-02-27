@@ -22,7 +22,6 @@
         {{-- Form --}}
         <form method="POST" action="{{ route('products.store') }}" enctype="multipart/form-data" class="space-y-6">
             @csrf
-            {{-- Tipe produk sudah fixed: fisik --}}
             <input type="hidden" name="product_type" value="fisik">
 
             @if(request('redirect'))
@@ -55,9 +54,11 @@
                                     </svg>
                                 </div>
                                 <p class="text-gray-700 font-medium text-sm" id="imageUploadText">Klik untuk upload gambar</p>
-                                <p class="text-xs text-gray-500 mt-1">PNG, JPG, JPEG (Max 5MB per gambar)</p>
+                                <p class="text-xs text-gray-400 mt-1">PNG, JPG, JPEG (Maks 10MB per gambar)</p>
                             </label>
                         </div>
+                        {{-- Status processing — subtle --}}
+                        <div id="compressionStatus" class="hidden mb-3"></div>
                         <div id="imagePreviewGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3"></div>
                     </div>
 
@@ -75,14 +76,11 @@
                         </div>
                     </div>
 
-                    {{-- Catatan: Tidak ada section File Produk untuk Fisik --}}
-
                 </div>
 
                 {{-- ===== KANAN ===== --}}
                 <div class="space-y-6">
 
-                    {{-- Harga & Pengaturan --}}
                     <div class="card-section-green p-5 space-y-5">
                         <h3 class="text-base font-semibold text-gray-800">Harga & Pengaturan</h3>
 
@@ -143,14 +141,13 @@
                         </div>
                     </div>
 
-                    {{-- Submit --}}
-                    <button type="submit"
+                    <button type="submit" id="submitBtn"
                         class="w-full text-white py-3 px-4 rounded-lg font-semibold text-base shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center gap-2"
                         style="background: linear-gradient(to right, #16a34a, #15803d);">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                         </svg>
-                        Tambah Produk Fisik
+                        <span id="submitBtnText">Tambah Produk Fisik</span>
                     </button>
 
                     <div class="p-3 bg-green-50 rounded-lg border border-green-100">
@@ -173,8 +170,7 @@
 
 <style>
 .card-section-green {
-    background: white;
-    border-radius: 12px;
+    background: white; border-radius: 12px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.04);
     border: 1px solid rgba(229,231,235,0.6);
 }
@@ -214,6 +210,14 @@
     opacity: 0; transition: opacity 0.2s, transform 0.2s; transform: scale(0.8);
 }
 .preview-image:hover .remove-img-btn { opacity: 1; transform: scale(1); }
+/* Subtle ready dot — hanya muncul di pojok gambar, tidak mencolok */
+.img-ready-dot {
+    position: absolute; bottom: 5px; right: 5px;
+    width: 8px; height: 8px; border-radius: 50%;
+    background: #16a34a; border: 1.5px solid white;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 </style>
 
 <script>
@@ -221,7 +225,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // ===== TOGGLE =====
     function setupToggle(checkId, inputId) {
-        const cb = document.getElementById(checkId);
+        const cb  = document.getElementById(checkId);
         const inp = document.getElementById(inputId);
         cb.addEventListener('change', function () {
             inp.classList.toggle('hidden', !this.checked);
@@ -237,20 +241,14 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     function cleanRupiah(val) { return parseInt(val.replace(/\./g, '')) || 0; }
 
-    const priceInput    = document.getElementById('priceInput');
-    const discountInput = document.getElementById('discountInput');
+    const priceInput      = document.getElementById('priceInput');
+    const discountInput   = document.getElementById('discountInput');
     const discountPreview = document.getElementById('discountPreview');
     const discountAmount  = document.getElementById('discountAmount');
     const discountPct     = document.getElementById('discountPercentage');
 
-    priceInput.addEventListener('input', function () {
-        this.value = formatRupiah(this.value);
-        updateDiscountPreview();
-    });
-    discountInput.addEventListener('input', function () {
-        this.value = formatRupiah(this.value);
-        updateDiscountPreview();
-    });
+    priceInput.addEventListener('input',    function () { this.value = formatRupiah(this.value); updateDiscountPreview(); });
+    discountInput.addEventListener('input', function () { this.value = formatRupiah(this.value); updateDiscountPreview(); });
 
     function updateDiscountPreview() {
         const p = cleanRupiah(priceInput.value);
@@ -264,22 +262,79 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    // ===== IMAGE UPLOAD =====
-    const imageUpload      = document.getElementById('imageUpload');
-    const imagePreviewGrid = document.getElementById('imagePreviewGrid');
-    const imageUploadText  = document.getElementById('imageUploadText');
-    let uploadedImages = [];
-
-    imageUpload.addEventListener('change', function () {
-        Array.from(this.files).forEach((file, i) => {
-            if (!file.type.match('image.*') || file.size > 5 * 1024 * 1024) return;
+    // ===== IMAGE COMPRESSION (internal, tidak ditampilkan ke user) =====
+    function compressImage(file, maxSizeKB = 150, maxWidth = 1024, quality = 0.75) {
+        return new Promise((resolve, reject) => {
             const reader = new FileReader();
-            reader.onload = e => {
-                uploadedImages.push({ id: Date.now() + i, url: e.target.result, file });
-                renderImagePreview();
+            reader.onerror = () => reject(new Error('read error'));
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onerror = () => reject(new Error('load error'));
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    let { width, height } = img;
+                    if (width > maxWidth) { height = Math.round(height * maxWidth / width); width = maxWidth; }
+                    canvas.width = width; canvas.height = height;
+                    canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+                    let q = quality;
+                    function tryCompress() {
+                        canvas.toBlob(blob => {
+                            if (!blob) { reject(new Error('blob error')); return; }
+                            if (blob.size / 1024 > maxSizeKB && q > 0.2) { q -= 0.08; tryCompress(); return; }
+                            resolve({
+                                file: new File([blob], file.name.replace(/\.[^.]+$/, '.jpg'), { type: 'image/jpeg', lastModified: Date.now() }),
+                                previewUrl: URL.createObjectURL(blob)
+                            });
+                        }, 'image/jpeg', q);
+                    }
+                    tryCompress();
+                };
+                img.src = e.target.result;
             };
             reader.readAsDataURL(file);
         });
+    }
+
+    // ===== IMAGE UPLOAD =====
+    const imageUpload       = document.getElementById('imageUpload');
+    const imagePreviewGrid  = document.getElementById('imagePreviewGrid');
+    const imageUploadText   = document.getElementById('imageUploadText');
+    const compressionStatus = document.getElementById('compressionStatus');
+    let uploadedImages = [];
+
+    imageUpload.addEventListener('change', async function () {
+        const files = Array.from(this.files).filter(f => f.type.match('image.*'));
+        if (!files.length) return;
+
+        // Tampilkan loading kecil di sudut area upload — tidak berteriak
+        compressionStatus.classList.remove('hidden');
+        compressionStatus.innerHTML = `
+            <div style="display:flex;align-items:center;gap:6px;color:#9ca3af;font-size:11px;">
+                <svg style="width:12px;height:12px;animation:spin 1s linear infinite;flex-shrink:0;" fill="none" viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" style="opacity:.3"/>
+                    <path fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" style="opacity:.7"/>
+                </svg>
+                Memproses gambar...
+            </div>`;
+
+        const results = await Promise.allSettled(files.map(f => compressImage(f)));
+
+        results.forEach((r, i) => {
+            if (r.status === 'fulfilled') {
+                uploadedImages.push({ id: Date.now() + i, file: r.value.file, previewUrl: r.value.previewUrl });
+            }
+        });
+
+        renderImagePreview();
+
+        // Status selesai — hanya titik hijau kecil + teks ringan
+        compressionStatus.innerHTML = `
+            <div style="display:flex;align-items:center;gap:5px;color:#9ca3af;font-size:11px;">
+                <span style="width:7px;height:7px;border-radius:50%;background:#16a34a;display:inline-block;flex-shrink:0;"></span>
+                ${uploadedImages.length} gambar siap diupload
+            </div>`;
+
+        this.value = '';
     });
 
     function renderImagePreview() {
@@ -288,7 +343,8 @@ document.addEventListener('DOMContentLoaded', function () {
             const div = document.createElement('div');
             div.className = 'preview-image';
             div.innerHTML = `
-                <img src="${img.url}" loading="lazy">
+                <img src="${img.previewUrl}" loading="lazy">
+                <div class="img-ready-dot"></div>
                 <div class="remove-img-btn" data-idx="${idx}">
                     <svg style="width:12px;height:12px;color:white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
@@ -301,9 +357,18 @@ document.addEventListener('DOMContentLoaded', function () {
                 e.stopPropagation();
                 uploadedImages.splice(+this.dataset.idx, 1);
                 renderImagePreview();
+                if (!uploadedImages.length) {
+                    compressionStatus.classList.add('hidden');
+                } else {
+                    compressionStatus.innerHTML = `
+                        <div style="display:flex;align-items:center;gap:5px;color:#9ca3af;font-size:11px;">
+                            <span style="width:7px;height:7px;border-radius:50%;background:#16a34a;display:inline-block;flex-shrink:0;"></span>
+                            ${uploadedImages.length} gambar siap diupload
+                        </div>`;
+                }
             });
         });
-        imageUploadText.textContent = uploadedImages.length > 0
+        imageUploadText.textContent = uploadedImages.length
             ? `Tambah gambar (${uploadedImages.length} terpilih)`
             : 'Klik untuk upload gambar';
     }
@@ -312,16 +377,21 @@ document.addEventListener('DOMContentLoaded', function () {
     document.querySelector('form').addEventListener('submit', function (e) {
         const p = cleanRupiah(priceInput.value);
         const d = cleanRupiah(discountInput.value);
-
-        if (p <= 0) { e.preventDefault(); alert('Harga produk harus lebih dari 0'); return; }
+        if (p <= 0)          { e.preventDefault(); alert('Harga produk harus lebih dari 0'); return; }
         if (d > 0 && d >= p) { e.preventDefault(); alert('Harga diskon harus lebih rendah dari harga normal'); return; }
 
         priceInput.value    = p;
         discountInput.value = d || '';
 
-        const imgDT = new DataTransfer();
-        uploadedImages.forEach(img => imgDT.items.add(img.file));
-        imageUpload.files = imgDT.files;
+        if (uploadedImages.length > 0) {
+            const dt = new DataTransfer();
+            uploadedImages.forEach(img => dt.items.add(img.file));
+            imageUpload.files = dt.files;
+        }
+
+        const btn = document.getElementById('submitBtn');
+        btn.disabled = true; btn.style.opacity = '0.7';
+        document.getElementById('submitBtnText').textContent = 'Menyimpan...';
     });
 });
 </script>
