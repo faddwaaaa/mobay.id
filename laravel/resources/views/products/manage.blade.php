@@ -18,31 +18,67 @@
 }
 .btn-primary:hover { opacity: .9; }
 
+/* ===== DROPDOWN STYLES ===== */
+.add-product-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+.add-dropdown {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: calc(100% + 6px);
+    background: #ffffff;
+    border-radius: 14px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.14);
+    min-width: 200px;
+    overflow: hidden;
+    z-index: 999;
+    border: 1px solid #e5e7eb;
+    animation: dropdownFadeIn 0.15s ease;
+}
+
+@keyframes dropdownFadeIn {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.add-dropdown a {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 13px 16px;
+    text-decoration: none;
+    color: #1e293b;
+    font-size: 14px;
+    font-weight: 500;
+    transition: background 0.15s;
+}
+
+.add-dropdown a:hover { background: #f1f5f9; }
+
+.add-dropdown a:not(:last-child) {
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.add-dropdown .dropdown-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.add-dropdown .dropdown-icon.digital { background: #eff6ff; }
+.add-dropdown .dropdown-icon.fisik   { background: #f0fdf4; }
+
 .links-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px; margin-bottom: 40px; }
 
 .link-card { background: #fff; border-radius: 18px; padding: 18px; box-shadow: 0 10px 28px rgba(0,0,0,.06); transition: .25s ease; border: none; }
 .link-card:hover { transform: translateY(-4px); box-shadow: 0 18px 40px rgba(0,0,0,.08); }
-.link-card-header { display: flex; justify-content: space-between; align-items: center; }
-.link-icon { width: 48px; height: 48px; border-radius: 14px; display: flex; align-items: center; justify-content: center; color: #fff; overflow: hidden; }
-.link-icon img { width: 100%; height: 100%; object-fit: cover; }
-
-.product-status { font-size: 11px; padding: 4px 10px; border-radius: 999px; font-weight: 600; }
-.product-status.active { background: #dcfce7; color: #166534; }
-.product-status.inactive { background: #fee2e2; color: #991b1b; }
-
-.link-card h3 { margin: 12px 0 6px; font-size: 16px; }
-.link-description { font-size: 13px; color: #64748b; min-height: 38px; }
-.link-stats { display: flex; justify-content: space-between; font-size: 12px; color: #475569; margin: 12px 0; }
-
-.product-price { margin-bottom: 14px; }
-.original-price { font-size: 12px; text-decoration: line-through; color: #94a3b8; margin-right: 6px; }
-.discount-price { color: #dc2626; font-weight: 700; }
-.normal-price { font-weight: 700; color: #2563eb; }
-
-.link-actions { display: flex; gap: 8px; }
-.btn-action { flex: 1; border: none; border-radius: 12px; padding: 8px 0; background: #f1f5f9; cursor: pointer; transition: .2s; }
-.btn-action:hover { background: #e2e8f0; }
-.btn-action.delete:hover { background: #fee2e2; color: #991b1b; }
 
 .empty-state { grid-column: 1 / -1; text-align: center; padding: 60px 20px; background: #fff; border-radius: 18px; border: 2px dashed #e5e7eb; }
 .empty-icon { width: 80px; height: 80px; background: linear-gradient(135deg, #2563eb); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; color: #fff; font-size: 32px; }
@@ -54,14 +90,15 @@ table { width: 100%; border-collapse: collapse; }
 th, td { padding: 12px 10px; font-size: 13px; }
 thead { background: #f8fafc; }
 tbody tr:hover { background: #f1f5f9; }
-.status-badge { padding: 4px 10px; border-radius: 999px; font-size: 11px; font-weight: 600; }
-.status-badge.active { background: #dcfce7; color: #166534; }
-.status-badge.inactive { background: #fee2e2; color: #991b1b; }
 </style>
 
 {{-- ================= ADD PRODUCT FORM ================= --}}
 @if($showForm)
-    @include('products._form', ['product' => $product ?? null])
+    @if($productTypeForm === 'digital')
+        @include('products._form_digital')
+    @else
+        @include('products._form_fisik')
+    @endif
 @else
 
     {{-- ================= HEADER ================= --}}
@@ -77,9 +114,34 @@ tbody tr:hover { background: #f1f5f9; }
                     <p style="margin: 0; font-size: 14px; color: #797979;">Kelola semua produk digital kamu</p>
                 </div>
             </div>
-            <a href="{{ route('products.manage', ['tambah' => 1]) }}" class="btn-primary">
-                <i class="fas fa-plus"></i> Tambah Produk
-            </a>
+
+            {{-- DROPDOWN TAMBAH PRODUK - HEADER --}}
+            <div class="add-product-wrapper" id="headerDropdownWrapper">
+                <button class="btn-primary" onclick="toggleDropdown('headerDropdown', event)">
+                    <i class="fas fa-plus"></i> Tambah Produk
+                    <i class="fas fa-chevron-down" style="font-size: 10px; margin-left: 2px;"></i>
+                </button>
+                <div class="add-dropdown" id="headerDropdown">
+                    <a href="{{ route('products.manage', ['tambah' => 'digital']) }}">
+                        <div class="dropdown-icon digital">
+                            <i class="fas fa-file-download" style="color: #2563eb; font-size: 13px;"></i>
+                        </div>
+                        <div>
+                            <div style="font-weight: 600; font-size: 13px;">Produk Digital</div>
+                            <div style="font-size: 11px; color: #94a3b8; margin-top: 1px;">File, template, e-book</div>
+                        </div>
+                    </a>
+                    <a href="{{ route('products.manage', ['tambah' => 'fisik']) }}">
+                        <div class="dropdown-icon fisik">
+                            <i class="fas fa-box" style="color: #16a34a; font-size: 13px;"></i>
+                        </div>
+                        <div>
+                            <div style="font-weight: 600; font-size: 13px;">Produk Fisik</div>
+                            <div style="font-size: 11px; color: #94a3b8; margin-top: 1px;">Produk Fisik, barang</div>
+                        </div>
+                    </a>
+                </div>
+            </div>
         </div>
     </div>
     @endif
@@ -90,9 +152,34 @@ tbody tr:hover { background: #f1f5f9; }
         <div class="empty-icon"><i class="fas fa-box-open"></i></div>
         <h3>Belum ada produk</h3>
         <p>Tambahkan produk pertama kamu untuk mulai berjualan</p>
-        <a href="{{ route('products.manage', ['tambah' => 1]) }}" class="btn-primary">
-            <i class="fas fa-plus"></i> Tambah Produk
-        </a>
+
+        {{-- DROPDOWN TAMBAH PRODUK - EMPTY STATE --}}
+        <div class="add-product-wrapper" id="emptyDropdownWrapper" style="display: inline-block;">
+            <button class="btn-primary" onclick="toggleDropdown('emptyDropdown', event)">
+                <i class="fas fa-plus"></i> Tambah Produk
+                <i class="fas fa-chevron-down" style="font-size: 10px; margin-left: 2px;"></i>
+            </button>
+            <div class="add-dropdown" id="emptyDropdown" style="left: 50%; transform: translateX(-50%); right: auto;">
+                <a href="{{ route('products.manage', ['tambah' => 'digital']) }}">
+                    <div class="dropdown-icon digital">
+                        <i class="fas fa-file-download" style="color: #2563eb; font-size: 13px;"></i>
+                    </div>
+                    <div>
+                        <div style="font-weight: 600; font-size: 13px;">Produk Digital</div>
+                        <div style="font-size: 11px; color: #94a3b8; margin-top: 1px;">File, template, e-book</div>
+                    </div>
+                </a>
+                <a href="{{ route('products.manage', ['tambah' => 'fisik']) }}">
+                    <div class="dropdown-icon fisik">
+                        <i class="fas fa-box" style="color: #16a34a; font-size: 13px;"></i>
+                    </div>
+                    <div>
+                        <div style="font-weight: 600; font-size: 13px;">Produk Fisik</div>
+                        <div style="font-size: 11px; color: #94a3b8; margin-top: 1px;">Produk Fisik, barang</div>
+                    </div>
+                </a>
+            </div>
+        </div>
     </div>
     @endif
 
@@ -109,7 +196,15 @@ tbody tr:hover { background: #f1f5f9; }
                 @endif
             </div>
             <div class="p-4">
-                <h3 class="font-semibold text-sm mb-1 truncate">{{ $product->title }}</h3>
+                <div class="flex items-center gap-2 mb-1">
+                    <h3 class="font-semibold text-sm truncate flex-1">{{ $product->title }}</h3>
+                    {{-- Badge tipe produk --}}
+                    @if($product->product_type === 'digital')
+                        <span style="font-size: 10px; background: #eff6ff; color: #2563eb; padding: 2px 7px; border-radius: 999px; font-weight: 600; white-space: nowrap;">Digital</span>
+                    @else
+                        <span style="font-size: 10px; background: #f0fdf4; color: #16a34a; padding: 2px 7px; border-radius: 999px; font-weight: 600; white-space: nowrap;">Fisik</span>
+                    @endif
+                </div>
                 <div class="text-xs text-gray-500 mb-2">{{ Str::limit($product->description, 40) }}</div>
                 <div class="mb-3">
                     @if($product->discount && $product->discount > 0)
@@ -141,7 +236,7 @@ tbody tr:hover { background: #f1f5f9; }
     </div>
     @endif
 
-    {{-- ================= TABLE REALTIME ================= --}}
+    {{-- ================= TABLE LIFETIME SALES ================= --}}
     <div class="bg-white rounded-xl shadow p-6">
         <h2 class="font-semibold mb-4">Product Lifetime Sales</h2>
         <div class="overflow-x-auto">
@@ -181,20 +276,36 @@ tbody tr:hover { background: #f1f5f9; }
 @include('products.edit')
 
 <script>
+// ===== DROPDOWN TOGGLE =====
+function toggleDropdown(id, event) {
+    event.stopPropagation();
+    const dropdown = document.getElementById(id);
+    const isOpen = dropdown.style.display === 'block';
+
+    // Tutup semua dropdown dulu
+    document.querySelectorAll('.add-dropdown').forEach(d => d.style.display = 'none');
+
+    if (!isOpen) {
+        dropdown.style.display = 'block';
+    }
+}
+
+// Klik di luar untuk tutup dropdown
+document.addEventListener('click', function() {
+    document.querySelectorAll('.add-dropdown').forEach(d => d.style.display = 'none');
+});
+
+// ===== EDIT MODAL =====
 function openEditModal(id) {
     const modal = document.getElementById('editModal-' + id);
     if (!modal) return;
-
     const overlay = document.getElementById('editModalOverlay-' + id);
     const card    = document.getElementById('editModalCard-' + id);
-
     modal.classList.remove('hidden');
     modal.style.display = 'flex';
     modal.style.pointerEvents = 'auto';
-
     if (overlay) { overlay.classList.remove('hidden'); requestAnimationFrame(() => overlay.style.opacity = '1'); }
     if (card)    { requestAnimationFrame(() => { card.style.opacity = '1'; card.style.transform = 'translateY(0)'; }); }
-
     document.body.style.overflow = 'hidden';
 }
 
@@ -202,10 +313,8 @@ function closeEditModal(id) {
     const modal   = document.getElementById('editModal-' + id);
     const overlay = document.getElementById('editModalOverlay-' + id);
     const card    = document.getElementById('editModalCard-' + id);
-
     if (overlay) overlay.style.opacity = '0';
     if (card)    { card.style.opacity = '0'; card.style.transform = 'translateY(20px)'; }
-
     setTimeout(() => {
         if (modal)   { modal.style.display = 'none'; modal.classList.add('hidden'); }
         if (overlay) overlay.classList.add('hidden');

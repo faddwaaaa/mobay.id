@@ -25,22 +25,27 @@ class ProductController extends Controller
             ->latest()
             ->get();
 
-        $showForm = false;
-        $product = null;
+        $showForm        = false;
+        $productTypeForm = null; // 'digital' | 'umkm' | null
+        $product         = null;
 
-        if ($request->tambah) {
-            $showForm = true;
+        // Tambah produk baru — harus digital atau umkm
+        if (in_array($request->tambah, ['digital', 'umkm'])) {
+            $showForm        = true;
+            $productTypeForm = $request->tambah;
         }
 
+        // Edit produk — pakai tipe produk yang sudah tersimpan
         if ($request->edit) {
             $product = Product::where('user_id', Auth::id())
                 ->with('images')
                 ->with('files')
                 ->findOrFail($request->edit);
-            $showForm = true;
+            $showForm        = true;
+            $productTypeForm = $product->product_type; // 'digital' atau 'umkm'
         }
 
-        return view('products.manage', compact('products', 'showForm', 'product'));
+        return view('products.manage', compact('products', 'showForm', 'product', 'productTypeForm'));
     }
 
     /**
