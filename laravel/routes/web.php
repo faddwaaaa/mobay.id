@@ -20,7 +20,8 @@ use App\Http\Controllers\{
     LinksController,
     CheckoutController,
     LandingController,
-    CartController
+    CartController,
+    SearchController
 };
 
 /*
@@ -240,6 +241,7 @@ Route::get('/{short_code}', function ($short_code) {
 })->where('short_code', '[a-zA-Z0-9]{6,8}')
   ->name('link.redirect.code');
 
+  Route::get('/search', [SearchController::class, 'search']);
 
 /*
 |--------------------------------------------------------------------------
