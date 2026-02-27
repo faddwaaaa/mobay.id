@@ -21,9 +21,9 @@ use App\Http\Controllers\{
     CheckoutController,
     LandingController,
     CartController,
+    PaymentAccountController,
     SearchController
 };
-
 /*
 |--------------------------------------------------------------------------
 | LANDING PAGE
@@ -54,6 +54,33 @@ Route::get('/checkout/pending', [CheckoutController::class, 'pending'])->name('c
 Route::get('/checkout/{productId}', [CheckoutController::class, 'show'])->name('checkout.show');
 Route::post('/checkout/process', [CheckoutController::class, 'process'])->name('checkout.process');
 Route::post('/midtrans/webhook', [CheckoutController::class, 'webhook'])->name('midtrans.webhook');
+
+
+// File: routes/web.php (tambahkan di dalam middleware auth group)
+
+Route::middleware(['auth', 'verified'])->prefix('payment')->name('payment.')->group(function () {
+
+    // Main page — list saved accounts
+    Route::get('/accounts', [PaymentAccountController::class, 'index'])
+        ->name('accounts.index');
+
+    // Save new account
+    Route::post('/accounts', [PaymentAccountController::class, 'store'])
+        ->name('accounts.store');
+
+    // Set as default
+    Route::patch('/accounts/{paymentAccount}/default', [PaymentAccountController::class, 'setDefault'])
+        ->name('accounts.default');
+
+    // Delete account (requires PIN in body)
+    Route::delete('/accounts/{paymentAccount}', [PaymentAccountController::class, 'destroy'])
+        ->name('accounts.destroy');
+
+    // Verify bank account number via Midtrans
+    Route::post('/accounts/verify', [PaymentAccountController::class, 'verifyAccount'])
+        ->name('accounts.verify');
+
+});
 
 
 /*
