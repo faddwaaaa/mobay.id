@@ -398,6 +398,12 @@
     Riwayat Transaksi
 </a>
 
+<a href="{{ route('payment.accounts.index') }}"
+   class="s-nav-item {{ request()->routeIs('payment.accounts.*') ? 'active' : '' }}">
+    <span class="s-icon"><i class="fas fa-building-columns"></i></span>
+    Rekening Bank
+</a>
+
         <div class="s-divider"></div>
         <div class="s-label">Preferensi</div>
 

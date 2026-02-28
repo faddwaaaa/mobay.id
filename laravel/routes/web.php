@@ -21,9 +21,9 @@ use App\Http\Controllers\{
     CheckoutController,
     LandingController,
     CartController,
+    PaymentAccountController,
     SearchController
 };
-
 /*
 |--------------------------------------------------------------------------
 | LANDING PAGE
@@ -54,6 +54,33 @@ Route::get('/checkout/pending', [CheckoutController::class, 'pending'])->name('c
 Route::get('/checkout/{productId}', [CheckoutController::class, 'show'])->name('checkout.show');
 Route::post('/checkout/process', [CheckoutController::class, 'process'])->name('checkout.process');
 Route::post('/midtrans/webhook', [CheckoutController::class, 'webhook'])->name('midtrans.webhook');
+
+
+// File: routes/web.php (tambahkan di dalam middleware auth group)
+
+Route::middleware(['auth', 'verified'])->prefix('payment')->name('payment.')->group(function () {
+
+    // Main page — list saved accounts
+    Route::get('/accounts', [PaymentAccountController::class, 'index'])
+        ->name('accounts.index');
+
+    // Save new account
+    Route::post('/accounts', [PaymentAccountController::class, 'store'])
+        ->name('accounts.store');
+
+    // Set as default
+    Route::patch('/accounts/{paymentAccount}/default', [PaymentAccountController::class, 'setDefault'])
+        ->name('accounts.default');
+
+    // Delete account (requires PIN in body)
+    Route::delete('/accounts/{paymentAccount}', [PaymentAccountController::class, 'destroy'])
+        ->name('accounts.destroy');
+
+    // Verify bank account number via Midtrans
+    Route::post('/accounts/verify', [PaymentAccountController::class, 'verifyAccount'])
+        ->name('accounts.verify');
+
+});
 
 
 /*
@@ -213,8 +240,9 @@ Route::get('/preview/{username}', function ($username) {
 |--------------------------------------------------------------------------
 */
 Route::get('/go/{username}', [LinkRedirectController::class, 'redirect'])
-    ->name('link.redirect');
+->name('link.redirect');
 
+Route::get('/search', [SearchController::class, 'search']);
 
 /*
 |--------------------------------------------------------------------------
@@ -230,9 +258,6 @@ Route::get('/{short_code}', function ($short_code) {
 
         $page = $user->pages->first();
 
-        // ✅ FIX: Tracking views dilakukan via AJAX dari blade, bukan di sini
-        // Hapus: $user->increment('profile_views');
-
         return view('public.profile', compact('user', 'page'));
     }
 
@@ -240,7 +265,6 @@ Route::get('/{short_code}', function ($short_code) {
 })->where('short_code', '[a-zA-Z0-9]{6,8}')
   ->name('link.redirect.code');
 
-  Route::get('/search', [SearchController::class, 'search']);
 
 /*
 |--------------------------------------------------------------------------

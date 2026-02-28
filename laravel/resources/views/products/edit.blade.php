@@ -1,7 +1,7 @@
 @foreach($products as $product)
 
 {{-- ============================================================
-     MODAL EDIT PRODUK — dirender di body level via @push('modals')
+     MODAL EDIT PRODUK
 ============================================================ --}}
 @push('modals')
 
@@ -72,14 +72,14 @@
                                 id="editProductType-{{ $product->id }}"
                                 class="edit-input"
                                 onchange="editToggleFileSection(this, {{ $product->id }})">
-                            <option value="umkm"    {{ ($product->product_type ?? 'umkm') === 'umkm'    ? 'selected' : '' }}>Produk UMKM (Fisik)</option>
-                            <option value="digital" {{ ($product->product_type ?? '') === 'digital'     ? 'selected' : '' }}>Produk Digital</option>
+                            <option value="fisik"   {{ ($product->product_type ?? 'fisik') === 'fisik'   ? 'selected' : '' }}>Produk Fisik</option>
+                            <option value="digital" {{ ($product->product_type ?? '') === 'digital'      ? 'selected' : '' }}>Produk Digital</option>
                         </select>
                     </div>
 
                     {{-- ===== FILE PRODUK DIGITAL ===== --}}
                     <div id="editFileSection-{{ $product->id }}"
-                         class="edit-card p-4 {{ ($product->product_type ?? 'umkm') === 'digital' ? '' : 'hidden' }}">
+                         class="edit-card p-4 {{ ($product->product_type ?? 'fisik') === 'digital' ? '' : 'hidden' }}">
                         <div class="flex items-center justify-between mb-3">
                             <div>
                                 <h3 class="text-sm font-semibold text-gray-800">File Produk Digital</h3>
@@ -172,13 +172,13 @@
                         @endif
                     </div>
 
-                    {{-- ===== TAMBAH GAMBAR BARU ===== --}}
+                    {{-- ===== TAMBAH GAMBAR BARU (dengan kompresi) ===== --}}
                     <div class="edit-card p-4">
                         <div class="flex items-center justify-between mb-3">
                             <div>
                                 <h3 class="text-sm font-semibold text-gray-800">Tambah Gambar Baru</h3>
-                                <p class="text-xs text-gray-500 mt-0.5">PNG, JPG, JPEG (Max 5MB per gambar)</p>
-                            </div>
+                                <p class="text-xs text-gray-500 mt-0.5">PNG, JPG, JPEG</p>
+                            </div> 
                             <div class="p-2 bg-blue-50 rounded-lg">
                                 <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
@@ -186,18 +186,22 @@
                             </div>
                         </div>
                         <div class="border-2 border-dashed border-gray-200 rounded-xl p-4 text-center hover:border-blue-400 transition-colors cursor-pointer">
-                            <input type="file" id="editNewImages-{{ $product->id }}" name="new_images[]" multiple accept="image/*" class="hidden"
-                                   onchange="previewNewImages(event, {{ $product->id }})">
+                            {{-- INPUT TETAP name="images[]" agar controller menerima --}}
+                            <input type="file" id="editNewImages-{{ $product->id }}" name="images[]" multiple accept="image/*" class="hidden">
                             <label for="editNewImages-{{ $product->id }}" class="cursor-pointer block">
-                                <div class="mx-auto w-10 h-10 bg-blue-50 rounded-full flex items-center justify-content mb-2">
+                                <div class="mx-auto w-10 h-10 bg-blue-50 rounded-full flex items-center justify-center mb-2">
                                     <svg class="w-5 h-5 text-blue-500 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
                                     </svg>
                                 </div>
-                                <p class="text-sm text-gray-700 font-medium">Klik untuk upload gambar baru</p>
+                                <p class="text-sm text-gray-700 font-medium" id="editImgUploadText-{{ $product->id }}">Klik untuk upload gambar baru</p>
+                                <p class="text-xs text-gray-400 mt-1">Gambar akan dikompresi otomatis</p>
                             </label>
                         </div>
-                        <div id="preview-new-images-{{ $product->id }}" class="grid grid-cols-3 sm:grid-cols-4 gap-2 mt-3"></div>
+                        {{-- Status kompresi (subtle, abu-abu kecil) --}}
+                        <div id="editImgStatus-{{ $product->id }}" class="hidden mt-2"></div>
+                        {{-- Preview grid --}}
+                        <div id="editImgPreview-{{ $product->id }}" class="grid grid-cols-3 sm:grid-cols-4 gap-2 mt-3"></div>
                     </div>
 
                     {{-- ===== INFO PRODUK ===== --}}
@@ -218,14 +222,14 @@
                         <h3 class="text-sm font-semibold text-gray-800 mb-1">Harga & Diskon</h3>
                         <div>
                             <label class="edit-label">Harga Normal (Rp)</label>
-                            <input type="text" id="price-{{ $product->id }}" name="price"
+                            <input type="text" id="editPrice-{{ $product->id }}" name="price"
                                    value="{{ number_format($product->price,0,',','.') }}"
                                    oninput="formatRupiah(this)" class="edit-input" placeholder="Contoh: 100.000">
                             <p class="text-xs text-gray-400 mt-1">Harga akan otomatis diformat: Rp 100.000</p>
                         </div>
                         <div>
                             <label class="edit-label">Harga Setelah Diskon <span class="text-xs font-normal text-gray-400">(opsional)</span></label>
-                            <input type="text" id="discount-{{ $product->id }}" name="discount"
+                            <input type="text" id="editDiscount-{{ $product->id }}" name="discount"
                                    value="{{ $product->discount ? number_format($product->discount,0,',','.') : '' }}"
                                    oninput="formatRupiah(this)" class="edit-input" placeholder="Kosongkan jika tidak ada diskon">
                             <p class="text-xs text-blue-500 mt-1 flex items-center gap-1">
@@ -310,7 +314,7 @@
 @endforeach
 
 {{-- ============================================================
-     STYLES — cukup di-render sekali (tidak di dalam @push)
+     STYLES
 ============================================================ --}}
 <style>
 .edit-card {
@@ -355,13 +359,31 @@
 .edit-toggle-checkbox:checked + .edit-toggle-label { background:#3b82f6; }
 .edit-toggle-checkbox:checked + .edit-toggle-label::after { transform:translateX(20px); }
 
-/* Scrollbar di dalam modal */
-#editModalCard-* ::-webkit-scrollbar { width:4px; }
-#editModalCard-* ::-webkit-scrollbar-thumb { background:#d1d5db; border-radius:4px; }
+/* Preview gambar baru di modal edit */
+.edit-preview-img-wrap {
+    position: relative; border-radius: 8px; overflow: hidden;
+    aspect-ratio: 1; background: #f5f5f5;
+}
+.edit-preview-img-wrap img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s; }
+.edit-preview-img-wrap:hover img { transform: scale(1.05); }
+.edit-preview-remove {
+    position: absolute; top: 4px; right: 4px;
+    width: 22px; height: 22px; background: rgba(239,68,68,0.9); border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; cursor: pointer;
+    opacity: 0; transition: opacity 0.2s, transform 0.2s; transform: scale(0.8);
+}
+.edit-preview-img-wrap:hover .edit-preview-remove { opacity: 1; transform: scale(1); }
+.edit-img-ready-dot {
+    position: absolute; bottom: 4px; right: 4px;
+    width: 7px; height: 7px; border-radius: 50%;
+    background: #2563eb; border: 1.5px solid white;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+@keyframes editSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 </style>
 
 {{-- ============================================================
-     SCRIPTS — fungsi open/close + semua helper
+     SCRIPTS
 ============================================================ --}}
 <script>
 // ===== OPEN / CLOSE =====
@@ -369,20 +391,15 @@ function openEditModal(id) {
     const overlay = document.getElementById('editModalOverlay-' + id);
     const modal   = document.getElementById('editModal-' + id);
     const card    = document.getElementById('editModalCard-' + id);
-
     if (!modal) return;
-
     overlay.classList.remove('hidden');
     modal.classList.remove('hidden');
-    modal.style.display      = 'flex';
+    modal.style.display       = 'flex';
     modal.style.pointerEvents = 'auto';
-
-    // force reflow sebelum transisi
-    card.getBoundingClientRect();
+    card.getBoundingClientRect(); // force reflow
     overlay.style.opacity = '1';
     card.style.opacity    = '1';
     card.style.transform  = 'translateY(0)';
-
     document.body.style.overflow = 'hidden';
 }
 
@@ -390,13 +407,10 @@ function closeEditModal(id) {
     const overlay = document.getElementById('editModalOverlay-' + id);
     const modal   = document.getElementById('editModal-' + id);
     const card    = document.getElementById('editModalCard-' + id);
-
     if (!modal) return;
-
     overlay.style.opacity = '0';
     card.style.opacity    = '0';
     card.style.transform  = 'translateY(20px)';
-
     setTimeout(() => {
         modal.style.display = 'none';
         modal.classList.add('hidden');
@@ -405,13 +419,11 @@ function closeEditModal(id) {
     }, 250);
 }
 
-// Escape key
 document.addEventListener('keydown', function(e) {
     if (e.key !== 'Escape') return;
     document.querySelectorAll('[id^="editModal-"]').forEach(modal => {
         if (modal.style.display === 'flex') {
-            const id = modal.id.replace('editModal-', '');
-            closeEditModal(id);
+            closeEditModal(modal.id.replace('editModal-', ''));
         }
     });
 });
@@ -419,11 +431,10 @@ document.addEventListener('keydown', function(e) {
 // ===== TOGGLE FILE SECTION =====
 function editToggleFileSection(select, productId) {
     const section = document.getElementById('editFileSection-' + productId);
-    if (!section) return;
-    section.classList.toggle('hidden', select.value !== 'digital');
+    if (section) section.classList.toggle('hidden', select.value !== 'digital');
 }
 
-// ===== FILE UPLOAD =====
+// ===== FILE UPLOAD (non-image, tetap utuh) =====
 const _editUploadedFiles = {};
 
 function editHandleFiles(event, productId) {
@@ -486,42 +497,8 @@ function editToggleInput(checkbox, inputId) {
     const input = document.getElementById(inputId);
     if (!input) return;
     input.classList.toggle('hidden', !checkbox.checked);
-    if (checkbox.checked) { input.focus(); }
-    else { input.value = ''; }
-}
-
-// ===== PREVIEW IMAGE =====
-function previewNewImages(event, productId) {
-    const container = document.getElementById('preview-new-images-' + productId);
-    container.innerHTML = '';
-    Array.from(event.target.files).forEach((file, index) => {
-        if (!file.type.startsWith('image/')) return;
-        const reader = new FileReader();
-        reader.onload = e => {
-            const div = document.createElement('div');
-            div.className = 'relative group rounded-xl overflow-hidden border-2 border-gray-100 hover:border-blue-300 transition-all';
-            div.style.aspectRatio = '1';
-            div.innerHTML = `
-                <img src="${e.target.result}" class="w-full h-full object-cover">
-                <button type="button" onclick="removePreviewImage(this, ${index}, ${productId})"
-                        class="absolute top-1.5 right-1.5 w-6 h-6 bg-red-500 hover:bg-red-600 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all shadow-sm">
-                    <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
-                    </svg>
-                </button>`;
-            container.appendChild(div);
-        };
-        reader.readAsDataURL(file);
-    });
-}
-
-function removePreviewImage(btn, index, productId) {
-    btn.parentElement.remove();
-    const input = document.querySelector(`#editModal-${productId} input[name="new_images[]"]`);
-    if (!input) return;
-    const dt = new DataTransfer();
-    Array.from(input.files).forEach((f, i) => { if (i !== index) dt.items.add(f); });
-    input.files = dt.files;
+    if (checkbox.checked) input.focus();
+    else input.value = '';
 }
 
 // ===== FORMAT RUPIAH =====
@@ -529,4 +506,145 @@ function formatRupiah(input) {
     const angka = input.value.replace(/[^0-9]/g, '');
     input.value = angka ? new Intl.NumberFormat('id-ID').format(angka) : '';
 }
+
+// =========================================================
+// IMAGE COMPRESSION — sama persis dengan form tambah produk
+// =========================================================
+function editCompressImage(file, maxSizeKB = 150, maxWidth = 1024, quality = 0.75) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onerror = () => reject(new Error('read error'));
+        reader.onload = function(e) {
+            const img = new Image();
+            img.onerror = () => reject(new Error('load error'));
+            img.onload = function() {
+                const canvas = document.createElement('canvas');
+                let { width, height } = img;
+                if (width > maxWidth) { height = Math.round(height * maxWidth / width); width = maxWidth; }
+                canvas.width = width; canvas.height = height;
+                canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+                let q = quality;
+                function tryCompress() {
+                    canvas.toBlob(blob => {
+                        if (!blob) { reject(new Error('blob error')); return; }
+                        if (blob.size / 1024 > maxSizeKB && q > 0.2) { q -= 0.08; tryCompress(); return; }
+                        resolve({
+                            file: new File([blob], file.name.replace(/\.[^.]+$/, '.jpg'), { type: 'image/jpeg', lastModified: Date.now() }),
+                            previewUrl: URL.createObjectURL(blob)
+                        });
+                    }, 'image/jpeg', q);
+                }
+                tryCompress();
+            };
+            img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    });
+}
+
+// State gambar baru per produk
+const _editUploadedImages = {};
+
+// Setup listener kompresi gambar — dipanggil setelah DOM ready
+function _setupEditImageCompression(productId) {
+    const input      = document.getElementById('editNewImages-' + productId);
+    const statusEl   = document.getElementById('editImgStatus-' + productId);
+    const previewEl  = document.getElementById('editImgPreview-' + productId);
+    const labelText  = document.getElementById('editImgUploadText-' + productId);
+
+    if (!input) return;
+    if (_editUploadedImages[productId] === undefined) _editUploadedImages[productId] = [];
+
+    input.addEventListener('change', async function() {
+        const files = Array.from(this.files).filter(f => f.type.match('image.*'));
+        if (!files.length) return;
+
+        // Status loading — subtle
+        statusEl.classList.remove('hidden');
+        statusEl.innerHTML = `
+            <div style="display:flex;align-items:center;gap:6px;color:#9ca3af;font-size:11px;">
+                <svg style="width:12px;height:12px;animation:editSpin 1s linear infinite;flex-shrink:0;" fill="none" viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" style="opacity:.3"/>
+                    <path fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" style="opacity:.7"/>
+                </svg>
+                Mengompresi gambar...
+            </div>`;
+
+        const results = await Promise.allSettled(files.map(f => editCompressImage(f)));
+        results.forEach((r, i) => {
+            if (r.status === 'fulfilled') {
+                _editUploadedImages[productId].push({
+                    id: Date.now() + i,
+                    file: r.value.file,
+                    previewUrl: r.value.previewUrl
+                });
+            }
+        });
+
+        _renderEditImagePreview(productId, previewEl, labelText, statusEl, input);
+
+        // Status selesai — titik hijau kecil
+        statusEl.innerHTML = `
+            <div style="display:flex;align-items:center;gap:5px;color:#9ca3af;font-size:11px;">
+                <span style="width:7px;height:7px;border-radius:50%;background:#2563eb;display:inline-block;flex-shrink:0;"></span>
+                ${_editUploadedImages[productId].length} gambar siap diupload
+            </div>`;
+
+        this.value = ''; // reset input agar bisa pilih file yang sama lagi
+    });
+}
+
+function _renderEditImagePreview(productId, previewEl, labelText, statusEl, input) {
+    const images = _editUploadedImages[productId] || [];
+    previewEl.innerHTML = '';
+
+    images.forEach((img, idx) => {
+        const div = document.createElement('div');
+        div.className = 'edit-preview-img-wrap';
+        div.innerHTML = `
+            <img src="${img.previewUrl}" loading="lazy">
+            <div class="edit-img-ready-dot"></div>
+            <div class="edit-preview-remove" data-idx="${idx}">
+                <svg style="width:10px;height:10px;color:white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </div>`;
+        previewEl.appendChild(div);
+    });
+
+    // Event hapus preview
+    previewEl.querySelectorAll('.edit-preview-remove').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            _editUploadedImages[productId].splice(+this.dataset.idx, 1);
+            _renderEditImagePreview(productId, previewEl, labelText, statusEl, input);
+            if (!_editUploadedImages[productId].length) {
+                statusEl.classList.add('hidden');
+            } else {
+                statusEl.innerHTML = `
+                    <div style="display:flex;align-items:center;gap:5px;color:#9ca3af;font-size:11px;">
+                        <span style="width:7px;height:7px;border-radius:50%;background:#2563eb;display:inline-block;flex-shrink:0;"></span>
+                        ${_editUploadedImages[productId].length} gambar siap diupload
+                    </div>`;
+            }
+        });
+    });
+
+    // Sinkronisasi file ke input (DataTransfer trick)
+    const dt = new DataTransfer();
+    images.forEach(img => dt.items.add(img.file));
+    input.files = dt.files;
+
+    labelText.textContent = images.length
+        ? `Tambah lagi (${images.length} dipilih)`
+        : 'Klik untuk upload gambar baru';
+}
+
+// Inisialisasi semua modal setelah DOM siap
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('[id^="editNewImages-"]').forEach(el => {
+        const productId = el.id.replace('editNewImages-', '');
+        _setupEditImageCompression(productId);
+    });
+});
 </script>

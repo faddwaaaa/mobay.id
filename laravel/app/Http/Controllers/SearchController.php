@@ -25,23 +25,21 @@ class SearchController extends Controller
 
         $results = [];
 
-        // Load semua pages + blocks. Product di-load manual per block
-        // supaya tidak bergantung pada nama relasi yang mungkin beda
         $pages = $user->pages()->with('blocks')->get();
 
         foreach ($pages as $page) {
             foreach ($page->blocks as $block) {
-                $type    = $block->type;
-                $content = is_array($block->content)
+                // PENTING: selalu gunakan key 'type' yang sama persis
+                $blockType = $block->type;
+                $content   = is_array($block->content)
                     ? $block->content
-                    : json_decode($block->content, true) ?? [];
+                    : (json_decode($block->content, true) ?? []);
 
                 // ── Blok Produk ─────────────────────────────────
-                if ($type === 'product') {
+                if ($blockType === 'product') {
                     $productId = $block->product_id ?? $content['product_id'] ?? null;
                     if (!$productId) continue;
 
-                    // Coba load product langsung dari DB agar aman
                     $product = Product::find($productId);
                     if (!$product) continue;
 
@@ -55,51 +53,60 @@ class SearchController extends Controller
                             ? $discount : $price;
 
                         $results[] = [
-                            'type'        => 'product',
+                            'type'        => 'product',   // ← key 'type' konsisten
                             'id'          => $product->id,
-                            'title'       => $product->title,
-                            'subtitle'    => $product->description,
+                            'title'       => $product->title ?? '(tanpa judul)',
+                            'subtitle'    => $product->description ?? '',
                             'price'       => $price,
                             'final_price' => $finalPrice,
                             'image_url'   => $product->image_url ?? null,
                             'block_id'    => $block->id,
+                            'url'         => null,
                         ];
                     }
                 }
 
                 // ── Blok Link ────────────────────────────────────
-                if ($type === 'link') {
+                if ($blockType === 'link') {
                     $title = $content['title'] ?? '';
                     $url   = $content['url']   ?? '';
+
+                    // Cari di title DAN url
                     if (
                         stripos($title, $q) !== false ||
                         stripos($url, $q) !== false
                     ) {
                         $results[] = [
-                            'type'      => 'link',
-                            'id'        => $block->id,
-                            'title'     => $title ?: $url,
-                            'subtitle'  => $url,
-                            'url'       => $url,
-                            'image_url' => null,
-                            'block_id'  => $block->id,
+                            'type'        => 'link',      // ← key 'type' konsisten
+                            'id'          => $block->id,
+                            // FIX: jika title kosong, gunakan url sebagai judul
+                            'title'       => ($title !== '') ? $title : ($url ?: '(tanpa judul)'),
+                            'subtitle'    => $url,
+                            'url'         => $url,
+                            'image_url'   => null,
+                            'block_id'    => $block->id,
+                            'price'       => 0,
+                            'final_price' => 0,
                         ];
                     }
                 }
 
                 // ── Blok Teks ────────────────────────────────────
-                if ($type === 'text') {
+                if ($blockType === 'text') {
                     $text = $content['text'] ?? '';
-                    if (stripos($text, $q) !== false) {
+                    if ($text !== '' && stripos($text, $q) !== false) {
                         $results[] = [
-                            'type'      => 'text',
-                            'id'        => $block->id,
-                            'title'     => mb_strlen($text) > 60
+                            'type'        => 'text',      // ← key 'type' konsisten
+                            'id'          => $block->id,
+                            'title'       => mb_strlen($text) > 60
                                 ? mb_substr($text, 0, 60) . '...'
                                 : $text,
-                            'subtitle'  => 'Teks konten',
-                            'image_url' => null,
-                            'block_id'  => $block->id,
+                            'subtitle'    => 'Teks konten',
+                            'url'         => null,
+                            'image_url'   => null,
+                            'block_id'    => $block->id,
+                            'price'       => 0,
+                            'final_price' => 0,
                         ];
                     }
                 }
