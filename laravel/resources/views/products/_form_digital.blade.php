@@ -75,12 +75,12 @@
                         </div>
                     </div>
 
-                    {{-- File Produk untuk Pembeli --}}
+                    {{-- ===== FILE / LINK UNTUK PEMBELI ===== --}}
                     <div class="card-section p-5">
                         <div class="flex items-center justify-between mb-4">
                             <div>
                                 <h3 class="text-base font-semibold text-gray-800">File untuk Pembeli <span class="text-red-500">*</span></h3>
-                                <p class="text-sm text-gray-500">File yang diterima pembeli setelah transaksi</p>
+                                <p class="text-sm text-gray-500">File atau link yang diterima pembeli setelah transaksi</p>
                             </div>
                             <div class="p-2.5 bg-green-50 rounded-lg">
                                 <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -89,22 +89,119 @@
                             </div>
                         </div>
 
-                        <div class="border-2 border-dashed border-gray-300 rounded-xl p-5 text-center hover:border-green-400 transition-colors cursor-pointer mb-4">
-                            <input type="file" name="files[]" multiple class="hidden" id="fileUpload"
-                                   accept="image/*,.zip,.rar,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.mp3,.mp4,.mov,.ai,.psd,.fig,.sketch">
-                            <label for="fileUpload" class="cursor-pointer block">
-                                <div class="mx-auto w-12 h-12 bg-green-50 rounded-full flex items-center justify-center mb-3">
-                                    <svg class="w-6 h-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                        {{-- Platform Selector --}}
+                        <div class="mb-4">
+                            <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Platform</p>
+                            <div class="flex flex-wrap gap-2" id="platformBtns">
+                                <button type="button" class="platform-btn active" data-platform="upload">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                                    </svg>
+                                    Upload
+                                </button>
+                                <button type="button" class="platform-btn" data-platform="dropbox">
+                                    <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M6 2L0 6l6 4-6 4 6 4 6-4-6-4 6-4L6 2zm12 0l-6 4 6 4-6 4 6 4 6-4-6-4 6-4-6-4zM6 16.5L0 12.5l6 4zm12 0l6-4-6 4z"/>
+                                    </svg>
+                                    Dropbox
+                                </button>
+                                <button type="button" class="platform-btn" data-platform="gdrive">
+                                    <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M4.585 18.832L6.17 21.5a2 2 0 001.732 1h8.196a2 2 0 001.732-1l1.585-2.668H4.585zM12 3L2 19.5h4L12 8l6 11.5h4L12 3zM8 14l4-7 4 7H8z"/>
+                                    </svg>
+                                    G-Drive
+                                </button>
+                                <button type="button" class="platform-btn" data-platform="other">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+                                    </svg>
+                                    Other
+                                </button>
+                            </div>
+                        </div>
+
+                        {{-- hidden input untuk menyimpan platform yang dipilih --}}
+                        <input type="hidden" name="file_platform" id="filePlatform" value="upload">
+
+                        {{-- PANEL: Upload --}}
+                        <div id="panel-upload">
+                            <div class="border-2 border-dashed border-gray-300 rounded-xl p-5 text-center hover:border-green-400 transition-colors cursor-pointer mb-4">
+                                <input type="file" name="files[]" multiple class="hidden" id="fileUpload"
+                                       accept="image/*,.zip,.rar,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.mp3,.mp4,.mov,.ai,.psd,.fig,.sketch">
+                                <label for="fileUpload" class="cursor-pointer block">
+                                    <div class="mx-auto w-12 h-12 bg-green-50 rounded-full flex items-center justify-center mb-3">
+                                        <svg class="w-6 h-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                                        </svg>
+                                    </div>
+                                    <p class="text-gray-700 font-medium text-sm" id="fileUploadText">Upload file untuk pembeli</p>
+                                    <p class="text-xs text-gray-400 mt-1">ZIP, RAR, PDF, DOC, gambar, dan format lainnya</p>
+                                    <p class="text-xs text-blue-400 mt-2">※ Bisa upload multiple file sekaligus</p>
+                                </label>
+                            </div>
+                            <div id="fileStatus" class="hidden mb-3"></div>
+                            <div id="fileList" class="space-y-2"></div>
+                        </div>
+
+                        {{-- PANEL: Dropbox URL --}}
+                        <div id="panel-dropbox" class="hidden">
+                            <div class="platform-url-wrap" style="--accent:#0061ff;">
+                                <div class="platform-url-icon" style="background:#e8f0ff;">
+                                    <svg class="w-5 h-5" viewBox="0 0 24 24" fill="#0061ff">
+                                        <path d="M6 2L0 6l6 4-6 4 6 4 6-4-6-4 6-4L6 2zm12 0l-6 4 6 4-6 4 6 4 6-4-6-4 6-4-6-4zM6 16.5L0 12.5l6 4zm12 0l6-4-6 4z"/>
                                     </svg>
                                 </div>
-                                <p class="text-gray-700 font-medium text-sm" id="fileUploadText">Upload file untuk pembeli</p>
-                                <p class="text-xs text-gray-400 mt-1">ZIP, RAR, PDF, DOC, gambar, dan format lainnya</p>
-                                <p class="text-xs text-blue-400 mt-2">※ Bisa upload multiple file sekaligus</p>
-                            </label>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-xs font-semibold text-gray-700 mb-1">Link Dropbox</p>
+                                    <input type="url" name="file_url" id="urlDropbox"
+                                           class="platform-url-input"
+                                           placeholder="https://www.dropbox.com/s/..."
+                                           oninput="validateUrl(this, 'dropbox.com')">
+                                    <p class="url-hint">Pastikan link bersifat publik atau "Anyone with link"</p>
+                                </div>
+                            </div>
+                            <div id="urlDropboxFeedback" class="url-feedback hidden"></div>
                         </div>
-                        <div id="fileStatus" class="hidden mb-3"></div>
-                        <div id="fileList" class="space-y-2"></div>
+
+                        {{-- PANEL: Google Drive URL --}}
+                        <div id="panel-gdrive" class="hidden">
+                            <div class="platform-url-wrap" style="--accent:#34a853;">
+                                <div class="platform-url-icon" style="background:#e6f4ea;">
+                                    <svg class="w-5 h-5" viewBox="0 0 24 24" fill="#34a853">
+                                        <path d="M4.585 18.832L6.17 21.5a2 2 0 001.732 1h8.196a2 2 0 001.732-1l1.585-2.668H4.585zM12 3L2 19.5h4L12 8l6 11.5h4L12 3zM8 14l4-7 4 7H8z"/>
+                                    </svg>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-xs font-semibold text-gray-700 mb-1">Link Google Drive</p>
+                                    <input type="url" name="file_url" id="urlGdrive"
+                                           class="platform-url-input"
+                                           placeholder="https://drive.google.com/file/d/..."
+                                           oninput="validateUrl(this, 'drive.google.com')">
+                                    <p class="url-hint">Pastikan sharing diset ke "Anyone with link can view"</p>
+                                </div>
+                            </div>
+                            <div id="urlGdriveFeedback" class="url-feedback hidden"></div>
+                        </div>
+
+                        {{-- PANEL: Other URL --}}
+                        <div id="panel-other" class="hidden">
+                            <div class="platform-url-wrap" style="--accent:#6366f1;">
+                                <div class="platform-url-icon" style="background:#eef2ff;">
+                                    <svg class="w-5 h-5" fill="none" stroke="#6366f1" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+                                    </svg>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-xs font-semibold text-gray-700 mb-1">URL File / Link Download</p>
+                                    <input type="url" name="file_url" id="urlOther"
+                                           class="platform-url-input"
+                                           placeholder="https://...">
+                                    <p class="url-hint">Bisa berupa link WeTransfer, Mediafire, OneDrive, dsb.</p>
+                                </div>
+                            </div>
+                            <div id="urlOtherFeedback" class="url-feedback hidden"></div>
+                        </div>
+
                     </div>
 
                 </div>
@@ -170,7 +267,7 @@
                             </svg>
                             <div class="text-xs text-gray-700">
                                 <p class="font-medium text-blue-700">Tips Produk Digital</p>
-                                <p class="mt-0.5">Pastikan file sudah lengkap. Pembeli akan langsung mengunduh file setelah pembayaran berhasil.</p>
+                                <p class="mt-0.5">Pastikan file atau link sudah bisa diakses. Pembeli akan mendapatkan akses setelah pembayaran berhasil.</p>
                             </div>
                         </div>
                     </div>
@@ -242,6 +339,51 @@
     display: flex; align-items: center; justify-content: center; cursor: pointer; margin-left: 8px; flex-shrink: 0;
 }
 .file-remove:hover { background: #fee2e2; }
+
+/* ===== PLATFORM BUTTON ===== */
+.platform-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 7px 16px; border-radius: 999px; font-size: 13px; font-weight: 500;
+    border: 1.5px solid #d1d5db; color: #374151; background: white;
+    cursor: pointer; transition: all 0.18s; user-select: none;
+}
+.platform-btn:hover { border-color: #3b82f6; color: #2563eb; background: #eff6ff; }
+.platform-btn.active {
+    background: #2563eb; color: white; border-color: #2563eb;
+    box-shadow: 0 2px 8px rgba(37,99,235,0.25);
+}
+
+/* ===== URL INPUT AREA ===== */
+.platform-url-wrap {
+    display: flex; align-items: flex-start; gap: 12px;
+    background: #fafafa; border: 1.5px solid #e5e7eb;
+    border-radius: 12px; padding: 14px 16px;
+    transition: border-color 0.2s;
+}
+.platform-url-wrap:focus-within {
+    border-color: var(--accent, #22c55e);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent, #22c55e) 12%, transparent);
+}
+.platform-url-icon {
+    width: 38px; height: 38px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.platform-url-input {
+    width: 100%; padding: 8px 10px;
+    border: 1.5px solid #e5e7eb; border-radius: 8px;
+    font-size: 13px; background: white; transition: all 0.2s; color: #1f2937;
+}
+.platform-url-input:focus { outline: none; border-color: var(--accent, #22c55e); box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent, #22c55e) 12%, transparent); }
+.url-hint { font-size: 11px; color: #9ca3af; margin-top: 5px; }
+
+/* feedback validasi */
+.url-feedback {
+    margin-top: 8px; padding: 8px 12px; border-radius: 8px;
+    font-size: 12px; display: flex; align-items: center; gap-6px;
+}
+.url-feedback.valid   { background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; }
+.url-feedback.invalid { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+
 @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 </style>
 
@@ -283,7 +425,70 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    // ===== COMPRESSION CONFIG (internal) =====
+    // ===== PLATFORM SWITCHER =====
+    const platformHidden = document.getElementById('filePlatform');
+    const panels = {
+        upload:  document.getElementById('panel-upload'),
+        dropbox: document.getElementById('panel-dropbox'),
+        gdrive:  document.getElementById('panel-gdrive'),
+        other:   document.getElementById('panel-other'),
+    };
+    const urlInputs = {
+        dropbox: document.getElementById('urlDropbox'),
+        gdrive:  document.getElementById('urlGdrive'),
+        other:   document.getElementById('urlOther'),
+    };
+
+    document.getElementById('platformBtns').addEventListener('click', function(e) {
+        const btn = e.target.closest('.platform-btn');
+        if (!btn) return;
+        const platform = btn.dataset.platform;
+
+        // update tombol aktif
+        document.querySelectorAll('.platform-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        // tampilkan panel yang sesuai
+        Object.entries(panels).forEach(([key, el]) => {
+            el.classList.toggle('hidden', key !== platform);
+        });
+
+        // set value hidden input
+        platformHidden.value = platform;
+
+        // disable/enable name="file_url" agar tidak bentrok saat upload
+        Object.entries(urlInputs).forEach(([key, inp]) => {
+            inp.disabled = (key !== platform);
+            inp.removeAttribute('name');
+        });
+        if (platform !== 'upload' && urlInputs[platform]) {
+            urlInputs[platform].setAttribute('name', 'file_url');
+            urlInputs[platform].disabled = false;
+        }
+    });
+
+    // init: disable semua url input kecuali yang aktif (default: upload)
+    Object.values(urlInputs).forEach(inp => { inp.disabled = true; inp.removeAttribute('name'); });
+
+    // ===== VALIDASI URL =====
+    window.validateUrl = function(input, domain) {
+        const platform = input.id.replace('url', '').toLowerCase();
+        const fbEl = document.getElementById('url' + input.id.replace('url','') + 'Feedback');
+        if (!fbEl) return;
+        const val = input.value.trim();
+        if (!val) { fbEl.classList.add('hidden'); return; }
+        const isValid = domain ? val.includes(domain) : val.startsWith('http');
+        fbEl.classList.remove('hidden', 'valid', 'invalid');
+        if (isValid) {
+            fbEl.classList.add('valid');
+            fbEl.innerHTML = `<svg style="width:13px;height:13px;flex-shrink:0;margin-right:5px" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg> Link valid`;
+        } else {
+            fbEl.classList.add('invalid');
+            fbEl.innerHTML = `<svg style="width:13px;height:13px;flex-shrink:0;margin-right:5px" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg> Pastikan link dari ${domain || 'URL yang valid'}`;
+        }
+    };
+
+    // ===== COMPRESSION CONFIG =====
     const COMPRESS_CONFIG = {
         thumbnail: { maxSizeKB: 150,  maxWidth: 1024, quality: 0.75, minQuality: 0.20, step: 0.08 },
         hd:        { maxSizeKB: 1024, maxWidth: 1920, quality: 0.88, minQuality: 0.65, step: 0.05 }
@@ -324,7 +529,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function isImg(file) { return file.type.match('image.*'); }
 
-    // Subtle inline status — abu-abu kecil, tidak mencolok
     function showProcessing(el, msg) {
         el.classList.remove('hidden');
         el.innerHTML = `<div style="display:flex;align-items:center;gap:6px;color:#9ca3af;font-size:11px;">
@@ -352,15 +556,12 @@ document.addEventListener('DOMContentLoaded', function () {
     imageUpload.addEventListener('change', async function () {
         const files = Array.from(this.files).filter(isImg);
         if (!files.length) return;
-
         showProcessing(imageStatus, 'Memproses gambar...');
-
         const results = await Promise.allSettled(files.map(f => compressImage(f, 'thumbnail')));
         results.forEach((r, i) => {
             if (r.status === 'fulfilled')
                 uploadedImages.push({ id: Date.now() + i, file: r.value.file, previewUrl: r.value.previewUrl });
         });
-
         renderImagePreview();
         showReady(imageStatus, uploadedImages.length, '#2563eb');
         this.value = '';
@@ -395,9 +596,7 @@ document.addEventListener('DOMContentLoaded', function () {
             : 'Klik untuk upload gambar tampilan';
     }
 
-    // ===== FILE UNTUK PEMBELI =====
-    // Gambar  → compress HD (internal, tidak ditampilkan ke user)
-    // Lainnya → utuh
+    // ===== FILE UNTUK PEMBELI (hanya aktif di panel upload) =====
     const fileUpload     = document.getElementById('fileUpload');
     const fileList       = document.getElementById('fileList');
     const fileUploadText = document.getElementById('fileUploadText');
@@ -425,10 +624,8 @@ document.addEventListener('DOMContentLoaded', function () {
         });
 
         renderFileList();
-
         if (uploadedFiles.length) showReady(fileStatus, uploadedFiles.length, '#16a34a');
         else fileStatus.classList.add('hidden');
-
         this.value = '';
     });
 
@@ -473,11 +670,24 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // ===== FORM SUBMIT =====
     document.querySelector('form').addEventListener('submit', function (e) {
-        const p = cleanRupiah(priceInput.value);
-        const d = cleanRupiah(discountInput.value);
-        if (p <= 0)          { e.preventDefault(); alert('Harga produk harus lebih dari 0'); return; }
+        const p        = cleanRupiah(priceInput.value);
+        const d        = cleanRupiah(discountInput.value);
+        const platform = platformHidden.value;
+
+        if (p <= 0) { e.preventDefault(); alert('Harga produk harus lebih dari 0'); return; }
         if (d > 0 && d >= p) { e.preventDefault(); alert('Harga diskon harus lebih rendah dari harga normal'); return; }
-        if (!uploadedFiles.length) { e.preventDefault(); alert('Produk digital wajib memiliki minimal 1 file'); return; }
+
+        // Validasi sesuai platform
+        if (platform === 'upload') {
+            if (!uploadedFiles.length) { e.preventDefault(); alert('Produk digital wajib memiliki minimal 1 file'); return; }
+        } else {
+            const activeInput = urlInputs[platform];
+            if (!activeInput || !activeInput.value.trim()) {
+                e.preventDefault();
+                alert('Masukkan link file terlebih dahulu');
+                return;
+            }
+        }
 
         priceInput.value    = p;
         discountInput.value = d || '';
@@ -488,9 +698,11 @@ document.addEventListener('DOMContentLoaded', function () {
             imageUpload.files = dt.files;
         }
 
-        const dt = new DataTransfer();
-        uploadedFiles.forEach(f => dt.items.add(f.file));
-        fileUpload.files = dt.files;
+        if (platform === 'upload' && uploadedFiles.length) {
+            const dt = new DataTransfer();
+            uploadedFiles.forEach(f => dt.items.add(f.file));
+            fileUpload.files = dt.files;
+        }
 
         const btn = document.getElementById('submitBtn');
         btn.disabled = true; btn.style.opacity = '0.7';

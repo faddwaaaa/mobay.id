@@ -26,23 +26,21 @@ class ProductController extends Controller
             ->get();
 
         $showForm        = false;
-        $productTypeForm = null; // 'digital' | 'fisik' | null
+        $productTypeForm = null;
         $product         = null;
 
-        // Tambah produk baru — harus digital atau fisik
         if (in_array($request->tambah, ['digital', 'fisik'])) {
             $showForm        = true;
             $productTypeForm = $request->tambah;
         }
 
-        // Edit produk — pakai tipe produk yang sudah tersimpan
         if ($request->edit) {
             $product = Product::where('user_id', Auth::id())
                 ->with('images')
                 ->with('files')
                 ->findOrFail($request->edit);
             $showForm        = true;
-            $productTypeForm = $product->product_type; // 'digital' atau 'fisik'
+            $productTypeForm = $product->product_type;
         }
 
         return view('products.manage', compact('products', 'showForm', 'product', 'productTypeForm'));
@@ -50,7 +48,6 @@ class ProductController extends Controller
 
     /**
      * API: Ambil data produk TANPA mencatat view
-     * Dipakai untuk render kartu produk di halaman publik
      */
     public function apiShow($id)
     {
@@ -73,7 +70,7 @@ class ProductController extends Controller
     }
 
     /**
-     * API: Catat view produk (dipanggil saat user KLIK produk, bukan saat render)
+     * API: Catat view produk
      */
     public function trackView($id)
     {
@@ -89,13 +86,15 @@ class ProductController extends Controller
     public function store(Request $request)
     {
         $request->merge([
-            'price' => str_replace('.', '', $request->price),
+            'price'    => str_replace('.', '', $request->price),
             'discount' => $request->discount
                 ? str_replace('.', '', $request->discount)
-                : null
+                : null,
         ]);
 
-        $request->validate([
+        $platform = $request->input('file_platform', 'upload');
+
+        $rules = [
             'product_type'   => 'required|in:fisik,digital',
             'title'          => 'required|string|max:255',
             'description'    => 'nullable|string',
@@ -104,8 +103,22 @@ class ProductController extends Controller
             'stock'          => 'nullable|integer|min:1',
             'purchase_limit' => 'nullable|integer|min:1',
             'images.*'       => 'nullable|image|max:5120',
-            'files.*'        => 'nullable|file|max:10240',
-        ]);
+        ];
+
+        if ($request->product_type === 'digital') {
+            if ($platform === 'upload') {
+                // wajib ada minimal 1 file kalau platform upload
+                $rules['files']   = 'required|array|min:1';
+                $rules['files.*'] = 'required|file|max:10240';
+            } else {
+                // wajib ada URL kalau platform eksternal
+                $rules['file_url'] = 'required|url';
+            }
+        } else {
+            $rules['files.*'] = 'nullable|file|max:10240';
+        }
+
+        $request->validate($rules);
 
         $product = Product::create([
             'user_id'        => Auth::id(),
@@ -118,6 +131,7 @@ class ProductController extends Controller
             'purchase_limit' => $request->has('limit_toggle') ? $request->purchase_limit : null,
         ]);
 
+        // Simpan gambar tampilan
         if ($request->hasFile('images')) {
             foreach ($request->file('images') as $img) {
                 $path = $img->store('products/images', 'public');
@@ -125,11 +139,9 @@ class ProductController extends Controller
             }
         }
 
-        if ($request->product_type === 'digital' && $request->hasFile('files')) {
-            foreach ($request->file('files') as $file) {
-                $path = $file->store('products/files', 'public');
-                $product->files()->create(['file' => $path]);
-            }
+        // Simpan file/link digital
+        if ($request->product_type === 'digital') {
+            $this->saveDigitalFiles($request, $product, $platform);
         }
 
         if ($request->redirect === 'builder') {
@@ -156,7 +168,10 @@ class ProductController extends Controller
         }
 
         foreach ($produk->files as $file) {
-            Storage::delete('public/' . $file->file);
+            // Hanya hapus file fisik kalau memang di-upload (bukan URL eksternal)
+            if (($file->platform ?? 'upload') === 'upload' && $file->file) {
+                Storage::delete('public/' . $file->file);
+            }
         }
 
         $produk->images()->delete();
@@ -174,13 +189,15 @@ class ProductController extends Controller
         abort_if($product->user_id !== Auth::id(), 403);
 
         $request->merge([
-            'price' => str_replace('.', '', $request->price),
+            'price'    => str_replace('.', '', $request->price),
             'discount' => $request->discount
                 ? str_replace('.', '', $request->discount)
-                : null
+                : null,
         ]);
 
-        $request->validate([
+        $platform = $request->input('file_platform', 'upload');
+
+        $rules = [
             'product_type'   => 'required|in:fisik,digital',
             'title'          => 'required|string|max:255',
             'description'    => 'nullable|string',
@@ -189,8 +206,21 @@ class ProductController extends Controller
             'stock'          => 'nullable|integer|min:1',
             'purchase_limit' => 'nullable|integer|min:1',
             'images.*'       => 'nullable|image|max:5120',
-            'files.*'        => 'nullable|file|max:10240',
-        ]);
+            'delete_images.*'=> 'nullable|integer',
+            'delete_files.*' => 'nullable|integer',
+        ];
+
+        if ($request->product_type === 'digital') {
+            if ($platform === 'upload') {
+                $rules['files.*'] = 'nullable|file|max:10240';
+            } else {
+                $rules['file_url'] = 'nullable|url';
+            }
+        } else {
+            $rules['files.*'] = 'nullable|file|max:10240';
+        }
+
+        $request->validate($rules);
 
         $product->update([
             'product_type'   => $request->product_type,
@@ -202,6 +232,7 @@ class ProductController extends Controller
             'purchase_limit' => $request->has('limit_toggle') ? $request->purchase_limit : null,
         ]);
 
+        // Hapus gambar yang dicentang (by ID)
         if ($request->has('delete_images') && is_array($request->delete_images)) {
             $images = ProductImage::whereIn('id', $request->delete_images)
                 ->where('product_id', $product->id)
@@ -212,18 +243,21 @@ class ProductController extends Controller
             }
         }
 
+        // Hapus file yang dicentang (by ID)
+        // ⚠️  edit modal sekarang kirim ID (integer), bukan file path
         if ($request->has('delete_files') && is_array($request->delete_files)) {
-            foreach ($request->delete_files as $filePath) {
-                $file = ProductFile::where('product_id', $product->id)
-                    ->where('file', $filePath)
-                    ->first();
-                if ($file) {
+            $files = ProductFile::whereIn('id', $request->delete_files)
+                ->where('product_id', $product->id)
+                ->get();
+            foreach ($files as $file) {
+                if (($file->platform ?? 'upload') === 'upload' && $file->file) {
                     Storage::delete('public/' . $file->file);
-                    $file->delete();
                 }
+                $file->delete();
             }
         }
 
+        // Tambah gambar baru
         if ($request->hasFile('images')) {
             foreach ($request->file('images') as $img) {
                 $path = $img->store('products/images', 'public');
@@ -231,11 +265,9 @@ class ProductController extends Controller
             }
         }
 
-        if ($request->hasFile('files') && $request->product_type === 'digital') {
-            foreach ($request->file('files') as $file) {
-                $path = $file->store('products/files', 'public');
-                $product->files()->create(['file' => $path]);
-            }
+        // Tambah file/link digital baru
+        if ($request->product_type === 'digital') {
+            $this->saveDigitalFiles($request, $product, $platform);
         }
 
         return redirect()
@@ -244,7 +276,7 @@ class ProductController extends Controller
     }
 
     /**
-     * EDIT
+     * EDIT — redirect ke halaman manage dengan query edit
      */
     public function edit($id)
     {
@@ -252,12 +284,51 @@ class ProductController extends Controller
     }
 
     /**
-     * SHOW (web page) - catat views
+     * SHOW (web page) — catat views
      */
     public function show($id)
     {
         $product = Product::findOrFail($id);
         ProductViews::create(['product_id' => $product->id]);
         return view('products.show', compact('product'));
+    }
+
+    // =========================================================
+    // PRIVATE HELPERS
+    // =========================================================
+
+    /**
+     * Simpan file/link digital untuk pembeli.
+     *
+     * - platform 'upload' → upload file ke storage (bisa multiple)
+     * - platform lainnya  → simpan satu URL eksternal (dropbox/gdrive/other)
+     */
+    private function saveDigitalFiles(Request $request, Product $product, string $platform): void
+    {
+        if ($platform === 'upload') {
+            if (!$request->hasFile('files')) return;
+
+            foreach ($request->file('files') as $file) {
+                if (!$file->isValid()) continue;
+
+                $path = $file->store('products/files', 'public');
+
+                $product->files()->create([
+                    'file'     => $path,
+                    'platform' => 'upload',
+                    'file_url' => null,
+                ]);
+            }
+        } else {
+            // Dropbox / G-Drive / Other — hanya satu URL per simpan
+            $url = $request->input('file_url');
+            if (!$url) return;
+
+            $product->files()->create([
+                'file'     => null,
+                'platform' => $platform,
+                'file_url' => $url,
+            ]);
+        }
     }
 }
