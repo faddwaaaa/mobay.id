@@ -17,43 +17,35 @@
         </div>
 
         {{-- Layout 2 Kolom utama --}}
-        <div style="display: grid; grid-template-columns: 1fr 320px; gap: 20px; align-items: start;">
+        <div class="analitik-grid" style="display: grid; grid-template-columns: 1fr 320px; gap: 20px; align-items: start;">
 
             {{-- KOLOM KIRI --}}
             <div style="display: flex; flex-direction: column; gap: 20px;">
 
-                {{-- CARD: Total Views & Clicks (mirip lynk.id) --}}
+                {{-- CARD: Total Views & Clicks --}}
                 <div style="background: #fff; border-radius: 16px; padding: 24px; border: 1px solid #e5e7eb;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
+                    <div class="analitik-card-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
                         <div>
                             <h3 style="margin: 0 0 12px 0; font-size: 16px; font-weight: 700; color: #111827;">Total Views & Clicks</h3>
-                            <div style="display: flex; gap: 28px;">
-                                {{-- Views --}}
+                            <div class="analitik-stat-row" style="display: flex; gap: 28px;">
                                 <div style="display: flex; align-items: center; gap: 8px;">
                                     <span style="width: 12px; height: 12px; border-radius: 50%; background: #f59e0b; display: inline-block; flex-shrink: 0;"></span>
                                     <span style="font-size: 13px; color: #6b7280;">Views</span>
-                                    <span style="font-size: 26px; font-weight: 800; color: #111827; line-height: 1;">
-                                        {{ number_format($totalProfileViews) }}
-                                    </span>
+                                    <span class="analitik-stat-val" style="font-size: 26px; font-weight: 800; color: #111827; line-height: 1;">{{ number_format($totalProfileViews) }}</span>
                                 </div>
-                                {{-- Clicks --}}
                                 <div style="display: flex; align-items: center; gap: 8px;">
                                     <span style="width: 12px; height: 12px; border-radius: 50%; background: #2563eb; display: inline-block; flex-shrink: 0;"></span>
                                     <span style="font-size: 13px; color: #6b7280;">Clicks</span>
-                                    <span style="font-size: 26px; font-weight: 800; color: #111827; line-height: 1;">
-                                        {{ number_format($totalClicks) }}
-                                    </span>
+                                    <span class="analitik-stat-val" style="font-size: 26px; font-weight: 800; color: #111827; line-height: 1;">{{ number_format($totalClicks) }}</span>
                                 </div>
                             </div>
                         </div>
-                        {{-- Filter --}}
                         <div style="display: flex; background: #f3f4f6; border-radius: 8px; padding: 3px; gap: 2px;">
                             <button onclick="filterChart(7, this)" class="filter-btn active-filter" style="padding: 6px 14px; font-size: 13px; font-weight: 500; border: none; background: #2563eb; color: white; border-radius: 6px; cursor: pointer;">7H</button>
                             <button onclick="filterChart(30, this)" class="filter-btn" style="padding: 6px 14px; font-size: 13px; font-weight: 500; border: none; background: transparent; color: #6b7280; border-radius: 6px; cursor: pointer;">30H</button>
                             <button onclick="filterChart(90, this)" class="filter-btn" style="padding: 6px 14px; font-size: 13px; font-weight: 500; border: none; background: transparent; color: #6b7280; border-radius: 6px; cursor: pointer;">Semua</button>
                         </div>
                     </div>
-                    {{-- Chart Bar --}}
                     <div style="height: 260px;">
                         <canvas id="viewsClicksChart"></canvas>
                     </div>
@@ -64,16 +56,16 @@
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
                         <div>
                             <h3 style="margin: 0 0 12px 0; font-size: 16px; font-weight: 700; color: #111827;">Total Penjualan</h3>
-                            <div style="display: flex; gap: 28px;">
+                            <div class="analitik-stat-row" style="display: flex; gap: 28px;">
                                 <div style="display: flex; align-items: center; gap: 8px;">
                                     <span style="width: 12px; height: 12px; border-radius: 50%; background: #f59e0b; display: inline-block;"></span>
                                     <span style="font-size: 13px; color: #6b7280;">Jumlah Terjual</span>
-                                    <span style="font-size: 26px; font-weight: 800; color: #111827; line-height: 1;">{{ number_format($totalSold) }}</span>
+                                    <span class="analitik-stat-val" style="font-size: 26px; font-weight: 800; color: #111827; line-height: 1;">{{ number_format($totalSold) }}</span>
                                 </div>
                                 <div style="display: flex; align-items: center; gap: 8px;">
                                     <span style="width: 12px; height: 12px; border-radius: 50%; background: #10b981; display: inline-block;"></span>
                                     <span style="font-size: 13px; color: #6b7280;">Nilai Penjualan</span>
-                                    <span style="font-size: 26px; font-weight: 800; color: #111827; line-height: 1;">Rp {{ number_format($totalRevenue, 0, ',', '.') }}</span>
+                                    <span class="analitik-stat-val" style="font-size: 26px; font-weight: 800; color: #111827; line-height: 1;">Rp {{ number_format($totalRevenue, 0, ',', '.') }}</span>
                                 </div>
                             </div>
                         </div>
@@ -131,6 +123,18 @@
         </div>
     </div>
 </div>
+
+{{-- Hanya tambah media query, semua inline style asli tidak diubah --}}
+<style>
+    @media (max-width: 900px) {
+        .analitik-grid { grid-template-columns: 1fr !important; }
+    }
+    @media (max-width: 600px) {
+        .analitik-page { padding: 16px 12px !important; }
+        .analitik-stat-row { flex-wrap: wrap; gap: 12px !important; }
+        .analitik-stat-val { font-size: 20px !important; }
+    }
+</style>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
