@@ -51,7 +51,7 @@ class BlockController extends Controller
 
                 case 'product':
                     $productId = $request->input('product_id')
-                              ?? $request->input('content.product_id');
+                            ?? $request->input('content.product_id');
 
                     Log::info('Product ID received:', ['product_id' => $productId]);
 
@@ -212,6 +212,37 @@ class BlockController extends Controller
         }
     }
 
+    public function getByPage(Request $request)
+{
+    $pageId = $request->query('page_id');
+    
+    if (!$pageId) {
+        return response()->json(['success' => false, 'message' => 'Page ID required'], 400);
+    }
+
+    $page = Page::with('blocks')->find($pageId);
+    
+    if (!$page || $page->user_id !== auth()->id()) {
+        return response()->json(['success' => false, 'message' => 'Not found'], 404);
+    }
+
+    $blocks = $page->blocks->sortBy('position')->map(function($block) {
+        return [
+            'id' => $block->id,
+            'type' => $block->type,
+            'content' => $block->content,
+            'product_id' => $block->product_id ?? null,
+            'position' => $block->position
+        ];
+    })->values();
+
+    return response()->json([
+        'success' => true,
+        'blocks' => $blocks,
+        'pageTitle' => $page->title
+    ]);
+}
+
     /**
      * Reorder blocks
      */
@@ -234,4 +265,6 @@ class BlockController extends Controller
             ], 500);
         }
     }
+
+    
 }

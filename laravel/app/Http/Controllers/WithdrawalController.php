@@ -37,14 +37,14 @@ class WithdrawalController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'amount' => 'required|numeric|min:50000|max:10000000',
+            'amount' => 'required|numeric|min:10000|max:10000000',
             'bank_name' => 'required|string|max:100',
             'account_number' => 'required|string|max:50',
             'account_name' => 'required|string|max:100',
             'notes' => 'nullable|string|max:500',
         ], [
             'amount.required' => 'Jumlah penarikan harus diisi',
-            'amount.min' => 'Minimal penarikan adalah Rp 50.000',
+            'amount.min' => 'Minimal penarikan adalah Rp 10.000',
             'amount.max' => 'Maksimal penarikan adalah Rp 10.000.000',
             'bank_name.required' => 'Nama bank harus diisi',
             'account_number.required' => 'Nomor rekening harus diisi',

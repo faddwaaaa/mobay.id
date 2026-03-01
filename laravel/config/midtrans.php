@@ -48,7 +48,7 @@ return [
 
     // Withdraw limits
     'withdrawal' => [
-        'min_amount' => 50000,      // Minimum withdraw: Rp 50.000
+        'min_amount' => 10000,      // Minimum withdraw: Rp 10.000
         'max_amount' => 50000000,   // Maximum withdraw: Rp 50.000.000
     ],
 

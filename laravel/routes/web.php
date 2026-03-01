@@ -132,6 +132,80 @@ Route::middleware('auth')->group(function () {
     Route::get('/riwayat/penarikan/{id}', [TransactionController::class, 'withdrawalDetail'])->name('transactions.withdrawal-detail');
 });
 
+Route::middleware(['auth', 'verified'])->prefix('payment')->name('payment.')->group(function () {
+
+    Route::get('/accounts', [PaymentAccountController::class, 'index'])
+        ->name('accounts.index');
+
+    Route::post('/accounts', [PaymentAccountController::class, 'store'])
+        ->name('accounts.store');
+
+    Route::patch('/accounts/{paymentAccount}/default', [PaymentAccountController::class, 'setDefault'])
+        ->name('accounts.default');
+
+    Route::delete('/accounts/{paymentAccount}', [PaymentAccountController::class, 'destroy'])
+        ->name('accounts.destroy');
+
+    Route::post('/accounts/verify', [PaymentAccountController::class, 'verifyAccount'])
+        ->name('accounts.verify');
+
+    // [DEV ONLY] — otomatis diblokir di production
+    Route::post('/setup-pin', [PaymentAccountController::class, 'setupPin'])
+        ->name('accounts.setup-pin');
+
+});
+
+// ============================================
+// BACKEND API ROUTE - Tambahkan ke routes/web.php
+// ============================================
+
+// Route untuk fetch blocks via AJAX
+Route::get('/api/blocks', function (Request $request) {
+    $pageId = $request->query('page_id');
+    
+    if (!$pageId) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Page ID required'
+        ], 400);
+    }
+
+    $page = \App\Models\Page::with('blocks')->find($pageId);
+    
+    if (!$page) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Page not found'
+        ], 404);
+    }
+
+    // Check authorization - pastikan page milik user yang sedang login
+    if ($page->user_id !== auth()->id()) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Unauthorized'
+        ], 403);
+    }
+
+    $blocks = $page->blocks->sortBy('position')->map(function($block) {
+        return [
+            'id' => $block->id,
+            'type' => $block->type,
+            'content' => $block->content,
+            'product_id' => $block->product_id ?? null,
+            'position' => $block->position
+        ];
+    })->values();
+
+    return response()->json([
+        'success' => true,
+        'blocks' => $blocks,
+        'pageTitle' => $page->title
+    ]);
+})->middleware('auth')->name('api.blocks');
+
+Route::get('/api/blocks', [BlockController::class, 'getByPage'])->middleware('auth')->name('api.blocks');
+
 
 /*
 |--------------------------------------------------------------------------

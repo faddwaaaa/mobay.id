@@ -14,6 +14,7 @@ use App\Models\SocialLink;
 use App\Models\Transaction;
 use App\Models\Withdrawal;
 use App\Models\Page;
+use App\Models\PaymentAccount;
 
 class User extends Authenticatable
 {
@@ -92,6 +93,12 @@ class User extends Authenticatable
     {
         return strtok($email, '@'); // Ambil bagian sebelum @
     }
+
+
+public function paymentAccounts()
+{
+    return $this->hasMany(PaymentAccount::class)->whereNull('deleted_at')->orderByDesc('is_default');
+}
 }
 
 

@@ -10,15 +10,14 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\RateLimiter;
-use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class PaymentAccountController extends Controller
 {
-    private const MAX_ACCOUNTS    = 5;
-    private const PIN_RATE_KEY    = 'pin_verify:{userId}';
-    private const PIN_MAX_TRIES   = 3;
-    private const PIN_DECAY_SEC   = 300; // 5 minutes
+    private const MAX_ACCOUNTS  = 5;
+    private const PIN_RATE_KEY  = 'pin_verify:{userId}';
+    private const PIN_MAX_TRIES = 3;
+    private const PIN_DECAY_SEC = 300; // 5 menit
 
     private const BANK_NAMES = [
         'BCA'     => 'Bank Central Asia',
@@ -35,34 +34,50 @@ class PaymentAccountController extends Controller
     ];
 
     // -----------------------------------------------------------------------
-    // Show page
+    // Helpers
+    // -----------------------------------------------------------------------
+
+    /**
+     * Apakah mode dev/mock aktif?
+     * Set PAYMENT_DEV_MODE=true di .env untuk testing lokal.
+     * WAJIB false di production.
+     */
+    private function isDevMode(): bool
+    {
+        return config('app.env') !== 'production'
+            && config('payment.dev_mode', false);
+    }
+
+    // -----------------------------------------------------------------------
+    // Index
     // -----------------------------------------------------------------------
 
     public function index(): View
-{
-    $accounts = PaymentAccount::forUser(auth()->id())
-        ->orderByDesc('is_default')
-        ->orderBy('created_at')
-        ->get()
-        ->map(fn ($a) => $a->toSafeArray());
+    {
+        $accounts = PaymentAccount::forUser(auth()->id())
+            ->orderByDesc('is_default')
+            ->orderBy('created_at')
+            ->get()
+            ->map(fn($a) => $a->toSafeArray());
 
-    return view('payment.accounts', [
-        'accounts'       => $accounts,
-        'maxAccounts'    => self::MAX_ACCOUNTS,   // <-- ini sudah ada
-        'remainingSlots' => self::MAX_ACCOUNTS - $accounts->count(),
-        'bankList'       => self::BANK_NAMES,
-    ]);
-}
+        return view('payment.accounts', [
+            'accounts'       => $accounts,
+            'maxAccounts'    => self::MAX_ACCOUNTS,
+            'remainingSlots' => self::MAX_ACCOUNTS - $accounts->count(),
+            'bankList'       => self::BANK_NAMES,
+            'isDevMode'      => $this->isDevMode(), // kirim ke view untuk info banner
+        ]);
+    }
 
     // -----------------------------------------------------------------------
-    // Store new account
+    // Store
     // -----------------------------------------------------------------------
 
     public function store(StorePaymentAccountRequest $request): JsonResponse
     {
         $user = auth()->user();
 
-        // --- PIN rate limit check ---
+        // ── Validasi PIN ────────────────────────────────────────────────────
         $pinKey = str_replace('{userId}', $user->id, self::PIN_RATE_KEY);
 
         if (RateLimiter::tooManyAttempts($pinKey, self::PIN_MAX_TRIES)) {
@@ -70,30 +85,38 @@ class PaymentAccountController extends Controller
             PaymentAccountAuditLog::record($user->id, 'pin_lockout');
 
             return response()->json([
-                'success' => false,
-                'message' => "Terlalu banyak percobaan PIN. Coba lagi dalam {$seconds} detik.",
-                'locked'  => true,
+                'success'     => false,
+                'message'     => "Terlalu banyak percobaan PIN. Coba lagi dalam {$seconds} detik.",
+                'locked'      => true,
                 'retry_after' => $seconds,
             ], 429);
         }
 
-        // --- Verify PIN ---
-        if (! Hash::check($request->pin, $user->pin_hash)) {
-            RateLimiter::hit($pinKey, self::PIN_DECAY_SEC);
+        $pinValid = $this->isDevMode()
+            // DEV MODE: PIN apapun diterima, atau gunakan DEV_PIN dari .env
+            ? ($request->pin === config('payment.dev_pin', '123456'))
+            // PRODUCTION: cek hash di database
+            : ($user->pin_hash && Hash::check($request->pin, $user->pin_hash));
 
+        if (! $pinValid) {
+            RateLimiter::hit($pinKey, self::PIN_DECAY_SEC);
             $remaining = self::PIN_MAX_TRIES - RateLimiter::attempts($pinKey);
             PaymentAccountAuditLog::record($user->id, 'pin_failed');
 
+            $message = $this->isDevMode()
+                ? "PIN salah. (Dev mode: gunakan PIN " . config('payment.dev_pin', '123456') . "). Sisa: {$remaining}"
+                : "PIN salah. Sisa percobaan: {$remaining}";
+
             return response()->json([
                 'success'   => false,
-                'message'   => "PIN salah. Sisa percobaan: {$remaining}",
+                'message'   => $message,
                 'remaining' => $remaining,
             ], 422);
         }
 
         RateLimiter::clear($pinKey);
 
-        // --- Account limit check ---
+        // ── Cek limit rekening ──────────────────────────────────────────────
         $count = PaymentAccount::forUser($user->id)->count();
         if ($count >= self::MAX_ACCOUNTS) {
             return response()->json([
@@ -102,10 +125,10 @@ class PaymentAccountController extends Controller
             ], 422);
         }
 
-        // --- Duplicate check ---
-        $last4 = substr($request->account_number, -4);
+        // ── Cek duplikasi ───────────────────────────────────────────────────
+        $last4  = substr($request->account_number, -4);
         $exists = PaymentAccount::forUser($user->id)
-            ->where('bank_code', $request->bank_code)
+            ->where('bank_code', strtoupper($request->bank_code))
             ->where('account_number_last4', $last4)
             ->exists();
 
@@ -116,22 +139,22 @@ class PaymentAccountController extends Controller
             ], 422);
         }
 
-        // --- If set as default, unset others ---
+        // ── Set default jika perlu ──────────────────────────────────────────
         if ($request->boolean('is_default') || $count === 0) {
             PaymentAccount::forUser($user->id)->update(['is_default' => false]);
         }
 
-        // --- Save (encrypted automatically via model cast) ---
+        // ── Simpan ──────────────────────────────────────────────────────────
         $account = PaymentAccount::create([
             'user_id'                  => $user->id,
             'bank_code'                => strtoupper($request->bank_code),
             'bank_name'                => self::BANK_NAMES[$request->bank_code] ?? $request->bank_code,
-            'account_number_encrypted' => $request->account_number,  // cast encrypts it
+            'account_number_encrypted' => $request->account_number,
             'account_number_last4'     => $last4,
-            'account_holder_encrypted' => $request->account_holder,  // cast encrypts it
+            'account_holder_encrypted' => $request->account_holder,
             'label'                    => $request->label,
             'is_default'               => $request->boolean('is_default') || $count === 0,
-            'is_verified'              => true, // already verified via verifyAccount endpoint
+            'is_verified'              => true,
         ]);
 
         PaymentAccountAuditLog::record($user->id, 'account_created', $account->id, [
@@ -147,7 +170,7 @@ class PaymentAccountController extends Controller
     }
 
     // -----------------------------------------------------------------------
-    // Set as default
+    // Set Default
     // -----------------------------------------------------------------------
 
     public function setDefault(Request $request, PaymentAccount $paymentAccount): JsonResponse
@@ -163,13 +186,12 @@ class PaymentAccountController extends Controller
     }
 
     // -----------------------------------------------------------------------
-    // Delete account
+    // Delete
     // -----------------------------------------------------------------------
 
     public function destroy(Request $request, PaymentAccount $paymentAccount): JsonResponse
     {
         $this->authorizeAccount($paymentAccount);
-
         $request->validate(['pin' => ['required', 'string', 'digits:6']]);
 
         $user   = auth()->user();
@@ -183,13 +205,19 @@ class PaymentAccountController extends Controller
             ], 429);
         }
 
-        if (! Hash::check($request->pin, $user->pin_hash)) {
+        $pinValid = $this->isDevMode()
+            ? ($request->pin === config('payment.dev_pin', '123456'))
+            : ($user->pin_hash && Hash::check($request->pin, $user->pin_hash));
+
+        if (! $pinValid) {
             RateLimiter::hit($pinKey, self::PIN_DECAY_SEC);
             $remaining = self::PIN_MAX_TRIES - RateLimiter::attempts($pinKey);
 
             return response()->json([
                 'success'   => false,
-                'message'   => "PIN salah. Sisa percobaan: {$remaining}",
+                'message'   => $this->isDevMode()
+                    ? "PIN salah. (Dev: " . config('payment.dev_pin', '123456') . "). Sisa: {$remaining}"
+                    : "PIN salah. Sisa percobaan: {$remaining}",
                 'remaining' => $remaining,
             ], 422);
         }
@@ -200,13 +228,10 @@ class PaymentAccountController extends Controller
         $bankCode   = $paymentAccount->bank_code;
         $last4      = $paymentAccount->account_number_last4;
 
-        // Soft delete — keeps record for audit
-        $paymentAccount->delete();
+        $paymentAccount->delete(); // soft delete
 
-        // Re-assign default if needed
         if ($wasDefault) {
-            $next = PaymentAccount::forUser($user->id)->first();
-            $next?->update(['is_default' => true]);
+            PaymentAccount::forUser($user->id)->first()?->update(['is_default' => true]);
         }
 
         PaymentAccountAuditLog::record($user->id, 'account_deleted', $paymentAccount->id, [
@@ -214,14 +239,11 @@ class PaymentAccountController extends Controller
             'last4'     => $last4,
         ]);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Rekening berhasil dihapus.',
-        ]);
+        return response()->json(['success' => true, 'message' => 'Rekening berhasil dihapus.']);
     }
 
     // -----------------------------------------------------------------------
-    // Verify bank account via Midtrans (Bank Account Inquiry)
+    // Verify Account (Midtrans / Mock)
     // -----------------------------------------------------------------------
 
     public function verifyAccount(Request $request): JsonResponse
@@ -244,9 +266,35 @@ class PaymentAccountController extends Controller
 
         RateLimiter::hit($rateKey, 60);
 
+        // ── DEV MODE: skip Midtrans, langsung return mock ───────────────────
+        if ($this->isDevMode()) {
+            $mockNames = [
+                'BCA'     => $user->name . ' (Mock BCA)',
+                'BRI'     => $user->name . ' (Mock BRI)',
+                'BNI'     => $user->name . ' (Mock BNI)',
+                'MANDIRI' => $user->name . ' (Mock Mandiri)',
+                'BSI'     => $user->name . ' (Mock BSI)',
+                'GOPAY'   => $user->name,
+                'OVO'     => $user->name,
+                'DANA'    => $user->name,
+            ];
+
+            $accountName = $mockNames[strtoupper($request->bank_code)] ?? $user->name;
+
+            PaymentAccountAuditLog::record($user->id, 'account_verified_mock', null, [
+                'bank_code' => $request->bank_code,
+                'last4'     => substr($request->account_number, -4),
+            ]);
+
+            return response()->json([
+                'success'      => true,
+                'account_name' => $accountName,
+                'dev_mode'     => true,
+            ]);
+        }
+
+        // ── PRODUCTION: hit Midtrans ────────────────────────────────────────
         try {
-            // Midtrans Sandbox — Bank Account Inquiry
-            // Docs: https://docs.midtrans.com/reference/bank-transfer-inquiry
             $serverKey = config('services.midtrans.server_key');
             $baseUrl   = config('services.midtrans.is_production')
                 ? 'https://api.midtrans.com'
@@ -287,6 +335,37 @@ class PaymentAccountController extends Controller
                 'message' => 'Gagal menghubungi layanan bank. Coba beberapa saat lagi.',
             ], 503);
         }
+    }
+
+    // -----------------------------------------------------------------------
+    // Setup PIN (helper endpoint untuk development / onboarding)
+    // -----------------------------------------------------------------------
+
+    /**
+     * Endpoint sementara untuk set PIN user selama development.
+     * HAPUS atau lindungi dengan middleware khusus di production.
+     *
+     * POST /payment/setup-pin
+     * Body: { "pin": "123456", "pin_confirmation": "123456" }
+     */
+    public function setupPin(Request $request): JsonResponse
+    {
+        // Blokir di production
+        abort_if(app()->isProduction(), 403, 'Not available in production.');
+
+        $request->validate([
+            'pin'              => ['required', 'string', 'digits:6', 'confirmed'],
+            'pin_confirmation' => ['required', 'string', 'digits:6'],
+        ]);
+
+        auth()->user()->update([
+            'pin_hash' => Hash::make($request->pin),
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => "PIN berhasil diset. Gunakan PIN {$request->pin} untuk testing.",
+        ]);
     }
 
     // -----------------------------------------------------------------------

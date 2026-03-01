@@ -296,7 +296,7 @@
         <div class="w-full lg:w-1/3 flex-shrink-0">
             <div id="preview-sticky-wrapper">
                 <div class="mb-4">
-                    <h3 class="font-bold text-gray-900 mb-2">Preview</h3>
+                    <!-- <h3 class="font-bold text-gray-900 mb-2">Preview</h3> -->
                     <p class="text-sm text-gray-600">Tampilan di mobile device</p>
                 </div>
                 
@@ -611,17 +611,34 @@
     overflow: hidden;
 }
 
-.preview-screen-wrap { overflow: hidden; position: relative; border-radius: 28px; }
+.preview-screen-wrap {
+    overflow: hidden;
+    position: relative;
+    border-radius: 28px;
+}
 .preview-screen-wrap iframe {
-    display: block; width: calc(100% + 17px); height: 490px;
-    border: none; background: white;
+    display: block;
+    width: calc(100% + 17px);
+    height: 490px;
+    border: none;
+    background: white;
+}
+
+#preview-sticky-wrapper {
+    position: sticky !important;
+    top: 24px !important;
+    align-self: flex-start;
+    /* Batas tinggi agar tidak keluar viewport */
+    max-height: calc(100vh - 48px);
+    overflow: visible;
+    z-index: 10;
 }
 
 /* Sticky preview */
-@media (min-width: 1024px) {
+@media (max-width: 1023px) {
     #preview-sticky-wrapper {
-        position: sticky;
-        top: 24px;
+        position: relative !important;
+        top: auto !important;
     }
 }
 </style>
@@ -770,8 +787,200 @@ function showBuilderToast(msg, type) {
 // ============================================
 // PAGE FUNCTIONS
 // ============================================
+// ============================================
+// LIVE PREVIEW UPDATE - Saat Pilih Halaman
+// ============================================
+
+// Ganti fungsi selectPage() yang lama dengan yang baru ini:
 function selectPage(pageId) {
-    window.location.href = `{{ route('links.index') }}?page=${pageId}`;
+    // 1. Update visual active state LANGSUNG (tanpa tunggu reload)
+    document.querySelectorAll('.page-item').forEach(item => {
+        item.classList.remove('bg-blue-50', 'border-blue-300');
+        item.classList.add('bg-gray-50', 'border-gray-200');
+    });
+    const clickedItem = document.querySelector(`.page-item[data-page-id="${pageId}"]`);
+    if (clickedItem) {
+        clickedItem.classList.remove('bg-gray-50', 'border-gray-200');
+        clickedItem.classList.add('bg-blue-50', 'border-blue-300');
+    }
+
+    // 2. Update preview iframe LANGSUNG ke halaman yang dipilih
+    const previewFrame = document.getElementById('preview');
+    if (previewFrame) {
+        const username = '{{ $user->username }}'; // Ganti dengan username aktual
+        const previewUrl = `/preview/${username}?page=${pageId}&t=${Date.now()}`;
+        previewFrame.src = previewUrl;
+    }
+
+    // 3. Update currentPageId global
+    currentPageId = pageId;
+    const pageIdInput = document.getElementById('currentPageId');
+    if (pageIdInput) pageIdInput.value = pageId;
+
+    // 4. Fetch dan update block list via AJAX (tanpa reload)
+    fetchBlockList(pageId);
+
+    // 5. Update URL browser tanpa reload
+    const newUrl = `{{ route('links.index') }}?page=${pageId}`;
+    window.history.pushState({ pageId: pageId }, '', newUrl);
+}
+
+// Fungsi baru: Fetch block list via AJAX
+function fetchBlockList(pageId) {
+    fetch(`/api/blocks?page_id=${pageId}`, {
+        headers: {
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            'Accept': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            updateBlockListUI(data.blocks, data.pageTitle);
+        }
+    })
+    .catch(error => {
+        console.error('Error fetching blocks:', error);
+        // Fallback: reload halaman jika AJAX gagal
+        setTimeout(() => {
+            window.location.href = `{{ route('links.index') }}?page=${pageId}`;
+        }, 100);
+    });
+}
+
+// Fungsi helper: Update UI block list
+function updateBlockListUI(blocks, pageTitle) {
+    // Update judul konten
+    const contentTitle = document.querySelector('h2.font-bold.text-gray-900.text-lg');
+    if (contentTitle && pageTitle) {
+        contentTitle.innerHTML = `Konten: <span class="text-blue-600">${pageTitle}</span>`;
+    }
+
+    // Update block list
+    const blockList = document.getElementById('blockList');
+    if (!blockList) return;
+
+    if (blocks && blocks.length > 0) {
+        blockList.innerHTML = blocks.map(block => generateBlockHTML(block)).join('');
+        // Re-initialize sortable
+        if (window.blockSortable) {
+            window.blockSortable.destroy();
+        }
+        window.blockSortable = new Sortable(blockList, {
+            animation: 150,
+            ghostClass: 'sortable-ghost',
+            handle: '.fa-grip-vertical',
+            onEnd: function() {
+                const order = Array.from(blockList.children).map((item, index) => ({
+                    id: item.dataset.id,
+                    position: index + 1
+                }));
+                fetch('{{ route("blocks.reorder") }}', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ order })
+                })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        document.getElementById('preview').contentWindow.location.reload();
+                    }
+                });
+            }
+        });
+        // Load product info untuk block product
+        loadBlockProductInfos();
+    } else {
+        blockList.innerHTML = `
+            <div class="text-center py-8 text-gray-400 border-2 border-dashed border-gray-300 rounded-lg">
+                <i class="fas fa-cubes text-3xl mb-3"></i>
+                <p class="font-medium">Belum ada blok</p>
+                <p class="text-sm mt-1">Tambahkan blok untuk menampilkan konten</p>
+            </div>
+        `;
+    }
+}
+
+// Fungsi helper: Generate HTML untuk satu block
+function generateBlockHTML(block) {
+    const icons = {
+        text: '<i class="fas fa-font text-blue-600"></i><span class="font-medium text-gray-900">Teks</span>',
+        image: '<i class="fas fa-image text-green-600"></i><span class="font-medium text-gray-900">Gambar</span>',
+        link: '<i class="fas fa-link text-purple-600"></i><span class="font-medium text-gray-900">Link</span>',
+        video: '<i class="fab fa-youtube text-red-600"></i><span class="font-medium text-gray-900">Video</span>',
+        product: '<i class="fas fa-box text-yellow-600"></i><span class="font-medium text-gray-900">Produk</span>'
+    };
+
+    let contentHTML = '';
+    if (block.type === 'text' && block.content?.text) {
+        contentHTML = `<p class="text-sm text-gray-600 line-clamp-2">${escapeHtml(block.content.text)}</p>`;
+    } else if (block.type === 'link' && block.content?.title) {
+        contentHTML = `
+            <p class="text-sm text-gray-600 font-medium">${escapeHtml(block.content.title)}</p>
+            <p class="text-xs text-gray-400 truncate">${escapeHtml(block.content.url || '')}</p>
+        `;
+    } else if (block.type === 'image' && block.content?.image) {
+        contentHTML = `
+            <div class="flex items-center gap-3">
+                <img src="/storage/${block.content.image}" class="w-16 h-16 object-cover rounded-lg" alt="Block image">
+            </div>
+        `;
+    } else if (block.type === 'video' && block.content?.youtube_url) {
+        contentHTML = `
+            <div class="flex items-center gap-2">
+                <i class="fab fa-youtube text-red-500"></i>
+                <p class="text-xs text-gray-600 truncate">${escapeHtml(block.content.youtube_url)}</p>
+            </div>
+        `;
+        if (block.content?.youtube_id) {
+            contentHTML += `<p class="text-xs text-gray-400 mt-1">Video ID: ${escapeHtml(block.content.youtube_id)}</p>`;
+        }
+    } else if (block.type === 'product') {
+        contentHTML = `
+            <div id="block-product-info-${block.id}" data-product-id="${block.product_id || ''}">
+                <div class="flex items-center gap-2">
+                    <div class="w-12 h-12 bg-yellow-50 rounded-lg flex items-center justify-center animate-pulse">
+                        <i class="fas fa-box text-yellow-300 text-sm"></i>
+                    </div>
+                    <div>
+                        <div class="h-3 w-24 bg-gray-200 rounded animate-pulse mb-1"></div>
+                        <div class="h-2.5 w-16 bg-gray-100 rounded animate-pulse"></div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    const editBtn = block.type === 'product'
+        ? `<button type="button" onclick="openReplaceProductModal(${block.id})" class="p-2 text-gray-400 hover:text-yellow-600 hover:bg-yellow-50 rounded-lg transition" title="Ganti produk"><i class="fas fa-edit text-sm"></i></button>`
+        : `<button type="button" onclick="editBlock(${block.id}, '${block.type}', ${JSON.stringify(block.content)})" class="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition"><i class="fas fa-edit text-sm"></i></button>`;
+
+    return `
+        <div data-id="${block.id}" class="block-item bg-white rounded-lg border border-gray-200 p-4 hover:border-blue-300 hover:shadow-sm transition cursor-move">
+            <div class="flex items-start justify-between gap-3">
+                <div class="flex items-start gap-3 flex-1 min-w-0">
+                    <div class="mt-1"><i class="fas fa-grip-vertical text-gray-400"></i></div>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-2 mb-2">${icons[block.type]}</div>
+                        ${contentHTML}
+                    </div>
+                </div>
+                <div class="flex items-center gap-1">
+                    ${editBtn}
+                    <button type="button" onclick="deleteBlock(${block.id})" class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition"><i class="fas fa-trash text-sm"></i></button>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
 }
 
 function showAddPageForm() {
