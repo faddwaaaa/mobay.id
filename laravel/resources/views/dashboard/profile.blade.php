@@ -43,7 +43,7 @@
 
                 <div class="profile-info">
                     <div class="profile-item">
-                        <label>Username</label>
+                        <label>Nama Toko / Nama Pengguna</label>
                         <p>{{ $user->username }}</p>
                     </div>
                 </div>

@@ -111,25 +111,22 @@
             </div>
 
             <!-- BLOCK LIST -->
-            <div class="bg-white rounded-xl shadow border border-gray-200">
-                <div class="p-6 border-b border-gray-200">
+            <div class="bg-white rounded-xl shadow border border-gray-200" id="blockSection">
+                <div class="p-6 border-b border-gray-200" id="blockSectionHeader">
                     <div class="flex justify-between items-center">
-                        <h2 class="font-bold text-gray-900 text-lg">
+                        <h2 class="font-bold text-gray-900 text-lg" id="contentTitle">
                             @if($activePage)
                                 Konten: <span class="text-blue-600">{{ $activePage->title }}</span>
                             @else
                                 Pilih Halaman
                             @endif
                         </h2>
-                        @if($activePage)
-                        <span class="text-sm text-gray-500">Seret untuk mengatur urutan</span>
-                        @endif
+                        <span class="text-sm text-gray-500" id="sortHint" style="{{ $activePage ? '' : 'display:none' }}">Seret untuk mengatur urutan</span>
                     </div>
                 </div>
 
                 <!-- ADD BLOCK -->
-                @if($activePage)
-                <div class="p-6 border-b border-gray-200">
+                <div class="p-6 border-b border-gray-200" id="addBlockSection" style="{{ $activePage ? '' : 'display:none' }}">
                     <h3 class="font-medium text-gray-900 mb-4">Tambahkan blok baru</h3>
                     <div class="grid grid-cols-2 md:grid-cols-5 gap-2">
                         <button type="button" onclick="addBlock('text')" 
@@ -169,10 +166,9 @@
                         </button>
                     </div>
                 </div>
-                @endif
 
                 <!-- BLOCK DATA -->
-                <div class="p-6">
+                <div class="p-6" id="blockDataSection">
                     @if($activePage)
                         @if($activePage->blocks->count() > 0)
                             <div id="blockList" class="space-y-3">
@@ -276,16 +272,20 @@
                                 @endforeach
                             </div>
                         @else
-                            <div class="text-center py-8 text-gray-400 border-2 border-dashed border-gray-300 rounded-lg">
-                                <i class="fas fa-cubes text-3xl mb-3"></i>
-                                <p class="font-medium">Belum ada blok</p>
-                                <p class="text-sm mt-1">Tambahkan blok untuk menampilkan konten</p>
+                            <div id="blockList" class="space-y-3">
+                                <div class="text-center py-8 text-gray-400 border-2 border-dashed border-gray-300 rounded-lg">
+                                    <i class="fas fa-cubes text-3xl mb-3"></i>
+                                    <p class="font-medium">Belum ada blok</p>
+                                    <p class="text-sm mt-1">Tambahkan blok untuk menampilkan konten</p>
+                                </div>
                             </div>
                         @endif
                     @else
-                        <div class="text-center py-8 text-gray-400">
-                            <i class="fas fa-mouse-pointer text-3xl mb-3"></i>
-                            <p class="font-medium">Pilih halaman untuk mengelola konten</p>
+                        <div id="blockList" class="space-y-3">
+                            <div class="text-center py-8 text-gray-400">
+                                <i class="fas fa-mouse-pointer text-3xl mb-3"></i>
+                                <p class="font-medium">Pilih halaman untuk mengelola konten</p>
+                            </div>
                         </div>
                     @endif
                 </div>
@@ -296,7 +296,6 @@
         <div class="w-full lg:w-1/3 flex-shrink-0">
             <div id="preview-sticky-wrapper">
                 <div class="mb-4">
-                    <!-- <h3 class="font-bold text-gray-900 mb-2">Preview</h3> -->
                     <p class="text-sm text-gray-600">Tampilan di mobile device</p>
                 </div>
                 
@@ -320,13 +319,6 @@
 </div>
 
 @push('modals')
-{{-- ============================================================
-     MODAL SYSTEM — dirender langsung di <body> via @stack('modals')
-     sehingga overlay bisa menutupi sidebar (z-index: 200) sepenuhnya
-============================================================ --}}
-
-{{-- OVERLAY GLOBAL — z-index 9990 > sidebar z-index 200
-     Karena ini direct child <body>, tidak ada stacking context yang menghalangi --}}
 <div id="globalModalOverlay"
      class="fixed inset-0 hidden"
      style="z-index:9990; background:rgba(15,23,42,0.5); backdrop-filter:blur(5px); -webkit-backdrop-filter:blur(5px);"
@@ -477,7 +469,7 @@
                                text-blue-600 border-b-2 border-blue-600 bg-blue-50 mb-[-1px]">
                     Semua
                 </button>
-                <button type="button" id="prodTabUmkm" onclick="switchProdTab('umkm')"
+                <button type="button" id="prodTabFisik" onclick="switchProdTab('fisik')"
                         class="prod-tab-btn px-4 py-2 text-sm font-semibold rounded-t-lg transition-all duration-150
                                text-gray-500 border-b-2 border-transparent mb-[-1px] hover:text-gray-700 hover:bg-gray-50 flex items-center gap-1.5">
                     <i class="fas fa-box text-xs"></i> Fisik
@@ -495,22 +487,22 @@
                 <div class="space-y-3 max-h-[360px] overflow-y-auto pr-1" id="productListContainer">
                     @foreach($products as $product)
                     <div class="product-item flex justify-between items-center p-3 border rounded-lg hover:bg-gray-50 transition"
-                         data-type="{{ $product->product_type ?? 'umkm' }}">
+                         data-type="{{ $product->product_type ?? 'fisik' }}">
                         <div class="flex items-center gap-3">
                             @if($product->image)
                                 <img src="{{ asset('storage/' . $product->image) }}" class="w-12 h-12 object-cover rounded-lg flex-shrink-0" alt="{{ $product->title }}">
                             @else
                                 <div class="w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0
-                                            {{ ($product->product_type ?? 'umkm') === 'digital' ? 'bg-blue-50' : 'bg-yellow-100' }}">
-                                    <i class="fas {{ ($product->product_type ?? 'umkm') === 'digital' ? 'fa-download text-blue-500' : 'fa-box text-yellow-600' }}"></i>
+                                            {{ ($product->product_type ?? 'fisik') === 'digital' ? 'bg-blue-50' : 'bg-yellow-100' }}">
+                                    <i class="fas {{ ($product->product_type ?? 'fisik') === 'digital' ? 'fa-download text-blue-500' : 'fa-box text-yellow-600' }}"></i>
                                 </div>
                             @endif
                             <div>
                                 <h4 class="font-semibold text-sm">{{ $product->title }}</h4>
                                 <p class="text-xs text-gray-600">Rp {{ number_format($product->price,0,',','.') }}</p>
                                 <span class="inline-block mt-0.5 px-1.5 py-0.5 rounded text-[10px] font-medium
-                                             {{ ($product->product_type ?? 'umkm') === 'digital' ? 'bg-blue-50 text-blue-600' : 'bg-orange-50 text-orange-600' }}">
-                                    {{ ($product->product_type ?? 'umkm') === 'digital' ? 'Digital' : 'Fisik' }}
+                                             {{ ($product->product_type ?? 'fisik') === 'digital' ? 'bg-blue-50 text-blue-600' : 'bg-orange-50 text-orange-600' }}">
+                                    {{ ($product->product_type ?? 'fisik') === 'digital' ? 'Digital' : 'Fisik' }}
                                 </span>
                             </div>
                         </div>
@@ -553,32 +545,16 @@
 </div>
 
 <style>
-/* ============================================================
-   MODAL STYLES — Tidak ada filter/blur pada elemen halaman.
-   Blur hanya via overlay backdrop-filter.
-============================================================ */
-
-/* Default: modal tersembunyi */
 .modal { display: none; }
-
-/* Saat aktif: tampil sebagai flex */
-.modal.is-open {
-    display: flex !important;
-}
-
-/* Animasi masuk untuk modal container */
+.modal.is-open { display: flex !important; }
 .modal.is-open > div {
     animation: modalSlideIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
-
 @keyframes modalSlideIn {
     from { opacity: 0; transform: translateY(-12px) scale(0.97); }
     to   { opacity: 1; transform: translateY(0) scale(1); }
 }
-
-/* Utility */
 .page-item { transition: all 0.2s; }
-
 .btn-primary {
     background-color: #2563eb;
     color: white;
@@ -590,27 +566,21 @@
     transform: translateY(-1px);
     box-shadow: 0 6px 18px rgba(37,99,235,0.28);
 }
-
 .btn-secondary {
     background-color: white;
     border: 1px solid #d1d5db;
     color: #374151;
     transition: all 0.2s ease;
 }
-.btn-secondary:hover {
-    background-color: #f9fafb;
-}
-
+.btn-secondary:hover { background-color: #f9fafb; }
 .sortable-ghost { opacity: 0.4; background: #dbeafe; }
 .sortable-drag  { opacity: 0.8; transform: rotate(2deg); }
-
 .line-clamp-2 {
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
 }
-
 .preview-screen-wrap {
     overflow: hidden;
     position: relative;
@@ -623,18 +593,14 @@
     border: none;
     background: white;
 }
-
 #preview-sticky-wrapper {
     position: sticky !important;
     top: 24px !important;
     align-self: flex-start;
-    /* Batas tinggi agar tidak keluar viewport */
     max-height: calc(100vh - 48px);
     overflow: visible;
     z-index: 10;
 }
-
-/* Sticky preview */
 @media (max-width: 1023px) {
     #preview-sticky-wrapper {
         position: relative !important;
@@ -700,14 +666,10 @@ let _replacingBlockId = null;
 // ============================================
 function showModal(modalId) {
     closeAllModals();
-
     const overlay = document.getElementById('globalModalOverlay');
     const modal   = document.getElementById(modalId);
-
     overlay.classList.remove('hidden');
     modal.classList.add('is-open');
-
-    // Kunci scroll halaman, TANPA filter/blur
     document.body.style.overflow = 'hidden';
 }
 
@@ -721,7 +683,7 @@ function closeAllModals() {
 // PRODUCT TAB FILTER
 // ============================================
 function switchProdTab(tab) {
-    const tabs = { all: 'prodTabAll', umkm: 'prodTabUmkm', digital: 'prodTabDigital' };
+    const tabs = { all: 'prodTabAll', fisik: 'prodTabFisik', digital: 'prodTabDigital' };
     Object.entries(tabs).forEach(([key, id]) => {
         const el = document.getElementById(id);
         if (!el) return;
@@ -737,7 +699,7 @@ function switchProdTab(tab) {
     const items = document.querySelectorAll('#productListContainer .product-item');
     let visibleCount = 0;
     items.forEach(item => {
-        const type = item.getAttribute('data-type') || 'umkm';
+        const type = item.getAttribute('data-type') || 'fisik';
         const show = tab === 'all' || type === tab;
         item.style.display = show ? '' : 'none';
         if (show) visibleCount++;
@@ -749,7 +711,7 @@ function switchProdTab(tab) {
         if (visibleCount === 0) {
             emptyState.classList.remove('hidden');
             if (emptyText) emptyText.textContent =
-                tab === 'umkm' ? 'Tidak ada produk fisik' :
+                tab === 'fisik' ? 'Tidak ada produk fisik' :
                 tab === 'digital' ? 'Tidak ada produk digital' : 'Tidak ada produk';
         } else {
             emptyState.classList.add('hidden');
@@ -785,15 +747,10 @@ function showBuilderToast(msg, type) {
 }
 
 // ============================================
-// PAGE FUNCTIONS
+// SELECT PAGE — FIXED VERSION
 // ============================================
-// ============================================
-// LIVE PREVIEW UPDATE - Saat Pilih Halaman
-// ============================================
-
-// Ganti fungsi selectPage() yang lama dengan yang baru ini:
 function selectPage(pageId) {
-    // 1. Update visual active state LANGSUNG (tanpa tunggu reload)
+    // 1. Update visual active state langsung
     document.querySelectorAll('.page-item').forEach(item => {
         item.classList.remove('bg-blue-50', 'border-blue-300');
         item.classList.add('bg-gray-50', 'border-gray-200');
@@ -804,57 +761,61 @@ function selectPage(pageId) {
         clickedItem.classList.add('bg-blue-50', 'border-blue-300');
     }
 
-    // 2. Update preview iframe LANGSUNG ke halaman yang dipilih
-    const previewFrame = document.getElementById('preview');
-    if (previewFrame) {
-        const username = '{{ $user->username }}'; // Ganti dengan username aktual
-        const previewUrl = `/preview/${username}?page=${pageId}&t=${Date.now()}`;
-        previewFrame.src = previewUrl;
-    }
-
-    // 3. Update currentPageId global
+    // 2. Update currentPageId global
     currentPageId = pageId;
     const pageIdInput = document.getElementById('currentPageId');
     if (pageIdInput) pageIdInput.value = pageId;
 
-    // 4. Fetch dan update block list via AJAX (tanpa reload)
-    fetchBlockList(pageId);
-
-    // 5. Update URL browser tanpa reload
-    const newUrl = `{{ route('links.index') }}?page=${pageId}`;
-    window.history.pushState({ pageId: pageId }, '', newUrl);
-}
-
-// Fungsi baru: Fetch block list via AJAX
-function fetchBlockList(pageId) {
+    // 3. Coba AJAX dulu, kalau gagal fallback ke reload halaman
     fetch(`/api/blocks?page_id=${pageId}`, {
         headers: {
             'X-CSRF-TOKEN': '{{ csrf_token() }}',
             'Accept': 'application/json'
         }
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) throw new Error('HTTP ' + response.status);
+        return response.json();
+    })
     .then(data => {
-        if (data.success) {
-            updateBlockListUI(data.blocks, data.pageTitle);
+        if (!data.success) throw new Error('Response tidak sukses');
+
+        // Update UI tanpa reload
+        updateBlockListUI(data.blocks, data.pageTitle);
+
+        // Update preview iframe
+        const previewFrame = document.getElementById('preview');
+        if (previewFrame) {
+            const username = '{{ $user->username }}';
+            previewFrame.src = `/preview/${username}?page=${pageId}&t=${Date.now()}`;
         }
+
+        // Update URL browser tanpa reload
+        window.history.pushState({ pageId }, '', `{{ route('links.index') }}?page=${pageId}`);
     })
     .catch(error => {
-        console.error('Error fetching blocks:', error);
-        // Fallback: reload halaman jika AJAX gagal
-        setTimeout(() => {
-            window.location.href = `{{ route('links.index') }}?page=${pageId}`;
-        }, 100);
+        console.warn('AJAX gagal, fallback ke page reload:', error.message);
+        // Fallback paling aman: reload halaman dengan page yang benar
+        window.location.href = `{{ route('links.index') }}?page=${pageId}`;
     });
 }
 
-// Fungsi helper: Update UI block list
+// ============================================
+// UPDATE BLOCK LIST UI — FIXED VERSION
+// ============================================
 function updateBlockListUI(blocks, pageTitle) {
-    // Update judul konten
-    const contentTitle = document.querySelector('h2.font-bold.text-gray-900.text-lg');
+    // Update judul konten — pakai ID bukan selector class yang rawan salah
+    const contentTitle = document.getElementById('contentTitle');
     if (contentTitle && pageTitle) {
-        contentTitle.innerHTML = `Konten: <span class="text-blue-600">${pageTitle}</span>`;
+        contentTitle.innerHTML = `Konten: <span class="text-blue-600">${escHtml(pageTitle)}</span>`;
     }
+
+    // Tampilkan section tambah blok & hint sorting
+    const addBlockSection = document.getElementById('addBlockSection');
+    if (addBlockSection) addBlockSection.style.display = '';
+
+    const sortHint = document.getElementById('sortHint');
+    if (sortHint) sortHint.style.display = '';
 
     // Update block list
     const blockList = document.getElementById('blockList');
@@ -862,6 +823,7 @@ function updateBlockListUI(blocks, pageTitle) {
 
     if (blocks && blocks.length > 0) {
         blockList.innerHTML = blocks.map(block => generateBlockHTML(block)).join('');
+
         // Re-initialize sortable
         if (window.blockSortable) {
             window.blockSortable.destroy();
@@ -891,6 +853,7 @@ function updateBlockListUI(blocks, pageTitle) {
                 });
             }
         });
+
         // Load product info untuk block product
         loadBlockProductInfos();
     } else {
@@ -904,7 +867,9 @@ function updateBlockListUI(blocks, pageTitle) {
     }
 }
 
-// Fungsi helper: Generate HTML untuk satu block
+// ============================================
+// GENERATE BLOCK HTML
+// ============================================
 function generateBlockHTML(block) {
     const icons = {
         text: '<i class="fas fa-font text-blue-600"></i><span class="font-medium text-gray-900">Teks</span>',
@@ -983,6 +948,9 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
+// ============================================
+// PAGE FUNCTIONS
+// ============================================
 function showAddPageForm() {
     showModal('addPageModal');
     setTimeout(() => document.getElementById('new_page_title').focus(), 100);
@@ -1017,7 +985,6 @@ function addBlock(type) {
         { const el = document.getElementById(id); if (el) el.value = ''; });
     document.getElementById('youtubePreview').classList.add('hidden');
 
-    // Reset compression state saat buka modal baru
     const imageInput = document.getElementById('imageFile');
     if (imageInput) imageInput._compressedFile = null;
     const compressionInfo = document.getElementById('compressionInfo');
@@ -1041,7 +1008,6 @@ function editBlock(blockId, type, content) {
     ['textField','linkField','videoField','imageField','currentImage'].forEach(id =>
         document.getElementById(id).classList.add('hidden'));
 
-    // Reset compression state
     const imageInput = document.getElementById('imageFile');
     if (imageInput) imageInput._compressedFile = null;
     const compressionInfo = document.getElementById('compressionInfo');
@@ -1118,19 +1084,14 @@ function compressImage(file, maxSizeKB = 80, maxWidth = 800, quality = 0.65) {
             img.onload = function() {
                 const canvas = document.createElement('canvas');
                 let { width, height } = img;
-
-                // Scale down jika terlalu lebar
                 if (width > maxWidth) {
                     height = Math.round(height * maxWidth / width);
                     width  = maxWidth;
                 }
-
                 canvas.width  = width;
                 canvas.height = height;
                 const ctx = canvas.getContext('2d');
                 ctx.drawImage(img, 0, 0, width, height);
-
-                // Kompresi iteratif sampai ukuran target tercapai
                 let q = quality;
                 function tryCompress() {
                     canvas.toBlob(blob => {
@@ -1163,10 +1124,8 @@ function compressImage(file, maxSizeKB = 80, maxWidth = 800, quality = 0.65) {
 }
 
 function showCompressionInfo(originalKB, compressedKB, savedKB) {
-    // Hapus info lama jika ada
     const old = document.getElementById('compressionInfo');
     if (old) old.remove();
-
     const el = document.createElement('div');
     el.id = 'compressionInfo';
     el.style.cssText = 'margin-top:8px;padding:7px 12px;border-radius:8px;font-size:12px;display:flex;align-items:center;gap:6px;background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0;';
@@ -1302,7 +1261,6 @@ document.getElementById('blockForm').addEventListener('submit', function(e) {
     }
     if (type === 'image') {
         const imageInput = document.getElementById('imageFile');
-        // Gunakan file terkompresi jika ada, fallback ke file asli
         const f = imageInput._compressedFile || imageInput.files[0];
         if (f)            { formData.append('image', f); }
         else if (!isEdit) { alert('Silakan pilih gambar'); return; }
@@ -1328,7 +1286,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Sortable
     const blockList = document.getElementById('blockList');
     if (blockList) {
-        new Sortable(blockList, {
+        window.blockSortable = new Sortable(blockList, {
             animation: 150, ghostClass: 'sortable-ghost', handle: '.fa-grip-vertical',
             onEnd: function() {
                 const order = Array.from(blockList.children).map((item, index) => ({
@@ -1360,34 +1318,24 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // ============================================
-    // AUTO-COMPRESS GAMBAR SAAT DIPILIH
-    // ============================================
+    // Auto-compress gambar
     const imageFileInput = document.getElementById('imageFile');
     if (imageFileInput) {
         imageFileInput._compressedFile = null;
-
         imageFileInput.addEventListener('change', async function() {
             const file = this.files[0];
             if (!file) return;
-
-            // Bersihkan info kompresi lama
             const oldInfo = document.getElementById('compressionInfo');
             if (oldInfo) oldInfo.remove();
-
-            // Tampilkan loading state
             const loadingEl = document.createElement('div');
             loadingEl.id = 'compressionInfo';
             loadingEl.style.cssText = 'margin-top:8px;padding:7px 12px;border-radius:8px;font-size:12px;display:flex;align-items:center;gap:6px;background:#eff6ff;color:#2563eb;border:1px solid #bfdbfe;';
             loadingEl.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Sedang mengompres gambar...`;
             this.parentNode.appendChild(loadingEl);
-
             try {
                 const result = await compressImage(file);
                 imageFileInput._compressedFile = result.file;
                 showCompressionInfo(result.originalKB, result.compressedKB, result.savedKB);
-
-                // Preview gambar hasil kompresi
                 const reader = new FileReader();
                 reader.onload = (ev) => {
                     document.getElementById('currentImage').classList.remove('hidden');
@@ -1403,7 +1351,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     errEl.style.borderColor = '#fecaca';
                     errEl.innerHTML = `<i class="fas fa-exclamation-circle"></i> Kompresi gagal, file asli akan digunakan`;
                 }
-                console.error('Kompresi gagal:', err);
             }
         });
     }

@@ -55,8 +55,7 @@
         <div class="p-5 overflow-y-auto flex-1">
             <form id="editForm-{{ $product->id }}"
                   method="POST"
-                  action="{{ route('products.update', $product->id) }}"
-                  enctype="multipart/form-data">
+                  action="{{ route('products.update', $product->id) }}">
                 @csrf
                 @method('PUT')
                 <input type="hidden" name="product_type" value="{{ $product->product_type ?? 'fisik' }}">
@@ -111,8 +110,15 @@
                                 </svg>
                             </div>
                         </div>
+
+                        {{-- Hidden input untuk menyimpan ID gambar lama --}}
+                        @if($product->images->count())
+                        <input type="hidden"
+                               id="existingImageIds-{{ $product->id }}"
+                               value="{{ $product->images->pluck('id')->join(',') }}">
+                        @endif
+
                         <div class="border-2 border-dashed border-gray-200 rounded-xl p-4 text-center hover:border-blue-400 transition-colors cursor-pointer">
-                            {{-- input ini HANYA trigger, file asli di _editUploadedImages[] --}}
                             <input type="file" id="editNewImages-{{ $product->id }}" multiple accept="image/*" class="hidden">
                             <label for="editNewImages-{{ $product->id }}" class="cursor-pointer block">
                                 <div class="mx-auto w-10 h-10 bg-blue-50 rounded-full flex items-center justify-center mb-2">
@@ -193,8 +199,7 @@
                             </div>
                             @endif
                             <div class="border-2 border-dashed border-gray-200 rounded-xl p-4 text-center hover:border-blue-400 transition-colors cursor-pointer">
-                                <input type="file" id="editFileUpload-{{ $product->id }}" name="files[]" multiple class="hidden"
-                                       onchange="editHandleFiles(event, {{ $product->id }})">
+                                <input type="file" id="editFileUpload-{{ $product->id }}" multiple class="hidden">
                                 <label for="editFileUpload-{{ $product->id }}" class="cursor-pointer block">
                                     <p class="text-sm text-gray-700 font-medium">Klik untuk upload file baru</p>
                                     <p class="text-xs text-gray-400 mt-1">ZIP, RAR, PDF, DOC, atau format lainnya</p>
@@ -205,20 +210,17 @@
                         <div id="editPanelDropbox-{{ $product->id }}" class="{{ $existingPlatform === 'dropbox' ? '' : 'hidden' }}">
                             <input type="url" id="editUrlDropbox-{{ $product->id }}" class="edit-input"
                                    placeholder="https://www.dropbox.com/s/..."
-                                   value="{{ $existingPlatform === 'dropbox' ? $existingFileUrl : '' }}"
-                                   oninput="editValidateUrl(this, 'dropbox.com', {{ $product->id }}, 'Dropbox')">
+                                   value="{{ $existingPlatform === 'dropbox' ? $existingFileUrl : '' }}">
                         </div>
                         <div id="editPanelGdrive-{{ $product->id }}" class="{{ $existingPlatform === 'gdrive' ? '' : 'hidden' }}">
                             <input type="url" id="editUrlGdrive-{{ $product->id }}" class="edit-input"
                                    placeholder="https://drive.google.com/file/d/..."
-                                   value="{{ $existingPlatform === 'gdrive' ? $existingFileUrl : '' }}"
-                                   oninput="editValidateUrl(this, 'drive.google.com', {{ $product->id }}, 'Google Drive')">
+                                   value="{{ $existingPlatform === 'gdrive' ? $existingFileUrl : '' }}">
                         </div>
                         <div id="editPanelOther-{{ $product->id }}" class="{{ $existingPlatform === 'other' ? '' : 'hidden' }}">
                             <input type="url" id="editUrlOther-{{ $product->id }}" class="edit-input"
                                    placeholder="https://..."
-                                   value="{{ $existingPlatform === 'other' ? $existingFileUrl : '' }}"
-                                   oninput="editValidateUrl(this, null, {{ $product->id }}, 'Other')">
+                                   value="{{ $existingPlatform === 'other' ? $existingFileUrl : '' }}">
                         </div>
                     </div>
 
@@ -240,7 +242,7 @@
                     </div>
 
                     {{-- ONGKOS KIRIM (hanya fisik) --}}
-                    @if(($product->product_type ?? 'fisik') === 'fisik')
+                    {{-- @if(($product->product_type ?? 'fisik') === 'fisik')
                     <div class="edit-card p-4">
                         <h3 class="text-sm font-semibold text-gray-800 mb-3">Ongkos Kirim</h3>
                         <div class="flex items-center justify-between mb-3">
@@ -256,13 +258,13 @@
                                 <label for="editShippingCheck-{{ $product->id }}" class="edit-toggle-label-amber"></label>
                             </div>
                         </div>
-                        <input type="text" name="shipping_cost" id="editShippingInput-{{ $product->id }}"
+                        <input type="text" id="editShippingInput-{{ $product->id }}"
                                class="edit-input {{ $product->shipping_cost ? '' : 'hidden' }}"
                                value="{{ $product->shipping_cost ? number_format($product->shipping_cost, 0, ',', '.') : '' }}"
                                placeholder="Contoh: 15.000"
                                oninput="formatRupiah(this)">
                     </div>
-                    @endif
+                    @endif --}}
 
                     {{-- STOK & BATAS PEMBELIAN --}}
                     <div class="edit-card p-4 space-y-1">
@@ -323,13 +325,15 @@
                         class="px-4 py-2 text-sm font-medium bg-white border border-gray-200 rounded-lg hover:bg-gray-50 text-gray-600 transition-colors">
                     Batal
                 </button>
-                <button type="button" onclick="submitEditForm({{ $product->id }})"
+                <button type="button"
+                        id="editSaveBtn-{{ $product->id }}"
+                        onclick="submitEditForm({{ $product->id }})"
                         class="px-5 py-2 text-sm font-semibold text-white rounded-lg shadow-sm hover:shadow-md transform hover:-translate-y-0.5 transition-all duration-200 flex items-center gap-2"
                         style="{{ ($product->product_type ?? 'fisik') === 'digital' ? 'background:linear-gradient(to right,#2563eb,#1d4ed8)' : 'background:linear-gradient(to right,#16a34a,#15803d)' }}">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                     </svg>
-                    Simpan Perubahan
+                    <span id="editSaveBtnText-{{ $product->id }}">Simpan Perubahan</span>
                 </button>
             </div>
         </div>
@@ -375,7 +379,38 @@
 </style>
 
 <script>
-// ===== MODAL OPEN/CLOSE =====
+// ===== EXISTING IMAGE IDS =====
+const _existingImageIds = {};
+const _editUploadedImages = {};
+const _editUploadedFiles = {};
+
+function _collectExistingImageIds(productId) {
+    const hiddenEl = document.getElementById('existingImageIds-' + productId);
+    if (hiddenEl && hiddenEl.value) {
+        _existingImageIds[productId] = hiddenEl.value.split(',').filter(Boolean);
+    } else {
+        const checkboxes = document.querySelectorAll('#editForm-' + productId + ' input[name="delete_images[]"]');
+        _existingImageIds[productId] = Array.from(checkboxes).map(cb => cb.value);
+    }
+    // Reset state gambar & checkbox saat modal dibuka
+    const form = document.getElementById('editForm-' + productId);
+    if (form) {
+        form.querySelectorAll('.edit-img-item').forEach(item => {
+            item.style.opacity = '';
+            item.style.outline = '';
+        });
+        form.querySelectorAll('input[name="delete_images[]"]').forEach(cb => { cb.checked = false; });
+    }
+    // Reset array gambar baru dan preview
+    _editUploadedImages[productId] = [];
+    const previewEl = document.getElementById('editImgPreview-' + productId);
+    const statusEl  = document.getElementById('editImgStatus-'  + productId);
+    const labelText = document.getElementById('editImgUploadText-' + productId);
+    if (previewEl) previewEl.innerHTML = '';
+    if (statusEl)  statusEl.classList.add('hidden');
+    if (labelText) labelText.textContent = 'Klik untuk upload gambar baru';
+}
+
 function openEditModal(id) {
     const overlay = document.getElementById('editModalOverlay-' + id);
     const modal   = document.getElementById('editModal-' + id);
@@ -389,7 +424,9 @@ function openEditModal(id) {
     card.style.opacity    = '1';
     card.style.transform  = 'translateY(0)';
     document.body.style.overflow = 'hidden';
+    _collectExistingImageIds(id);
 }
+
 function closeEditModal(id) {
     const overlay = document.getElementById('editModalOverlay-' + id);
     const modal   = document.getElementById('editModal-' + id);
@@ -405,6 +442,7 @@ function closeEditModal(id) {
         document.body.style.overflow = '';
     }, 250);
 }
+
 document.addEventListener('keydown', function(e) {
     if (e.key !== 'Escape') return;
     document.querySelectorAll('[id^="editModal-"]').forEach(modal => {
@@ -412,62 +450,15 @@ document.addEventListener('keydown', function(e) {
     });
 });
 
-// ===== SUBMIT DENGAN FORMDATA MANUAL (fix gambar + ongkir) =====
-async function submitEditForm(productId) {
-    const form = document.getElementById('editForm-' + productId);
-    if (!form) return;
-
-    // Bersihkan format titik dari harga
-    const priceEl    = document.getElementById('editPrice-'        + productId);
-    const discountEl = document.getElementById('editDiscount-'     + productId);
-    const shippingEl = document.getElementById('editShippingInput-' + productId);
-
-    const cleanNum = (el) => {
-        if (!el) return '';
-        const n = parseInt((el.value || '').replace(/\./g, ''), 10);
-        return isNaN(n) ? '' : n;
-    };
-
-    if (priceEl)    priceEl.value    = cleanNum(priceEl);
-    if (discountEl) discountEl.value = cleanNum(discountEl) || '';
-    if (shippingEl) shippingEl.value = cleanNum(shippingEl) || '';
-
-    // Bangun FormData dari form (sudah include semua field termasuk shipping_cost)
-    const fd = new FormData(form);
-
-    // Tambah gambar baru dari array JS (BUKAN dari input file)
-    const images = _editUploadedImages[productId] || [];
-    // Hapus images[] yang mungkin sudah ada di FormData
-    fd.delete('images[]');
-    images.forEach(img => {
-        fd.append('images[]', img.file, img.file.name);
-    });
-
-    // Disable tombol
-    const saveBtn = form.closest('.bg-white').querySelector('[onclick^="submitEditForm"]');
-    if (saveBtn) { saveBtn.disabled = true; saveBtn.style.opacity = '0.7'; }
-
-    try {
-        const res = await fetch(form.action, {
-            method: 'POST',
-            headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content') },
-            body: fd,
-        });
-
-        if (res.redirected) {
-            window.location.href = res.url;
-            return;
-        }
-        if (res.ok) {
-            window.location.href = res.url || window.location.href;
-        } else {
-            const text = await res.text();
-            document.open(); document.write(text); document.close();
-        }
-    } catch(err) {
-        // Fallback: submit form biasa
-        form.submit();
-    }
+// ===== FORMAT RUPIAH =====
+function formatRupiah(input) {
+    const angka = (input.value || '').replace(/[^0-9]/g, '');
+    input.value = angka ? new Intl.NumberFormat('id-ID').format(angka) : '';
+}
+function cleanNum(el) {
+    if (!el) return '';
+    const n = parseInt((el.value || '').replace(/\./g, '').replace(/,/g, ''), 10);
+    return isNaN(n) ? '' : n;
 }
 
 // ===== TOGGLE HELPERS =====
@@ -484,12 +475,6 @@ function editToggleShipping(cb, productId) {
     if (cb.checked) inp.focus(); else inp.value = '';
 }
 
-// ===== FORMAT RUPIAH =====
-function formatRupiah(input) {
-    const angka = input.value.replace(/[^0-9]/g, '');
-    input.value = angka ? new Intl.NumberFormat('id-ID').format(angka) : '';
-}
-
 // ===== PLATFORM SWITCHER =====
 function _setupEditPlatformSwitcher(productId) {
     const container = document.getElementById('editPlatformBtns-' + productId);
@@ -501,19 +486,6 @@ function _setupEditPlatformSwitcher(productId) {
         gdrive:  document.getElementById('editPanelGdrive-'  + productId),
         other:   document.getElementById('editPanelOther-'   + productId),
     };
-    const urlInputs = {
-        dropbox: document.getElementById('editUrlDropbox-' + productId),
-        gdrive:  document.getElementById('editUrlGdrive-'  + productId),
-        other:   document.getElementById('editUrlOther-'   + productId),
-    };
-    function syncUrlNames(active) {
-        Object.entries(urlInputs).forEach(([key, inp]) => {
-            if (!inp) return;
-            if (key === active) { inp.setAttribute('name', 'file_url'); inp.disabled = false; }
-            else { inp.removeAttribute('name'); inp.disabled = true; }
-        });
-    }
-    syncUrlNames(platformHidden.value);
     container.addEventListener('click', function(e) {
         const btn = e.target.closest('.edit-platform-btn');
         if (!btn) return;
@@ -522,26 +494,21 @@ function _setupEditPlatformSwitcher(productId) {
         btn.classList.add('active');
         Object.entries(panels).forEach(([key, el]) => { if (el) el.classList.toggle('hidden', key !== platform); });
         platformHidden.value = platform;
-        syncUrlNames(platform);
     });
 }
 
-function editValidateUrl(input, domain, productId, platformName) {
-    const val = input.value.trim();
-    if (!val) return;
-    const isValid = domain ? val.includes(domain) : val.startsWith('http');
-    if (!isValid) input.style.borderColor = '#fca5a5';
-    else input.style.borderColor = '#86efac';
-}
-
-// ===== FILE LIST =====
-const _editUploadedFiles = {};
-function editHandleFiles(event, productId) {
+// ===== FILE LIST (untuk pembeli digital) =====
+function _setupEditFileUpload(productId) {
+    const input = document.getElementById('editFileUpload-' + productId);
+    if (!input) return;
     if (!_editUploadedFiles[productId]) _editUploadedFiles[productId] = [];
-    Array.from(event.target.files).forEach((file, i) => {
-        _editUploadedFiles[productId].push({ id: Date.now() + i, name: file.name, size: file.size, file });
+    input.addEventListener('change', function() {
+        Array.from(this.files).forEach((file, i) => {
+            _editUploadedFiles[productId].push({ id: Date.now() + i, name: file.name, size: file.size, file });
+        });
+        editRenderFileList(productId);
+        this.value = '';
     });
-    editRenderFileList(productId);
 }
 function editRenderFileList(productId) {
     const container = document.getElementById('editFileList-' + productId);
@@ -551,15 +518,13 @@ function editRenderFileList(productId) {
     files.forEach((f, index) => {
         const div = document.createElement('div');
         div.className = 'flex items-center justify-between p-2.5 bg-blue-50 rounded-lg border border-blue-200';
-        div.innerHTML = `<span class="text-xs text-gray-700 truncate">${f.name}</span>
+        div.innerHTML = `<span class="text-xs text-gray-700 truncate flex-1">${f.name}</span>
             <button type="button" onclick="editRemoveFile(${productId}, ${index})"
                     class="w-5 h-5 bg-red-100 hover:bg-red-200 rounded-full flex items-center justify-center ml-2 flex-shrink-0">
                 <svg class="w-2.5 h-2.5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>`;
         container.appendChild(div);
     });
-    const input = document.getElementById('editFileUpload-' + productId);
-    if (input) { const dt = new DataTransfer(); files.forEach(f => dt.items.add(f.file)); input.files = dt.files; }
 }
 function editRemoveFile(productId, index) {
     if (_editUploadedFiles[productId]) { _editUploadedFiles[productId].splice(index, 1); editRenderFileList(productId); }
@@ -585,7 +550,10 @@ function editCompressImage(file) {
                     canvas.toBlob(blob => {
                         if (!blob) { reject(new Error('blob error')); return; }
                         if (blob.size / 1024 > maxSizeKB && q > 0.2) { q -= 0.08; tryCompress(); return; }
-                        resolve({ file: new File([blob], file.name.replace(/\.[^.]+$/, '.jpg'), { type: 'image/jpeg', lastModified: Date.now() }), previewUrl: URL.createObjectURL(blob) });
+                        resolve({
+                            file: new File([blob], file.name.replace(/\.[^.]+$/, '.jpg'), { type:'image/jpeg', lastModified:Date.now() }),
+                            previewUrl: URL.createObjectURL(blob)
+                        });
                     }, 'image/jpeg', q);
                 }
                 tryCompress();
@@ -596,7 +564,7 @@ function editCompressImage(file) {
     });
 }
 
-const _editUploadedImages = {};
+// ===== IMAGE UPLOAD SETUP =====
 function _setupEditImageCompression(productId) {
     const input     = document.getElementById('editNewImages-' + productId);
     const statusEl  = document.getElementById('editImgStatus-' + productId);
@@ -608,22 +576,29 @@ function _setupEditImageCompression(productId) {
     input.addEventListener('change', async function() {
         const files = Array.from(this.files).filter(f => f.type.match('image.*'));
         if (!files.length) return;
+
         statusEl.classList.remove('hidden');
         statusEl.innerHTML = `<div style="display:flex;align-items:center;gap:6px;color:#9ca3af;font-size:11px;"><svg style="width:12px;height:12px;animation:editSpin 1s linear infinite;flex-shrink:0;" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" style="opacity:.3"/><path fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" style="opacity:.7"/></svg>Mengompresi...</div>`;
         const results = await Promise.allSettled(files.map(f => editCompressImage(f)));
-        results.forEach((r, i) => { if (r.status === 'fulfilled') _editUploadedImages[productId].push({ id: Date.now() + i, file: r.value.file, previewUrl: r.value.previewUrl }); });
+        results.forEach((r, i) => {
+            if (r.status === 'fulfilled') _editUploadedImages[productId].push({ id: Date.now() + i, file: r.value.file, previewUrl: r.value.previewUrl });
+        });
         _renderEditImagePreview(productId, previewEl, labelText, statusEl);
         statusEl.innerHTML = `<div style="display:flex;align-items:center;gap:5px;color:#9ca3af;font-size:11px;"><span style="width:7px;height:7px;border-radius:50%;background:#2563eb;display:inline-block;flex-shrink:0;"></span>${_editUploadedImages[productId].length} gambar siap diupload</div>`;
         this.value = '';
     });
 }
+
 function _renderEditImagePreview(productId, previewEl, labelText, statusEl) {
     const images = _editUploadedImages[productId] || [];
     previewEl.innerHTML = '';
     images.forEach((img, idx) => {
         const div = document.createElement('div');
         div.className = 'edit-preview-img-wrap';
-        div.innerHTML = `<img src="${img.previewUrl}" loading="lazy"><div class="edit-img-ready-dot"></div><div class="edit-preview-remove" data-idx="${idx}"><svg style="width:10px;height:10px;color:white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></div>`;
+        div.innerHTML = `<img src="${img.previewUrl}" loading="lazy"><div class="edit-img-ready-dot"></div>
+            <div class="edit-preview-remove" data-idx="${idx}">
+                <svg style="width:10px;height:10px;color:white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </div>`;
         previewEl.appendChild(div);
     });
     previewEl.querySelectorAll('.edit-preview-remove').forEach(btn => {
@@ -632,16 +607,105 @@ function _renderEditImagePreview(productId, previewEl, labelText, statusEl) {
             _editUploadedImages[productId].splice(+this.dataset.idx, 1);
             _renderEditImagePreview(productId, previewEl, labelText, statusEl);
             if (!_editUploadedImages[productId].length) statusEl.classList.add('hidden');
+            else statusEl.innerHTML = `<div style="display:flex;align-items:center;gap:5px;color:#9ca3af;font-size:11px;"><span style="width:7px;height:7px;border-radius:50%;background:#2563eb;display:inline-block;flex-shrink:0;"></span>${_editUploadedImages[productId].length} gambar siap diupload</div>`;
         });
     });
     labelText.textContent = images.length ? `Tambah lagi (${images.length} dipilih)` : 'Klik untuk upload gambar baru';
 }
 
+// ===== SUBMIT EDIT FORM =====
+async function submitEditForm(productId) {
+    const form = document.getElementById('editForm-' + productId);
+    if (!form) return;
+
+    const priceEl    = document.getElementById('editPrice-'         + productId);
+    const discountEl = document.getElementById('editDiscount-'      + productId);
+    const shippingEl = document.getElementById('editShippingInput-' + productId);
+    const shippingCk = document.getElementById('editShippingCheck-' + productId);
+    const platformEl = document.getElementById('editFilePlatform-'  + productId);
+
+    const btn     = document.getElementById('editSaveBtn-'     + productId);
+    const btnText = document.getElementById('editSaveBtnText-' + productId);
+    if (btn) { btn.disabled = true; btn.style.opacity = '0.7'; }
+    if (btnText) btnText.textContent = 'Menyimpan...';
+
+    const fd = new FormData(form);
+
+    fd.set('price',    cleanNum(priceEl)    || 0);
+    fd.set('discount', cleanNum(discountEl) || '');
+
+    if (shippingCk && shippingCk.checked && shippingEl && shippingEl.value.trim()) {
+        fd.set('shipping_cost', cleanNum(shippingEl));
+    } else {
+        fd.delete('shipping_cost');
+    }
+
+    const platform = platformEl ? platformEl.value : 'upload';
+    if (platform !== 'upload') {
+        const urlMap = { dropbox: 'editUrlDropbox-', gdrive: 'editUrlGdrive-', other: 'editUrlOther-' };
+        const urlInputEl = document.getElementById((urlMap[platform] || 'editUrlOther-') + productId);
+        if (urlInputEl && urlInputEl.value.trim()) {
+            fd.set('file_url', urlInputEl.value.trim());
+        }
+    }
+
+    // Tambahkan gambar baru
+    fd.delete('images[]');
+    const newImages = _editUploadedImages[productId] || [];
+    newImages.forEach(img => {
+        fd.append('images[]', img.file, img.file.name);
+    });
+
+    // Jika ada gambar baru → otomatis hapus semua gambar lama
+    if (newImages.length > 0) {
+        fd.delete('delete_images[]');
+        const existingIds = _existingImageIds[productId] || [];
+        if (existingIds.length > 0) {
+            existingIds.forEach(id => fd.append('delete_images[]', id));
+        } else {
+            form.querySelectorAll('input[name="delete_images[]"]').forEach(cb => fd.append('delete_images[]', cb.value));
+        }
+    }
+
+    // Tambahkan file pembeli baru
+    fd.delete('files[]');
+    const files = _editUploadedFiles[productId] || [];
+    files.forEach(f => {
+        fd.append('files[]', f.file, f.file.name);
+    });
+
+    try {
+        const res = await fetch(form.action, {
+            method: 'POST',
+            headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content') },
+            body: fd,
+        });
+
+        if (res.redirected) {
+            window.location.href = res.url;
+            return;
+        }
+        if (res.ok) {
+            window.location.href = res.url || window.location.href;
+        } else {
+            const text = await res.text();
+            document.open(); document.write(text); document.close();
+        }
+    } catch(err) {
+        console.error('Edit submit error:', err);
+        alert('Terjadi kesalahan saat menyimpan. Silakan coba lagi.');
+        if (btn) { btn.disabled = false; btn.style.opacity = '1'; }
+        if (btnText) btnText.textContent = 'Simpan Perubahan';
+    }
+}
+
+// ===== INISIALISASI SEMUA MODAL =====
 document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('[id^="editNewImages-"]').forEach(el => {
         const productId = el.id.replace('editNewImages-', '');
         _setupEditImageCompression(productId);
         _setupEditPlatformSwitcher(productId);
+        _setupEditFileUpload(productId);
     });
 });
 </script>
