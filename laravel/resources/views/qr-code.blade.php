@@ -135,7 +135,7 @@
                         </p>
                         <div style="margin-top: 8px; background: #fffbeb; border: 1px solid #fde68a; border-radius: 6px; padding: 8px 10px; display: flex; align-items: center; gap: 7px;">
                             <i class="fas fa-exclamation-triangle" style="color: #d97706; font-size: 11px; flex-shrink: 0;"></i>
-                            <p style="margin: 0; font-size: 11px; color: #92400e; line-height: 1.5;">Perubahan warna hanya berlaku untuk <strong>Download</strong>.Untuk Bagikan Melalui WhatsApp tetap menggunakan warna biru Payou.id</p>
+                            <p style="margin: 0; font-size: 11px; color: #92400e; line-height: 1.5;">Perubahan warna hanya berlaku untuk <strong>Download</strong>. Share WhatsApp tetap menggunakan warna biru Payou.</p>
                         </div>
                     </div>
 
@@ -421,17 +421,16 @@ async function copyLink() {
 }
 
 // ─── Download QR Bersih ────────────────────────────────
-// Output: PNG 440×480 px — QR bersih + watermark @username
-// Siap ditempel ke desain apapun tanpa editing tambahan.
+// Output: PNG persegi 440×460 px — QR penuh + logo payou + @username
 function downloadQR() {
     const srcCanvas = document.querySelector('#qrcode-main canvas');
     if (!srcCanvas) { alert('QR Code belum siap, coba lagi.'); return; }
 
-    const QR_SIZE = 400;
-    const PADDING = 20;
-    const LABEL_H = 36;
-    const W = QR_SIZE + PADDING * 2;
-    const H = QR_SIZE + PADDING * 2 + LABEL_H;
+    const QR_SIZE = 400;   // ukuran QR
+    const PAD     = 20;    // padding putih sekeliling QR
+    const LABEL_H = 40;    // area @username di bawah
+    const W = QR_SIZE + PAD * 2;
+    const H = QR_SIZE + PAD * 2 + LABEL_H;
 
     const out = document.createElement('canvas');
     out.width  = W;
@@ -442,14 +441,37 @@ function downloadQR() {
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, W, H);
 
-    // gambar QR di-scale ke 400×400
-    ctx.drawImage(srcCanvas, PADDING, PADDING, QR_SIZE, QR_SIZE);
+    // gambar QR dengan padding di semua sisi
+    ctx.drawImage(srcCanvas, PAD, PAD, QR_SIZE, QR_SIZE);
 
-    // watermark @username dengan warna QR aktif
+    // Logo 'payou' di tengah QR - kotak persegi bujur sangkar
+    const BOX   = 72;
+    const logoX = (W - BOX) / 2;
+    const logoY = PAD + (QR_SIZE - BOX) / 2;
+    // shadow
+    ctx.shadowColor   = 'rgba(0,102,204,0.20)';
+    ctx.shadowBlur    = 14;
+    ctx.shadowOffsetY = 3;
+    // kotak putih rounded persegi
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.roundRect(logoX, logoY, BOX, BOX, 12);
+    ctx.fill();
+    // reset shadow
+    ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
+    // teks "payou" — selalu biru, tidak ikut warna QR
+    ctx.fillStyle    = '#0066CC';
+    ctx.font         = 'bold 16px Arial, sans-serif';
+    ctx.textAlign    = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('payou', W / 2, logoY + BOX / 2);
+    ctx.textBaseline = 'alphabetic';
+
+    // watermark @username — ikut warna QR aktif
     ctx.fillStyle = currentColor;
     ctx.font      = 'bold 15px Arial, sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('@' + currentUsername, W / 2, H - 10);
+    ctx.fillText('@' + currentUsername, W / 2, PAD + QR_SIZE + 26);
 
     const link    = document.createElement('a');
     link.download = `payou-${currentUsername}.png`;

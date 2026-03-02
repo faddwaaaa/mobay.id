@@ -57,16 +57,15 @@
         <!-- Body -->
         <div style="padding:24px;">
 
-            <!-- QR Code Container dengan desain premium Payou -->
+            <!-- QR Code Container -->
             <div style="background:linear-gradient(145deg, #ffffff 0%, #f8fbff 100%); border:2px solid #e6f0ff; border-radius:16px; padding:20px;
                         margin-bottom:16px; display:flex; justify-content:center; position:relative; box-shadow:0 8px 20px rgba(0,102,204,0.08);">
                 
-                <!-- Logo Payou kecil di tengah QR -->
+                <!-- Logo Payou di tengah QR -->
                 <div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); width:48px; height:48px; background:#ffffff; border-radius:12px; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 12px rgba(0,102,204,0.15); border:2px solid #ffffff; z-index:10; pointer-events:none;">
                     <span style="color:#0066CC; font-weight:700; font-size:14px; letter-spacing:-0.5px;">payou</span>
                 </div>
                 
-                <!-- QR Code dengan warna biru Payou -->
                 <div id="qrcode" style="position:relative; filter:drop-shadow(0 4px 8px rgba(0,102,204,0.1));"></div>
             </div>
 
@@ -121,9 +120,6 @@
     
     <!-- Header dengan logo Payou -->
     <div style="display:flex; align-items:center; gap:12px; margin-bottom:15px; flex-shrink:0;">
-        <!-- <div style="width:48px; height:48px; background:#0066CC; border-radius:12px; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 10px rgba(0,102,204,0.2);">
-            <span style="color:white; font-weight:700; font-size:20px;">P</span>
-        </div> -->
         <div style="display:flex; flex-direction:column;">
             <span style="font-size:22px; font-weight:700; color:#0066CC; letter-spacing:-0.5px; line-height:1.2;">payou.id</span>
             <span style="font-size:13px; color:#64748B; margin-top:2px;">Digital Business Card</span>
@@ -138,7 +134,7 @@
     <!-- QR Code Container dengan logo Payou di tengah -->
     <div style="display:flex; justify-content:center; align-items:center; margin-bottom:20px; background:linear-gradient(145deg, #ffffff, #f8fbff); padding:20px; border-radius:24px; box-shadow:0 15px 35px rgba(0,102,204,0.15); border:1px solid #e6f0ff; flex:1; position:relative;">
         
-        <!-- Logo Payou di tengah QR (SAMA SEPERTI DI MODAL) -->
+        <!-- Logo Payou di tengah QR -->
         <div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); width:56px; height:56px; background:#ffffff; border-radius:14px; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 12px rgba(0,102,204,0.2); border:3px solid #ffffff; z-index:10; pointer-events:none;">
             <span style="color:#0066CC; font-weight:700; font-size:16px; letter-spacing:-0.5px; padding-bottom:15px;">payou</span>
         </div>
@@ -146,7 +142,7 @@
         <div id="poster-qrcode" style="display:flex; justify-content:center; align-items:center;"></div>
     </div>
 
-    <!-- Username sebagai watermark (bukan payou.id) -->
+    <!-- Username watermark -->
     <div style="text-align:center; margin-bottom:10px; flex-shrink:0;">
         <span style="color:#0066CC; font-weight:600; font-size:14px; padding:6px; display:inline-block;" id="poster-watermark">
             @{{ $userSlug ?? 'username' }}
@@ -180,7 +176,6 @@
 #qrcode img, #qrcode canvas { border-radius:8px; width:180px; height:180px; }
 .copy-success { background:#10b981 !important; box-shadow:none !important; }
 
-/* Loading state untuk share */
 .share-loading {
     opacity: 0.7;
     pointer-events: none;
@@ -209,43 +204,40 @@
 </style>
 
 <script>
-let currentQRCode = null;
-let currentUrl    = '';
+let currentQRCode   = null;
+let currentUrl      = '';
 let currentUsername = '';
 
 function openQRModal(username) {
-    const overlay     = document.getElementById('qrModalOverlay');
-    const modal       = document.getElementById('qr-modal');
-    const card        = document.getElementById('qrModalCard');
-    const urlDisplay  = document.getElementById('qr-url-display');
-    const qrcodeEl    = document.getElementById('qrcode');
+    const overlay    = document.getElementById('qrModalOverlay');
+    const modal      = document.getElementById('qr-modal');
+    const card       = document.getElementById('qrModalCard');
+    const urlDisplay = document.getElementById('qr-url-display');
+    const qrcodeEl   = document.getElementById('qrcode');
 
     currentUsername = username;
     currentUrl = '{{ url('/') }}' + '/' + username;
     urlDisplay.textContent = currentUrl;
 
-    // Update poster elements
-    document.getElementById('poster-username').textContent = '@' + username;
+    document.getElementById('poster-username').textContent  = '@' + username;
     document.getElementById('poster-watermark').textContent = '@' + username;
 
-    // Reset & generate QR dengan warna biru Payou
     qrcodeEl.innerHTML = '';
     currentQRCode = new QRCode(qrcodeEl, {
         text: currentUrl,
-        width: 180, 
+        width: 180,
         height: 180,
         colorDark: '#0066CC',
         colorLight: '#ffffff',
         correctLevel: QRCode.CorrectLevel.H,
     });
 
-    // Tampilkan
     overlay.classList.remove('hidden');
     modal.classList.remove('hidden');
-    modal.style.display      = 'flex';
+    modal.style.display       = 'flex';
     modal.style.pointerEvents = 'auto';
 
-    card.getBoundingClientRect(); // force reflow
+    card.getBoundingClientRect();
     overlay.style.opacity = '1';
     card.style.opacity    = '1';
     card.style.transform  = 'translateY(0)';
@@ -268,7 +260,6 @@ function closeQRModal() {
         overlay.classList.add('hidden');
         document.body.style.overflow = '';
 
-        // Reset copy button
         const copyBtn = document.getElementById('copy-link-btn');
         if (copyBtn) {
             copyBtn.innerHTML = '<i class="far fa-copy" style="font-size:11px;"></i><span>Salin</span>';
@@ -308,54 +299,80 @@ async function copyQRLink() {
     }
 }
 
+// ─── Download QR Bersih dari Modal ─────────────────────────────────────────
+// Output: PNG persegi — QR penuh + logo "payou" kotak persegi di tengah + @username
 function downloadQRCode() {
-    const canvas = document.querySelector('#qrcode canvas');
-    if (!canvas) return;
-    
-    // Buat canvas baru dengan watermark Username (bukan payou.id)
-    const combinedCanvas = document.createElement('canvas');
-    combinedCanvas.width = canvas.width + 20;
-    combinedCanvas.height = canvas.height + 30;
-    const ctx = combinedCanvas.getContext('2d');
-    
-    // Background putih
+    const srcCanvas = document.querySelector('#qrcode canvas');
+    if (!srcCanvas) return;
+
+    const QR_SIZE = 400;  // ukuran QR
+    const PAD     = 20;   // padding putih sekeliling QR
+    const LABEL_H = 40;   // area @username
+    const W = QR_SIZE + PAD * 2;
+    const H = QR_SIZE + PAD * 2 + LABEL_H;
+
+    const out = document.createElement('canvas');
+    out.width  = W;
+    out.height = H;
+    const ctx  = out.getContext('2d');
+
+    // background putih
     ctx.fillStyle = '#ffffff';
-    ctx.fillRect(0, 0, combinedCanvas.width, combinedCanvas.height);
-    
-    // Gambar QR code
-    ctx.drawImage(canvas, 10, 5);
-    
-    // Tambah teks username (bukan payou.id)
+    ctx.fillRect(0, 0, W, H);
+
+    // gambar QR dengan padding di semua sisi
+    ctx.drawImage(srcCanvas, PAD, PAD, QR_SIZE, QR_SIZE);
+
+    // ── Logo "payou" kotak persegi bujur sangkar di tengah ──
+    const BOX  = 72;  // persegi: lebar = tinggi
+    const logoX = (W - BOX) / 2;
+    const logoY = PAD + (QR_SIZE - BOX) / 2;
+    // shadow
+    ctx.shadowColor   = 'rgba(0,102,204,0.20)';
+    ctx.shadowBlur    = 14;
+    ctx.shadowOffsetY = 3;
+    // kotak putih rounded persegi
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.roundRect(logoX, logoY, BOX, BOX, 12);
+    ctx.fill();
+    // reset shadow
+    ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
+    // teks "payou" — selalu biru Payou
+    ctx.fillStyle    = '#0066CC';
+    ctx.font         = 'bold 16px Arial, sans-serif';
+    ctx.textAlign    = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('payou', W / 2, logoY + BOX / 2);
+    ctx.textBaseline = 'alphabetic';
+
+    // watermark @username — biru Payou
     ctx.fillStyle = '#0066CC';
-    ctx.font = 'bold 11px Arial';
+    ctx.font      = 'bold 15px Arial, sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('@' + currentUsername, combinedCanvas.width/2, combinedCanvas.height - 8);
-    
-    const link      = document.createElement('a');
-    link.download   = `payou-${currentUsername}.png`;
-    link.href       = combinedCanvas.toDataURL('image/png', 1.0);
+    ctx.fillText('@' + currentUsername, W / 2, PAD + QR_SIZE + 26);
+
+    const link    = document.createElement('a');
+    link.download = `payou-${currentUsername}.png`;
+    link.href     = out.toDataURL('image/png', 1.0);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
 }
 
 async function shareToWhatsApp() {
-    const shareBtn = document.getElementById('whatsapp-share-btn');
-    const posterDesign = document.getElementById('qr-poster-design');
+    const shareBtn          = document.getElementById('whatsapp-share-btn');
+    const posterDesign      = document.getElementById('qr-poster-design');
     const posterQrContainer = document.getElementById('poster-qrcode');
     
-    // Tampilkan loading
     shareBtn.classList.add('share-loading');
     shareBtn.innerHTML = '<span>Menyiapkan...</span>';
     
     try {
-        // Bersihkan container QR poster
         posterQrContainer.innerHTML = '';
         
-        // Update watermark dengan username
         document.getElementById('poster-watermark').textContent = '@' + currentUsername;
         
-        // Generate QR code untuk poster dengan logo di tengah (otomatis dari HTML)
         const posterQR = new QRCode(posterQrContainer, {
             text: currentUrl,
             width: 220,
@@ -365,10 +382,8 @@ async function shareToWhatsApp() {
             correctLevel: QRCode.CorrectLevel.H,
         });
         
-        // Tunggu QR code selesai digenerate
         await new Promise(resolve => setTimeout(resolve, 500));
         
-        // Convert poster design ke canvas
         const canvas = await html2canvas(posterDesign, {
             scale: 2,
             backgroundColor: '#ffffff',
@@ -379,46 +394,35 @@ async function shareToWhatsApp() {
             windowHeight: 550,
         });
         
-        // Buat pesan untuk WhatsApp
         const message = `Halo 👋\n\nSaya ingin berbagi kartu digital Payou.id saya:\n${currentUrl}\n\nSilakan scan QR code di bawah ini untuk terhubung dengan saya.\n\nTerima kasih! 🙏`;
         
-        // Cek apakah di mobile (bisa share file + text)
         if (navigator.canShare && navigator.canShare({ files: [new File([], 'test.png')] })) {
-            // Convert ke blob
             const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png', 1.0));
             const file = new File([blob], `payou-${currentUsername}.png`, { type: 'image/png' });
-            
-            // SHARE PESAN + GAMBAR SEKALIGUS
             await navigator.share({
                 title: `Payou.id - @${currentUsername}`,
                 text: message,
                 files: [file]
             });
-            
         } else {
-            // FALLBACK UNTUK DESKTOP
-            const link = document.createElement('a');
+            const link    = document.createElement('a');
             link.download = `payou-${currentUsername}.png`;
-            link.href = canvas.toDataURL('image/png');
+            link.href     = canvas.toDataURL('image/png');
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
-            
             setTimeout(() => {
                 window.open(`https://web.whatsapp.com/send?text=${encodeURIComponent(message)}`, '_blank');
             }, 1000);
-            
             alert('✓ Gambar sudah didownload\n\nSilakan kirim gambar + pesan ini ke kontak Anda di WhatsApp Web');
         }
         
     } catch (error) {
         console.error('Error:', error);
-        
         if (error.name !== 'AbortError' && !error.message.includes('cancel')) {
             const fallbackMsg = `Halo,\n\nSilakan kunjungi profil Payou.id saya:\n${currentUrl}`;
             window.open(`https://wa.me/?text=${encodeURIComponent(fallbackMsg)}`, '_blank');
         }
-        
     } finally {
         shareBtn.classList.remove('share-loading');
         shareBtn.innerHTML = '<i class="fab fa-whatsapp" style="font-size:11px;"></i><span>WhatsApp</span>';
