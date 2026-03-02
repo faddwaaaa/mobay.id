@@ -20,7 +20,11 @@
         </div>
 
         {{-- Form --}}
-        <form method="POST" action="{{ route('products.store') }}" enctype="multipart/form-data" class="space-y-6">
+        {{-- 
+            PERBAIKAN: Hapus enctype dari form HTML biasa karena kita akan submit via fetch + FormData manual.
+            Ini menghindari konflik antara file input asli dengan DataTransfer yang di-inject.
+        --}}
+        <form id="createDigitalForm" method="POST" action="{{ route('products.store') }}" class="space-y-6">
             @csrf
             <input type="hidden" name="product_type" value="digital">
 
@@ -46,7 +50,8 @@
                             </div>
                         </div>
                         <div class="border-2 border-dashed border-gray-300 rounded-xl p-4 text-center hover:border-blue-400 transition-colors cursor-pointer mb-4">
-                            <input type="file" id="imageUpload" name="images[]" multiple accept="image/*" class="hidden">
+                            {{-- Input ini HANYA trigger, file asli disimpan di array JS uploadedImages[] --}}
+                            <input type="file" id="imageUpload" multiple accept="image/*" class="hidden">
                             <label for="imageUpload" class="cursor-pointer block">
                                 <div class="mx-auto w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center mb-3">
                                     <svg class="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -120,13 +125,13 @@
                             </div>
                         </div>
 
-                        {{-- hidden input untuk menyimpan platform yang dipilih --}}
                         <input type="hidden" name="file_platform" id="filePlatform" value="upload">
 
                         {{-- PANEL: Upload --}}
                         <div id="panel-upload">
                             <div class="border-2 border-dashed border-gray-300 rounded-xl p-5 text-center hover:border-green-400 transition-colors cursor-pointer mb-4">
-                                <input type="file" name="files[]" multiple class="hidden" id="fileUpload"
+                                {{-- Input ini HANYA trigger, file asli di uploadedFiles[] --}}
+                                <input type="file" multiple class="hidden" id="fileUpload"
                                        accept="image/*,.zip,.rar,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.mp3,.mp4,.mov,.ai,.psd,.fig,.sketch">
                                 <label for="fileUpload" class="cursor-pointer block">
                                     <div class="mx-auto w-12 h-12 bg-green-50 rounded-full flex items-center justify-center mb-3">
@@ -156,7 +161,7 @@
                                     <input type="url" name="file_url" id="urlDropbox"
                                            class="platform-url-input"
                                            placeholder="https://www.dropbox.com/s/..."
-                                           oninput="validateUrl(this, 'dropbox.com')">
+                                           oninput="validateUrl(this, 'dropbox.com', 'Dropbox')">
                                     <p class="url-hint">Pastikan link bersifat publik atau "Anyone with link"</p>
                                 </div>
                             </div>
@@ -176,7 +181,7 @@
                                     <input type="url" name="file_url" id="urlGdrive"
                                            class="platform-url-input"
                                            placeholder="https://drive.google.com/file/d/..."
-                                           oninput="validateUrl(this, 'drive.google.com')">
+                                           oninput="validateUrl(this, 'drive.google.com', 'Google Drive')">
                                     <p class="url-hint">Pastikan sharing diset ke "Anyone with link can view"</p>
                                 </div>
                             </div>
@@ -252,7 +257,7 @@
                         </div>
                     </div>
 
-                    <button type="submit" id="submitBtn"
+                    <button type="button" id="submitBtn" onclick="submitDigitalForm()"
                         class="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white py-3 px-4 rounded-lg font-semibold text-base shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center gap-2">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
@@ -379,7 +384,7 @@
 /* feedback validasi */
 .url-feedback {
     margin-top: 8px; padding: 8px 12px; border-radius: 8px;
-    font-size: 12px; display: flex; align-items: center; gap-6px;
+    font-size: 12px; display: flex; align-items: center;
 }
 .url-feedback.valid   { background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; }
 .url-feedback.invalid { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
@@ -402,7 +407,7 @@ document.addEventListener('DOMContentLoaded', function () {
     function formatRupiah(val) {
         return val.toString().replace(/[^,\d]/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, '.');
     }
-    function cleanRupiah(val) { return parseInt(val.replace(/\./g, '')) || 0; }
+    function cleanRupiah(val) { return parseInt((val || '').replace(/\./g, '')) || 0; }
 
     const priceInput      = document.getElementById('priceInput');
     const discountInput   = document.getElementById('discountInput');
@@ -433,47 +438,47 @@ document.addEventListener('DOMContentLoaded', function () {
         gdrive:  document.getElementById('panel-gdrive'),
         other:   document.getElementById('panel-other'),
     };
+    // URL inputs — setiap panel punya name="file_url" masing-masing, tapi hanya yg aktif yg enabled
     const urlInputs = {
         dropbox: document.getElementById('urlDropbox'),
         gdrive:  document.getElementById('urlGdrive'),
         other:   document.getElementById('urlOther'),
     };
 
+    // Inisialisasi: disable semua url input (default platform = upload)
+    Object.values(urlInputs).forEach(inp => { inp.disabled = true; inp.removeAttribute('name'); });
+
     document.getElementById('platformBtns').addEventListener('click', function(e) {
         const btn = e.target.closest('.platform-btn');
         if (!btn) return;
         const platform = btn.dataset.platform;
 
-        // update tombol aktif
         document.querySelectorAll('.platform-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
 
-        // tampilkan panel yang sesuai
         Object.entries(panels).forEach(([key, el]) => {
             el.classList.toggle('hidden', key !== platform);
         });
 
-        // set value hidden input
         platformHidden.value = platform;
 
-        // disable/enable name="file_url" agar tidak bentrok saat upload
+        // Kelola name & disabled agar tidak ada field duplikat
         Object.entries(urlInputs).forEach(([key, inp]) => {
-            inp.disabled = (key !== platform);
-            inp.removeAttribute('name');
+            if (key === platform) {
+                inp.setAttribute('name', 'file_url');
+                inp.disabled = false;
+            } else {
+                inp.removeAttribute('name');
+                inp.disabled = true;
+            }
         });
-        if (platform !== 'upload' && urlInputs[platform]) {
-            urlInputs[platform].setAttribute('name', 'file_url');
-            urlInputs[platform].disabled = false;
-        }
     });
 
-    // init: disable semua url input kecuali yang aktif (default: upload)
-    Object.values(urlInputs).forEach(inp => { inp.disabled = true; inp.removeAttribute('name'); });
-
     // ===== VALIDASI URL =====
-    window.validateUrl = function(input, domain) {
-        const platform = input.id.replace('url', '').toLowerCase();
-        const fbEl = document.getElementById('url' + input.id.replace('url','') + 'Feedback');
+    window.validateUrl = function(input, domain, platformName) {
+        const inputId = input.id; // e.g. "urlDropbox"
+        const suffix  = inputId.replace('url', ''); // "Dropbox"
+        const fbEl    = document.getElementById('url' + suffix + 'Feedback');
         if (!fbEl) return;
         const val = input.value.trim();
         if (!val) { fbEl.classList.add('hidden'); return; }
@@ -484,7 +489,7 @@ document.addEventListener('DOMContentLoaded', function () {
             fbEl.innerHTML = `<svg style="width:13px;height:13px;flex-shrink:0;margin-right:5px" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg> Link valid`;
         } else {
             fbEl.classList.add('invalid');
-            fbEl.innerHTML = `<svg style="width:13px;height:13px;flex-shrink:0;margin-right:5px" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg> Pastikan link dari ${domain || 'URL yang valid'}`;
+            fbEl.innerHTML = `<svg style="width:13px;height:13px;flex-shrink:0;margin-right:5px" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg> Pastikan link dari ${platformName || 'URL yang valid'}`;
         }
     };
 
@@ -596,14 +601,14 @@ document.addEventListener('DOMContentLoaded', function () {
             : 'Klik untuk upload gambar tampilan';
     }
 
-    // ===== FILE UNTUK PEMBELI (hanya aktif di panel upload) =====
-    const fileUpload     = document.getElementById('fileUpload');
+    // ===== FILE UNTUK PEMBELI =====
+    const fileUploadEl   = document.getElementById('fileUpload');
     const fileList       = document.getElementById('fileList');
     const fileUploadText = document.getElementById('fileUploadText');
     const fileStatus     = document.getElementById('fileStatus');
     let uploadedFiles    = [];
 
-    fileUpload.addEventListener('change', async function () {
+    fileUploadEl.addEventListener('change', async function () {
         const files      = Array.from(this.files);
         const imgFiles   = files.filter(isImg);
         const otherFiles = files.filter(f => !isImg(f));
@@ -668,45 +673,78 @@ document.addEventListener('DOMContentLoaded', function () {
         return (bytes / 1048576).toFixed(1) + ' MB';
     }
 
-    // ===== FORM SUBMIT =====
-    document.querySelector('form').addEventListener('submit', function (e) {
+    // ===== FORM SUBMIT via FETCH + FORMDATA MANUAL =====
+    // FIX: Seluruh submit diganti fetch agar file dari array JS bisa dikirim dengan benar
+    window.submitDigitalForm = async function() {
+        const form     = document.getElementById('createDigitalForm');
+        const platform = platformHidden.value;
         const p        = cleanRupiah(priceInput.value);
         const d        = cleanRupiah(discountInput.value);
-        const platform = platformHidden.value;
 
-        if (p <= 0) { e.preventDefault(); alert('Harga produk harus lebih dari 0'); return; }
-        if (d > 0 && d >= p) { e.preventDefault(); alert('Harga diskon harus lebih rendah dari harga normal'); return; }
+        // Validasi harga
+        if (p <= 0) { alert('Harga produk harus lebih dari 0'); return; }
+        if (d > 0 && d >= p) { alert('Harga diskon harus lebih rendah dari harga normal'); return; }
 
-        // Validasi sesuai platform
+        // Validasi file/link sesuai platform
         if (platform === 'upload') {
-            if (!uploadedFiles.length) { e.preventDefault(); alert('Produk digital wajib memiliki minimal 1 file'); return; }
+            if (!uploadedFiles.length) { alert('Produk digital wajib memiliki minimal 1 file'); return; }
         } else {
             const activeInput = urlInputs[platform];
             if (!activeInput || !activeInput.value.trim()) {
-                e.preventDefault();
                 alert('Masukkan link file terlebih dahulu');
                 return;
             }
         }
 
-        priceInput.value    = p;
-        discountInput.value = d || '';
-
-        if (uploadedImages.length) {
-            const dt = new DataTransfer();
-            uploadedImages.forEach(img => dt.items.add(img.file));
-            imageUpload.files = dt.files;
-        }
-
-        if (platform === 'upload' && uploadedFiles.length) {
-            const dt = new DataTransfer();
-            uploadedFiles.forEach(f => dt.items.add(f.file));
-            fileUpload.files = dt.files;
-        }
-
+        // Disable tombol
         const btn = document.getElementById('submitBtn');
         btn.disabled = true; btn.style.opacity = '0.7';
         document.getElementById('submitBtnText').textContent = 'Menyimpan...';
-    });
+
+        // Bangun FormData manual dari form (ambil semua field teks/hidden)
+        const fd = new FormData(form);
+
+        // Override harga dengan angka bersih
+        fd.set('price',    p);
+        fd.set('discount', d || '');
+
+        // Tambahkan gambar dari array JS
+        fd.delete('images[]');
+        uploadedImages.forEach(img => {
+            fd.append('images[]', img.file, img.file.name);
+        });
+
+        // Tambahkan file pembeli dari array JS (jika platform upload)
+        fd.delete('files[]');
+        if (platform === 'upload') {
+            uploadedFiles.forEach(f => {
+                fd.append('files[]', f.file, f.file.name);
+            });
+        }
+
+        try {
+            const res = await fetch(form.action, {
+                method: 'POST',
+                headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content') },
+                body: fd,
+            });
+
+            if (res.redirected) {
+                window.location.href = res.url;
+                return;
+            }
+            if (res.ok) {
+                window.location.href = res.url || '{{ route("products.manage") }}';
+            } else {
+                const text = await res.text();
+                document.open(); document.write(text); document.close();
+            }
+        } catch (err) {
+            console.error('Submit error:', err);
+            alert('Terjadi kesalahan. Silakan coba lagi.');
+            btn.disabled = false; btn.style.opacity = '1';
+            document.getElementById('submitBtnText').textContent = 'Tambah Produk Digital';
+        }
+    };
 });
 </script>
