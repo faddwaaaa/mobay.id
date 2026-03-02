@@ -22,8 +22,10 @@ use App\Http\Controllers\{
     LandingController,
     CartController,
     PaymentAccountController,
-    SearchController
+    SearchController,
+    OrderController
 };
+
 /*
 |--------------------------------------------------------------------------
 | LANDING PAGE
@@ -205,6 +207,20 @@ Route::get('/api/blocks', function (Request $request) {
 })->middleware('auth')->name('api.blocks');
 
 Route::get('/api/blocks', [BlockController::class, 'getByPage'])->middleware('auth')->name('api.blocks');
+
+// order routes
+// order routes
+// order routes
+// order routes
+// order routes
+
+Route::middleware('auth')->group(function () {
+    // ... route lain
+    
+    // Pesanan
+    Route::get('/pesanan', [OrderController::class, 'index'])->name('orders.index');
+    Route::post('/pesanan/{id}/update-status', [OrderController::class, 'updateStatus'])->name('orders.update-status');
+});
 
 
 /*

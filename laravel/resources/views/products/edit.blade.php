@@ -1,7 +1,6 @@
 @foreach($products as $product)
 @push('modals')
 
-{{-- OVERLAY --}}
 <div id="editModalOverlay-{{ $product->id }}"
      class="fixed inset-0 hidden"
      style="z-index:9990; background:rgba(15,23,42,0.5); backdrop-filter:blur(5px); -webkit-backdrop-filter:blur(5px);
@@ -9,7 +8,6 @@
      onclick="closeEditModal({{ $product->id }})">
 </div>
 
-{{-- MODAL --}}
 <div id="editModal-{{ $product->id }}"
      class="fixed inset-0 hidden"
      style="z-index:9999; display:none; align-items:center; justify-content:center; padding:16px; pointer-events:none;">
@@ -65,7 +63,7 @@
 
                 <div class="space-y-5">
 
-                    {{-- 2. GAMBAR SAAT INI --}}
+                    {{-- GAMBAR SAAT INI --}}
                     <div class="edit-card p-4">
                         <div class="flex items-center justify-between mb-3">
                             <div>
@@ -100,7 +98,7 @@
                         @endif
                     </div>
 
-                    {{-- 3. TAMBAH GAMBAR BARU --}}
+                    {{-- TAMBAH GAMBAR BARU --}}
                     <div class="edit-card p-4">
                         <div class="flex items-center justify-between mb-3">
                             <div>
@@ -114,7 +112,8 @@
                             </div>
                         </div>
                         <div class="border-2 border-dashed border-gray-200 rounded-xl p-4 text-center hover:border-blue-400 transition-colors cursor-pointer">
-                            <input type="file" id="editNewImages-{{ $product->id }}" name="images[]" multiple accept="image/*" class="hidden">
+                            {{-- input ini HANYA trigger, file asli di _editUploadedImages[] --}}
+                            <input type="file" id="editNewImages-{{ $product->id }}" multiple accept="image/*" class="hidden">
                             <label for="editNewImages-{{ $product->id }}" class="cursor-pointer block">
                                 <div class="mx-auto w-10 h-10 bg-blue-50 rounded-full flex items-center justify-center mb-2">
                                     <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -129,7 +128,7 @@
                         <div id="editImgPreview-{{ $product->id }}" class="grid grid-cols-3 sm:grid-cols-4 gap-2 mt-3"></div>
                     </div>
 
-                    {{-- 4. INFO PRODUK --}}
+                    {{-- INFO PRODUK --}}
                     <div class="edit-card p-4 space-y-4">
                         <h3 class="text-sm font-semibold text-gray-800 mb-1">Informasi Produk</h3>
                         <div>
@@ -142,7 +141,7 @@
                         </div>
                     </div>
 
-                    {{-- 5. FILE UNTUK PEMBELI (hanya digital) --}}
+                    {{-- FILE UNTUK PEMBELI (hanya digital) --}}
                     @php
                         $existingPlatform = 'upload';
                         $existingFileUrl  = '';
@@ -155,7 +154,6 @@
 
                     <div id="editFileSection-{{ $product->id }}"
                          class="edit-card p-4 {{ ($product->product_type ?? 'fisik') === 'digital' ? '' : 'hidden' }}">
-
                         <div class="flex items-center justify-between mb-4">
                             <div>
                                 <h3 class="text-sm font-semibold text-gray-800">File untuk Pembeli</h3>
@@ -167,33 +165,16 @@
                                 </svg>
                             </div>
                         </div>
-
-                        {{-- Platform Selector --}}
                         <div class="mb-4">
                             <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Platform</p>
                             <div class="flex flex-wrap gap-2" id="editPlatformBtns-{{ $product->id }}">
-                                <button type="button" class="edit-platform-btn {{ $existingPlatform === 'upload'  ? 'active' : '' }}" data-platform="upload">
-                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
-                                    Upload
-                                </button>
-                                <button type="button" class="edit-platform-btn {{ $existingPlatform === 'dropbox' ? 'active' : '' }}" data-platform="dropbox">
-                                    <svg class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor"><path d="M6 2L0 6l6 4-6 4 6 4 6-4-6-4 6-4L6 2zm12 0l-6 4 6 4-6 4 6 4 6-4-6-4 6-4-6-4zM6 16.5L0 12.5l6 4zm12 0l6-4-6 4z"/></svg>
-                                    Dropbox
-                                </button>
-                                <button type="button" class="edit-platform-btn {{ $existingPlatform === 'gdrive'  ? 'active' : '' }}" data-platform="gdrive">
-                                    <svg class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor"><path d="M4.585 18.832L6.17 21.5a2 2 0 001.732 1h8.196a2 2 0 001.732-1l1.585-2.668H4.585zM12 3L2 19.5h4L12 8l6 11.5h4L12 3zM8 14l4-7 4 7H8z"/></svg>
-                                    G-Drive
-                                </button>
-                                <button type="button" class="edit-platform-btn {{ $existingPlatform === 'other'   ? 'active' : '' }}" data-platform="other">
-                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
-                                    Other
-                                </button>
+                                <button type="button" class="edit-platform-btn {{ $existingPlatform === 'upload'  ? 'active' : '' }}" data-platform="upload">Upload</button>
+                                <button type="button" class="edit-platform-btn {{ $existingPlatform === 'dropbox' ? 'active' : '' }}" data-platform="dropbox">Dropbox</button>
+                                <button type="button" class="edit-platform-btn {{ $existingPlatform === 'gdrive'  ? 'active' : '' }}" data-platform="gdrive">G-Drive</button>
+                                <button type="button" class="edit-platform-btn {{ $existingPlatform === 'other'   ? 'active' : '' }}" data-platform="other">Other</button>
                             </div>
                         </div>
-
                         <input type="hidden" name="file_platform" id="editFilePlatform-{{ $product->id }}" value="{{ $existingPlatform }}">
-
-                        {{-- PANEL: Upload --}}
                         <div id="editPanelUpload-{{ $product->id }}" class="{{ $existingPlatform === 'upload' ? '' : 'hidden' }}">
                             @if(isset($product->files) && $product->files->where('platform', 'upload')->count())
                             <div class="mb-3">
@@ -201,12 +182,7 @@
                                 <div class="space-y-2">
                                     @foreach($product->files->where('platform', 'upload') as $file)
                                     <div class="flex items-center justify-between p-2.5 bg-gray-50 rounded-lg border border-gray-200 group">
-                                        <div class="flex items-center gap-2 min-w-0 flex-1">
-                                            <div class="p-1.5 bg-white rounded border border-gray-200 flex-shrink-0">
-                                                <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                                            </div>
-                                            <span class="text-xs text-gray-700 truncate">{{ basename($file->file ?? 'File') }}</span>
-                                        </div>
+                                        <span class="text-xs text-gray-700 truncate">{{ basename($file->file ?? 'File') }}</span>
                                         <label class="flex items-center gap-1.5 text-xs text-red-500 cursor-pointer flex-shrink-0 ml-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                             <input type="checkbox" name="delete_files[]" value="{{ $file->id }}" class="w-3.5 h-3.5 accent-red-500">
                                             Hapus
@@ -220,76 +196,33 @@
                                 <input type="file" id="editFileUpload-{{ $product->id }}" name="files[]" multiple class="hidden"
                                        onchange="editHandleFiles(event, {{ $product->id }})">
                                 <label for="editFileUpload-{{ $product->id }}" class="cursor-pointer block">
-                                    <div class="mx-auto w-10 h-10 bg-blue-50 rounded-full flex items-center justify-center mb-2">
-                                        <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
-                                        </svg>
-                                    </div>
                                     <p class="text-sm text-gray-700 font-medium">Klik untuk upload file baru</p>
                                     <p class="text-xs text-gray-400 mt-1">ZIP, RAR, PDF, DOC, atau format lainnya</p>
-                                    <p class="text-xs text-blue-400 mt-1">※ Bisa upload multiple file sekaligus</p>
                                 </label>
                             </div>
                             <div id="editFileList-{{ $product->id }}" class="space-y-2 mt-3"></div>
                         </div>
-
-                        {{-- PANEL: Dropbox --}}
                         <div id="editPanelDropbox-{{ $product->id }}" class="{{ $existingPlatform === 'dropbox' ? '' : 'hidden' }}">
-                            <div class="edit-platform-url-wrap" style="--accent:#0061ff;">
-                                <div class="edit-platform-url-icon" style="background:#e8f0ff;">
-                                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="#0061ff"><path d="M6 2L0 6l6 4-6 4 6 4 6-4-6-4 6-4L6 2zm12 0l-6 4 6 4-6 4 6 4 6-4-6-4 6-4-6-4zM6 16.5L0 12.5l6 4zm12 0l6-4-6 4z"/></svg>
-                                </div>
-                                <div class="flex-1 min-w-0">
-                                    <p class="text-xs font-semibold text-gray-700 mb-1">Link Dropbox</p>
-                                    <input type="url" id="editUrlDropbox-{{ $product->id }}" class="edit-platform-url-input"
-                                           placeholder="https://www.dropbox.com/s/..."
-                                           value="{{ $existingPlatform === 'dropbox' ? $existingFileUrl : '' }}"
-                                           oninput="editValidateUrl(this, 'dropbox.com', {{ $product->id }}, 'Dropbox')">
-                                    <p class="text-xs text-gray-400 mt-1">Pastikan link bersifat publik atau "Anyone with link"</p>
-                                </div>
-                            </div>
-                            <div id="editFeedbackDropbox-{{ $product->id }}" class="edit-url-feedback hidden mt-2"></div>
+                            <input type="url" id="editUrlDropbox-{{ $product->id }}" class="edit-input"
+                                   placeholder="https://www.dropbox.com/s/..."
+                                   value="{{ $existingPlatform === 'dropbox' ? $existingFileUrl : '' }}"
+                                   oninput="editValidateUrl(this, 'dropbox.com', {{ $product->id }}, 'Dropbox')">
                         </div>
-
-                        {{-- PANEL: Google Drive --}}
                         <div id="editPanelGdrive-{{ $product->id }}" class="{{ $existingPlatform === 'gdrive' ? '' : 'hidden' }}">
-                            <div class="edit-platform-url-wrap" style="--accent:#34a853;">
-                                <div class="edit-platform-url-icon" style="background:#e6f4ea;">
-                                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="#34a853"><path d="M4.585 18.832L6.17 21.5a2 2 0 001.732 1h8.196a2 2 0 001.732-1l1.585-2.668H4.585zM12 3L2 19.5h4L12 8l6 11.5h4L12 3zM8 14l4-7 4 7H8z"/></svg>
-                                </div>
-                                <div class="flex-1 min-w-0">
-                                    <p class="text-xs font-semibold text-gray-700 mb-1">Link Google Drive</p>
-                                    <input type="url" id="editUrlGdrive-{{ $product->id }}" class="edit-platform-url-input"
-                                           placeholder="https://drive.google.com/file/d/..."
-                                           value="{{ $existingPlatform === 'gdrive' ? $existingFileUrl : '' }}"
-                                           oninput="editValidateUrl(this, 'drive.google.com', {{ $product->id }}, 'Google Drive')">
-                                    <p class="text-xs text-gray-400 mt-1">Pastikan sharing diset ke "Anyone with link can view"</p>
-                                </div>
-                            </div>
-                            <div id="editFeedbackGdrive-{{ $product->id }}" class="edit-url-feedback hidden mt-2"></div>
+                            <input type="url" id="editUrlGdrive-{{ $product->id }}" class="edit-input"
+                                   placeholder="https://drive.google.com/file/d/..."
+                                   value="{{ $existingPlatform === 'gdrive' ? $existingFileUrl : '' }}"
+                                   oninput="editValidateUrl(this, 'drive.google.com', {{ $product->id }}, 'Google Drive')">
                         </div>
-
-                        {{-- PANEL: Other --}}
                         <div id="editPanelOther-{{ $product->id }}" class="{{ $existingPlatform === 'other' ? '' : 'hidden' }}">
-                            <div class="edit-platform-url-wrap" style="--accent:#6366f1;">
-                                <div class="edit-platform-url-icon" style="background:#eef2ff;">
-                                    <svg class="w-4 h-4" fill="none" stroke="#6366f1" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
-                                </div>
-                                <div class="flex-1 min-w-0">
-                                    <p class="text-xs font-semibold text-gray-700 mb-1">URL File / Link Download</p>
-                                    <input type="url" id="editUrlOther-{{ $product->id }}" class="edit-platform-url-input"
-                                           placeholder="https://..."
-                                           value="{{ $existingPlatform === 'other' ? $existingFileUrl : '' }}"
-                                           oninput="editValidateUrl(this, null, {{ $product->id }}, 'Other')">
-                                    <p class="text-xs text-gray-400 mt-1">Bisa berupa link WeTransfer, Mediafire, OneDrive, dsb.</p>
-                                </div>
-                            </div>
-                            <div id="editFeedbackOther-{{ $product->id }}" class="edit-url-feedback hidden mt-2"></div>
+                            <input type="url" id="editUrlOther-{{ $product->id }}" class="edit-input"
+                                   placeholder="https://..."
+                                   value="{{ $existingPlatform === 'other' ? $existingFileUrl : '' }}"
+                                   oninput="editValidateUrl(this, null, {{ $product->id }}, 'Other')">
                         </div>
-
                     </div>
 
-                    {{-- 6. HARGA & DISKON --}}
+                    {{-- HARGA & DISKON --}}
                     <div class="edit-card p-4 space-y-4">
                         <h3 class="text-sm font-semibold text-gray-800 mb-1">Harga & Diskon</h3>
                         <div>
@@ -297,21 +230,41 @@
                             <input type="text" id="editPrice-{{ $product->id }}" name="price"
                                    value="{{ number_format($product->price,0,',','.') }}"
                                    oninput="formatRupiah(this)" class="edit-input" placeholder="Contoh: 100.000">
-                            <p class="text-xs text-gray-400 mt-1">Harga akan otomatis diformat: Rp 100.000</p>
                         </div>
                         <div>
                             <label class="edit-label">Harga Setelah Diskon <span class="text-xs font-normal text-gray-400">(opsional)</span></label>
                             <input type="text" id="editDiscount-{{ $product->id }}" name="discount"
                                    value="{{ $product->discount ? number_format($product->discount,0,',','.') : '' }}"
                                    oninput="formatRupiah(this)" class="edit-input" placeholder="Kosongkan jika tidak ada diskon">
-                            <p class="text-xs text-blue-500 mt-1 flex items-center gap-1">
-                                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/></svg>
-                                Masukkan harga setelah diskon, bukan persentase
-                            </p>
                         </div>
                     </div>
 
-                    {{-- 7. STOK & BATAS PEMBELIAN --}}
+                    {{-- ONGKOS KIRIM (hanya fisik) --}}
+                    @if(($product->product_type ?? 'fisik') === 'fisik')
+                    <div class="edit-card p-4">
+                        <h3 class="text-sm font-semibold text-gray-800 mb-3">Ongkos Kirim</h3>
+                        <div class="flex items-center justify-between mb-3">
+                            <div>
+                                <p class="text-sm font-medium text-gray-700">Tetapkan Ongkir</p>
+                                <p class="text-xs text-gray-400 mt-0.5">Ditambahkan ke total pembayaran pembeli</p>
+                            </div>
+                            <div class="edit-toggle-container">
+                                <input type="checkbox" id="editShippingCheck-{{ $product->id }}"
+                                       class="edit-toggle-checkbox"
+                                       {{ $product->shipping_cost ? 'checked' : '' }}
+                                       onchange="editToggleShipping(this, {{ $product->id }})">
+                                <label for="editShippingCheck-{{ $product->id }}" class="edit-toggle-label-amber"></label>
+                            </div>
+                        </div>
+                        <input type="text" name="shipping_cost" id="editShippingInput-{{ $product->id }}"
+                               class="edit-input {{ $product->shipping_cost ? '' : 'hidden' }}"
+                               value="{{ $product->shipping_cost ? number_format($product->shipping_cost, 0, ',', '.') : '' }}"
+                               placeholder="Contoh: 15.000"
+                               oninput="formatRupiah(this)">
+                    </div>
+                    @endif
+
+                    {{-- STOK & BATAS PEMBELIAN --}}
                     <div class="edit-card p-4 space-y-1">
                         <h3 class="text-sm font-semibold text-gray-800 mb-3">
                             {{ ($product->product_type ?? 'fisik') === 'digital' ? 'Batas Pembelian' : 'Stok & Batas Pembelian' }}
@@ -370,7 +323,7 @@
                         class="px-4 py-2 text-sm font-medium bg-white border border-gray-200 rounded-lg hover:bg-gray-50 text-gray-600 transition-colors">
                     Batal
                 </button>
-                <button type="submit" form="editForm-{{ $product->id }}"
+                <button type="button" onclick="submitEditForm({{ $product->id }})"
                         class="px-5 py-2 text-sm font-semibold text-white rounded-lg shadow-sm hover:shadow-md transform hover:-translate-y-0.5 transition-all duration-200 flex items-center gap-2"
                         style="{{ ($product->product_type ?? 'fisik') === 'digital' ? 'background:linear-gradient(to right,#2563eb,#1d4ed8)' : 'background:linear-gradient(to right,#16a34a,#15803d)' }}">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -398,33 +351,31 @@
 .edit-img-item:has(input:checked) { border-color:#ef4444 !important; opacity:.75; }
 .edit-img-item:has(input:checked) > div { background-color:rgba(239,68,68,.35); }
 .edit-img-item:has(input:checked) > div > div { opacity:1; transform:scale(1); }
+/* Toggle biru (stok & limit) */
 .edit-toggle-container { position:relative; }
 .edit-toggle-checkbox { display:none; }
 .edit-toggle-label { display:block; width:44px; height:24px; background:#e5e7eb; border-radius:999px; position:relative; cursor:pointer; transition:background .2s ease; }
 .edit-toggle-label::after { content:''; position:absolute; top:2px; left:2px; width:20px; height:20px; background:white; border-radius:50%; transition:transform .2s ease; box-shadow:0 1px 3px rgba(0,0,0,.15); }
 .edit-toggle-checkbox:checked + .edit-toggle-label { background:#3b82f6; }
 .edit-toggle-checkbox:checked + .edit-toggle-label::after { transform:translateX(20px); }
-.edit-platform-btn { display:inline-flex; align-items:center; gap:5px; padding:6px 14px; border-radius:999px; font-size:12px; font-weight:500; border:1.5px solid #d1d5db; color:#374151; background:white; cursor:pointer; transition:all 0.18s; user-select:none; }
+/* Toggle amber (ongkir) */
+.edit-toggle-label-amber { display:block; width:44px; height:24px; background:#e5e7eb; border-radius:999px; position:relative; cursor:pointer; transition:background .2s ease; }
+.edit-toggle-label-amber::after { content:''; position:absolute; top:2px; left:2px; width:20px; height:20px; background:white; border-radius:50%; transition:transform .2s ease; box-shadow:0 1px 3px rgba(0,0,0,.15); }
+.edit-toggle-checkbox:checked + .edit-toggle-label-amber { background:#f59e0b; }
+.edit-toggle-checkbox:checked + .edit-toggle-label-amber::after { transform:translateX(20px); }
+.edit-platform-btn { display:inline-flex; align-items:center; gap:5px; padding:6px 14px; border-radius:999px; font-size:12px; font-weight:500; border:1.5px solid #d1d5db; color:#374151; background:white; cursor:pointer; transition:all 0.18s; }
 .edit-platform-btn:hover { border-color:#3b82f6; color:#2563eb; background:#eff6ff; }
-.edit-platform-btn.active { background:#2563eb; color:white; border-color:#2563eb; box-shadow:0 2px 8px rgba(37,99,235,0.22); }
-.edit-platform-url-wrap { display:flex; align-items:flex-start; gap:10px; background:#fafafa; border:1.5px solid #e5e7eb; border-radius:10px; padding:12px 14px; transition:border-color 0.2s; }
-.edit-platform-url-wrap:focus-within { border-color:var(--accent,#2563eb); box-shadow:0 0 0 3px color-mix(in srgb,var(--accent,#2563eb) 10%,transparent); }
-.edit-platform-url-icon { width:34px; height:34px; border-radius:8px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
-.edit-platform-url-input { width:100%; padding:7px 10px; border:1.5px solid #e5e7eb; border-radius:7px; font-size:12px; background:white; transition:all 0.2s; color:#1f2937; }
-.edit-platform-url-input:focus { outline:none; border-color:var(--accent,#2563eb); }
-.edit-url-feedback { padding:7px 10px; border-radius:7px; font-size:11px; display:flex; align-items:center; gap:5px; }
-.edit-url-feedback.valid { background:#f0fdf4; color:#16a34a; border:1px solid #bbf7d0; }
-.edit-url-feedback.invalid { background:#fef2f2; color:#dc2626; border:1px solid #fecaca; }
+.edit-platform-btn.active { background:#2563eb; color:white; border-color:#2563eb; }
 .edit-preview-img-wrap { position:relative; border-radius:8px; overflow:hidden; aspect-ratio:1; background:#f5f5f5; }
-.edit-preview-img-wrap img { width:100%; height:100%; object-fit:cover; transition:transform 0.3s; }
-.edit-preview-img-wrap:hover img { transform:scale(1.05); }
-.edit-preview-remove { position:absolute; top:4px; right:4px; width:22px; height:22px; background:rgba(239,68,68,0.9); border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; opacity:0; transition:opacity 0.2s,transform 0.2s; transform:scale(0.8); }
-.edit-preview-img-wrap:hover .edit-preview-remove { opacity:1; transform:scale(1); }
-.edit-img-ready-dot { position:absolute; bottom:4px; right:4px; width:7px; height:7px; border-radius:50%; background:#2563eb; border:1.5px solid white; box-shadow:0 1px 3px rgba(0,0,0,0.2); }
+.edit-preview-img-wrap img { width:100%; height:100%; object-fit:cover; }
+.edit-preview-remove { position:absolute; top:4px; right:4px; width:22px; height:22px; background:rgba(239,68,68,0.9); border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; opacity:0; transition:opacity 0.2s; }
+.edit-preview-img-wrap:hover .edit-preview-remove { opacity:1; }
+.edit-img-ready-dot { position:absolute; bottom:4px; right:4px; width:7px; height:7px; border-radius:50%; background:#2563eb; border:1.5px solid white; }
 @keyframes editSpin { from { transform:rotate(0deg); } to { transform:rotate(360deg); } }
 </style>
 
 <script>
+// ===== MODAL OPEN/CLOSE =====
 function openEditModal(id) {
     const overlay = document.getElementById('editModalOverlay-' + id);
     const modal   = document.getElementById('editModal-' + id);
@@ -433,14 +384,12 @@ function openEditModal(id) {
     overlay.classList.remove('hidden');
     modal.classList.remove('hidden');
     modal.style.display = 'flex';
-    modal.style.pointerEvents = 'auto';
     card.getBoundingClientRect();
     overlay.style.opacity = '1';
     card.style.opacity    = '1';
     card.style.transform  = 'translateY(0)';
     document.body.style.overflow = 'hidden';
 }
-
 function closeEditModal(id) {
     const overlay = document.getElementById('editModalOverlay-' + id);
     const modal   = document.getElementById('editModal-' + id);
@@ -456,7 +405,6 @@ function closeEditModal(id) {
         document.body.style.overflow = '';
     }, 250);
 }
-
 document.addEventListener('keydown', function(e) {
     if (e.key !== 'Escape') return;
     document.querySelectorAll('[id^="editModal-"]').forEach(modal => {
@@ -464,6 +412,85 @@ document.addEventListener('keydown', function(e) {
     });
 });
 
+// ===== SUBMIT DENGAN FORMDATA MANUAL (fix gambar + ongkir) =====
+async function submitEditForm(productId) {
+    const form = document.getElementById('editForm-' + productId);
+    if (!form) return;
+
+    // Bersihkan format titik dari harga
+    const priceEl    = document.getElementById('editPrice-'        + productId);
+    const discountEl = document.getElementById('editDiscount-'     + productId);
+    const shippingEl = document.getElementById('editShippingInput-' + productId);
+
+    const cleanNum = (el) => {
+        if (!el) return '';
+        const n = parseInt((el.value || '').replace(/\./g, ''), 10);
+        return isNaN(n) ? '' : n;
+    };
+
+    if (priceEl)    priceEl.value    = cleanNum(priceEl);
+    if (discountEl) discountEl.value = cleanNum(discountEl) || '';
+    if (shippingEl) shippingEl.value = cleanNum(shippingEl) || '';
+
+    // Bangun FormData dari form (sudah include semua field termasuk shipping_cost)
+    const fd = new FormData(form);
+
+    // Tambah gambar baru dari array JS (BUKAN dari input file)
+    const images = _editUploadedImages[productId] || [];
+    // Hapus images[] yang mungkin sudah ada di FormData
+    fd.delete('images[]');
+    images.forEach(img => {
+        fd.append('images[]', img.file, img.file.name);
+    });
+
+    // Disable tombol
+    const saveBtn = form.closest('.bg-white').querySelector('[onclick^="submitEditForm"]');
+    if (saveBtn) { saveBtn.disabled = true; saveBtn.style.opacity = '0.7'; }
+
+    try {
+        const res = await fetch(form.action, {
+            method: 'POST',
+            headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content') },
+            body: fd,
+        });
+
+        if (res.redirected) {
+            window.location.href = res.url;
+            return;
+        }
+        if (res.ok) {
+            window.location.href = res.url || window.location.href;
+        } else {
+            const text = await res.text();
+            document.open(); document.write(text); document.close();
+        }
+    } catch(err) {
+        // Fallback: submit form biasa
+        form.submit();
+    }
+}
+
+// ===== TOGGLE HELPERS =====
+function editToggleInput(checkbox, inputId) {
+    const input = document.getElementById(inputId);
+    if (!input) return;
+    input.classList.toggle('hidden', !checkbox.checked);
+    if (checkbox.checked) input.focus(); else input.value = '';
+}
+function editToggleShipping(cb, productId) {
+    const inp = document.getElementById('editShippingInput-' + productId);
+    if (!inp) return;
+    inp.classList.toggle('hidden', !cb.checked);
+    if (cb.checked) inp.focus(); else inp.value = '';
+}
+
+// ===== FORMAT RUPIAH =====
+function formatRupiah(input) {
+    const angka = input.value.replace(/[^0-9]/g, '');
+    input.value = angka ? new Intl.NumberFormat('id-ID').format(angka) : '';
+}
+
+// ===== PLATFORM SWITCHER =====
 function _setupEditPlatformSwitcher(productId) {
     const container = document.getElementById('editPlatformBtns-' + productId);
     if (!container) return;
@@ -500,19 +527,14 @@ function _setupEditPlatformSwitcher(productId) {
 }
 
 function editValidateUrl(input, domain, productId, platformName) {
-    const key  = input.id.replace('editUrl', '').replace('-' + productId, '');
-    const fbEl = document.getElementById('editFeedback' + key + '-' + productId);
-    if (!fbEl) return;
     const val = input.value.trim();
-    if (!val) { fbEl.classList.add('hidden'); return; }
+    if (!val) return;
     const isValid = domain ? val.includes(domain) : val.startsWith('http');
-    fbEl.classList.remove('hidden', 'valid', 'invalid');
-    fbEl.classList.add(isValid ? 'valid' : 'invalid');
-    fbEl.innerHTML = isValid
-        ? `<svg style="width:12px;height:12px;flex-shrink:0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg> Link valid`
-        : `<svg style="width:12px;height:12px;flex-shrink:0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg> Pastikan link dari ${platformName || 'URL yang valid'}`;
+    if (!isValid) input.style.borderColor = '#fca5a5';
+    else input.style.borderColor = '#86efac';
 }
 
+// ===== FILE LIST =====
 const _editUploadedFiles = {};
 function editHandleFiles(event, productId) {
     if (!_editUploadedFiles[productId]) _editUploadedFiles[productId] = [];
@@ -529,16 +551,9 @@ function editRenderFileList(productId) {
     files.forEach((f, index) => {
         const div = document.createElement('div');
         div.className = 'flex items-center justify-between p-2.5 bg-blue-50 rounded-lg border border-blue-200';
-        div.innerHTML = `
-            <div class="flex items-center gap-2 min-w-0 flex-1">
-                <div class="p-1.5 bg-white rounded border border-blue-200 flex-shrink-0">
-                    <svg class="w-3.5 h-3.5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                </div>
-                <span class="text-xs text-gray-700 truncate">${f.name}</span>
-                <span class="text-[10px] text-gray-400 bg-white px-1.5 py-0.5 rounded border flex-shrink-0">${editFormatSize(f.size)}</span>
-            </div>
+        div.innerHTML = `<span class="text-xs text-gray-700 truncate">${f.name}</span>
             <button type="button" onclick="editRemoveFile(${productId}, ${index})"
-                    class="w-5 h-5 bg-red-100 hover:bg-red-200 rounded-full flex items-center justify-center ml-2 flex-shrink-0 transition-colors">
+                    class="w-5 h-5 bg-red-100 hover:bg-red-200 rounded-full flex items-center justify-center ml-2 flex-shrink-0">
                 <svg class="w-2.5 h-2.5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>`;
         container.appendChild(div);
@@ -549,24 +564,8 @@ function editRenderFileList(productId) {
 function editRemoveFile(productId, index) {
     if (_editUploadedFiles[productId]) { _editUploadedFiles[productId].splice(index, 1); editRenderFileList(productId); }
 }
-function editFormatSize(bytes) {
-    if (bytes < 1024) return bytes + ' B';
-    if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
-    return (bytes / 1048576).toFixed(1) + ' MB';
-}
 
-function editToggleInput(checkbox, inputId) {
-    const input = document.getElementById(inputId);
-    if (!input) return;
-    input.classList.toggle('hidden', !checkbox.checked);
-    if (checkbox.checked) input.focus(); else input.value = '';
-}
-
-function formatRupiah(input) {
-    const angka = input.value.replace(/[^0-9]/g, '');
-    input.value = angka ? new Intl.NumberFormat('id-ID').format(angka) : '';
-}
-
+// ===== IMAGE COMPRESSION =====
 function editCompressImage(file) {
     const maxSizeKB = 150, maxWidth = 1024, quality = 0.75;
     return new Promise((resolve, reject) => {
@@ -605,19 +604,20 @@ function _setupEditImageCompression(productId) {
     const labelText = document.getElementById('editImgUploadText-' + productId);
     if (!input) return;
     if (_editUploadedImages[productId] === undefined) _editUploadedImages[productId] = [];
+
     input.addEventListener('change', async function() {
         const files = Array.from(this.files).filter(f => f.type.match('image.*'));
         if (!files.length) return;
         statusEl.classList.remove('hidden');
-        statusEl.innerHTML = `<div style="display:flex;align-items:center;gap:6px;color:#9ca3af;font-size:11px;"><svg style="width:12px;height:12px;animation:editSpin 1s linear infinite;flex-shrink:0;" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" style="opacity:.3"/><path fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" style="opacity:.7"/></svg>Mengompresi gambar...</div>`;
+        statusEl.innerHTML = `<div style="display:flex;align-items:center;gap:6px;color:#9ca3af;font-size:11px;"><svg style="width:12px;height:12px;animation:editSpin 1s linear infinite;flex-shrink:0;" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" style="opacity:.3"/><path fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" style="opacity:.7"/></svg>Mengompresi...</div>`;
         const results = await Promise.allSettled(files.map(f => editCompressImage(f)));
         results.forEach((r, i) => { if (r.status === 'fulfilled') _editUploadedImages[productId].push({ id: Date.now() + i, file: r.value.file, previewUrl: r.value.previewUrl }); });
-        _renderEditImagePreview(productId, previewEl, labelText, statusEl, input);
+        _renderEditImagePreview(productId, previewEl, labelText, statusEl);
         statusEl.innerHTML = `<div style="display:flex;align-items:center;gap:5px;color:#9ca3af;font-size:11px;"><span style="width:7px;height:7px;border-radius:50%;background:#2563eb;display:inline-block;flex-shrink:0;"></span>${_editUploadedImages[productId].length} gambar siap diupload</div>`;
         this.value = '';
     });
 }
-function _renderEditImagePreview(productId, previewEl, labelText, statusEl, input) {
+function _renderEditImagePreview(productId, previewEl, labelText, statusEl) {
     const images = _editUploadedImages[productId] || [];
     previewEl.innerHTML = '';
     images.forEach((img, idx) => {
@@ -630,14 +630,10 @@ function _renderEditImagePreview(productId, previewEl, labelText, statusEl, inpu
         btn.addEventListener('click', function(e) {
             e.stopPropagation();
             _editUploadedImages[productId].splice(+this.dataset.idx, 1);
-            _renderEditImagePreview(productId, previewEl, labelText, statusEl, input);
+            _renderEditImagePreview(productId, previewEl, labelText, statusEl);
             if (!_editUploadedImages[productId].length) statusEl.classList.add('hidden');
-            else statusEl.innerHTML = `<div style="display:flex;align-items:center;gap:5px;color:#9ca3af;font-size:11px;"><span style="width:7px;height:7px;border-radius:50%;background:#2563eb;display:inline-block;flex-shrink:0;"></span>${_editUploadedImages[productId].length} gambar siap diupload</div>`;
         });
     });
-    const dt = new DataTransfer();
-    images.forEach(img => dt.items.add(img.file));
-    input.files = dt.files;
     labelText.textContent = images.length ? `Tambah lagi (${images.length} dipilih)` : 'Klik untuk upload gambar baru';
 }
 
