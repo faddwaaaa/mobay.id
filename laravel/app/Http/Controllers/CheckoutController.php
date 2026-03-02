@@ -52,7 +52,7 @@ class CheckoutController extends Controller
 
         $product = Product::with('files')->findOrFail($request->product_id);
 
-        if ($product->product_type === 'umkm') {
+        if ($product->product_type === 'fisik') {
             if ($product->stock !== null && $product->stock < $request->qty) {
                 return response()->json(['error' => true, 'message' => 'Stok tidak mencukupi. Tersedia: ' . $product->stock], 422);
             }
@@ -291,7 +291,7 @@ class CheckoutController extends Controller
         }
 
         // 2. Kurangi stok produk fisik
-        if ($product->product_type === 'umkm' && $product->stock !== null) {
+        if ($product->product_type === 'fisik' && $product->stock !== null) {
             $product->decrement('stock', $notes['qty'] ?? 1);
         }
 
