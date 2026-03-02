@@ -335,9 +335,9 @@
                             Salin
                         </button>
                     </div>
-                    <span class="riwayat-badge badge-{{ $payment->status === 'settlement' ? 'success' : ($payment->status === 'pending' ? 'pending' : 'failed') }}">
+                    <!-- <span class="riwayat-badge badge-{{ $payment->status === 'settlement' ? 'success' : ($payment->status === 'pending' ? 'pending' : 'failed') }}">
                         {{ $payment->status === 'settlement' ? 'Berhasil' : ($payment->status === 'pending' ? 'Menunggu' : 'Gagal') }}
-                    </span>
+                    </span> -->
                 </div>
                 <div class="riwayat-amount">Rp {{ number_format($payment->amount, 0, ',', '.') }}</div>
                 <div class="riwayat-date">{{ $payment->created_at->format('d M Y, H:i') }}</div>
@@ -367,9 +367,9 @@
                             Salin
                         </button>
                     </div>
-                    <span class="riwayat-badge badge-{{ $withdrawal->status === 'completed' ? 'success' : ($withdrawal->status === 'pending' ? 'pending' : 'failed') }}">
+                    <!-- <span class="riwayat-badge badge-{{ $withdrawal->status === 'completed' ? 'success' : ($withdrawal->status === 'pending' ? 'pending' : 'failed') }}">
                         {{ $withdrawal->status === 'completed' ? 'Selesai' : ($withdrawal->status === 'pending' ? 'Menunggu' : 'Gagal') }}
-                    </span>
+                    </span> -->
                 </div>
                 <div class="riwayat-amount">Rp {{ number_format($withdrawal->amount, 0, ',', '.') }}</div>
                 <div class="riwayat-date">{{ $withdrawal->created_at->format('d M Y, H:i') }}</div>

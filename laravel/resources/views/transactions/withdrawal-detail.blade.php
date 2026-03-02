@@ -481,7 +481,7 @@
     </a>
 
     <!-- Status Alert -->
-    @if($withdrawal->status === 'pending')
+    <!-- @if($withdrawal->status === 'pending')
         <div class="alert-box alert-warning">
             <div class="alert-icon">⏳</div>
             <div class="alert-content">
@@ -519,7 +519,7 @@
                 </div>
             </div>
         </div>
-    @endif
+    @endif -->
 
     <!-- Main Card -->
     <div class="detail-card">
@@ -531,7 +531,7 @@
                 <button class="copy-code-btn" onclick="copyToClipboard('{{ $withdrawal->payout_id ?? 'WD-' . $withdrawal->id }}', this)">
                     <i class="fas fa-copy"></i> Salin Kode
                 </button>
-                <span class="status-badge status-{{ $withdrawal->status }}">
+                <!-- <span class="status-badge status-{{ $withdrawal->status }}">
                     @if($withdrawal->status === 'pending')
                         Menunggu Persetujuan
                     @elseif($withdrawal->status === 'approved')
@@ -543,11 +543,11 @@
                     @else
                         {{ ucfirst($withdrawal->status) }}
                     @endif
-                </span>
+                </span> -->
             </div>
 
             <!-- Status Timeline -->
-            <div class="status-timeline">
+            <!-- <div class="status-timeline">
                 <div class="timeline-step {{ in_array($withdrawal->status, ['pending', 'approved', 'completed']) ? 'completed' : '' }}">
                     <div class="timeline-icon">
                         <i class="fas fa-paper-plane"></i>
@@ -572,7 +572,7 @@
                     </div>
                     <div class="timeline-label">Selesai</div>
                 </div>
-            </div>
+            </div> -->
         </div>
 
         <!-- Amount Display -->
