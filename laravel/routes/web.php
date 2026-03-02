@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
@@ -58,27 +59,20 @@ Route::post('/checkout/process', [CheckoutController::class, 'process'])->name('
 Route::post('/midtrans/webhook', [CheckoutController::class, 'webhook'])->name('midtrans.webhook');
 
 
-// File: routes/web.php (tambahkan di dalam middleware auth group)
-
 Route::middleware(['auth', 'verified'])->prefix('payment')->name('payment.')->group(function () {
 
-    // Main page — list saved accounts
     Route::get('/accounts', [PaymentAccountController::class, 'index'])
         ->name('accounts.index');
 
-    // Save new account
     Route::post('/accounts', [PaymentAccountController::class, 'store'])
         ->name('accounts.store');
 
-    // Set as default
     Route::patch('/accounts/{paymentAccount}/default', [PaymentAccountController::class, 'setDefault'])
         ->name('accounts.default');
 
-    // Delete account (requires PIN in body)
     Route::delete('/accounts/{paymentAccount}', [PaymentAccountController::class, 'destroy'])
         ->name('accounts.destroy');
 
-    // Verify bank account number via Midtrans
     Route::post('/accounts/verify', [PaymentAccountController::class, 'verifyAccount'])
         ->name('accounts.verify');
 
@@ -102,17 +96,14 @@ Route::prefix('api')->group(function () {
     Route::get('/transactions', [TransactionController::class, 'getTransactionHistory']);
     Route::get('/withdrawals', [TransactionController::class, 'getWithdrawalHistory']);
 
-    // ✅ FIX: Pisah endpoint render produk (tanpa tracking) dari endpoint catat klik
-    // HAPUS route lama: Route::get('/product/{id}', ...) yang langsung catat ProductViews
-
-    // Ambil data produk untuk render kartu — TIDAK mencatat view
+    // Ambil data produk untuk render kartu
     Route::get('/product/{id}/data', [ProductController::class, 'apiShow']);
     Route::get('/product/{id}', [ProductController::class, 'apiShow']);
 
-    // Catat klik produk — dipanggil HANYA saat user benar-benar klik produk
+    // Catat klik produk
     Route::post('/product/{id}/view', [ProductController::class, 'trackView']);
 
-    // ✅ FIX: Catat kunjungan halaman profil publik — dipanggil via AJAX saat halaman dibuka
+    // Catat kunjungan halaman profil publik
     Route::post('/profile/{username}/view', [App\Http\Controllers\PublicProfileController::class, 'trackProfileView']);
 
     // Cart
@@ -121,14 +112,62 @@ Route::prefix('api')->group(function () {
     Route::patch('/cart/{id}',   [CartController::class, 'update']);
     Route::delete('/cart/clear', [CartController::class, 'clear']);
     Route::delete('/cart/{id}',  [CartController::class, 'remove']);
+
+    // ============================================
+    // BLOCKS API — untuk AJAX fetch saat pindah halaman
+    // ============================================
+    Route::get('/blocks', function (Request $request) {
+        $pageId = $request->query('page_id');
+
+        if (!$pageId) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Page ID required'
+            ], 400);
+        }
+
+        $page = \App\Models\Page::with('blocks')->find($pageId);
+
+        if (!$page) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Page not found'
+            ], 404);
+        }
+
+        // Pastikan page milik user yang sedang login
+        if ($page->user_id !== auth()->id()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized'
+            ], 403);
+        }
+
+        $blocks = $page->blocks->sortBy('position')->map(function ($block) {
+            return [
+                'id'         => $block->id,
+                'type'       => $block->type,
+                'content'    => $block->content,
+                'product_id' => $block->product_id ?? null,
+                'position'   => $block->position,
+            ];
+        })->values();
+
+        return response()->json([
+            'success'   => true,
+            'blocks'    => $blocks,
+            'pageTitle' => $page->title,
+        ]);
+    })->middleware('auth')->name('api.blocks');
+
 });
 
-// HISTORY & DETAIL TRANSAKSI — HARUS DI LUAR AUTH & DI ATAS PUBLIC PROFILE
-// HISTORY & DETAIL TRANSAKSI — HARUS DI LUAR AUTH & DI ATAS PUBLIC PROFILE
-// HISTORY & DETAIL TRANSAKSI — HARUS DI LUAR AUTH & DI ATAS PUBLIC PROFILE
-
+/*
+|--------------------------------------------------------------------------
+| HISTORY & DETAIL TRANSAKSI
+|--------------------------------------------------------------------------
+*/
 Route::middleware('auth')->group(function () {
-    // Riwayat Transaksi
     Route::get('/riwayat', [TransactionController::class, 'history'])->name('transactions.history');
     Route::get('/riwayat/pembayaran/{id}', [TransactionController::class, 'paymentDetail'])->name('transactions.payment-detail');
     Route::get('/riwayat/penarikan/{id}', [TransactionController::class, 'withdrawalDetail'])->name('transactions.withdrawal-detail');
@@ -151,73 +190,17 @@ Route::middleware(['auth', 'verified'])->prefix('payment')->name('payment.')->gr
     Route::post('/accounts/verify', [PaymentAccountController::class, 'verifyAccount'])
         ->name('accounts.verify');
 
-    // [DEV ONLY] — otomatis diblokir di production
     Route::post('/setup-pin', [PaymentAccountController::class, 'setupPin'])
         ->name('accounts.setup-pin');
 
 });
 
-// ============================================
-// BACKEND API ROUTE - Tambahkan ke routes/web.php
-// ============================================
-
-// Route untuk fetch blocks via AJAX
-Route::get('/api/blocks', function (Request $request) {
-    $pageId = $request->query('page_id');
-    
-    if (!$pageId) {
-        return response()->json([
-            'success' => false,
-            'message' => 'Page ID required'
-        ], 400);
-    }
-
-    $page = \App\Models\Page::with('blocks')->find($pageId);
-    
-    if (!$page) {
-        return response()->json([
-            'success' => false,
-            'message' => 'Page not found'
-        ], 404);
-    }
-
-    // Check authorization - pastikan page milik user yang sedang login
-    if ($page->user_id !== auth()->id()) {
-        return response()->json([
-            'success' => false,
-            'message' => 'Unauthorized'
-        ], 403);
-    }
-
-    $blocks = $page->blocks->sortBy('position')->map(function($block) {
-        return [
-            'id' => $block->id,
-            'type' => $block->type,
-            'content' => $block->content,
-            'product_id' => $block->product_id ?? null,
-            'position' => $block->position
-        ];
-    })->values();
-
-    return response()->json([
-        'success' => true,
-        'blocks' => $blocks,
-        'pageTitle' => $page->title
-    ]);
-})->middleware('auth')->name('api.blocks');
-
-Route::get('/api/blocks', [BlockController::class, 'getByPage'])->middleware('auth')->name('api.blocks');
-
-// order routes
-// order routes
-// order routes
-// order routes
-// order routes
-
+/*
+|--------------------------------------------------------------------------
+| ORDER ROUTES
+|--------------------------------------------------------------------------
+*/
 Route::middleware('auth')->group(function () {
-    // ... route lain
-    
-    // Pesanan
     Route::get('/pesanan', [OrderController::class, 'index'])->name('orders.index');
     Route::post('/pesanan/{id}/update-status', [OrderController::class, 'updateStatus'])->name('orders.update-status');
 });
@@ -232,7 +215,6 @@ Route::middleware('auth')->group(function () {
 
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-
     Route::get('/dashboard/chart-data', [DashboardController::class, 'chartData'])->middleware('auth');
 
     // Analytics
@@ -340,7 +322,6 @@ Route::get('/search', [SearchController::class, 'search']);
 |--------------------------------------------------------------------------
 */
 Route::get('/{short_code}', function ($short_code) {
-    // Kalau ada di tabel users sebagai username, skip ke public profile
     if (\App\Models\User::where('username', $short_code)->exists()) {
         $user = \App\Models\User::where('username', $short_code)
             ->with(['pages' => fn ($q) => $q->where('is_active', 1)->with('blocks')])
@@ -367,9 +348,6 @@ Route::get('/{username}', function ($username) {
         ->firstOrFail();
 
     $page = $user->pages->first();
-
-    // ✅ FIX: Tracking views dilakukan via AJAX dari blade, bukan di sini
-    // Hapus: $user->increment('profile_views');
 
     return view('public.profile', compact('user', 'page'));
 })->where('username', '[a-zA-Z0-9_]+')
