@@ -477,7 +477,7 @@
                                text-blue-600 border-b-2 border-blue-600 bg-blue-50 mb-[-1px]">
                     Semua
                 </button>
-                <button type="button" id="prodTabUmkm" onclick="switchProdTab('umkm')"
+                <button type="button" id="prodTabFisik" onclick="switchProdTab('fisik')"
                         class="prod-tab-btn px-4 py-2 text-sm font-semibold rounded-t-lg transition-all duration-150
                                text-gray-500 border-b-2 border-transparent mb-[-1px] hover:text-gray-700 hover:bg-gray-50 flex items-center gap-1.5">
                     <i class="fas fa-box text-xs"></i> Fisik
@@ -495,22 +495,22 @@
                 <div class="space-y-3 max-h-[360px] overflow-y-auto pr-1" id="productListContainer">
                     @foreach($products as $product)
                     <div class="product-item flex justify-between items-center p-3 border rounded-lg hover:bg-gray-50 transition"
-                         data-type="{{ $product->product_type ?? 'umkm' }}">
+                         data-type="{{ $product->product_type ?? 'fisik' }}">
                         <div class="flex items-center gap-3">
                             @if($product->image)
                                 <img src="{{ asset('storage/' . $product->image) }}" class="w-12 h-12 object-cover rounded-lg flex-shrink-0" alt="{{ $product->title }}">
                             @else
                                 <div class="w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0
-                                            {{ ($product->product_type ?? 'umkm') === 'digital' ? 'bg-blue-50' : 'bg-yellow-100' }}">
-                                    <i class="fas {{ ($product->product_type ?? 'umkm') === 'digital' ? 'fa-download text-blue-500' : 'fa-box text-yellow-600' }}"></i>
+                                            {{ ($product->product_type ?? 'fisik') === 'digital' ? 'bg-blue-50' : 'bg-yellow-100' }}">
+                                    <i class="fas {{ ($product->product_type ?? 'fisik') === 'digital' ? 'fa-download text-blue-500' : 'fa-box text-yellow-600' }}"></i>
                                 </div>
                             @endif
                             <div>
                                 <h4 class="font-semibold text-sm">{{ $product->title }}</h4>
                                 <p class="text-xs text-gray-600">Rp {{ number_format($product->price,0,',','.') }}</p>
                                 <span class="inline-block mt-0.5 px-1.5 py-0.5 rounded text-[10px] font-medium
-                                             {{ ($product->product_type ?? 'umkm') === 'digital' ? 'bg-blue-50 text-blue-600' : 'bg-orange-50 text-orange-600' }}">
-                                    {{ ($product->product_type ?? 'umkm') === 'digital' ? 'Digital' : 'Fisik' }}
+                                             {{ ($product->product_type ?? 'fisik') === 'digital' ? 'bg-blue-50 text-blue-600' : 'bg-orange-50 text-orange-600' }}">
+                                    {{ ($product->product_type ?? 'fisik') === 'digital' ? 'Digital' : 'Fisik' }}
                                 </span>
                             </div>
                         </div>
@@ -721,7 +721,7 @@ function closeAllModals() {
 // PRODUCT TAB FILTER
 // ============================================
 function switchProdTab(tab) {
-    const tabs = { all: 'prodTabAll', umkm: 'prodTabUmkm', digital: 'prodTabDigital' };
+    const tabs = { all: 'prodTabAll', fisik: 'prodTabFisik', digital: 'prodTabDigital' };
     Object.entries(tabs).forEach(([key, id]) => {
         const el = document.getElementById(id);
         if (!el) return;
@@ -737,7 +737,7 @@ function switchProdTab(tab) {
     const items = document.querySelectorAll('#productListContainer .product-item');
     let visibleCount = 0;
     items.forEach(item => {
-        const type = item.getAttribute('data-type') || 'umkm';
+        const type = item.getAttribute('data-type') || 'fisik';
         const show = tab === 'all' || type === tab;
         item.style.display = show ? '' : 'none';
         if (show) visibleCount++;
@@ -749,7 +749,7 @@ function switchProdTab(tab) {
         if (visibleCount === 0) {
             emptyState.classList.remove('hidden');
             if (emptyText) emptyText.textContent =
-                tab === 'umkm' ? 'Tidak ada produk fisik' :
+                tab === 'fisik' ? 'Tidak ada produk fisik' :
                 tab === 'digital' ? 'Tidak ada produk digital' : 'Tidak ada produk';
         } else {
             emptyState.classList.add('hidden');
