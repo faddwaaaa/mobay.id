@@ -266,6 +266,7 @@ class CheckoutController extends Controller
             ProductSale::create([
                 'product_id' => $product->id,
                 'qty'        => $notes['qty'] ?? 1,
+                'price'      => $notes['unit_price'] ?? 0,
                 'options'    => json_encode([
                     'order_id'      => $transaction->order_id,
                     'buyer_name'    => $notes['buyer_name'] ?? '',
