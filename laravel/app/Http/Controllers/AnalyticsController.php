@@ -30,32 +30,39 @@ class AnalyticsController extends Controller
             ->whereBetween('created_at', [$startDate, $endDate])
             ->count();
 
-
-
         // ── Total Sold & Revenue ──────────────────────────────
         $salesAgg = DB::table('product_sales')
             ->join('products', 'product_sales.product_id', '=', 'products.id')
             ->where('products.user_id', $user->id)
-            ->selectRaw('SUM(product_sales.qty) as total_sold, SUM(product_sales.qty * products.price) as total_revenue')
+            ->selectRaw('SUM(product_sales.qty) as total_sold, SUM(product_sales.qty * product_sales.price) as total_revenue')
             ->first();
 
         $totalSold    = $salesAgg->total_sold    ?? 0;
         $totalRevenue = $salesAgg->total_revenue ?? 0;
 
         // ── Top 5 Produk ──────────────────────────────────────
-        $topProducts = Product::where('user_id', $user->id)
-            ->with('images')
+        $topProductIds = Product::where('user_id', $user->id)
             ->withCount('sales as sold')
-            ->withSum('sales as revenue', DB::raw('qty * price'))
             ->orderByDesc('sold')
             ->limit(5)
+            ->pluck('id');
+
+        $topProducts = Product::whereIn('id', $topProductIds)
+            ->with('images')
+            ->withCount('sales as sold')
             ->get()
             ->map(function ($p) {
+                // Hitung revenue pakai query terpisah agar kolom price terbaca dengan benar
+                $p->revenue = DB::table('product_sales')
+                    ->where('product_id', $p->id)
+                    ->sum(DB::raw('qty * price'));
                 $p->image_url = $p->images->first()
                     ? asset('storage/' . $p->images->first()->image)
                     : null;
                 return $p;
-            });
+            })
+            ->sortByDesc('sold')
+            ->values();
 
         // ── Clicks per day (90 hari, untuk filter chart) ──────
         $clicksPerDay = $this->getClicksPerDay($user->id, $startDate, $endDate);
@@ -93,7 +100,7 @@ class AnalyticsController extends Controller
             ->join('products', 'product_sales.product_id', '=', 'products.id')
             ->where('products.user_id', $userId)
             ->whereBetween('product_sales.created_at', [$startDate, $endDate])
-            ->selectRaw('DATE(product_sales.created_at) as date, SUM(product_sales.qty * products.price) as revenue')
+            ->selectRaw('DATE(product_sales.created_at) as date, SUM(product_sales.qty * product_sales.price) as revenue')
             ->groupBy('date')
             ->orderBy('date')
             ->pluck('revenue', 'date');
