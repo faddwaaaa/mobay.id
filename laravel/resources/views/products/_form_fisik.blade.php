@@ -19,8 +19,11 @@
             </div>
         </div>
 
-        {{-- Form --}}
-        <form id="createFisikForm" method="POST" action="{{ route('products.store') }}" enctype="multipart/form-data" class="space-y-6">
+        {{-- 
+            PERBAIKAN: Hapus action dari form HTML, submit sepenuhnya lewat fetch + FormData manual.
+            Ini memastikan: (1) gambar dari array JS terkirim, (2) shipping_cost terkirim sebagai angka bersih.
+        --}}
+        <form id="createFisikForm" method="POST" action="{{ route('products.store') }}" class="space-y-6">
             @csrf
             <input type="hidden" name="product_type" value="fisik">
 
@@ -46,7 +49,7 @@
                             </div>
                         </div>
                         <div id="imageUploadArea" class="border-2 border-dashed border-gray-300 rounded-xl p-4 text-center hover:border-green-400 transition-colors cursor-pointer mb-4">
-                            {{-- input ini HANYA trigger, file asli di uploadedImages[] --}}
+                            {{-- Input ini HANYA trigger, file asli di uploadedImages[] --}}
                             <input type="file" id="imageUpload" multiple accept="image/*" class="hidden">
                             <label for="imageUpload" class="cursor-pointer block">
                                 <div class="mx-auto w-12 h-12 bg-green-50 rounded-full flex items-center justify-center mb-3">
@@ -109,7 +112,7 @@
                         </div>
 
                         {{-- ONGKOS KIRIM --}}
-                        <div class="pt-4 border-t border-gray-100">
+                        {{-- <div class="pt-4 border-t border-gray-100">
                             <div class="flex items-center justify-between mb-3">
                                 <div>
                                     <label class="form-label mb-0">Ongkos Kirim</label>
@@ -120,12 +123,16 @@
                                     <label for="shippingCheck" class="toggle-label-green"></label>
                                 </div>
                             </div>
-                            <input type="text" name="shipping_cost" id="shippingInput"
+
+                                FIX: Field ini TIDAK punya name="shipping_cost" di HTML.
+                                Nilai akan diambil JS dan dikirim sebagai angka bersih via FormData.
+
+                            <input type="text" id="shippingInput"
                                 class="form-input-green hidden" placeholder="Contoh: 15.000">
                             <p class="text-xs text-gray-500 mt-1 hidden" id="shippingHint">
                                 Ongkir ditambahkan ke total pembayaran pembeli.
                             </p>
-                        </div>
+                        </div> --}}
 
                         {{-- Kelola Stok --}}
                         <div class="pt-4 border-t border-gray-100">
@@ -160,7 +167,8 @@
                         </div>
                     </div>
 
-                    <button type="submit" id="submitBtn"
+                    {{-- FIX: type="button" + onclick agar tidak trigger HTML form submit --}}
+                    <button type="button" id="submitBtn" onclick="submitFisikForm()"
                         class="w-full text-white py-3 px-4 rounded-lg font-semibold text-base shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center gap-2"
                         style="background: linear-gradient(to right, #16a34a, #15803d);">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -235,13 +243,14 @@ document.addEventListener('DOMContentLoaded', function () {
         if (this.checked) shippingInput.focus();
         else shippingInput.value = '';
     });
+    // Format ongkir saat diketik
     shippingInput.addEventListener('input', function () {
         this.value = fmtRupiah(this.value);
     });
 
     // ===== FORMAT RUPIAH =====
     function fmtRupiah(val) {
-        return val.toString().replace(/[^0-9]/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+        return (val || '').toString().replace(/[^0-9]/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, '.');
     }
     function cleanRupiah(val) {
         const n = parseInt((val || '').toString().replace(/\./g, ''), 10);
@@ -270,7 +279,10 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // ===== IMAGE COMPRESSION =====
-    function compressImage(file, maxSizeKB = 150, maxWidth = 1024, quality = 0.75) {
+    function compressImage(file, maxSizeKB, maxWidth, quality) {
+        maxSizeKB = maxSizeKB || 150;
+        maxWidth  = maxWidth  || 1024;
+        quality   = quality   || 0.75;
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
             reader.onerror = () => reject(new Error('read error'));
@@ -302,12 +314,12 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // ===== IMAGE UPLOAD — simpan file di array JS =====
+    // ===== IMAGE UPLOAD =====
     const imageUpload       = document.getElementById('imageUpload');
     const imagePreviewGrid  = document.getElementById('imagePreviewGrid');
     const imageUploadText   = document.getElementById('imageUploadText');
     const compressionStatus = document.getElementById('compressionStatus');
-    let uploadedImages = []; // {id, file (File object), previewUrl}
+    let uploadedImages = [];
 
     imageUpload.addEventListener('change', async function () {
         const files = Array.from(this.files).filter(f => f.type.match('image.*'));
@@ -325,7 +337,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         renderImagePreview();
         compressionStatus.innerHTML = `<div style="display:flex;align-items:center;gap:5px;color:#9ca3af;font-size:11px;"><span style="width:7px;height:7px;border-radius:50%;background:#16a34a;display:inline-block;flex-shrink:0;"></span>${uploadedImages.length} gambar siap diupload</div>`;
-        this.value = ''; // reset input agar bisa pilih file sama lagi
+        this.value = '';
     });
 
     function renderImagePreview() {
@@ -355,9 +367,13 @@ document.addEventListener('DOMContentLoaded', function () {
         imageUploadText.textContent = uploadedImages.length ? `Tambah gambar (${uploadedImages.length} terpilih)` : 'Klik untuk upload gambar';
     }
 
-    // ===== FORM SUBMIT — pakai fetch + FormData manual =====
-    document.getElementById('createFisikForm').addEventListener('submit', async function (e) {
-        e.preventDefault();
+    // ===== FORM SUBMIT via FETCH + FORMDATA MANUAL =====
+    // FIX UTAMA: Submit via fetch agar:
+    //   1. Gambar dari array JS (bukan dari input file) bisa dikirim
+    //   2. shipping_cost dikirim sebagai ANGKA BERSIH (tanpa titik format rupiah)
+    //   3. price & discount juga dikirim sebagai angka bersih
+    window.submitFisikForm = async function() {
+        const form = document.getElementById('createFisikForm');
 
         const p = cleanRupiah(priceInput.value);
         const d = cleanRupiah(discountInput.value);
@@ -368,65 +384,49 @@ document.addEventListener('DOMContentLoaded', function () {
         btn.disabled = true; btn.style.opacity = '0.7';
         document.getElementById('submitBtnText').textContent = 'Menyimpan...';
 
-        // Bangun FormData manual
-        const fd = new FormData(this);
+        // Bangun FormData dari form (ambil semua field teks/hidden/number)
+        const fd = new FormData(form);
 
-        // Override harga: kirim angka bersih (tanpa titik)
+        // Override harga dengan angka bersih
         fd.set('price',    p);
         fd.set('discount', d || '');
 
-        // Ongkir: kirim angka bersih
-        if (shippingCheck.checked && shippingInput.value) {
+        // FIX: Tambah shipping_cost sebagai angka bersih (bukan format "15.000")
+        // shippingInput tidak punya name di HTML, jadi kita set manual di sini
+        if (shippingCheck.checked && shippingInput.value.trim()) {
             fd.set('shipping_cost', cleanRupiah(shippingInput.value));
-        } else {
-            fd.delete('shipping_cost');
         }
+        // Jika tidak dicentang, tidak dikirim → server anggap NULL
 
-        // Tambahkan file gambar dari array JS (BUKAN dari input file)
-        fd.delete('images[]'); // hapus dulu kalau ada
+        // Tambahkan gambar dari array JS (BUKAN dari input file)
+        fd.delete('images[]');
         uploadedImages.forEach(img => {
             fd.append('images[]', img.file, img.file.name);
         });
 
         try {
-            const res = await fetch(this.action, {
+            const res = await fetch(form.action, {
                 method: 'POST',
                 headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content') },
                 body: fd,
             });
 
-            // Laravel redirect → ikuti redirect
             if (res.redirected) {
                 window.location.href = res.url;
                 return;
             }
-
-            // Kalau ada error validasi (422) atau lainnya
-            const text = await res.text();
-            // Cek apakah response adalah HTML redirect
-            if (res.ok || res.status === 302) {
+            if (res.ok) {
                 window.location.href = res.url || '{{ route("products.manage") }}';
             } else {
-                // Tampilkan error dari server
+                const text = await res.text();
                 document.open(); document.write(text); document.close();
             }
         } catch (err) {
-            // Fallback: submit form biasa dengan DataTransfer
-            if (uploadedImages.length > 0) {
-                try {
-                    const dt = new DataTransfer();
-                    uploadedImages.forEach(img => dt.items.add(img.file));
-                    imageUpload.files = dt.files;
-                    imageUpload.name = 'images[]';
-                } catch(e) {}
-            }
-            priceInput.value    = p;
-            discountInput.value = d || '';
-            if (shippingCheck.checked && shippingInput.value) {
-                shippingInput.value = cleanRupiah(shippingInput.value);
-            }
-            this.submit();
+            console.error('Submit error:', err);
+            alert('Terjadi kesalahan. Silakan coba lagi.');
+            btn.disabled = false; btn.style.opacity = '1';
+            document.getElementById('submitBtnText').textContent = 'Tambah Produk Fisik';
         }
-    });
+    };
 });
 </script>

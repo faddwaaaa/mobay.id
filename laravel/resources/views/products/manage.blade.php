@@ -75,10 +75,106 @@
 .add-dropdown .dropdown-icon.digital { background: #eff6ff; }
 .add-dropdown .dropdown-icon.fisik   { background: #f0fdf4; }
 
-.links-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px; margin-bottom: 40px; }
+/* ===== PRODUCT CARD ===== */
+.product-card {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+    transition: all 0.25s ease;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #f1f5f9;
+}
+.product-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.11);
+}
 
-.link-card { background: #fff; border-radius: 18px; padding: 18px; box-shadow: 0 10px 28px rgba(0,0,0,.06); transition: .25s ease; border: none; }
-.link-card:hover { transform: translateY(-4px); box-shadow: 0 18px 40px rgba(0,0,0,.08); }
+/* Foto dengan aspect ratio square, gambar penuh tidak terpotong */
+.product-img-wrap {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    background: #f8fafc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+}
+
+.product-img-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;  /* <-- contain: gambar penuh, tidak terpotong */
+    padding: 6px;         /* sedikit padding supaya tidak mepet tepi */
+}
+
+.product-img-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    color: #cbd5e1;
+    height: 100%;
+    width: 100%;
+}
+
+.product-card-body {
+    padding: 12px 14px 14px;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.product-card-title {
+    font-weight: 600;
+    font-size: 13px;
+    color: #1e293b;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-bottom: 3px;
+}
+
+.product-card-desc {
+    font-size: 11px;
+    color: #94a3b8;
+    margin-bottom: 8px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.product-card-price {
+    margin-bottom: 10px;
+    flex: 1;
+}
+
+.product-card-actions {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.btn-edit, .btn-delete {
+    flex: 1;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 7px 0;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-align: center;
+}
+
+.btn-edit   { background: #eff6ff; color: #2563eb; }
+.btn-edit:hover   { background: #dbeafe; }
+.btn-delete { background: #fff1f2; color: #e11d48; }
+.btn-delete:hover { background: #ffe4e6; }
 
 .empty-state { grid-column: 1 / -1; text-align: center; padding: 60px 20px; background: #fff; border-radius: 18px; border: 2px dashed #e5e7eb; }
 .empty-icon { width: 80px; height: 80px; background: linear-gradient(135deg, #2563eb); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; color: #fff; font-size: 32px; }
@@ -185,48 +281,57 @@ tbody tr:hover { background: #f1f5f9; }
 
     {{-- ================= GRID PRODUK ================= --}}
     @if($products->count())
-    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-10">
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-10">
         @foreach($products as $product)
-        <div class="bg-white rounded-xl shadow hover:shadow-lg transition overflow-hidden">
-            <div class="h-40 bg-gray-100">
+        <div class="product-card">
+
+            {{-- FOTO: aspect-ratio square, object-contain agar tidak terpotong --}}
+            <div class="product-img-wrap">
                 @if($product->images->first())
-                    <img src="{{ asset('storage/'.$product->images->first()->image) }}" class="w-full h-full object-cover">
+                    <img src="{{ asset('storage/'.$product->images->first()->image) }}"
+                         alt="{{ $product->title }}">
                 @else
-                    <div class="flex items-center justify-center h-full text-gray-400 text-sm">Tidak ada gambar</div>
+                    <div class="product-img-placeholder">
+                        <svg width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                        </svg>
+                        <span style="font-size: 11px;">Tidak ada foto</span>
+                    </div>
+                @endif
+
+                {{-- Badge tipe di sudut foto --}}
+                @if($product->product_type === 'digital')
+                    <span style="position:absolute; top:8px; left:8px; font-size:10px; background:#eff6ff; color:#2563eb; padding:2px 8px; border-radius:999px; font-weight:700; box-shadow:0 1px 4px rgba(0,0,0,0.08);">Digital</span>
+                @else
+                    <span style="position:absolute; top:8px; left:8px; font-size:10px; background:#f0fdf4; color:#16a34a; padding:2px 8px; border-radius:999px; font-weight:700; box-shadow:0 1px 4px rgba(0,0,0,0.08);">Fisik</span>
                 @endif
             </div>
-            <div class="p-4">
-                <div class="flex items-center gap-2 mb-1">
-                    <h3 class="font-semibold text-sm truncate flex-1">{{ $product->title }}</h3>
-                    {{-- Badge tipe produk --}}
-                    @if($product->product_type === 'digital')
-                        <span style="font-size: 10px; background: #eff6ff; color: #2563eb; padding: 2px 7px; border-radius: 999px; font-weight: 600; white-space: nowrap;">Digital</span>
-                    @else
-                        <span style="font-size: 10px; background: #f0fdf4; color: #16a34a; padding: 2px 7px; border-radius: 999px; font-weight: 600; white-space: nowrap;">Fisik</span>
-                    @endif
-                </div>
-                <div class="text-xs text-gray-500 mb-2">{{ Str::limit($product->description, 40) }}</div>
-                <div class="mb-3">
+
+            {{-- INFO --}}
+            <div class="product-card-body">
+                <div class="product-card-title">{{ $product->title }}</div>
+                <div class="product-card-desc">{{ $product->description }}</div>
+
+                <div class="product-card-price">
                     @if($product->discount && $product->discount > 0)
                         @php $savedPercent = round((($product->price - $product->discount) / $product->price) * 100); @endphp
-                        <div class="text-xs text-gray-400 line-through">Rp {{ number_format($product->price, 0, ',', '.') }}</div>
-                        <div class="font-bold text-blue-600 text-sm">Rp {{ number_format($product->discount, 0, ',', '.') }}</div>
-                        <div class="text-xs text-red-500">Hemat {{ $savedPercent }}%</div>
+                        <div style="font-size:11px; color:#94a3b8; text-decoration:line-through;">Rp {{ number_format($product->price, 0, ',', '.') }}</div>
+                        <div style="font-weight:700; color:#2563eb; font-size:14px;">Rp {{ number_format($product->discount, 0, ',', '.') }}</div>
+                        <div style="font-size:10px; color:#e11d48; font-weight:600;">Hemat {{ $savedPercent }}%</div>
                     @else
-                        <div class="font-bold text-blue-600 text-sm">Rp {{ number_format($product->price, 0, ',', '.') }}</div>
+                        <div style="font-weight:700; color:#2563eb; font-size:14px;">Rp {{ number_format($product->price, 0, ',', '.') }}</div>
                     @endif
                 </div>
-                <div class="flex justify-between items-center">
-                    <button onclick="openEditModal({{ $product->id }})"
-                            class="text-xs bg-blue-100 text-blue-600 px-3 py-1 rounded-lg hover:bg-blue-200 transition">
-                        Edit
+
+                <div class="product-card-actions">
+                    <button onclick="openEditModal({{ $product->id }})" class="btn-edit">
+                        <i class="fas fa-pen" style="font-size:10px; margin-right:4px;"></i> Edit
                     </button>
-                    <form method="POST" action="{{ route('products.destroy', $product) }}">
+                    <form method="POST" action="{{ route('products.destroy', $product) }}" style="flex:1; display:flex;">
                         @csrf
                         @method('DELETE')
-                        <button onclick="return confirm('Yakin hapus produk?')"
-                            class="text-xs bg-red-100 text-red-600 px-3 py-1 rounded-lg hover:bg-red-200 transition">
-                            Hapus
+                        <button onclick="return confirm('Yakin hapus produk?')" class="btn-delete" style="width:100%;">
+                            <i class="fas fa-trash" style="font-size:10px; margin-right:4px;"></i> Hapus
                         </button>
                     </form>
                 </div>
