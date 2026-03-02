@@ -338,6 +338,7 @@
         .empty-state { text-align: center; padding: 40px 20px; color: #9ca3af; }
         .empty-icon  { width: 64px; height: 64px; background: #f3f4f6; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; color: #d1d5db; }
 
+        /* PRODUCT DETAIL MODAL */
         .product-detail-overlay {
             position: fixed; inset: 0; background: rgba(0,0,0,0.45);
             display: none; justify-content: center; align-items: center; z-index: 9999; padding: 20px;
@@ -360,6 +361,7 @@
         .detail-price   { display: flex; align-items: center; gap: 10px; }
         .final-price    { font-size: 22px; font-weight: 700; color: #2563eb; }
         .original-price { text-decoration: line-through; color: #999; font-size: 14px; }
+        .discount-badge-detail { background: #fee2e2; color: #dc2626; font-size: 12px; font-weight: 600; padding: 3px 8px; border-radius: 6px; }
         .stock-info     { font-size: 13px; color: #555; }
         .detail-description { font-size: 14px; color: #444; line-height: 1.6; }
         .detail-buttons { display: flex; gap: 10px; padding: 16px; border-top: 1px solid #e5e7eb; background: #fff; flex-shrink: 0; }
@@ -373,6 +375,7 @@
         .btn-buy { flex: 1; padding: 12px; background: #2563eb; color: white; border-radius: 10px; font-weight: 600; font-size: 15px; border: none; cursor: pointer; transition: background 0.2s; }
         .btn-buy:hover { background: #1d4ed8; }
 
+        /* CART DRAWER */
         .cart-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 500; opacity: 0; visibility: hidden; transition: all 0.3s; }
         .cart-overlay.active { opacity: 1; visibility: visible; }
         .cart-drawer { position: fixed; right: 0; top: 0; bottom: 0; width: 100%; max-width: 420px; background: #fff; z-index: 501; transform: translateX(100%); transition: transform 0.3s ease; display: flex; flex-direction: column; overflow: hidden; }
@@ -393,10 +396,8 @@
 <body>
 
 @php
-    // Ambil page yang sesuai dengan query param ?page=
     $selectedPageId = request()->query('page');
     $activePage = null;
-
     if ($selectedPageId && $user->pages) {
         $activePage = $user->pages->firstWhere('id', $selectedPageId);
     }
@@ -600,8 +601,10 @@
             <div class="detail-price">
                 <span class="final-price"    id="detailFinalPrice"></span>
                 <span class="original-price" id="detailOriginalPrice"></span>
+                <span class="discount-badge-detail" id="detailDiscountBadge" style="display:none;"></span>
             </div>
-            <div class="stock-info">Stok: <span id="detailStock"></span></div>
+            {{-- Stok hanya ditampilkan untuk produk fisik --}}
+            <div class="stock-info" id="detailStockWrap">Stok: <span id="detailStock"></span></div>
             <div class="detail-description">
                 <strong style="font-size:13px;color:#6b7280;letter-spacing:.5px;">DESKRIPSI</strong>
                 <p id="detailDescription" style="margin-top:6px;"></p>
@@ -675,34 +678,28 @@ function closeMenu() { fullmenuOverlay.classList.remove('active'); document.body
 hamburger.addEventListener('click', openMenu);
 fullmenuClose.addEventListener('click', closeMenu);
 
-// Klik item menu → switch tab langsung (tanpa reload)
 document.querySelectorAll('.fullmenu-item[data-tab]').forEach(item => {
     item.addEventListener('click', () => {
         const tab    = item.dataset.tab;
         const pageId = item.dataset.pageId;
-
-        // Update active state menu
         document.querySelectorAll('.fullmenu-item').forEach(n => n.classList.remove('active'));
         item.classList.add('active');
-
-        // Switch tab konten
         document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
         document.getElementById(`tab-${tab}`)?.classList.add('active');
-
         closeMenu();
-
-        // Load produk untuk tab yang baru ditampilkan (jika belum)
         loadProductsInTab(tab);
     });
 });
 
 // ─── RENDER PRODUCT BLOCK ────────────────────────────────────────
 function renderProductBlock(container, product) {
-    const price      = product.price    ?? 0;
-    const discount   = product.discount ?? null;
-    const finalPrice = product.final_price ?? ((discount && discount > 0 && discount < price) ? discount : price);
-    const hasDis     = finalPrice < price;
-    const discPct    = hasDis ? Math.round(((price - finalPrice) / price) * 100) : 0;
+    const price      = parseFloat(product.price)       || 0;
+    const discount   = parseFloat(product.discount)    || 0;
+    // Gunakan final_price dari server; fallback hitung sendiri
+    const finalPrice = parseFloat(product.final_price) ||
+                       ((discount > 0 && discount < price) ? discount : price);
+    const hasDis  = finalPrice < price;
+    const discPct = hasDis ? Math.round(((price - finalPrice) / price) * 100) : 0;
 
     const imgHtml   = product.image_url
         ? `<img src="${product.image_url}" alt="${escHtml(product.title)}">`
@@ -729,11 +726,8 @@ function renderProductBlock(container, product) {
 function loadProductsInTab(tabId) {
     const tabEl = document.getElementById(`tab-${tabId}`);
     if (!tabEl) return;
-
     const containers = tabEl.querySelectorAll('[data-product-id]');
     if (!containers.length) return;
-
-    // Skip jika sudah ter-render (tidak ada skeleton lagi)
     const stillSkeleton = [...containers].filter(c => c.querySelector('.product-skeleton'));
     if (!stillSkeleton.length) return;
 
@@ -753,7 +747,6 @@ function loadProductsInTab(tabId) {
             });
         })
         .catch(() => {
-            // Fallback: fetch satu per satu
             stillSkeleton.forEach(container => {
                 const pid = container.getAttribute('data-product-id');
                 fetch(`/api/product/${pid}/data`)
@@ -768,7 +761,6 @@ function loadProductsInTab(tabId) {
 
 // ─── DOMContentLoaded ────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', function () {
-    // Load produk hanya di tab yang aktif saat ini
     const activeTab = document.querySelector('.tab-content.active');
     if (activeTab) {
         loadProductsInTab(activeTab.id.replace('tab-', ''));
@@ -784,16 +776,36 @@ function handleProductClick(productId) {
         .then(r => r.json())
         .then(product => {
             currentProductId = product.id;
-            const price      = product.price    ?? 0;
-            const discount   = product.discount ?? null;
-            const finalPrice = product.final_price ?? ((discount && discount > 0 && discount < price) ? discount : price);
-            const hasDis     = finalPrice < price;
 
-            document.getElementById('detailTitle').textContent         = product.title;
-            document.getElementById('detailDescription').textContent   = product.description ?? '';
-            document.getElementById('detailStock').textContent         = product.stock ?? 0;
-            document.getElementById('detailFinalPrice').textContent    = formatRupiah(finalPrice);
+            const price      = parseFloat(product.price)       || 0;
+            const discount   = parseFloat(product.discount)    || 0;
+            const finalPrice = parseFloat(product.final_price) ||
+                               ((discount > 0 && discount < price) ? discount : price);
+            const hasDis  = finalPrice < price;
+            const discPct = hasDis ? Math.round(((price - finalPrice) / price) * 100) : 0;
+
+            document.getElementById('detailTitle').textContent       = product.title;
+            document.getElementById('detailFinalPrice').textContent  = formatRupiah(finalPrice);
             document.getElementById('detailOriginalPrice').textContent = hasDis ? formatRupiah(price) : '';
+            document.getElementById('detailDescription').textContent = product.description ?? '';
+
+            // Badge diskon
+            const discBadge = document.getElementById('detailDiscountBadge');
+            if (hasDis) {
+                discBadge.textContent   = `-${discPct}%`;
+                discBadge.style.display = 'inline-block';
+            } else {
+                discBadge.style.display = 'none';
+            }
+
+            // Sembunyikan stok untuk produk digital
+            const stockWrap = document.getElementById('detailStockWrap');
+            if (product.product_type === 'digital' || product.stock === null) {
+                stockWrap.style.display = 'none';
+            } else {
+                stockWrap.style.display = '';
+                document.getElementById('detailStock').textContent = product.stock;
+            }
 
             const img = document.getElementById('detailImage');
             if (product.image_url) { img.src = product.image_url; img.style.display = 'block'; }
@@ -818,7 +830,7 @@ document.getElementById('btnAddToCart').addEventListener('click', () => {
     showToast('Ini mode preview — tidak bisa tambah ke keranjang', 'error');
 });
 
-// ─── CART DRAWER ─────────────────────────────────────────────────
+// ─── CART DRAWER (preview mode) ──────────────────────────────────
 const cartOverlay = document.getElementById('cartOverlay');
 const cartDrawer  = document.getElementById('cartDrawer');
 

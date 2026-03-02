@@ -58,7 +58,7 @@
                                     </svg>
                                 </div>
                                 <p class="text-gray-700 font-medium text-sm" id="imageUploadText">Klik untuk upload gambar</p>
-                                <p class="text-xs text-gray-400 mt-1">PNG, JPG, JPEG (Maks 10MB per gambar)</p>
+                                <p class="text-xs text-gray-400 mt-1">PNG, JPG, JPEG</p>
                             </label>
                         </div>
                         <div id="compressionStatus" class="hidden mb-3"></div>

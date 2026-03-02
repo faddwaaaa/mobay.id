@@ -43,6 +43,7 @@ class ProductController extends Controller
         return view('products.manage', compact('products', 'showForm', 'product', 'productTypeForm'));
     }
 
+    // ─── API: single product ──────────────────────────────────────────────────
     public function apiShow($id)
     {
         $product = Product::with('images')->findOrFail($id);
@@ -52,16 +53,58 @@ class ProductController extends Controller
             $imageUrl = asset('storage/' . $product->images->first()->image);
         }
 
+        $price      = (float) ($product->price    ?? 0);
+        $discount   = (float) ($product->discount ?? 0);
+        $finalPrice = ($discount > 0 && $discount < $price) ? $discount : $price;
+        $isDigital  = ($product->product_type ?? 'fisik') === 'digital';
+
         return response()->json([
             'id'            => $product->id,
             'title'         => $product->title,
             'description'   => $product->description,
-            'price'         => $product->price,
-            'discount'      => $product->discount,
-            'stock'         => $product->stock,
+            'price'         => $price,
+            'discount'      => $discount > 0 ? $discount : null,
+            'final_price'   => $finalPrice,
+            'stock'         => $isDigital ? null : ($product->stock ?? 0),
+            'product_type'  => $product->product_type ?? 'fisik',
             'shipping_cost' => $product->shipping_cost,
             'image_url'     => $imageUrl,
         ]);
+    }
+
+    // ─── API: batch products (dipakai public profile) ─────────────────────────
+    public function apiBatch(Request $request)
+    {
+        $ids      = explode(',', $request->query('ids', ''));
+        $ids      = array_filter(array_map('intval', $ids));
+        $products = Product::with('images')->whereIn('id', $ids)->get();
+
+        $result = [];
+        foreach ($products as $product) {
+            $imageUrl = null;
+            if ($product->images->isNotEmpty()) {
+                $imageUrl = asset('storage/' . $product->images->first()->image);
+            }
+
+            $price      = (float) ($product->price    ?? 0);
+            $discount   = (float) ($product->discount ?? 0);
+            $finalPrice = ($discount > 0 && $discount < $price) ? $discount : $price;
+            $isDigital  = ($product->product_type ?? 'fisik') === 'digital';
+
+            $result[$product->id] = [
+                'id'           => $product->id,
+                'title'        => $product->title,
+                'description'  => $product->description,
+                'price'        => $price,
+                'discount'     => $discount > 0 ? $discount : null,
+                'final_price'  => $finalPrice,
+                'stock'        => $isDigital ? null : ($product->stock ?? 0),
+                'product_type' => $product->product_type ?? 'fisik',
+                'image_url'    => $imageUrl,
+            ];
+        }
+
+        return response()->json($result);
     }
 
     public function trackView($id)
@@ -73,7 +116,6 @@ class ProductController extends Controller
 
     public function store(Request $request)
     {
-        // Bersihkan format titik dari input rupiah
         $price        = (int) str_replace('.', '', $request->price ?? '');
         $discount     = $request->discount     ? (int) str_replace('.', '', $request->discount)     : null;
         $shippingCost = $request->shipping_cost ? (int) str_replace('.', '', $request->shipping_cost) : null;
@@ -118,7 +160,6 @@ class ProductController extends Controller
             'description'    => $request->description,
             'price'          => $request->price,
             'discount'       => $request->discount,
-            // Simpan ongkir: null kalau kosong/0, angka kalau ada
             'shipping_cost'  => ($shippingCost && $shippingCost > 0) ? $shippingCost : null,
             'stock'          => $request->has('stock_toggle') ? $request->stock : null,
             'purchase_limit' => $request->has('limit_toggle') ? $request->purchase_limit : null,
@@ -172,7 +213,6 @@ class ProductController extends Controller
     {
         abort_if($product->user_id !== Auth::id(), 403);
 
-        // Bersihkan format titik dari input rupiah
         $price        = (int) str_replace('.', '', $request->price ?? '');
         $discount     = $request->discount     ? (int) str_replace('.', '', $request->discount)     : null;
         $shippingCost = $request->shipping_cost ? (int) str_replace('.', '', $request->shipping_cost) : null;
@@ -217,7 +257,6 @@ class ProductController extends Controller
             'description'    => $request->description,
             'price'          => $request->price,
             'discount'       => $request->discount,
-            // Simpan ongkir: null kalau kosong/0, angka kalau ada
             'shipping_cost'  => ($shippingCost && $shippingCost > 0) ? $shippingCost : null,
             'stock'          => $request->has('stock_toggle') ? $request->stock : null,
             'purchase_limit' => $request->has('limit_toggle') ? $request->purchase_limit : null,

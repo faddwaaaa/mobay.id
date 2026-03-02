@@ -125,13 +125,11 @@
             border: 1.5px solid #e5e7eb; border-radius: 10px;
             font-size: 14px; color: #111827; background: #f9fafb;
             outline: none; transition: border-color 0.2s, background 0.2s;
-            /* FIX: hilangkan tombol X bawaan browser */
             -webkit-appearance: none;
             appearance: none;
         }
         .search-input:focus { border-color: #2563eb; background: #fff; }
         .search-input::placeholder { color: #9ca3af; }
-        /* FIX: sembunyikan cancel button bawaan Chrome/Safari */
         .search-input::-webkit-search-decoration,
         .search-input::-webkit-search-cancel-button,
         .search-input::-webkit-search-results-button,
@@ -193,7 +191,6 @@
         .search-result-item:last-child { border-bottom: none; }
         .search-result-item:hover { background: #f9fafb; }
 
-        /* FIX: thumb dengan warna per tipe, no emoji */
         .search-result-thumb {
             width: 46px; height: 46px; border-radius: 10px;
             flex-shrink: 0; overflow: hidden;
@@ -406,6 +403,7 @@
         .detail-price   { display: flex; align-items: center; gap: 10px; }
         .final-price    { font-size: 22px; font-weight: 700; color: #2563eb; }
         .original-price { text-decoration: line-through; color: #999; font-size: 14px; }
+        .discount-badge-detail { background: #fee2e2; color: #dc2626; font-size: 12px; font-weight: 600; padding: 3px 8px; border-radius: 6px; }
         .stock-info     { font-size: 13px; color: #555; }
         .detail-description { font-size: 14px; color: #444; line-height: 1.6; }
         .detail-buttons { display: flex; gap: 10px; padding: 16px; border-top: 1px solid #e5e7eb; background: #fff; flex-shrink: 0; }
@@ -505,7 +503,6 @@
             </svg>
         </button>
         <div class="search-input-wrap">
-            {{-- FIX: type="text" bukan type="search" agar tidak ada X bawaan browser --}}
             <input type="text" class="search-input" id="searchInput"
                    placeholder="Cari produk, link, konten..." autocomplete="off">
             <button class="search-clear-btn" id="searchClearBtn" title="Hapus">
@@ -660,8 +657,10 @@
             <div class="detail-price">
                 <span class="final-price"    id="detailFinalPrice"></span>
                 <span class="original-price" id="detailOriginalPrice"></span>
+                <span class="discount-badge-detail" id="detailDiscountBadge" style="display:none;"></span>
             </div>
-            <div class="stock-info">Stok: <span id="detailStock"></span></div>
+            {{-- Stok hanya ditampilkan untuk produk fisik --}}
+            <div class="stock-info" id="detailStockWrap">Stok: <span id="detailStock"></span></div>
             <div class="detail-description">
                 <strong style="font-size:13px;color:#6b7280;letter-spacing:.5px;">DESKRIPSI</strong>
                 <p id="detailDescription" style="margin-top:6px;"></p>
@@ -733,7 +732,7 @@ function escHtml(str) {
     return d.innerHTML;
 }
 
-// ─── SVG ICONS untuk search results (ganti emoji) ────────────────
+// ─── SVG ICONS ───────────────────────────────────────────────────
 const SEARCH_ICONS = {
     product: `<svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>`,
     link:    `<svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>`,
@@ -742,7 +741,6 @@ const SEARCH_ICONS = {
 };
 const THUMB_CLASS = { product: 'thumb-product', link: 'thumb-link', text: 'thumb-text', other: 'thumb-other' };
 
-// SVG untuk product placeholder (ganti emoji 🛍️)
 const PRODUCT_PLACEHOLDER_SVG = `<svg width="28" height="28" fill="none" stroke="#2563eb" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>`;
 const CART_PLACEHOLDER_SVG    = `<svg width="24" height="24" fill="none" stroke="#9ca3af" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>`;
 const CART_EMPTY_SVG          = `<svg width="40" height="40" fill="none" stroke="#d1d5db" stroke-width="1.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>`;
@@ -768,13 +766,15 @@ document.querySelectorAll('.fullmenu-item[data-tab]').forEach(item => {
     });
 });
 
-// ─── RENDER PRODUCT BLOCK ─────────────────────────────────────────
+// ─── RENDER PRODUCT BLOCK (card di halaman) ───────────────────────
 function renderProductBlock(container, product) {
-    const price      = product.price    ?? 0;
-    const discount   = product.discount ?? null;
-    const finalPrice = product.final_price ?? ((discount && discount > 0 && discount < price) ? discount : price);
-    const hasDis     = finalPrice < price;
-    const discPct    = hasDis ? Math.round(((price - finalPrice) / price) * 100) : 0;
+    const price      = parseFloat(product.price)       || 0;
+    const discount   = parseFloat(product.discount)    || 0;
+    // Gunakan final_price dari server; fallback hitung sendiri
+    const finalPrice = parseFloat(product.final_price) ||
+                       ((discount > 0 && discount < price) ? discount : price);
+    const hasDis  = finalPrice < price;
+    const discPct = hasDis ? Math.round(((price - finalPrice) / price) * 100) : 0;
 
     const imgHtml   = product.image_url
         ? `<img src="${product.image_url}" alt="${escHtml(product.title)}">`
@@ -805,7 +805,7 @@ document.addEventListener('DOMContentLoaded', function () {
         headers: { 'X-CSRF-TOKEN': csrfToken, 'Content-Type': 'application/json' }
     }).catch(() => {});
 
-    // ── BATCH: 1 request untuk semua produk ──
+    // Batch load semua produk sekaligus
     const productContainers = document.querySelectorAll('[data-product-id]');
     if (productContainers.length > 0) {
         const ids = [...new Set(
@@ -826,7 +826,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 });
             })
             .catch(() => {
-                // Fallback: fetch satu per satu jika batch gagal
+                // Fallback: fetch satu per satu
                 productContainers.forEach(container => {
                     const pid = container.getAttribute('data-product-id');
                     fetch(`/api/product/${pid}/data`)
@@ -864,24 +864,55 @@ function handleProductClick(productId) {
         .then(r => r.json())
         .then(product => {
             currentProductId = product.id;
-            const price      = product.price    ?? 0;
-            const discount   = product.discount ?? null;
-            const finalPrice = product.final_price ?? ((discount && discount > 0 && discount < price) ? discount : price);
-            const hasDis     = finalPrice < price;
 
-            document.getElementById('detailTitle').textContent         = product.title;
-            document.getElementById('detailDescription').textContent   = product.description ?? '';
-            document.getElementById('detailStock').textContent         = product.stock ?? 0;
-            document.getElementById('detailFinalPrice').textContent    = formatRupiah(finalPrice);
+            const price      = parseFloat(product.price)       || 0;
+            const discount   = parseFloat(product.discount)    || 0;
+            // Pakai final_price dari server langsung
+            const finalPrice = parseFloat(product.final_price) ||
+                               ((discount > 0 && discount < price) ? discount : price);
+            const hasDis  = finalPrice < price;
+            const discPct = hasDis ? Math.round(((price - finalPrice) / price) * 100) : 0;
+
+            // Judul
+            document.getElementById('detailTitle').textContent = product.title;
+
+            // Harga final
+            document.getElementById('detailFinalPrice').textContent = formatRupiah(finalPrice);
+
+            // Harga coret (hanya tampil jika ada diskon)
             document.getElementById('detailOriginalPrice').textContent = hasDis ? formatRupiah(price) : '';
 
+            // Badge diskon
+            const discBadge = document.getElementById('detailDiscountBadge');
+            if (hasDis) {
+                discBadge.textContent    = `-${discPct}%`;
+                discBadge.style.display  = 'inline-block';
+            } else {
+                discBadge.style.display  = 'none';
+            }
+
+            // Stok: sembunyikan untuk produk digital (stock === null)
+            const stockWrap = document.getElementById('detailStockWrap');
+            if (product.product_type === 'digital' || product.stock === null) {
+                stockWrap.style.display = 'none';
+            } else {
+                stockWrap.style.display = '';
+                document.getElementById('detailStock').textContent = product.stock;
+            }
+
+            // Deskripsi
+            document.getElementById('detailDescription').textContent = product.description ?? '';
+
+            // Gambar
             const img = document.getElementById('detailImage');
             if (product.image_url) { img.src = product.image_url; img.style.display = 'block'; }
             else img.style.display = 'none';
 
+            // Tombol beli
             document.getElementById('buyNowBtn').onclick = () => {
                 window.location.href = `/checkout/${product.id}`;
             };
+
             document.getElementById('productDetailModal').style.display = 'flex';
             document.body.style.overflow = 'hidden';
         })
@@ -997,7 +1028,7 @@ async function handleCheckout() {
     } catch { showToast('Gagal memproses checkout.', 'error'); }
 }
 
-// ─── SEARCH FEATURE ───────────────────────────────────────────────
+// ─── SEARCH ───────────────────────────────────────────────────────
 const USERNAME             = '{{ $user->username }}';
 const searchBtn            = document.getElementById('searchBtn');
 const searchBarWrap        = document.getElementById('searchBarWrap');
@@ -1026,7 +1057,6 @@ function highlight(text, query) {
     return escHtml(text).replace(new RegExp(escaped, 'gi'), m => `<mark>${m}</mark>`);
 }
 
-// ─── renderState: SVG, no emoji ───────────────────────────────────
 function renderState(stateType, title, sub) {
     const icons = {
         loading:   `<svg width="28" height="28" fill="none" stroke="#9ca3af" stroke-width="1.8" viewBox="0 0 24 24" style="animation:spin .8s linear infinite"><path stroke-linecap="round" stroke-linejoin="round" d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"/></svg>`,
@@ -1041,7 +1071,6 @@ function renderState(stateType, title, sub) {
         </div>`;
 }
 
-// ─── normalizeItem ────────────────────────────────────────────────
 function normalizeItem(raw) {
     const type  = raw.type || 'other';
     const title = raw.title || raw.url || '(tanpa judul)';
@@ -1058,7 +1087,6 @@ function normalizeItem(raw) {
     };
 }
 
-// ─── renderResults: SVG thumb, no emoji ──────────────────────────
 function renderResults(results, query) {
     if (!Array.isArray(results) || !results.length) {
         renderState('noresult', 'Tidak ditemukan', `Tidak ada hasil untuk "${query}"`);
@@ -1135,7 +1163,6 @@ searchInput.addEventListener('input', () => {
     searchDebounce = setTimeout(() => doSearch(q), 350);
 });
 
-// ─── doSearch ─────────────────────────────────────────────────────
 async function doSearch(query) {
     try {
         const res = await fetch(
