@@ -12,9 +12,6 @@ use Illuminate\Support\Facades\Storage;
 
 class ProductController extends Controller
 {
-    /**
-     * INDEX
-     */
     public function index(Request $request)
     {
         $products = Product::where('user_id', Auth::id())
@@ -46,9 +43,6 @@ class ProductController extends Controller
         return view('products.manage', compact('products', 'showForm', 'product', 'productTypeForm'));
     }
 
-    /**
-     * API: Ambil data produk TANPA mencatat view
-     */
     public function apiShow($id)
     {
         $product = Product::with('images')->findOrFail($id);
@@ -59,37 +53,35 @@ class ProductController extends Controller
         }
 
         return response()->json([
-            'id'          => $product->id,
-            'title'       => $product->title,
-            'description' => $product->description,
-            'price'       => $product->price,
-            'discount'    => $product->discount,
-            'stock'       => $product->stock,
-            'image_url'   => $imageUrl,
+            'id'            => $product->id,
+            'title'         => $product->title,
+            'description'   => $product->description,
+            'price'         => $product->price,
+            'discount'      => $product->discount,
+            'stock'         => $product->stock,
+            'shipping_cost' => $product->shipping_cost,
+            'image_url'     => $imageUrl,
         ]);
     }
 
-    /**
-     * API: Catat view produk
-     */
     public function trackView($id)
     {
         $product = Product::findOrFail($id);
         ProductViews::create(['product_id' => $product->id]);
-
         return response()->json(['success' => true]);
     }
 
-    /**
-     * STORE PRODUK
-     */
     public function store(Request $request)
     {
+        // Bersihkan format titik dari input rupiah
+        $price        = (int) str_replace('.', '', $request->price ?? '');
+        $discount     = $request->discount     ? (int) str_replace('.', '', $request->discount)     : null;
+        $shippingCost = $request->shipping_cost ? (int) str_replace('.', '', $request->shipping_cost) : null;
+
         $request->merge([
-            'price'    => str_replace('.', '', $request->price),
-            'discount' => $request->discount
-                ? str_replace('.', '', $request->discount)
-                : null,
+            'price'         => $price,
+            'discount'      => $discount,
+            'shipping_cost' => $shippingCost,
         ]);
 
         $platform = $request->input('file_platform', 'upload');
@@ -100,6 +92,7 @@ class ProductController extends Controller
             'description'    => 'nullable|string',
             'price'          => 'required|numeric|min:0',
             'discount'       => 'nullable|numeric|min:0|lt:price',
+            'shipping_cost'  => 'nullable|numeric|min:0',
             'stock'          => 'nullable|integer|min:1',
             'purchase_limit' => 'nullable|integer|min:1',
             'images.*'       => 'nullable|image|max:5120',
@@ -107,11 +100,9 @@ class ProductController extends Controller
 
         if ($request->product_type === 'digital') {
             if ($platform === 'upload') {
-                // wajib ada minimal 1 file kalau platform upload
                 $rules['files']   = 'required|array|min:1';
                 $rules['files.*'] = 'required|file|max:10240';
             } else {
-                // wajib ada URL kalau platform eksternal
                 $rules['file_url'] = 'required|url';
             }
         } else {
@@ -127,11 +118,12 @@ class ProductController extends Controller
             'description'    => $request->description,
             'price'          => $request->price,
             'discount'       => $request->discount,
+            // Simpan ongkir: null kalau kosong/0, angka kalau ada
+            'shipping_cost'  => ($shippingCost && $shippingCost > 0) ? $shippingCost : null,
             'stock'          => $request->has('stock_toggle') ? $request->stock : null,
             'purchase_limit' => $request->has('limit_toggle') ? $request->purchase_limit : null,
         ]);
 
-        // Simpan gambar tampilan
         if ($request->hasFile('images')) {
             foreach ($request->file('images') as $img) {
                 $path = $img->store('products/images', 'public');
@@ -139,7 +131,6 @@ class ProductController extends Controller
             }
         }
 
-        // Simpan file/link digital
         if ($request->product_type === 'digital') {
             $this->saveDigitalFiles($request, $product, $platform);
         }
@@ -156,9 +147,6 @@ class ProductController extends Controller
             ->with('success', 'Produk berhasil ditambahkan');
     }
 
-    /**
-     * HAPUS PRODUK
-     */
     public function destroy(Product $produk)
     {
         abort_if($produk->user_id !== Auth::id(), 403);
@@ -168,7 +156,6 @@ class ProductController extends Controller
         }
 
         foreach ($produk->files as $file) {
-            // Hanya hapus file fisik kalau memang di-upload (bukan URL eksternal)
             if (($file->platform ?? 'upload') === 'upload' && $file->file) {
                 Storage::delete('public/' . $file->file);
             }
@@ -181,18 +168,19 @@ class ProductController extends Controller
         return back()->with('success', 'Produk berhasil dihapus');
     }
 
-    /**
-     * UPDATE PRODUK
-     */
     public function update(Request $request, Product $product)
     {
         abort_if($product->user_id !== Auth::id(), 403);
 
+        // Bersihkan format titik dari input rupiah
+        $price        = (int) str_replace('.', '', $request->price ?? '');
+        $discount     = $request->discount     ? (int) str_replace('.', '', $request->discount)     : null;
+        $shippingCost = $request->shipping_cost ? (int) str_replace('.', '', $request->shipping_cost) : null;
+
         $request->merge([
-            'price'    => str_replace('.', '', $request->price),
-            'discount' => $request->discount
-                ? str_replace('.', '', $request->discount)
-                : null,
+            'price'         => $price,
+            'discount'      => $discount,
+            'shipping_cost' => $shippingCost,
         ]);
 
         $platform = $request->input('file_platform', 'upload');
@@ -203,6 +191,7 @@ class ProductController extends Controller
             'description'    => 'nullable|string',
             'price'          => 'required|numeric|min:0',
             'discount'       => 'nullable|numeric|min:0|lt:price',
+            'shipping_cost'  => 'nullable|numeric|min:0',
             'stock'          => 'nullable|integer|min:1',
             'purchase_limit' => 'nullable|integer|min:1',
             'images.*'       => 'nullable|image|max:5120',
@@ -228,11 +217,12 @@ class ProductController extends Controller
             'description'    => $request->description,
             'price'          => $request->price,
             'discount'       => $request->discount,
+            // Simpan ongkir: null kalau kosong/0, angka kalau ada
+            'shipping_cost'  => ($shippingCost && $shippingCost > 0) ? $shippingCost : null,
             'stock'          => $request->has('stock_toggle') ? $request->stock : null,
             'purchase_limit' => $request->has('limit_toggle') ? $request->purchase_limit : null,
         ]);
 
-        // Hapus gambar yang dicentang (by ID)
         if ($request->has('delete_images') && is_array($request->delete_images)) {
             $images = ProductImage::whereIn('id', $request->delete_images)
                 ->where('product_id', $product->id)
@@ -243,8 +233,6 @@ class ProductController extends Controller
             }
         }
 
-        // Hapus file yang dicentang (by ID)
-        // ⚠️  edit modal sekarang kirim ID (integer), bukan file path
         if ($request->has('delete_files') && is_array($request->delete_files)) {
             $files = ProductFile::whereIn('id', $request->delete_files)
                 ->where('product_id', $product->id)
@@ -257,7 +245,6 @@ class ProductController extends Controller
             }
         }
 
-        // Tambah gambar baru
         if ($request->hasFile('images')) {
             foreach ($request->file('images') as $img) {
                 $path = $img->store('products/images', 'public');
@@ -265,7 +252,6 @@ class ProductController extends Controller
             }
         }
 
-        // Tambah file/link digital baru
         if ($request->product_type === 'digital') {
             $this->saveDigitalFiles($request, $product, $platform);
         }
@@ -275,17 +261,11 @@ class ProductController extends Controller
             ->with('success', 'Produk berhasil diupdate');
     }
 
-    /**
-     * EDIT — redirect ke halaman manage dengan query edit
-     */
     public function edit($id)
     {
         return redirect()->route('products.manage', ['edit' => $id]);
     }
 
-    /**
-     * SHOW (web page) — catat views
-     */
     public function show($id)
     {
         $product = Product::findOrFail($id);
@@ -293,16 +273,6 @@ class ProductController extends Controller
         return view('products.show', compact('product'));
     }
 
-    // =========================================================
-    // PRIVATE HELPERS
-    // =========================================================
-
-    /**
-     * Simpan file/link digital untuk pembeli.
-     *
-     * - platform 'upload' → upload file ke storage (bisa multiple)
-     * - platform lainnya  → simpan satu URL eksternal (dropbox/gdrive/other)
-     */
     private function saveDigitalFiles(Request $request, Product $product, string $platform): void
     {
         if ($platform === 'upload') {
@@ -310,9 +280,7 @@ class ProductController extends Controller
 
             foreach ($request->file('files') as $file) {
                 if (!$file->isValid()) continue;
-
                 $path = $file->store('products/files', 'public');
-
                 $product->files()->create([
                     'file'     => $path,
                     'platform' => 'upload',
@@ -320,10 +288,8 @@ class ProductController extends Controller
                 ]);
             }
         } else {
-            // Dropbox / G-Drive / Other — hanya satu URL per simpan
             $url = $request->input('file_url');
             if (!$url) return;
-
             $product->files()->create([
                 'file'     => null,
                 'platform' => $platform,

@@ -20,7 +20,7 @@
         </div>
 
         {{-- Form --}}
-        <form method="POST" action="{{ route('products.store') }}" enctype="multipart/form-data" class="space-y-6">
+        <form id="createFisikForm" method="POST" action="{{ route('products.store') }}" enctype="multipart/form-data" class="space-y-6">
             @csrf
             <input type="hidden" name="product_type" value="fisik">
 
@@ -46,7 +46,8 @@
                             </div>
                         </div>
                         <div id="imageUploadArea" class="border-2 border-dashed border-gray-300 rounded-xl p-4 text-center hover:border-green-400 transition-colors cursor-pointer mb-4">
-                            <input type="file" id="imageUpload" name="images[]" multiple accept="image/*" class="hidden">
+                            {{-- input ini HANYA trigger, file asli di uploadedImages[] --}}
+                            <input type="file" id="imageUpload" multiple accept="image/*" class="hidden">
                             <label for="imageUpload" class="cursor-pointer block">
                                 <div class="mx-auto w-12 h-12 bg-green-50 rounded-full flex items-center justify-center mb-3">
                                     <svg class="w-6 h-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -57,7 +58,6 @@
                                 <p class="text-xs text-gray-400 mt-1">PNG, JPG, JPEG (Maks 10MB per gambar)</p>
                             </label>
                         </div>
-                        {{-- Status processing — subtle --}}
                         <div id="compressionStatus" class="hidden mb-3"></div>
                         <div id="imagePreviewGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3"></div>
                     </div>
@@ -106,6 +106,25 @@
                                     <span id="discountPercentage" class="ml-1"></span>
                                 </p>
                             </div>
+                        </div>
+
+                        {{-- ONGKOS KIRIM --}}
+                        <div class="pt-4 border-t border-gray-100">
+                            <div class="flex items-center justify-between mb-3">
+                                <div>
+                                    <label class="form-label mb-0">Ongkos Kirim</label>
+                                    <p class="text-xs text-gray-500">Tetapkan ongkir khusus untuk produk ini</p>
+                                </div>
+                                <div class="toggle-container">
+                                    <input type="checkbox" id="shippingCheck" class="toggle-checkbox">
+                                    <label for="shippingCheck" class="toggle-label-green"></label>
+                                </div>
+                            </div>
+                            <input type="text" name="shipping_cost" id="shippingInput"
+                                class="form-input-green hidden" placeholder="Contoh: 15.000">
+                            <p class="text-xs text-gray-500 mt-1 hidden" id="shippingHint">
+                                Ongkir ditambahkan ke total pembayaran pembeli.
+                            </p>
                         </div>
 
                         {{-- Kelola Stok --}}
@@ -169,64 +188,35 @@
 </div>
 
 <style>
-.card-section-green {
-    background: white; border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-    border: 1px solid rgba(229,231,235,0.6);
-}
-.form-input-green {
-    width: 100%; padding: 10px 12px;
-    border: 1.5px solid #e5e7eb; border-radius: 8px;
-    font-size: 14px; transition: all 0.2s; background: white;
-}
+.card-section-green { background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); border: 1px solid rgba(229,231,235,0.6); }
+.form-input-green { width: 100%; padding: 10px 12px; border: 1.5px solid #e5e7eb; border-radius: 8px; font-size: 14px; transition: all 0.2s; background: white; }
 .form-input-green:focus { outline: none; border-color: #16a34a; box-shadow: 0 0 0 3px rgba(22,163,74,0.1); }
-.form-textarea-green {
-    width: 100%; padding: 10px 12px;
-    border: 1.5px solid #e5e7eb; border-radius: 8px;
-    font-size: 14px; transition: all 0.2s; resize: vertical; min-height: 100px; background: white;
-}
+.form-textarea-green { width: 100%; padding: 10px 12px; border: 1.5px solid #e5e7eb; border-radius: 8px; font-size: 14px; transition: all 0.2s; resize: vertical; min-height: 100px; background: white; }
 .form-textarea-green:focus { outline: none; border-color: #16a34a; box-shadow: 0 0 0 3px rgba(22,163,74,0.1); }
 .form-label { display: block; font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 6px; }
 .toggle-container { position: relative; }
 .toggle-checkbox { display: none; }
-.toggle-label-green {
-    display: block; width: 44px; height: 24px;
-    background: #e5e7eb; border-radius: 999px; position: relative; cursor: pointer; transition: background 0.2s;
-}
-.toggle-label-green::after {
-    content: ''; position: absolute; top: 2px; left: 2px;
-    width: 20px; height: 20px; background: white; border-radius: 50%;
-    transition: transform 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-}
+.toggle-label-green { display: block; width: 44px; height: 24px; background: #e5e7eb; border-radius: 999px; position: relative; cursor: pointer; transition: background 0.2s; }
+.toggle-label-green::after { content: ''; position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; background: white; border-radius: 50%; transition: transform 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
 .toggle-checkbox:checked + .toggle-label-green { background: #16a34a; }
 .toggle-checkbox:checked + .toggle-label-green::after { transform: translateX(20px); }
 .preview-image { position: relative; border-radius: 6px; overflow: hidden; aspect-ratio: 1; background: #f5f5f5; }
 .preview-image img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s; }
 .preview-image:hover img { transform: scale(1.05); }
-.remove-img-btn {
-    position: absolute; top: 4px; right: 4px;
-    width: 24px; height: 24px; background: rgba(239,68,68,0.9); border-radius: 50%;
-    display: flex; align-items: center; justify-content: center; cursor: pointer;
-    opacity: 0; transition: opacity 0.2s, transform 0.2s; transform: scale(0.8);
-}
+.remove-img-btn { position: absolute; top: 4px; right: 4px; width: 24px; height: 24px; background: rgba(239,68,68,0.9); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; opacity: 0; transition: opacity 0.2s, transform 0.2s; transform: scale(0.8); }
 .preview-image:hover .remove-img-btn { opacity: 1; transform: scale(1); }
-/* Subtle ready dot — hanya muncul di pojok gambar, tidak mencolok */
-.img-ready-dot {
-    position: absolute; bottom: 5px; right: 5px;
-    width: 8px; height: 8px; border-radius: 50%;
-    background: #16a34a; border: 1.5px solid white;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-}
+.img-ready-dot { position: absolute; bottom: 5px; right: 5px; width: 8px; height: 8px; border-radius: 50%; background: #16a34a; border: 1.5px solid white; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
 @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 </style>
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
 
-    // ===== TOGGLE =====
+    // ===== TOGGLE STOK & LIMIT =====
     function setupToggle(checkId, inputId) {
         const cb  = document.getElementById(checkId);
         const inp = document.getElementById(inputId);
+        if (!cb || !inp) return;
         cb.addEventListener('change', function () {
             inp.classList.toggle('hidden', !this.checked);
             if (this.checked) inp.focus(); else inp.value = '';
@@ -235,11 +225,28 @@ document.addEventListener('DOMContentLoaded', function () {
     setupToggle('stockCheck', 'stockInput');
     setupToggle('limitCheck', 'limitInput');
 
+    // ===== TOGGLE ONGKIR =====
+    const shippingCheck = document.getElementById('shippingCheck');
+    const shippingInput = document.getElementById('shippingInput');
+    const shippingHint  = document.getElementById('shippingHint');
+    shippingCheck.addEventListener('change', function () {
+        shippingInput.classList.toggle('hidden', !this.checked);
+        shippingHint.classList.toggle('hidden', !this.checked);
+        if (this.checked) shippingInput.focus();
+        else shippingInput.value = '';
+    });
+    shippingInput.addEventListener('input', function () {
+        this.value = fmtRupiah(this.value);
+    });
+
     // ===== FORMAT RUPIAH =====
-    function formatRupiah(val) {
-        return val.toString().replace(/[^,\d]/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    function fmtRupiah(val) {
+        return val.toString().replace(/[^0-9]/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, '.');
     }
-    function cleanRupiah(val) { return parseInt(val.replace(/\./g, '')) || 0; }
+    function cleanRupiah(val) {
+        const n = parseInt((val || '').toString().replace(/\./g, ''), 10);
+        return isNaN(n) ? 0 : n;
+    }
 
     const priceInput      = document.getElementById('priceInput');
     const discountInput   = document.getElementById('discountInput');
@@ -247,14 +254,14 @@ document.addEventListener('DOMContentLoaded', function () {
     const discountAmount  = document.getElementById('discountAmount');
     const discountPct     = document.getElementById('discountPercentage');
 
-    priceInput.addEventListener('input',    function () { this.value = formatRupiah(this.value); updateDiscountPreview(); });
-    discountInput.addEventListener('input', function () { this.value = formatRupiah(this.value); updateDiscountPreview(); });
+    priceInput.addEventListener('input',    function () { this.value = fmtRupiah(this.value); updateDiscountPreview(); });
+    discountInput.addEventListener('input', function () { this.value = fmtRupiah(this.value); updateDiscountPreview(); });
 
     function updateDiscountPreview() {
         const p = cleanRupiah(priceInput.value);
         const d = cleanRupiah(discountInput.value);
         if (p > 0 && d > 0 && d < p) {
-            discountAmount.textContent = 'Rp ' + formatRupiah(String(p - d));
+            discountAmount.textContent = 'Rp ' + fmtRupiah(String(p - d));
             discountPct.textContent    = '(' + Math.round(((p - d) / p) * 100) + '% OFF)';
             discountPreview.classList.remove('hidden');
         } else {
@@ -262,7 +269,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    // ===== IMAGE COMPRESSION (internal, tidak ditampilkan ke user) =====
+    // ===== IMAGE COMPRESSION =====
     function compressImage(file, maxSizeKB = 150, maxWidth = 1024, quality = 0.75) {
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
@@ -295,30 +302,21 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // ===== IMAGE UPLOAD =====
+    // ===== IMAGE UPLOAD — simpan file di array JS =====
     const imageUpload       = document.getElementById('imageUpload');
     const imagePreviewGrid  = document.getElementById('imagePreviewGrid');
     const imageUploadText   = document.getElementById('imageUploadText');
     const compressionStatus = document.getElementById('compressionStatus');
-    let uploadedImages = [];
+    let uploadedImages = []; // {id, file (File object), previewUrl}
 
     imageUpload.addEventListener('change', async function () {
         const files = Array.from(this.files).filter(f => f.type.match('image.*'));
         if (!files.length) return;
 
-        // Tampilkan loading kecil di sudut area upload — tidak berteriak
         compressionStatus.classList.remove('hidden');
-        compressionStatus.innerHTML = `
-            <div style="display:flex;align-items:center;gap:6px;color:#9ca3af;font-size:11px;">
-                <svg style="width:12px;height:12px;animation:spin 1s linear infinite;flex-shrink:0;" fill="none" viewBox="0 0 24 24">
-                    <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" style="opacity:.3"/>
-                    <path fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" style="opacity:.7"/>
-                </svg>
-                Memproses gambar...
-            </div>`;
+        compressionStatus.innerHTML = `<div style="display:flex;align-items:center;gap:6px;color:#9ca3af;font-size:11px;"><svg style="width:12px;height:12px;animation:spin 1s linear infinite;flex-shrink:0;" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" style="opacity:.3"/><path fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" style="opacity:.7"/></svg>Memproses gambar...</div>`;
 
         const results = await Promise.allSettled(files.map(f => compressImage(f)));
-
         results.forEach((r, i) => {
             if (r.status === 'fulfilled') {
                 uploadedImages.push({ id: Date.now() + i, file: r.value.file, previewUrl: r.value.previewUrl });
@@ -326,15 +324,8 @@ document.addEventListener('DOMContentLoaded', function () {
         });
 
         renderImagePreview();
-
-        // Status selesai — hanya titik hijau kecil + teks ringan
-        compressionStatus.innerHTML = `
-            <div style="display:flex;align-items:center;gap:5px;color:#9ca3af;font-size:11px;">
-                <span style="width:7px;height:7px;border-radius:50%;background:#16a34a;display:inline-block;flex-shrink:0;"></span>
-                ${uploadedImages.length} gambar siap diupload
-            </div>`;
-
-        this.value = '';
+        compressionStatus.innerHTML = `<div style="display:flex;align-items:center;gap:5px;color:#9ca3af;font-size:11px;"><span style="width:7px;height:7px;border-radius:50%;background:#16a34a;display:inline-block;flex-shrink:0;"></span>${uploadedImages.length} gambar siap diupload</div>`;
+        this.value = ''; // reset input agar bisa pilih file sama lagi
     });
 
     function renderImagePreview() {
@@ -357,41 +348,85 @@ document.addEventListener('DOMContentLoaded', function () {
                 e.stopPropagation();
                 uploadedImages.splice(+this.dataset.idx, 1);
                 renderImagePreview();
-                if (!uploadedImages.length) {
-                    compressionStatus.classList.add('hidden');
-                } else {
-                    compressionStatus.innerHTML = `
-                        <div style="display:flex;align-items:center;gap:5px;color:#9ca3af;font-size:11px;">
-                            <span style="width:7px;height:7px;border-radius:50%;background:#16a34a;display:inline-block;flex-shrink:0;"></span>
-                            ${uploadedImages.length} gambar siap diupload
-                        </div>`;
-                }
+                if (!uploadedImages.length) compressionStatus.classList.add('hidden');
+                else compressionStatus.innerHTML = `<div style="display:flex;align-items:center;gap:5px;color:#9ca3af;font-size:11px;"><span style="width:7px;height:7px;border-radius:50%;background:#16a34a;display:inline-block;flex-shrink:0;"></span>${uploadedImages.length} gambar siap diupload</div>`;
             });
         });
-        imageUploadText.textContent = uploadedImages.length
-            ? `Tambah gambar (${uploadedImages.length} terpilih)`
-            : 'Klik untuk upload gambar';
+        imageUploadText.textContent = uploadedImages.length ? `Tambah gambar (${uploadedImages.length} terpilih)` : 'Klik untuk upload gambar';
     }
 
-    // ===== FORM SUBMIT =====
-    document.querySelector('form').addEventListener('submit', function (e) {
+    // ===== FORM SUBMIT — pakai fetch + FormData manual =====
+    document.getElementById('createFisikForm').addEventListener('submit', async function (e) {
+        e.preventDefault();
+
         const p = cleanRupiah(priceInput.value);
         const d = cleanRupiah(discountInput.value);
-        if (p <= 0)          { e.preventDefault(); alert('Harga produk harus lebih dari 0'); return; }
-        if (d > 0 && d >= p) { e.preventDefault(); alert('Harga diskon harus lebih rendah dari harga normal'); return; }
-
-        priceInput.value    = p;
-        discountInput.value = d || '';
-
-        if (uploadedImages.length > 0) {
-            const dt = new DataTransfer();
-            uploadedImages.forEach(img => dt.items.add(img.file));
-            imageUpload.files = dt.files;
-        }
+        if (p <= 0)          { alert('Harga produk harus lebih dari 0'); return; }
+        if (d > 0 && d >= p) { alert('Harga diskon harus lebih rendah dari harga normal'); return; }
 
         const btn = document.getElementById('submitBtn');
         btn.disabled = true; btn.style.opacity = '0.7';
         document.getElementById('submitBtnText').textContent = 'Menyimpan...';
+
+        // Bangun FormData manual
+        const fd = new FormData(this);
+
+        // Override harga: kirim angka bersih (tanpa titik)
+        fd.set('price',    p);
+        fd.set('discount', d || '');
+
+        // Ongkir: kirim angka bersih
+        if (shippingCheck.checked && shippingInput.value) {
+            fd.set('shipping_cost', cleanRupiah(shippingInput.value));
+        } else {
+            fd.delete('shipping_cost');
+        }
+
+        // Tambahkan file gambar dari array JS (BUKAN dari input file)
+        fd.delete('images[]'); // hapus dulu kalau ada
+        uploadedImages.forEach(img => {
+            fd.append('images[]', img.file, img.file.name);
+        });
+
+        try {
+            const res = await fetch(this.action, {
+                method: 'POST',
+                headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content') },
+                body: fd,
+            });
+
+            // Laravel redirect → ikuti redirect
+            if (res.redirected) {
+                window.location.href = res.url;
+                return;
+            }
+
+            // Kalau ada error validasi (422) atau lainnya
+            const text = await res.text();
+            // Cek apakah response adalah HTML redirect
+            if (res.ok || res.status === 302) {
+                window.location.href = res.url || '{{ route("products.manage") }}';
+            } else {
+                // Tampilkan error dari server
+                document.open(); document.write(text); document.close();
+            }
+        } catch (err) {
+            // Fallback: submit form biasa dengan DataTransfer
+            if (uploadedImages.length > 0) {
+                try {
+                    const dt = new DataTransfer();
+                    uploadedImages.forEach(img => dt.items.add(img.file));
+                    imageUpload.files = dt.files;
+                    imageUpload.name = 'images[]';
+                } catch(e) {}
+            }
+            priceInput.value    = p;
+            discountInput.value = d || '';
+            if (shippingCheck.checked && shippingInput.value) {
+                shippingInput.value = cleanRupiah(shippingInput.value);
+            }
+            this.submit();
+        }
     });
 });
 </script>
