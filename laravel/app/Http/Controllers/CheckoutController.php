@@ -65,7 +65,8 @@ class CheckoutController extends Controller
         }
 
         $qty       = $product->product_type === 'digital' ? 1 : (int) $request->qty;
-        $unitPrice = (int) ($product->discount ?? $product->price);
+        // FIX: Gunakan ?: bukan ?? supaya discount bernilai 0 tetap fallback ke price
+        $unitPrice = (int) ($product->discount ?: $product->price);
         $amount    = $unitPrice * $qty;
         $orderId   = 'PAYOU-' . strtoupper(Str::random(8)) . '-' . time();
 
@@ -221,7 +222,6 @@ class CheckoutController extends Controller
 
     // =========================================================
     // HANDLE SUCCESSFUL PAYMENT
-    // Guard: cek transaction_id sudah diset = sudah pernah diproses
     // =========================================================
     private function handleSuccessfulPayment(Transaction $transaction): void
     {
@@ -232,20 +232,24 @@ class CheckoutController extends Controller
             : ($transaction->notes ?? []);
 
         $productId = $notes['product_id'] ?? null;
+        $unitPrice = $notes['unit_price'] ?? 0;
 
-        // ── Guard double-processing pakai product_sales qty check ──
-        // Cek apakah product_sales untuk order ini sudah ada
-        // Gunakan kolom options jika ada, fallback ke count per product+qty
+        // ── DEBUG LOG ──
+        Log::info('DEBUG handleSuccessfulPayment', [
+            'order_id'   => $transaction->order_id,
+            'notes'      => $notes,
+            'unit_price' => $unitPrice,
+            'productId'  => $productId,
+        ]);
+
+        // ── Guard double-processing ──
         $alreadyProcessed = false;
 
         try {
-            // Coba cek via JSON (butuh kolom options)
             $alreadyProcessed = ProductSale::where('product_id', $productId)
                 ->whereRaw("JSON_UNQUOTE(JSON_EXTRACT(options, '$.order_id')) = ?", [$transaction->order_id])
                 ->exists();
         } catch (\Exception $e) {
-            // Kolom options tidak ada — skip guard, lanjut proses
-            // Migration belum dijalankan
             Log::warning('Guard check gagal (kolom options belum ada?): ' . $e->getMessage());
             $alreadyProcessed = false;
         }
@@ -261,12 +265,13 @@ class CheckoutController extends Controller
             return;
         }
 
-        // 1. Catat product_sales
+        // 1. Catat product_sales — selalu sertakan price di semua kondisi
         try {
+            Log::info('DEBUG sebelum ProductSale::create', ['price' => $unitPrice]);
             ProductSale::create([
                 'product_id' => $product->id,
                 'qty'        => $notes['qty'] ?? 1,
-                'price'      => $notes['unit_price'] ?? 0,
+                'price'      => $unitPrice,
                 'options'    => json_encode([
                     'order_id'      => $transaction->order_id,
                     'buyer_name'    => $notes['buyer_name'] ?? '',
@@ -275,12 +280,13 @@ class CheckoutController extends Controller
                     'buyer_notes'   => $notes['buyer_notes'] ?? null,
                 ]),
             ]);
+            Log::info('DEBUG ProductSale berhasil dibuat', ['price' => $unitPrice]);
         } catch (\Exception $e) {
-            // Kolom options belum ada — simpan tanpa options
             Log::warning('ProductSale create tanpa options: ' . $e->getMessage());
             ProductSale::create([
                 'product_id' => $product->id,
                 'qty'        => $notes['qty'] ?? 1,
+                'price'      => $unitPrice,
             ]);
         }
 
