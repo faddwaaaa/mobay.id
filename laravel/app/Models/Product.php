@@ -16,7 +16,8 @@ class Product extends Model
         'price',
         'discount',
         'stock',
-        'purchase_limit'
+        'purchase_limit',
+        'weight'
     ];
 
     public function images() {

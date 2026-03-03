@@ -33,8 +33,7 @@ class ProductController extends Controller
 
         if ($request->edit) {
             $product = Product::where('user_id', Auth::id())
-                ->with('images')
-                ->with('files')
+                ->with('images')->with('files')
                 ->findOrFail($request->edit);
             $showForm        = true;
             $productTypeForm = $product->product_type;
@@ -43,68 +42,23 @@ class ProductController extends Controller
         return view('products.manage', compact('products', 'showForm', 'product', 'productTypeForm'));
     }
 
-    // ─── API: single product ──────────────────────────────────────────────────
     public function apiShow($id)
     {
-        $product = Product::with('images')->findOrFail($id);
-
-        $imageUrl = null;
-        if ($product->images->isNotEmpty()) {
-            $imageUrl = asset('storage/' . $product->images->first()->image);
-        }
-
-        $price      = (float) ($product->price    ?? 0);
-        $discount   = (float) ($product->discount ?? 0);
-        $finalPrice = ($discount > 0 && $discount < $price) ? $discount : $price;
-        $isDigital  = ($product->product_type ?? 'fisik') === 'digital';
+        $product  = Product::with('images')->findOrFail($id);
+        $imageUrl = $product->images->isNotEmpty()
+            ? asset('storage/' . $product->images->first()->image)
+            : null;
 
         return response()->json([
-            'id'            => $product->id,
-            'title'         => $product->title,
-            'description'   => $product->description,
-            'price'         => $price,
-            'discount'      => $discount > 0 ? $discount : null,
-            'final_price'   => $finalPrice,
-            'stock'         => $isDigital ? null : ($product->stock ?? 0),
-            'product_type'  => $product->product_type ?? 'fisik',
-            'shipping_cost' => $product->shipping_cost,
-            'image_url'     => $imageUrl,
+            'id'           => $product->id,
+            'title'        => $product->title,
+            'description'  => $product->description,
+            'price'        => $product->price,
+            'discount'     => $product->discount,
+            'stock'        => $product->stock,
+            'weight'       => $product->weight,
+            'image_url'    => $imageUrl,
         ]);
-    }
-
-    // ─── API: batch products (dipakai public profile) ─────────────────────────
-    public function apiBatch(Request $request)
-    {
-        $ids      = explode(',', $request->query('ids', ''));
-        $ids      = array_filter(array_map('intval', $ids));
-        $products = Product::with('images')->whereIn('id', $ids)->get();
-
-        $result = [];
-        foreach ($products as $product) {
-            $imageUrl = null;
-            if ($product->images->isNotEmpty()) {
-                $imageUrl = asset('storage/' . $product->images->first()->image);
-            }
-
-            $price      = (float) ($product->price    ?? 0);
-            $discount   = (float) ($product->discount ?? 0);
-            $finalPrice = ($discount > 0 && $discount < $price) ? $discount : $price;
-            $isDigital  = ($product->product_type ?? 'fisik') === 'digital';
-
-            $result[$product->id] = [
-                'id'           => $product->id,
-                'title'        => $product->title,
-                'description'  => $product->description,
-                'price'        => $price,
-                'discount'     => $discount > 0 ? $discount : null,
-                'final_price'  => $finalPrice,
-                'stock'        => $isDigital ? null : ($product->stock ?? 0),
-                'product_type' => $product->product_type ?? 'fisik',
-                'image_url'    => $imageUrl,
-            ];
-        }
-
-        return response()->json($result);
     }
 
     public function trackView($id)
@@ -116,15 +70,10 @@ class ProductController extends Controller
 
     public function store(Request $request)
     {
-        $price        = (int) str_replace('.', '', $request->price ?? '');
-        $discount     = $request->discount     ? (int) str_replace('.', '', $request->discount)     : null;
-        $shippingCost = $request->shipping_cost ? (int) str_replace('.', '', $request->shipping_cost) : null;
+        $price    = (int) str_replace('.', '', $request->price    ?? '');
+        $discount = $request->discount ? (int) str_replace('.', '', $request->discount) : null;
 
-        $request->merge([
-            'price'         => $price,
-            'discount'      => $discount,
-            'shipping_cost' => $shippingCost,
-        ]);
+        $request->merge(['price' => $price, 'discount' => $discount]);
 
         $platform = $request->input('file_platform', 'upload');
 
@@ -134,9 +83,9 @@ class ProductController extends Controller
             'description'    => 'nullable|string',
             'price'          => 'required|numeric|min:0',
             'discount'       => 'nullable|numeric|min:0|lt:price',
-            'shipping_cost'  => 'nullable|numeric|min:0',
             'stock'          => 'nullable|integer|min:1',
             'purchase_limit' => 'nullable|integer|min:1',
+            'weight'         => 'nullable|integer|min:1',
             'images.*'       => 'nullable|image|max:5120',
         ];
 
@@ -147,8 +96,6 @@ class ProductController extends Controller
             } else {
                 $rules['file_url'] = 'required|url';
             }
-        } else {
-            $rules['files.*'] = 'nullable|file|max:10240';
         }
 
         $request->validate($rules);
@@ -160,7 +107,7 @@ class ProductController extends Controller
             'description'    => $request->description,
             'price'          => $request->price,
             'discount'       => $request->discount,
-            'shipping_cost'  => ($shippingCost && $shippingCost > 0) ? $shippingCost : null,
+            'weight'         => $request->product_type === 'fisik' ? ($request->weight ?? 1000) : 0,
             'stock'          => $request->has('stock_toggle') ? $request->stock : null,
             'purchase_limit' => $request->has('limit_toggle') ? $request->purchase_limit : null,
         ]);
@@ -177,14 +124,12 @@ class ProductController extends Controller
         }
 
         if ($request->redirect === 'builder') {
-            return redirect()
-                ->route('links.index')
+            return redirect()->route('links.index')
                 ->with('openProductModal', true)
                 ->with('success', 'Produk berhasil ditambahkan');
         }
 
-        return redirect()
-            ->route('products.manage')
+        return redirect()->route('products.manage')
             ->with('success', 'Produk berhasil ditambahkan');
     }
 
@@ -192,14 +137,10 @@ class ProductController extends Controller
     {
         abort_if($produk->user_id !== Auth::id(), 403);
 
-        foreach ($produk->images as $img) {
-            Storage::delete('public/' . $img->image);
-        }
-
+        foreach ($produk->images as $img) Storage::delete('public/' . $img->image);
         foreach ($produk->files as $file) {
-            if (($file->platform ?? 'upload') === 'upload' && $file->file) {
+            if (($file->platform ?? 'upload') === 'upload' && $file->file)
                 Storage::delete('public/' . $file->file);
-            }
         }
 
         $produk->images()->delete();
@@ -213,15 +154,10 @@ class ProductController extends Controller
     {
         abort_if($product->user_id !== Auth::id(), 403);
 
-        $price        = (int) str_replace('.', '', $request->price ?? '');
-        $discount     = $request->discount     ? (int) str_replace('.', '', $request->discount)     : null;
-        $shippingCost = $request->shipping_cost ? (int) str_replace('.', '', $request->shipping_cost) : null;
+        $price    = (int) str_replace('.', '', $request->price    ?? '');
+        $discount = $request->discount ? (int) str_replace('.', '', $request->discount) : null;
 
-        $request->merge([
-            'price'         => $price,
-            'discount'      => $discount,
-            'shipping_cost' => $shippingCost,
-        ]);
+        $request->merge(['price' => $price, 'discount' => $discount]);
 
         $platform = $request->input('file_platform', 'upload');
 
@@ -231,22 +167,17 @@ class ProductController extends Controller
             'description'    => 'nullable|string',
             'price'          => 'required|numeric|min:0',
             'discount'       => 'nullable|numeric|min:0|lt:price',
-            'shipping_cost'  => 'nullable|numeric|min:0',
             'stock'          => 'nullable|integer|min:1',
             'purchase_limit' => 'nullable|integer|min:1',
+            'weight'         => 'nullable|integer|min:1',
             'images.*'       => 'nullable|image|max:5120',
             'delete_images.*'=> 'nullable|integer',
             'delete_files.*' => 'nullable|integer',
         ];
 
         if ($request->product_type === 'digital') {
-            if ($platform === 'upload') {
-                $rules['files.*'] = 'nullable|file|max:10240';
-            } else {
-                $rules['file_url'] = 'nullable|url';
-            }
-        } else {
             $rules['files.*'] = 'nullable|file|max:10240';
+            if ($platform !== 'upload') $rules['file_url'] = 'nullable|url';
         }
 
         $request->validate($rules);
@@ -257,29 +188,20 @@ class ProductController extends Controller
             'description'    => $request->description,
             'price'          => $request->price,
             'discount'       => $request->discount,
-            'shipping_cost'  => ($shippingCost && $shippingCost > 0) ? $shippingCost : null,
+            'weight'         => $request->product_type === 'fisik' ? ($request->weight ?? $product->weight ?? 1000) : 0,
             'stock'          => $request->has('stock_toggle') ? $request->stock : null,
             'purchase_limit' => $request->has('limit_toggle') ? $request->purchase_limit : null,
         ]);
 
         if ($request->has('delete_images') && is_array($request->delete_images)) {
-            $images = ProductImage::whereIn('id', $request->delete_images)
-                ->where('product_id', $product->id)
-                ->get();
-            foreach ($images as $img) {
-                Storage::delete('public/' . $img->image);
-                $img->delete();
-            }
+            $imgs = ProductImage::whereIn('id', $request->delete_images)->where('product_id', $product->id)->get();
+            foreach ($imgs as $img) { Storage::delete('public/' . $img->image); $img->delete(); }
         }
 
         if ($request->has('delete_files') && is_array($request->delete_files)) {
-            $files = ProductFile::whereIn('id', $request->delete_files)
-                ->where('product_id', $product->id)
-                ->get();
+            $files = ProductFile::whereIn('id', $request->delete_files)->where('product_id', $product->id)->get();
             foreach ($files as $file) {
-                if (($file->platform ?? 'upload') === 'upload' && $file->file) {
-                    Storage::delete('public/' . $file->file);
-                }
+                if (($file->platform ?? 'upload') === 'upload' && $file->file) Storage::delete('public/' . $file->file);
                 $file->delete();
             }
         }
@@ -295,9 +217,7 @@ class ProductController extends Controller
             $this->saveDigitalFiles($request, $product, $platform);
         }
 
-        return redirect()
-            ->route('products.manage')
-            ->with('success', 'Produk berhasil diupdate');
+        return redirect()->route('products.manage')->with('success', 'Produk berhasil diupdate');
     }
 
     public function edit($id)
@@ -316,24 +236,15 @@ class ProductController extends Controller
     {
         if ($platform === 'upload') {
             if (!$request->hasFile('files')) return;
-
             foreach ($request->file('files') as $file) {
                 if (!$file->isValid()) continue;
                 $path = $file->store('products/files', 'public');
-                $product->files()->create([
-                    'file'     => $path,
-                    'platform' => 'upload',
-                    'file_url' => null,
-                ]);
+                $product->files()->create(['file' => $path, 'platform' => 'upload', 'file_url' => null]);
             }
         } else {
             $url = $request->input('file_url');
             if (!$url) return;
-            $product->files()->create([
-                'file'     => null,
-                'platform' => $platform,
-                'file_url' => $url,
-            ]);
+            $product->files()->create(['file' => null, 'platform' => $platform, 'file_url' => $url]);
         }
     }
 }

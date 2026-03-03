@@ -195,6 +195,14 @@ Route::middleware(['auth', 'verified'])->prefix('payment')->name('payment.')->gr
 
 });
 
+
+use App\Http\Controllers\ShippingSettingsController;
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/settings/shipping',  [ShippingSettingsController::class, 'index'])->name('settings.shipping');
+    Route::post('/settings/shipping', [ShippingSettingsController::class, 'save'])->name('settings.shipping.save');
+});
+
 /*
 |--------------------------------------------------------------------------
 | ORDER ROUTES

@@ -404,6 +404,12 @@
     Rekening Bank
 </a>
 
+<a href="{{ route('settings.shipping') }}"
+   class="s-nav-item {{ request()->routeIs('settings.shipping') ? 'active' : '' }}">
+    <span class="s-icon"><i class="fas fa-truck"></i></span>
+    Pengaturan Pengiriman
+</a>
+
         <div class="s-divider"></div>
         <div class="s-label">Preferensi</div>
 
