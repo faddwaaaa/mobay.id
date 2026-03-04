@@ -2,34 +2,29 @@
 
 namespace App\Console\Commands;
 
-use App\Services\RajaOngkirService;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Artisan;
 
 class SyncRajaOngkirData extends Command
 {
     protected $signature   = 'rajaongkir:sync';
-    protected $description = 'Sync data provinsi dan kota dari RajaOngkir ke database lokal';
+    protected $description = 'Seed data kota Indonesia ke database (untuk autocomplete checkout)';
 
-    public function handle(RajaOngkirService $ongkir): int
+    public function handle(): int
     {
-        $this->info('Sinkronisasi data RajaOngkir...');
+        $this->info('Menyimpan data kota Indonesia ke database...');
 
         try {
-            $this->info('  → Mengambil data provinsi...');
-            $provinces = $ongkir->syncProvincesToDb();
-            $this->line("     ✓ {$provinces} provinsi berhasil disimpan");
+            Artisan::call('db:seed', [
+                '--class' => 'RajaongkirCitySeeder',
+                '--force' => true,
+            ]);
 
-            $this->info('  → Mengambil data kota/kabupaten...');
-            $cities = $ongkir->syncCitiesToDb();
-            $this->line("     ✓ {$cities} kota berhasil disimpan");
-
-            $this->newLine();
-            $this->info('✅ Sinkronisasi selesai!');
-            $this->line('   Autocomplete kota di checkout sekarang menggunakan data lokal.');
+            $this->info('✅ Selesai! Data kota sudah tersedia untuk autocomplete.');
+            $this->line('   Autocomplete kota di halaman checkout sekarang bisa digunakan.');
 
         } catch (\Throwable $e) {
-            $this->error('❌ Gagal sync: ' . $e->getMessage());
-            $this->line('   Pastikan RAJAONGKIR_API_KEY sudah diisi di .env');
+            $this->error('❌ Gagal: ' . $e->getMessage());
             return Command::FAILURE;
         }
 

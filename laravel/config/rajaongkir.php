@@ -3,30 +3,19 @@
 return [
     /*
     |--------------------------------------------------------------------------
-    | RajaOngkir API Key
+    | Binderbyte API Key
     |--------------------------------------------------------------------------
-    | Isi di file .env:
-    |   RAJAONGKIR_API_KEY=your_api_key_here
-    |   RAJAONGKIR_TYPE=starter   (starter/basic/pro)
+    | Daftar gratis di https://binderbyte.com
+    | Isi di .env:  RAJAONGKIR_API_KEY=your_api_key_here
     */
     'api_key'  => env('RAJAONGKIR_API_KEY', ''),
 
-    /*
-    |--------------------------------------------------------------------------
-    | Base URL sesuai tipe akun
-    |--------------------------------------------------------------------------
-    | starter : https://api.rajaongkir.com/starter
-    | basic   : https://api.rajaongkir.com/basic
-    | pro     : https://pro.rajaongkir.com/api
-    */
-    'base_url' => env('RAJAONGKIR_BASE_URL', 'https://api.rajaongkir.com/starter'),
+    'base_url' => 'https://api.binderbyte.com/v1',
 
     /*
     |--------------------------------------------------------------------------
-    | Kurir yang tersedia
-    |--------------------------------------------------------------------------
-    | starter mendukung: jne, pos, tiki
-    | basic/pro mendukung lebih banyak: sicepat, jnt, anteraja, dsb
+    | Kurir (pisah koma)
+    | Supported: jne, sicepat, jnt, anteraja, pos, tiki, lion, ide, sap
     */
-    'couriers' => explode(',', env('RAJAONGKIR_COURIERS', 'jne,pos,tiki')),
+    'couriers' => explode(',', env('RAJAONGKIR_COURIERS', 'jne,sicepat,jnt,anteraja,pos,tiki,lion,ide,sap')),
 ];

@@ -24,7 +24,8 @@ use App\Http\Controllers\{
     CartController,
     PaymentAccountController,
     SearchController,
-    OrderController
+    OrderController,
+    RajaOngkirController
 };
 
 /*
@@ -85,6 +86,9 @@ Route::middleware(['auth', 'verified'])->prefix('payment')->name('payment.')->gr
 |--------------------------------------------------------------------------
 */
 Route::prefix('api')->group(function () {
+    // Ongkir (Binderbyte)
+    Route::get('/ongkir/cities', [RajaOngkirController::class, 'cities']);
+    Route::post('/ongkir/cost', [RajaOngkirController::class, 'cost']);
 
     // Midtrans callback
     Route::post('/callback/midtrans', [CallbackController::class, 'handleMidtransCallback'])

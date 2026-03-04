@@ -1,533 +1,561 @@
-@foreach($products as $product)
-@push('modals')
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout - {{ $product->title ?? 'Produk' }}</title>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:system-ui,-apple-system,sans-serif; background:#f9fafb; min-height:100vh; padding:20px 16px 40px; }
+        .top-bar { max-width:500px; margin:0 auto 20px; display:flex; align-items:center; gap:12px; }
+        .btn-back { width:36px; height:36px; border-radius:8px; border:1px solid #e5e7eb; background:#fff; display:flex; align-items:center; justify-content:center; cursor:pointer; text-decoration:none; color:#374151; transition:all .2s; flex-shrink:0; }
+        .btn-back:hover { border-color:#2563eb; color:#2563eb; background:#eff6ff; }
+        .top-bar-title { font-size:16px; font-weight:600; color:#111827; }
+        .card { max-width:500px; margin:0 auto 16px; background:#fff; border:1px solid #e5e7eb; border-radius:12px; overflow:hidden; }
+        .card-header { padding:14px 16px; border-bottom:1px solid #e5e7eb; font-size:13px; font-weight:600; color:#6b7280; text-transform:uppercase; letter-spacing:.5px; }
+        .card-body { padding:16px; }
+        .product-row { display:flex; gap:14px; align-items:flex-start; }
+        .product-img { width:80px; height:80px; border-radius:8px; object-fit:cover; flex-shrink:0; border:1px solid #e5e7eb; }
+        .product-img-ph { width:80px; height:80px; border-radius:8px; background:#eff6ff; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:28px; border:1px solid #e5e7eb; }
+        .product-meta { flex:1; min-width:0; }
+        .badge { display:inline-flex; align-items:center; gap:4px; font-size:11px; font-weight:600; padding:2px 8px; border-radius:20px; margin-bottom:6px; }
+        .badge.fisik { background:#f0fdf4; color:#16a34a; }
+        .badge.digital { background:#eff6ff; color:#2563eb; }
+        .product-meta h2 { font-size:15px; font-weight:700; color:#111827; margin-bottom:6px; line-height:1.4; }
+        .price-row { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+        .price-final { font-size:18px; font-weight:800; color:#2563eb; }
+        .price-ori { font-size:13px; color:#9ca3af; text-decoration:line-through; }
+        .disc-badge { background:#fee2e2; color:#dc2626; font-size:11px; font-weight:700; padding:2px 6px; border-radius:4px; }
+        .seller-row { display:flex; align-items:center; gap:10px; padding:12px 0 0; margin-top:12px; border-top:1px solid #f3f4f6; }
+        .seller-ava { width:32px; height:32px; border-radius:50%; object-fit:cover; flex-shrink:0; }
+        .seller-ava-ph { width:32px; height:32px; border-radius:50%; background:#eff6ff; display:flex; align-items:center; justify-content:center; font-size:14px; flex-shrink:0; }
+        .form-group { margin-bottom:14px; }
+        label { display:block; font-size:13px; font-weight:600; color:#374151; margin-bottom:6px; }
+        .req { color:#ef4444; margin-left:2px; }
+        input[type="text"], input[type="email"], input[type="tel"], textarea { width:100%; padding:10px 12px; border:1px solid #e5e7eb; border-radius:8px; font-size:14px; color:#111827; background:#fff; transition:border-color .2s,box-shadow .2s; outline:none; font-family:inherit; }
+        input:focus, textarea:focus { border-color:#2563eb; box-shadow:0 0 0 3px rgba(37,99,235,.08); }
+        textarea { resize:vertical; min-height:80px; }
+        .hint { font-size:12px; color:#6b7280; margin-top:4px; }
 
-<div id="editModalOverlay-{{ $product->id }}"
-     class="fixed inset-0 hidden"
-     style="z-index:9990; background:rgba(15,23,42,0.5); backdrop-filter:blur(5px);
-            opacity:0; transition:opacity 0.2s ease;"
-     onclick="closeEditModal({{ $product->id }})"></div>
+        /* QTY */
+        .qty-wrap { display:flex; align-items:center; justify-content:space-between; background:#f9fafb; border:1px solid #e5e7eb; border-radius:10px; padding:6px 8px; gap:8px; }
+        .qty-info { font-size:12px; color:#6b7280; }
+        .qty-ctrl { display:flex; align-items:center; background:#fff; border:1px solid #e5e7eb; border-radius:8px; overflow:hidden; }
+        .qty-btn { width:36px; height:36px; border:none; background:transparent; cursor:pointer; display:flex; align-items:center; justify-content:center; color:#374151; font-size:16px; font-weight:600; transition:all .15s; flex-shrink:0; user-select:none; }
+        .qty-btn:hover:not(:disabled) { background:#eff6ff; color:#2563eb; }
+        .qty-btn:disabled { color:#d1d5db; cursor:not-allowed; }
+        .qty-input { min-width:52px; width:52px; text-align:center; font-size:15px; font-weight:700; color:#111827; border:none !important; border-left:1px solid #e5e7eb !important; border-right:1px solid #e5e7eb !important; border-radius:0 !important; padding:0 4px !important; height:36px; background:#fff; box-shadow:none !important; outline:none; -moz-appearance:textfield; }
+        .qty-input::-webkit-inner-spin-button { -webkit-appearance:none; }
+        .qty-input:focus { background:#eff6ff !important; color:#2563eb !important; }
 
-<div id="editModal-{{ $product->id }}"
-     class="fixed inset-0 hidden"
-     style="z-index:9999; display:none; align-items:center; justify-content:center; padding:16px; pointer-events:none;">
+        /* AUTOCOMPLETE KOTA */
+        .city-wrap { position:relative; }
+        .city-dd { position:absolute; top:calc(100% + 4px); left:0; right:0; background:#fff; border:1px solid #e5e7eb; border-radius:10px; box-shadow:0 8px 24px rgba(0,0,0,.10); z-index:100; max-height:220px; overflow-y:auto; display:none; }
+        .city-dd.show { display:block; }
+        .city-item { padding:10px 14px; font-size:13px; color:#374151; cursor:pointer; border-bottom:1px solid #f3f4f6; transition:background .1s; }
+        .city-item:last-child { border-bottom:none; }
+        .city-item:hover, .city-item.active { background:#eff6ff; color:#2563eb; }
+        .city-badge { display:inline-flex; align-items:center; gap:5px; margin-top:5px; padding:4px 10px; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:6px; font-size:12px; color:#15803d; }
 
-    <div id="editModalCard-{{ $product->id }}"
-         class="bg-white w-full max-w-2xl rounded-2xl shadow-2xl max-h-[92vh] flex flex-col pointer-events-auto"
-         style="opacity:0; transform:translateY(20px); transition:opacity 0.25s cubic-bezier(.16,1,.3,1), transform 0.25s cubic-bezier(.16,1,.3,1);">
+        /* ONGKIR */
+        .ongkir-section { margin-top:14px; }
+        .ongkir-loading { display:flex; align-items:center; gap:8px; padding:12px; background:#f9fafb; border:1px solid #e5e7eb; border-radius:8px; font-size:13px; color:#6b7280; }
+        .ongkir-loading svg { animation:spin 1s linear infinite; flex-shrink:0; }
+        .ongkir-error { padding:10px 12px; background:#fef2f2; border:1px solid #fecaca; border-radius:8px; font-size:12px; color:#dc2626; }
+        .ongkir-list { display:flex; flex-direction:column; gap:8px; }
+        .ongkir-item { display:flex; align-items:center; gap:10px; padding:10px 12px; border:1.5px solid #e5e7eb; border-radius:10px; cursor:pointer; transition:all .15s; background:#fff; }
+        .ongkir-item:hover { border-color:#2563eb; background:#f8faff; }
+        .ongkir-item.selected { border-color:#2563eb; background:#eff6ff; }
+        .ongkir-item input[type="radio"] { accent-color:#2563eb; width:16px; height:16px; flex-shrink:0; }
+        .ongkir-courier { font-size:10px; font-weight:700; padding:2px 6px; border-radius:4px; background:#e0e7ff; color:#4338ca; flex-shrink:0; }
+        .ongkir-service { font-size:13px; font-weight:600; color:#111827; flex:1; }
+        .ongkir-desc { font-size:11px; color:#6b7280; }
+        .ongkir-etd { font-size:11px; color:#6b7280; flex-shrink:0; }
+        .ongkir-price { font-size:14px; font-weight:700; color:#2563eb; flex-shrink:0; }
+        @keyframes spin { to { transform:rotate(360deg); } }
 
-        {{-- HEADER --}}
-        <div class="flex items-center justify-between p-5 border-b border-gray-100 flex-shrink-0">
-            <div class="flex items-center gap-3">
-                <div class="p-2 rounded-lg" style="{{ ($product->product_type ?? 'fisik') === 'digital' ? 'background:#eff6ff' : 'background:#f0fdf4' }}">
-                    <svg class="w-5 h-5" style="{{ ($product->product_type ?? 'fisik') === 'digital' ? 'color:#2563eb' : 'display:none' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                    </svg>
-                    <svg class="w-5 h-5" style="{{ ($product->product_type ?? 'fisik') !== 'digital' ? 'color:#16a34a' : 'display:none' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
-                    </svg>
-                </div>
-                <div>
-                    <h2 class="text-base font-bold text-gray-800">
-                        Edit Produk
-                        <span style="font-size:11px; padding:2px 8px; border-radius:999px; font-weight:600; margin-left:6px; {{ ($product->product_type ?? 'fisik') === 'digital' ? 'background:#eff6ff; color:#2563eb' : 'background:#f0fdf4; color:#16a34a' }}">
-                            {{ ($product->product_type ?? 'fisik') === 'digital' ? 'Digital' : 'Fisik' }}
-                        </span>
-                    </h2>
-                    <p class="text-xs text-gray-500 mt-0.5">Perbarui informasi produk Anda</p>
-                </div>
-            </div>
-            <button onclick="closeEditModal({{ $product->id }})" class="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-400 hover:text-gray-600">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                </svg>
-            </button>
-        </div>
+        /* SUMMARY */
+        .sum-row { display:flex; justify-content:space-between; align-items:center; font-size:14px; color:#374151; padding:6px 0; }
+        .sum-row.total { font-weight:700; font-size:16px; color:#111827; padding-top:12px; margin-top:6px; border-top:1px solid #e5e7eb; }
+        .sum-row.total .total-amt { color:#2563eb; font-size:18px; }
+        .sum-ph { color:#9ca3af; font-style:italic; font-size:12px; }
 
-        {{-- BODY --}}
-        <div class="p-5 overflow-y-auto flex-1">
-            <form id="editForm-{{ $product->id }}"
-                  method="POST"
-                  action="{{ route('products.update', $product->id) }}"
-                  enctype="multipart/form-data">
-                @csrf
-                @method('PUT')
-                <input type="hidden" name="product_type" value="{{ $product->product_type ?? 'fisik' }}">
+        .btn-pay { width:100%; max-width:500px; margin:0 auto; display:block; background:#2563eb; color:#fff; border:none; border-radius:10px; padding:14px; font-size:15px; font-weight:700; cursor:pointer; transition:background .2s; }
+        .btn-pay:hover:not(:disabled) { background:#1d4ed8; }
+        .btn-pay:disabled { background:#93c5fd; cursor:not-allowed; }
+        .spinner { display:none; width:16px; height:16px; border:2px solid rgba(255,255,255,.4); border-top-color:#fff; border-radius:50%; animation:spin .7s linear infinite; margin-right:8px; }
+        .alert { max-width:500px; margin:0 auto 16px; padding:12px 14px; border-radius:8px; font-size:13px; display:flex; align-items:flex-start; gap:8px; }
+        .alert-info { background:#eff6ff; border:1px solid #bfdbfe; color:#1d4ed8; }
+        .secure { max-width:500px; margin:12px auto 0; text-align:center; font-size:12px; color:#9ca3af; display:flex; align-items:center; justify-content:center; gap:5px; }
+    </style>
+</head>
+<body>
 
-                <div class="space-y-5">
+<div class="top-bar">
+    <a href="javascript:history.back()" class="btn-back">
+        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+        </svg>
+    </a>
+    <div class="top-bar-title">Checkout</div>
+</div>
 
-                    {{-- GAMBAR SAAT INI --}}
-                    <div class="edit-card p-4">
-                        <div class="flex items-center justify-between mb-3">
-                            <div>
-                                <h3 class="text-sm font-semibold text-gray-800">Gambar Saat Ini</h3>
-                                <p class="text-xs text-gray-500 mt-0.5">Centang gambar yang ingin dihapus</p>
-                            </div>
-                        </div>
-                        @if($product->images->count())
-                        <div class="grid grid-cols-3 sm:grid-cols-4 gap-2">
-                            @foreach($product->images as $img)
-                            <label class="edit-img-item group cursor-pointer block relative rounded-xl overflow-hidden border-2 border-transparent hover:border-red-400 transition-all">
-                                <input type="checkbox" name="delete_images[]" value="{{ $img->id }}" class="hidden peer">
-                                <img src="{{ asset('storage/'.$img->image) }}" class="h-20 w-full object-cover">
-                                <div class="absolute inset-0 bg-red-500/0 peer-checked:bg-red-500/40 transition-all flex items-center justify-center">
-                                    <div class="opacity-0 peer-checked:opacity-100 bg-white rounded-full p-1 transition-all scale-50 peer-checked:scale-100">
-                                        <svg class="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                                        </svg>
-                                    </div>
-                                </div>
-                                <div class="absolute top-1.5 left-1.5 bg-white/90 rounded px-1.5 py-0.5 text-[10px] font-medium text-gray-600 shadow-sm opacity-0 group-hover:opacity-100 transition-opacity">Hapus</div>
-                            </label>
-                            @endforeach
-                        </div>
-                        @else
-                        <div class="text-center py-4 text-sm text-gray-400">Tidak ada gambar</div>
-                        @endif
-                    </div>
+@if($product->product_type === 'digital')
+<div class="alert alert-info">
+    <span>📦</span>
+    <span>Produk digital — file dikirim otomatis ke email Anda setelah pembayaran berhasil.</span>
+</div>
+@endif
 
-                    {{-- TAMBAH GAMBAR BARU --}}
-                    <div class="edit-card p-4">
-                        <div class="flex items-center justify-between mb-3">
-                            <div>
-                                <h3 class="text-sm font-semibold text-gray-800">Tambah Gambar Baru</h3>
-                                <p class="text-xs text-gray-500 mt-0.5">PNG, JPG, JPEG — dikompresi otomatis</p>
-                            </div>
-                        </div>
-                        <div class="border-2 border-dashed border-gray-200 rounded-xl p-4 text-center hover:border-blue-400 transition-colors cursor-pointer">
-                            <input type="file" id="editNewImages-{{ $product->id }}" multiple accept="image/*" class="hidden">
-                            <label for="editNewImages-{{ $product->id }}" class="cursor-pointer block">
-                                <div class="mx-auto w-10 h-10 bg-blue-50 rounded-full flex items-center justify-center mb-2">
-                                    <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
-                                    </svg>
-                                </div>
-                                <p class="text-sm text-gray-700 font-medium" id="editImgUploadText-{{ $product->id }}">Klik untuk upload gambar baru</p>
-                                <p class="text-xs text-gray-400 mt-1">Gambar akan dikompresi otomatis</p>
-                            </label>
-                        </div>
-                        <div id="editImgStatus-{{ $product->id }}" class="hidden mt-2"></div>
-                        <div id="editImgPreview-{{ $product->id }}" class="grid grid-cols-3 sm:grid-cols-4 gap-2 mt-3"></div>
-                    </div>
-
-                    {{-- INFO PRODUK --}}
-                    <div class="edit-card p-4 space-y-4">
-                        <h3 class="text-sm font-semibold text-gray-800 mb-1">Informasi Produk</h3>
-                        <div>
-                            <label class="edit-label">Judul Produk</label>
-                            <input type="text" name="title" value="{{ $product->title }}" class="edit-input" placeholder="Judul produk Anda">
-                        </div>
-                        <div>
-                            <label class="edit-label">Deskripsi Produk</label>
-                            <textarea name="description" rows="4" class="edit-textarea" placeholder="Deskripsikan produk Anda...">{{ $product->description }}</textarea>
-                        </div>
-                    </div>
-
-                    {{-- FILE DIGITAL --}}
-                    @php
-                        $existingPlatform = 'upload';
-                        $existingFileUrl  = '';
-                        if (isset($product->files) && $product->files->count()) {
-                            $firstFile        = $product->files->first();
-                            $existingPlatform = $firstFile->platform ?? 'upload';
-                            $existingFileUrl  = $firstFile->file_url ?? '';
-                        }
-                    @endphp
-                    <div id="editFileSection-{{ $product->id }}"
-                         class="edit-card p-4 {{ ($product->product_type ?? 'fisik') === 'digital' ? '' : 'hidden' }}">
-                        <h3 class="text-sm font-semibold text-gray-800 mb-3">File untuk Pembeli</h3>
-                        <div class="mb-4">
-                            <div class="flex flex-wrap gap-2" id="editPlatformBtns-{{ $product->id }}">
-                                <button type="button" class="edit-platform-btn {{ $existingPlatform === 'upload'  ? 'active' : '' }}" data-platform="upload">Upload</button>
-                                <button type="button" class="edit-platform-btn {{ $existingPlatform === 'dropbox' ? 'active' : '' }}" data-platform="dropbox">Dropbox</button>
-                                <button type="button" class="edit-platform-btn {{ $existingPlatform === 'gdrive'  ? 'active' : '' }}" data-platform="gdrive">G-Drive</button>
-                                <button type="button" class="edit-platform-btn {{ $existingPlatform === 'other'   ? 'active' : '' }}" data-platform="other">Other</button>
-                            </div>
-                        </div>
-                        <input type="hidden" name="file_platform" id="editFilePlatform-{{ $product->id }}" value="{{ $existingPlatform }}">
-                        <div id="editPanelUpload-{{ $product->id }}"  class="{{ $existingPlatform === 'upload'  ? '' : 'hidden' }}">
-                            <div class="border-2 border-dashed border-gray-200 rounded-xl p-4 text-center hover:border-blue-400 transition-colors cursor-pointer">
-                                <input type="file" id="editFileUpload-{{ $product->id }}" name="files[]" multiple class="hidden" onchange="editHandleFiles(event, {{ $product->id }})">
-                                <label for="editFileUpload-{{ $product->id }}" class="cursor-pointer block">
-                                    <p class="text-sm text-gray-700 font-medium">Klik untuk upload file baru</p>
-                                    <p class="text-xs text-gray-400 mt-1">ZIP, RAR, PDF, DOC, atau format lainnya</p>
-                                </label>
-                            </div>
-                            <div id="editFileList-{{ $product->id }}" class="space-y-2 mt-3"></div>
-                        </div>
-                        <div id="editPanelDropbox-{{ $product->id }}" class="{{ $existingPlatform === 'dropbox' ? '' : 'hidden' }}">
-                            <input type="url" id="editUrlDropbox-{{ $product->id }}" class="edit-input" placeholder="https://www.dropbox.com/s/..."
-                                   value="{{ $existingPlatform === 'dropbox' ? $existingFileUrl : '' }}">
-                        </div>
-                        <div id="editPanelGdrive-{{ $product->id }}"  class="{{ $existingPlatform === 'gdrive'  ? '' : 'hidden' }}">
-                            <input type="url" id="editUrlGdrive-{{ $product->id }}"  class="edit-input" placeholder="https://drive.google.com/file/d/..."
-                                   value="{{ $existingPlatform === 'gdrive'  ? $existingFileUrl : '' }}">
-                        </div>
-                        <div id="editPanelOther-{{ $product->id }}"   class="{{ $existingPlatform === 'other'   ? '' : 'hidden' }}">
-                            <input type="url" id="editUrlOther-{{ $product->id }}"   class="edit-input" placeholder="https://..."
-                                   value="{{ $existingPlatform === 'other'   ? $existingFileUrl : '' }}">
-                        </div>
-                    </div>
-
-                    {{-- HARGA & DISKON --}}
-                    <div class="edit-card p-4 space-y-4">
-                        <h3 class="text-sm font-semibold text-gray-800 mb-1">Harga & Diskon</h3>
-                        <div>
-                            <label class="edit-label">Harga Normal (Rp)</label>
-                            <input type="text" id="editPrice-{{ $product->id }}" name="price"
-                                   value="{{ number_format($product->price,0,',','.') }}"
-                                   oninput="formatRupiah(this)" class="edit-input" placeholder="Contoh: 100.000">
-                        </div>
-                        <div>
-                            <label class="edit-label">Harga Setelah Diskon <span class="text-xs font-normal text-gray-400">(opsional)</span></label>
-                            <input type="text" id="editDiscount-{{ $product->id }}" name="discount"
-                                   value="{{ $product->discount ? number_format($product->discount,0,',','.') : '' }}"
-                                   oninput="formatRupiah(this)" class="edit-input" placeholder="Kosongkan jika tidak ada diskon">
-                        </div>
-                    </div>
-
-                    {{-- BERAT PRODUK (hanya fisik) --}}
-                    @if(($product->product_type ?? 'fisik') === 'fisik')
-                    <div class="edit-card p-4">
-                        <h3 class="text-sm font-semibold text-gray-800 mb-3">Pengiriman</h3>
-                        <div>
-                            <label class="edit-label">Berat Produk (gram)</label>
-                            <div class="relative">
-                                <input type="number" name="weight" id="editWeight-{{ $product->id }}"
-                                       class="edit-input pr-14"
-                                       value="{{ $product->weight ?? 1000 }}"
-                                       placeholder="1000" min="1">
-                                <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400 font-medium">gram</span>
-                            </div>
-                            <p class="text-xs text-gray-400 mt-1.5">Digunakan untuk kalkulasi ongkir otomatis via RajaOngkir</p>
-                        </div>
-                    </div>
+{{-- DETAIL PRODUK --}}
+<div class="card">
+    <div class="card-header">Detail Produk</div>
+    <div class="card-body">
+        <div class="product-row">
+            @if($product->images && $product->images->count())
+                <img src="{{ asset('storage/'.$product->images->first()->image) }}" class="product-img" alt="{{ $product->title }}">
+            @else
+                <div class="product-img-ph">🛍️</div>
+            @endif
+            <div class="product-meta">
+                <span class="badge {{ $product->product_type }}">
+                    {{ $product->product_type === 'digital' ? '💾 Digital' : '📦 Fisik' }}
+                </span>
+                <h2>{{ $product->title }}</h2>
+                <div class="price-row">
+                    <span class="price-final">Rp {{ number_format($product->discount ?? $product->price, 0, ',', '.') }}</span>
+                    @if($product->discount && $product->discount < $product->price)
+                        <span class="price-ori">Rp {{ number_format($product->price, 0, ',', '.') }}</span>
+                        <span class="disc-badge">-{{ round((($product->price - $product->discount) / $product->price) * 100) }}%</span>
                     @endif
-
-                    {{-- STOK & BATAS PEMBELIAN --}}
-                    <div class="edit-card p-4 space-y-1">
-                        <h3 class="text-sm font-semibold text-gray-800 mb-3">
-                            {{ ($product->product_type ?? 'fisik') === 'digital' ? 'Batas Pembelian' : 'Stok & Batas Pembelian' }}
-                        </h3>
-                        <div class="py-3 border-b border-gray-100" style="{{ ($product->product_type ?? 'fisik') === 'digital' ? 'display:none' : '' }}">
-                            <div class="flex items-center justify-between">
-                                <div>
-                                    <p class="text-sm font-medium text-gray-700">Kelola Stok</p>
-                                    <p class="text-xs text-gray-400 mt-0.5">Aktifkan untuk mengatur jumlah stok</p>
-                                </div>
-                                <div class="edit-toggle-container">
-                                    <input type="checkbox" name="stock_toggle" id="editStockCheck-{{ $product->id }}"
-                                           class="edit-toggle-checkbox" {{ $product->stock !== null ? 'checked' : '' }}
-                                           onchange="editToggleInput(this, 'editStockInput-{{ $product->id }}')">
-                                    <label for="editStockCheck-{{ $product->id }}" class="edit-toggle-label"></label>
-                                </div>
-                            </div>
-                            <input type="number" name="stock" id="editStockInput-{{ $product->id }}"
-                                   class="edit-input mt-3 {{ $product->stock !== null ? '' : 'hidden' }}"
-                                   value="{{ $product->stock }}" placeholder="Jumlah stok tersedia" min="1">
-                        </div>
-                        <div class="py-3">
-                            <div class="flex items-center justify-between">
-                                <div>
-                                    <p class="text-sm font-medium text-gray-700">Batas Pembelian</p>
-                                    <p class="text-xs text-gray-400 mt-0.5">Batasi pembelian per pengguna</p>
-                                </div>
-                                <div class="edit-toggle-container">
-                                    <input type="checkbox" name="limit_toggle" id="editLimitCheck-{{ $product->id }}"
-                                           class="edit-toggle-checkbox" {{ $product->purchase_limit !== null ? 'checked' : '' }}
-                                           onchange="editToggleInput(this, 'editLimitInput-{{ $product->id }}')">
-                                    <label for="editLimitCheck-{{ $product->id }}" class="edit-toggle-label"></label>
-                                </div>
-                            </div>
-                            <input type="number" name="purchase_limit" id="editLimitInput-{{ $product->id }}"
-                                   class="edit-input mt-3 {{ $product->purchase_limit !== null ? '' : 'hidden' }}"
-                                   value="{{ $product->purchase_limit }}" placeholder="Maksimal beli per user" min="1">
-                        </div>
-                    </div>
-
                 </div>
-            </form>
-        </div>
-
-        {{-- FOOTER --}}
-        <div class="p-5 border-t border-gray-100 flex items-center justify-between gap-3 bg-gray-50/60 rounded-b-2xl flex-shrink-0">
-            <p class="text-xs text-gray-400 flex items-center gap-1">
-                <svg class="w-3.5 h-3.5 text-yellow-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
-                </svg>
-                Pastikan data sudah benar sebelum menyimpan
-            </p>
-            <div class="flex gap-2 flex-shrink-0">
-                <button type="button" onclick="closeEditModal({{ $product->id }})"
-                        class="px-4 py-2 text-sm font-medium bg-white border border-gray-200 rounded-lg hover:bg-gray-50 text-gray-600 transition-colors">
-                    Batal
-                </button>
-                <button type="button" onclick="submitEditForm({{ $product->id }})"
-                        class="px-5 py-2 text-sm font-semibold text-white rounded-lg shadow-sm hover:shadow-md transform hover:-translate-y-0.5 transition-all duration-200 flex items-center gap-2"
-                        style="{{ ($product->product_type ?? 'fisik') === 'digital' ? 'background:linear-gradient(to right,#2563eb,#1d4ed8)' : 'background:linear-gradient(to right,#16a34a,#15803d)' }}">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                    </svg>
-                    Simpan Perubahan
-                </button>
+                @if($product->product_type === 'fisik' && $product->weight)
+                    <div style="margin-top:5px;font-size:11px;color:#6b7280;">⚖️ Berat: {{ $product->weight }}gr</div>
+                @endif
             </div>
         </div>
-
+        @if($seller)
+        <div class="seller-row">
+            @if($seller->avatar)
+                <img src="{{ asset('storage/'.$seller->avatar) }}" class="seller-ava" alt="{{ $seller->name }}">
+            @else
+                <div class="seller-ava-ph">👤</div>
+            @endif
+            <div style="font-size:13px;color:#374151;">
+                Dijual oleh <strong>{{ $seller->name }}</strong>
+                @if($seller->origin_city_name)
+                    <span style="font-size:11px;color:#6b7280;"> · 📍 {{ $seller->origin_city_name }}</span>
+                @endif
+            </div>
+        </div>
+        @endif
     </div>
 </div>
 
-@endpush
-@endforeach
+<form id="checkoutForm" autocomplete="off">
+    @csrf
 
-<style>
-.edit-card { background:white; border-radius:12px; border:1.5px solid rgba(229,231,235,0.7); box-shadow:0 1px 4px rgba(0,0,0,0.04); transition:box-shadow .2s; }
-.edit-card:hover { box-shadow:0 3px 10px rgba(0,0,0,0.07); }
-.edit-label { display:block; font-size:12px; font-weight:600; color:#374151; margin-bottom:5px; }
-.edit-input { width:100%; padding:9px 12px; border:1.5px solid #e5e7eb; border-radius:8px; font-size:13px; transition:all .2s; background:white; color:#1f2937; }
-.edit-input:focus { outline:none; border-color:#3b82f6; box-shadow:0 0 0 3px rgba(59,130,246,.1); }
-.edit-textarea { width:100%; padding:9px 12px; border:1.5px solid #e5e7eb; border-radius:8px; font-size:13px; transition:all .2s; resize:vertical; min-height:90px; background:white; color:#1f2937; }
-.edit-textarea:focus { outline:none; border-color:#3b82f6; box-shadow:0 0 0 3px rgba(59,130,246,.1); }
-.edit-img-item:has(input:checked) { border-color:#ef4444 !important; opacity:.75; }
-.edit-toggle-container { position:relative; }
-.edit-toggle-checkbox { display:none; }
-.edit-toggle-label { display:block; width:44px; height:24px; background:#e5e7eb; border-radius:999px; position:relative; cursor:pointer; transition:background .2s ease; }
-.edit-toggle-label::after { content:''; position:absolute; top:2px; left:2px; width:20px; height:20px; background:white; border-radius:50%; transition:transform .2s ease; box-shadow:0 1px 3px rgba(0,0,0,.15); }
-.edit-toggle-checkbox:checked + .edit-toggle-label { background:#3b82f6; }
-.edit-toggle-checkbox:checked + .edit-toggle-label::after { transform:translateX(20px); }
-.edit-platform-btn { display:inline-flex; align-items:center; gap:5px; padding:6px 14px; border-radius:999px; font-size:12px; font-weight:500; border:1.5px solid #d1d5db; color:#374151; background:white; cursor:pointer; transition:all 0.18s; }
-.edit-platform-btn:hover { border-color:#3b82f6; color:#2563eb; background:#eff6ff; }
-.edit-platform-btn.active { background:#2563eb; color:white; border-color:#2563eb; }
-.edit-preview-img-wrap { position:relative; border-radius:8px; overflow:hidden; aspect-ratio:1; background:#f5f5f5; }
-.edit-preview-img-wrap img { width:100%; height:100%; object-fit:cover; }
-.edit-preview-remove { position:absolute; top:4px; right:4px; width:22px; height:22px; background:rgba(239,68,68,0.9); border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; opacity:0; transition:opacity 0.2s; }
-.edit-preview-img-wrap:hover .edit-preview-remove { opacity:1; }
-.edit-img-ready-dot { position:absolute; bottom:4px; right:4px; width:7px; height:7px; border-radius:50%; background:#2563eb; border:1.5px solid white; }
-@keyframes editSpin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
-</style>
+    {{-- DATA PEMBELI --}}
+    <div class="card">
+        <div class="card-header">Data Pembeli</div>
+        <div class="card-body">
+            <div class="form-group">
+                <label>Nama Lengkap <span class="req">*</span></label>
+                <input type="text" name="buyer_name" placeholder="Nama lengkap Anda"
+                       value="{{ auth()->user()->name ?? '' }}" required>
+            </div>
+            <div class="form-group">
+                <label>Email <span class="req">*</span></label>
+                <input type="email" name="buyer_email" placeholder="email@contoh.com"
+                       value="{{ auth()->user()->email ?? '' }}" required>
+                @if($product->product_type === 'digital')
+                    <div class="hint">📧 File digital dikirim ke email ini.</div>
+                @endif
+            </div>
+            <div class="form-group">
+                <label>No. WhatsApp <span class="req">*</span></label>
+                <input type="tel" name="buyer_phone" placeholder="08xxxxxxxxxx" required>
+            </div>
 
+            @if($product->product_type === 'fisik')
+
+            {{-- KOTA TUJUAN --}}
+            <div class="form-group">
+                <label>Kota Tujuan Pengiriman <span class="req">*</span></label>
+                <div class="city-wrap">
+                    <input type="text" id="citySearch"
+                           placeholder="Ketik nama kota, misal: Surabaya..."
+                           autocomplete="off">
+                    <div class="city-dd" id="cityDropdown"></div>
+                </div>
+                <div id="cityBadge" style="display:none" class="city-badge">
+                    <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                    </svg>
+                    <span id="cityBadgeText"></span>
+                </div>
+                <input type="hidden" name="destination_city_name" id="destCityName">
+            </div>
+
+            <div class="form-group">
+                <label>Alamat Lengkap <span class="req">*</span></label>
+                <textarea name="buyer_address" placeholder="Nama jalan, nomor rumah, RT/RW, kelurahan..." required></textarea>
+            </div>
+            <div class="form-group">
+                <label>Catatan untuk Penjual</label>
+                <input type="text" name="buyer_notes" placeholder="Warna, ukuran, atau keterangan lain (opsional)">
+            </div>
+
+            {{-- QTY --}}
+            @php $maxQty = $product->purchase_limit ?? ($product->stock ?? 99); @endphp
+            <div class="form-group">
+                <label>Jumlah <span class="req">*</span></label>
+                <div class="qty-wrap">
+                    <div class="qty-info">
+                        @if($product->purchase_limit) Maks. {{ $product->purchase_limit }}/transaksi
+                        @elseif($product->stock) Stok: {{ $product->stock }}
+                        @else Pilih jumlah @endif
+                    </div>
+                    <div class="qty-ctrl">
+                        <button type="button" class="qty-btn" id="qtyMinus" onclick="changeQty(-1)" disabled>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14"/></svg>
+                        </button>
+                        <input type="number" id="qtyDisplay" class="qty-input" value="1" min="1" max="{{ $maxQty }}" inputmode="numeric">
+                        <button type="button" class="qty-btn" id="qtyPlus" onclick="changeQty(1)">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+                        </button>
+                    </div>
+                </div>
+                <input type="number" name="qty" id="qtyHidden" value="1" min="1" max="{{ $maxQty }}" style="display:none">
+            </div>
+
+            {{-- PILIH ONGKIR --}}
+            <div class="form-group ongkir-section" id="ongkirSection" style="display:none">
+                <label>Layanan Pengiriman <span class="req">*</span></label>
+                <div id="ongkirContent">
+                    <div class="ongkir-loading">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <circle cx="12" cy="12" r="10" stroke-width="4" style="opacity:.3"/>
+                            <path fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" style="opacity:.8"/>
+                        </svg>
+                        Mengambil data ongkir...
+                    </div>
+                </div>
+                <input type="hidden" name="selected_courier"      id="selCourier">
+                <input type="hidden" name="selected_service"       id="selService">
+                <input type="hidden" name="selected_ongkir_cost"   id="selCost" value="0">
+            </div>
+
+            @else
+                <input type="hidden" name="qty" value="1">
+            @endif
+        </div>
+    </div>
+
+    <input type="hidden" name="payment_method" value="gopay">
+
+    {{-- RINGKASAN --}}
+    <div class="card">
+        <div class="card-header">Ringkasan Pembayaran</div>
+        <div class="card-body">
+            <div class="sum-row">
+                <span>Harga satuan</span>
+                <span>Rp {{ number_format($product->discount ?? $product->price, 0, ',', '.') }}</span>
+            </div>
+            @if($product->product_type === 'fisik')
+            <div class="sum-row">
+                <span>Jumlah</span>
+                <span id="sumQty">1</span>
+            </div>
+            <div class="sum-row">
+                <span>Subtotal</span>
+                <span id="sumSubtotal">Rp {{ number_format($product->discount ?? $product->price, 0, ',', '.') }}</span>
+            </div>
+            <div class="sum-row">
+                <span style="display:flex;align-items:center;gap:5px;">
+                    <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
+                    </svg>
+                    Ongkos Kirim
+                </span>
+                <span id="sumShipping"><span class="sum-ph">Pilih kota & kurir</span></span>
+            </div>
+            @endif
+            <div class="sum-row total">
+                <span>Total Pembayaran</span>
+                <span class="total-amt" id="sumTotal">Rp {{ number_format($product->discount ?? $product->price, 0, ',', '.') }}</span>
+            </div>
+        </div>
+    </div>
+
+    <button type="submit" class="btn-pay" id="btnPay" @if($product->product_type==='fisik') disabled @endif>
+        <span class="spinner" id="paySpinner"></span>
+        <span id="btnPayText">{{ $product->product_type === 'fisik' ? 'Pilih Kurir Dulu' : 'Bayar Sekarang' }}</span>
+    </button>
+</form>
+
+<div class="secure">🔒 Pembayaran aman & terenkripsi via Midtrans</div>
+
+<script src="https://app.sandbox.midtrans.com/snap/snap.js"
+        data-client-key="{{ config('midtrans.client_key') }}"></script>
 <script>
-function openEditModal(id) {
-    const overlay = document.getElementById('editModalOverlay-' + id);
-    const modal   = document.getElementById('editModal-' + id);
-    const card    = document.getElementById('editModalCard-' + id);
-    if (!modal) return;
-    overlay.classList.remove('hidden');
-    modal.classList.remove('hidden');
-    modal.style.display = 'flex';
-    card.getBoundingClientRect();
-    overlay.style.opacity = '1';
-    card.style.opacity    = '1';
-    card.style.transform  = 'translateY(0)';
-    document.body.style.overflow = 'hidden';
+// ===== KONSTANTA =====
+const UNIT_PRICE       = {{ $product->discount ?? $product->price ?? 0 }};
+const MAX_QTY          = {{ $product->purchase_limit ?? ($product->stock ?? 99) }};
+const PRODUCT_TYPE     = '{{ $product->product_type }}';
+const ORIGIN_CITY_NAME = '{{ $seller->origin_city_name ?? '' }}'; // nama kota penjual
+const WEIGHT_GRAM      = {{ $product->weight ?? 1000 }};
+
+let currentQty     = 1;
+let selectedCost   = 0;
+let destCityName   = '';
+
+function fmtRp(n) { return 'Rp ' + new Intl.NumberFormat('id-ID').format(n); }
+
+// ===== SUMMARY =====
+function updateSummary(qty) {
+    qty = Math.min(Math.max(qty, 1), MAX_QTY);
+    const subtotal = UNIT_PRICE * qty;
+    const total    = subtotal + selectedCost;
+    const elQ = document.getElementById('sumQty');
+    const elS = document.getElementById('sumSubtotal');
+    const elT = document.getElementById('sumTotal');
+    if (elQ) elQ.textContent = qty;
+    if (elS) elS.textContent = fmtRp(subtotal);
+    if (elT) elT.textContent = fmtRp(total);
 }
-function closeEditModal(id) {
-    const overlay = document.getElementById('editModalOverlay-' + id);
-    const modal   = document.getElementById('editModal-' + id);
-    const card    = document.getElementById('editModalCard-' + id);
-    if (!modal) return;
-    overlay.style.opacity = '0';
-    card.style.opacity    = '0';
-    card.style.transform  = 'translateY(20px)';
-    setTimeout(() => {
-        modal.style.display = 'none';
-        modal.classList.add('hidden');
-        overlay.classList.add('hidden');
-        document.body.style.overflow = '';
-    }, 250);
+
+// ===== QTY STEPPER =====
+const qtyDisplay = document.getElementById('qtyDisplay');
+const qtyHidden  = document.getElementById('qtyHidden');
+const qtyMinus   = document.getElementById('qtyMinus');
+const qtyPlus    = document.getElementById('qtyPlus');
+
+function applyQty(n) {
+    if (isNaN(n) || n < 1) n = 1;
+    if (n > MAX_QTY)       n = MAX_QTY;
+    currentQty = n;
+    if (qtyDisplay) qtyDisplay.value = n;
+    if (qtyHidden)  qtyHidden.value  = n;
+    if (qtyMinus)   qtyMinus.disabled = n <= 1;
+    if (qtyPlus)    qtyPlus.disabled  = n >= MAX_QTY;
+    updateSummary(n);
 }
-document.addEventListener('keydown', function(e) {
-    if (e.key !== 'Escape') return;
-    document.querySelectorAll('[id^="editModal-"]').forEach(m => {
-        if (m.style.display === 'flex') closeEditModal(m.id.replace('editModal-', ''));
+function changeQty(d) { applyQty(currentQty + d); }
+
+if (qtyDisplay) {
+    qtyDisplay.addEventListener('input', function() {
+        const v = parseInt(this.value, 10);
+        if (!isNaN(v)) { currentQty = v; applyQty(v); }
     });
-});
+    qtyDisplay.addEventListener('blur', function() { applyQty(parseInt(this.value, 10)); });
+    qtyDisplay.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') { e.preventDefault(); this.blur(); }
+        if (!['Backspace','Delete','ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Tab','Home','End'].includes(e.key) && !/^[0-9]$/.test(e.key)) e.preventDefault();
+    });
+}
 
-async function submitEditForm(productId) {
-    const form = document.getElementById('editForm-' + productId);
-    if (!form) return;
+// ===== CITY AUTOCOMPLETE =====
+const citySearch   = document.getElementById('citySearch');
+const cityDropdown = document.getElementById('cityDropdown');
+const cityBadge    = document.getElementById('cityBadge');
+const cityBadgeText= document.getElementById('cityBadgeText');
+const destCityInp  = document.getElementById('destCityName');
+let cityTimer = null;
 
-    // Bersihkan format titik dari harga
-    const cleanNum = (el) => {
-        if (!el) return '';
-        const n = parseInt((el.value || '').replace(/\./g, ''), 10);
-        return isNaN(n) ? '' : n;
-    };
-    const priceEl    = document.getElementById('editPrice-'    + productId);
-    const discountEl = document.getElementById('editDiscount-' + productId);
-    if (priceEl)    priceEl.value    = cleanNum(priceEl);
-    if (discountEl) discountEl.value = cleanNum(discountEl) || '';
+if (citySearch) {
+    citySearch.addEventListener('input', function() {
+        const q = this.value.trim();
+        clearTimeout(cityTimer);
+        if (q.length < 2) { cityDropdown.classList.remove('show'); return; }
+        cityDropdown.innerHTML = '<div class="city-item" style="color:#9ca3af">🔍 Mencari kota...</div>';
+        cityDropdown.classList.add('show');
+        cityTimer = setTimeout(() => searchCity(q), 350);
+    });
+    citySearch.addEventListener('keydown', function(e) {
+        const items  = cityDropdown.querySelectorAll('.city-item');
+        const active = cityDropdown.querySelector('.city-item.active');
+        let idx = Array.from(items).indexOf(active);
+        if (e.key === 'ArrowDown') { e.preventDefault(); idx = Math.min(idx+1, items.length-1); items.forEach(i=>i.classList.remove('active')); if(items[idx])items[idx].classList.add('active'); }
+        else if (e.key === 'ArrowUp') { e.preventDefault(); idx = Math.max(idx-1,0); items.forEach(i=>i.classList.remove('active')); if(items[idx])items[idx].classList.add('active'); }
+        else if (e.key === 'Enter') { e.preventDefault(); if(active)active.click(); }
+        else if (e.key === 'Escape') cityDropdown.classList.remove('show');
+    });
+    document.addEventListener('click', e => { if (!citySearch.contains(e.target)) cityDropdown.classList.remove('show'); });
+}
 
-    const fd = new FormData(form);
+async function searchCity(q) {
+    try {
+        const res  = await fetch('/api/ongkir/cities?q=' + encodeURIComponent(q));
+        const data = await res.json();
+        if (!data.length) {
+            cityDropdown.innerHTML = '<div class="city-item" style="color:#9ca3af">Kota tidak ditemukan</div>';
+            return;
+        }
+        cityDropdown.innerHTML = '';
+        data.forEach(city => {
+            const el = document.createElement('div');
+            el.className = 'city-item';
+            el.innerHTML = `<strong>${city.city_name}</strong> <span style="color:#9ca3af;font-size:11px;">${city.province}</span>`;
+            el.addEventListener('click', () => selectCity(city));
+            cityDropdown.appendChild(el);
+        });
+    } catch(e) {
+        cityDropdown.innerHTML = '<div class="city-item" style="color:#dc2626">Gagal memuat kota</div>';
+    }
+}
 
-    // Inject gambar baru dari array JS
-    fd.delete('images[]');
-    (_editUploadedImages[productId] || []).forEach(img => fd.append('images[]', img.file, img.file.name));
+function selectCity(city) {
+    citySearch.value    = city.city_name + ', ' + city.province;
+    destCityInp.value   = city.city_name;
+    destCityName        = city.city_name;
+    cityBadgeText.textContent = city.city_name + ', ' + city.province;
+    cityBadge.style.display = 'inline-flex';
+    cityDropdown.classList.remove('show');
 
-    const saveBtn = document.querySelector(`[onclick="submitEditForm(${productId})"]`);
-    if (saveBtn) { saveBtn.disabled = true; saveBtn.style.opacity = '0.7'; }
+    if (ORIGIN_CITY_NAME) {
+        loadOngkir(ORIGIN_CITY_NAME, city.city_name, WEIGHT_GRAM);
+    } else {
+        showOngkirError('Penjual belum mengatur kota asal. Hubungi penjual terlebih dahulu.');
+    }
+}
+
+// ===== LOAD ONGKIR =====
+async function loadOngkir(origin, destination, weight) {
+    const section = document.getElementById('ongkirSection');
+    const content = document.getElementById('ongkirContent');
+    if (!section || !content) return;
+
+    section.style.display = 'block';
+    content.innerHTML = `<div class="ongkir-loading"><svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke-width="4" style="opacity:.3"/><path fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" style="opacity:.8"/></svg>Mengambil data ongkir dari ${origin} → ${destination}...</div>`;
+
+    // Reset
+    selectedCost = 0;
+    document.getElementById('selCourier').value = '';
+    document.getElementById('selService').value  = '';
+    document.getElementById('selCost').value     = '0';
+    document.getElementById('sumShipping').innerHTML = '<span class="sum-ph">Memilih kurir...</span>';
+    document.getElementById('btnPay').disabled = true;
+    document.getElementById('btnPayText').textContent = 'Pilih Kurir Dulu';
+    updateSummary(currentQty);
 
     try {
-        const res = await fetch(form.action, {
+        const res  = await fetch('/api/ongkir/cost', {
             method: 'POST',
-            headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content') },
-            body: fd,
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+            },
+            body: JSON.stringify({
+                origin_city:      origin,
+                destination_city: destination,
+                weight:           weight,
+            }),
         });
-        if (res.redirected) { window.location.href = res.url; return; }
-        if (res.ok) { window.location.reload(); }
-        else { const text = await res.text(); document.open(); document.write(text); document.close(); }
-    } catch(err) { form.submit(); }
-}
+        const data = await res.json();
 
-function editToggleInput(checkbox, inputId) {
-    const input = document.getElementById(inputId);
-    if (!input) return;
-    input.classList.toggle('hidden', !checkbox.checked);
-    if (checkbox.checked) input.focus(); else input.value = '';
-}
+        if (!data.success || !data.data || !data.data.length) {
+            showOngkirError(data.error || 'Tidak ada layanan pengiriman tersedia untuk rute ini.');
+            return;
+        }
 
-function formatRupiah(input) {
-    const angka = input.value.replace(/[^0-9]/g, '');
-    input.value = angka ? new Intl.NumberFormat('id-ID').format(angka) : '';
-}
-
-function _setupEditPlatformSwitcher(productId) {
-    const container = document.getElementById('editPlatformBtns-' + productId);
-    if (!container) return;
-    const platformHidden = document.getElementById('editFilePlatform-' + productId);
-    const panels = {
-        upload: document.getElementById('editPanelUpload-'  + productId),
-        dropbox:document.getElementById('editPanelDropbox-' + productId),
-        gdrive: document.getElementById('editPanelGdrive-'  + productId),
-        other:  document.getElementById('editPanelOther-'   + productId),
-    };
-    const urlInputs = {
-        dropbox: document.getElementById('editUrlDropbox-' + productId),
-        gdrive:  document.getElementById('editUrlGdrive-'  + productId),
-        other:   document.getElementById('editUrlOther-'   + productId),
-    };
-    function syncUrlNames(active) {
-        Object.entries(urlInputs).forEach(([key, inp]) => {
-            if (!inp) return;
-            if (key === active) { inp.setAttribute('name', 'file_url'); inp.disabled = false; }
-            else { inp.removeAttribute('name'); inp.disabled = true; }
-        });
+        renderOngkir(data.data);
+    } catch(e) {
+        showOngkirError('Gagal terhubung ke server. Coba lagi.');
     }
-    syncUrlNames(platformHidden.value);
-    container.addEventListener('click', function(e) {
-        const btn = e.target.closest('.edit-platform-btn');
-        if (!btn) return;
-        const platform = btn.dataset.platform;
-        container.querySelectorAll('.edit-platform-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        Object.entries(panels).forEach(([key, el]) => { if (el) el.classList.toggle('hidden', key !== platform); });
-        platformHidden.value = platform;
-        syncUrlNames(platform);
-    });
 }
 
-const _editUploadedFiles = {};
-function editHandleFiles(event, productId) {
-    if (!_editUploadedFiles[productId]) _editUploadedFiles[productId] = [];
-    Array.from(event.target.files).forEach((file, i) => {
-        _editUploadedFiles[productId].push({id:Date.now()+i, name:file.name, size:file.size, file});
-    });
-    editRenderFileList(productId);
-}
-function editRenderFileList(productId) {
-    const container = document.getElementById('editFileList-' + productId);
-    if (!container) return;
-    const files = _editUploadedFiles[productId] || [];
-    container.innerHTML = '';
-    files.forEach((f, index) => {
+function renderOngkir(list) {
+    const content = document.getElementById('ongkirContent');
+    content.innerHTML = '<div class="ongkir-list" id="ongkirList"></div>';
+    const ol = document.getElementById('ongkirList');
+
+    list.forEach((item, i) => {
         const div = document.createElement('div');
-        div.className = 'flex items-center justify-between p-2.5 bg-blue-50 rounded-lg border border-blue-200';
-        div.innerHTML = `<span class="text-xs text-gray-700 truncate">${f.name}</span>
-            <button type="button" onclick="editRemoveFile(${productId},${index})"
-                    class="w-5 h-5 bg-red-100 hover:bg-red-200 rounded-full flex items-center justify-center ml-2 flex-shrink-0">
-                <svg class="w-2.5 h-2.5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
-            </button>`;
-        container.appendChild(div);
-    });
-    const input = document.getElementById('editFileUpload-' + productId);
-    if (input) { const dt = new DataTransfer(); files.forEach(f => dt.items.add(f.file)); input.files = dt.files; }
-}
-function editRemoveFile(productId, index) {
-    if (_editUploadedFiles[productId]) { _editUploadedFiles[productId].splice(index, 1); editRenderFileList(productId); }
-}
-
-function editCompressImage(file) {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onerror = () => reject(new Error('read error'));
-        reader.onload = function(e) {
-            const img = new Image();
-            img.onerror = () => reject(new Error('load error'));
-            img.onload = function() {
-                const canvas = document.createElement('canvas');
-                let {width, height} = img;
-                if (width > 1024) { height = Math.round(height*1024/width); width = 1024; }
-                canvas.width = width; canvas.height = height;
-                canvas.getContext('2d').drawImage(img, 0, 0, width, height);
-                let q = 0.75;
-                function tryCompress() {
-                    canvas.toBlob(blob => {
-                        if (!blob) { reject(new Error('blob error')); return; }
-                        if (blob.size/1024 > 150 && q > 0.2) { q -= 0.08; tryCompress(); return; }
-                        resolve({ file: new File([blob], file.name.replace(/\.[^.]+$/,'.jpg'), {type:'image/jpeg',lastModified:Date.now()}), previewUrl: URL.createObjectURL(blob) });
-                    }, 'image/jpeg', q);
-                }
-                tryCompress();
-            };
-            img.src = e.target.result;
-        };
-        reader.readAsDataURL(file);
-    });
-}
-
-const _editUploadedImages = {};
-function _setupEditImageCompression(productId) {
-    const input     = document.getElementById('editNewImages-' + productId);
-    const statusEl  = document.getElementById('editImgStatus-' + productId);
-    const previewEl = document.getElementById('editImgPreview-' + productId);
-    const labelText = document.getElementById('editImgUploadText-' + productId);
-    if (!input) return;
-    if (_editUploadedImages[productId] === undefined) _editUploadedImages[productId] = [];
-    input.addEventListener('change', async function() {
-        const files = Array.from(this.files).filter(f => f.type.match('image.*'));
-        if (!files.length) return;
-        statusEl.classList.remove('hidden');
-        statusEl.innerHTML = `<div style="display:flex;align-items:center;gap:6px;color:#9ca3af;font-size:11px;"><svg style="width:12px;height:12px;animation:editSpin 1s linear infinite;flex-shrink:0;" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" style="opacity:.3"/><path fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" style="opacity:.7"/></svg>Mengompresi...</div>`;
-        const results = await Promise.allSettled(files.map(f => editCompressImage(f)));
-        results.forEach((r, i) => { if (r.status==='fulfilled') _editUploadedImages[productId].push({id:Date.now()+i, file:r.value.file, previewUrl:r.value.previewUrl}); });
-        _renderEditImagePreview(productId, previewEl, labelText, statusEl);
-        statusEl.innerHTML = `<div style="display:flex;align-items:center;gap:5px;color:#9ca3af;font-size:11px;"><span style="width:7px;height:7px;border-radius:50%;background:#2563eb;display:inline-block;flex-shrink:0;"></span>${_editUploadedImages[productId].length} gambar siap diupload</div>`;
-        this.value = '';
-    });
-}
-function _renderEditImagePreview(productId, previewEl, labelText, statusEl) {
-    const images = _editUploadedImages[productId] || [];
-    previewEl.innerHTML = '';
-    images.forEach((img, idx) => {
-        const div = document.createElement('div');
-        div.className = 'edit-preview-img-wrap';
-        div.innerHTML = `<img src="${img.previewUrl}" loading="lazy"><div class="edit-img-ready-dot"></div><div class="edit-preview-remove" data-idx="${idx}"><svg style="width:10px;height:10px;color:white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></div>`;
-        previewEl.appendChild(div);
-    });
-    previewEl.querySelectorAll('.edit-preview-remove').forEach(btn => {
-        btn.addEventListener('click', function(e) {
-            e.stopPropagation();
-            _editUploadedImages[productId].splice(+this.dataset.idx, 1);
-            _renderEditImagePreview(productId, previewEl, labelText, statusEl);
-            if (!_editUploadedImages[productId].length) statusEl.classList.add('hidden');
+        div.className = 'ongkir-item';
+        div.innerHTML = `
+            <input type="radio" name="ongkir_radio" value="${i}" id="ok_${i}">
+            <label for="ok_${i}" style="display:flex;align-items:center;gap:8px;flex:1;cursor:pointer;">
+                <span class="ongkir-courier">${item.courier}</span>
+                <span class="ongkir-service">${item.service} <span class="ongkir-desc">· ${item.description}</span></span>
+            </label>
+            <div style="text-align:right;flex-shrink:0;">
+                <div class="ongkir-price">${fmtRp(item.cost)}</div>
+                <div class="ongkir-etd">⏱ ${item.etd || '-'}</div>
+            </div>`;
+        div.addEventListener('click', () => {
+            div.querySelector('input').checked = true;
+            selectOngkir(div, item);
         });
+        ol.appendChild(div);
     });
-    labelText.textContent = images.length ? `Tambah lagi (${images.length} dipilih)` : 'Klik untuk upload gambar baru';
 }
 
-document.addEventListener('DOMContentLoaded', function() {
-    document.querySelectorAll('[id^="editNewImages-"]').forEach(el => {
-        const productId = el.id.replace('editNewImages-', '');
-        _setupEditImageCompression(productId);
-        _setupEditPlatformSwitcher(productId);
-    });
+function selectOngkir(el, item) {
+    document.querySelectorAll('.ongkir-item').forEach(i => i.classList.remove('selected'));
+    el.classList.add('selected');
+    selectedCost = item.cost;
+    document.getElementById('selCourier').value = item.courier;
+    document.getElementById('selService').value  = item.service;
+    document.getElementById('selCost').value     = item.cost;
+    document.getElementById('sumShipping').textContent = fmtRp(item.cost);
+    updateSummary(currentQty);
+    document.getElementById('btnPay').disabled = false;
+    document.getElementById('btnPayText').textContent = 'Bayar Sekarang';
+}
+
+function showOngkirError(msg) {
+    const el = document.getElementById('ongkirContent');
+    if (el) el.innerHTML = `<div class="ongkir-error">⚠️ ${msg}</div>`;
+}
+
+// ===== SUBMIT =====
+document.getElementById('checkoutForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    if (PRODUCT_TYPE === 'fisik') {
+        if (!destCityName) { alert('Pilih kota tujuan pengiriman terlebih dahulu'); return; }
+        if (!document.getElementById('selCourier').value) { alert('Pilih layanan pengiriman terlebih dahulu'); return; }
+    }
+    applyQty(parseInt(qtyDisplay ? qtyDisplay.value : 1, 10));
+
+    const btn     = document.getElementById('btnPay');
+    const spinner = document.getElementById('paySpinner');
+    const btnTxt  = document.getElementById('btnPayText');
+    btn.disabled  = true; spinner.style.display = 'inline-block'; btnTxt.textContent = 'Memproses...';
+
+    const fd   = new FormData(this);
+    const data = Object.fromEntries(fd.entries());
+
+    try {
+        const res = await fetch('{{ route("checkout.process") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                'Accept': 'application/json',
+            },
+            body: JSON.stringify({ product_id: {{ $product->id }}, ...data }),
+        });
+        const result = await res.json();
+        if (!res.ok || result.error) throw new Error(result.message || 'Terjadi kesalahan.');
+
+        snap.pay(result.snap_token, {
+            onSuccess: () => window.location.href = '{{ route("checkout.success") }}?order_id=' + result.order_id,
+            onPending: () => window.location.href = '{{ route("checkout.pending") }}?order_id=' + result.order_id,
+            onError:   () => { alert('Pembayaran gagal. Coba lagi.'); resetBtn(); },
+            onClose:   () => resetBtn(),
+        });
+    } catch(err) {
+        alert(err.message || 'Gagal menghubungi server.'); resetBtn();
+    }
+
+    function resetBtn() {
+        btn.disabled = (PRODUCT_TYPE === 'fisik' && !document.getElementById('selCourier').value);
+        spinner.style.display = 'none';
+        btnTxt.textContent = 'Bayar Sekarang';
+    }
 });
 </script>
+</body>
+</html>
