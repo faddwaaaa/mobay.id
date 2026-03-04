@@ -10,7 +10,7 @@
 
 <style>
 .order-detail-wrap {
-    max-width: 980px;
+    max-width: 1080px;
     margin: 0 auto;
     color: #111827;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -32,12 +32,13 @@
 .order-top {
     display: flex;
     justify-content: space-between;
-    gap: 10px;
+    align-items: center;
+    gap: 12px;
     flex-wrap: wrap;
-    margin-bottom: 14px;
+    margin-bottom: 16px;
 }
 .order-title {
-    font-size: 25px;
+    font-size: 27px;
     font-weight: 800;
     margin: 0 0 4px;
 }
@@ -50,14 +51,46 @@
     display: inline-flex;
     align-items: center;
     gap: 9px;
-    border-radius: 12px;
-    padding: 12px 18px;
+    border-radius: 14px;
+    padding: 12px 20px;
     text-decoration: none;
     color: #fff;
     font-size: 13px;
     font-weight: 700;
     background: linear-gradient(135deg, #16a34a, #22c55e);
     box-shadow: 0 10px 22px rgba(34, 197, 94, .35);
+}
+.wa-btn:hover {
+    filter: brightness(1.02);
+    transform: translateY(-1px);
+}
+.summary-strip {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+    margin-bottom: 12px;
+}
+.summary-box {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 12px 14px;
+}
+.summary-box .k {
+    color: #64748b;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    margin-bottom: 4px;
+}
+.summary-box .v {
+    font-size: 16px;
+    font-weight: 800;
+    color: #0f172a;
+}
+.summary-box .v.total {
+    color: #2563eb;
 }
 .order-grid {
     display: grid;
@@ -68,7 +101,7 @@
     background: #fff;
     border: 1px solid #e2e8f0;
     border-radius: 16px;
-    padding: 16px;
+    padding: 18px;
 }
 .card-title {
     margin: 0 0 12px;
@@ -131,7 +164,7 @@
 .type-pill.digital { background: #dbeafe; color: #1d4ed8; border: 1px solid #bfdbfe; }
 .buyer-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 10px 12px;
     font-size: 13px;
 }
@@ -158,6 +191,7 @@
     word-break: break-word;
 }
 @media (max-width: 900px) {
+    .summary-strip { grid-template-columns: 1fr; }
     .order-grid { grid-template-columns: 1fr; }
     .buyer-grid { grid-template-columns: 1fr; }
 }
@@ -180,6 +214,21 @@
                 WhatsApp Pembeli
             </a>
         @endif
+    </div>
+
+    <div class="summary-strip">
+        <div class="summary-box">
+            <div class="k">Status Pembayaran</div>
+            <div class="v">{{ strtoupper((string) $order->status) }}</div>
+        </div>
+        <div class="summary-box">
+            <div class="k">Jenis Produk</div>
+            <div class="v">{{ strtoupper($productType) }}</div>
+        </div>
+        <div class="summary-box">
+            <div class="k">Total Dibayar</div>
+            <div class="v total">Rp {{ number_format((int) $order->amount, 0, ',', '.') }}</div>
+        </div>
     </div>
 
     <div class="order-grid">
