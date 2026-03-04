@@ -67,7 +67,11 @@ class CheckoutController extends Controller
         $qty       = $product->product_type === 'digital' ? 1 : (int) $request->qty;
         // FIX: Gunakan ?: bukan ?? supaya discount bernilai 0 tetap fallback ke price
         $unitPrice = (int) ($product->discount ?: $product->price);
-        $amount    = $unitPrice * $qty;
+        $subtotal  = $unitPrice * $qty;
+        $shippingCost = $product->product_type === 'fisik'
+            ? max((int) ($product->shipping_cost ?? 0), 0)
+            : 0;
+        $amount    = $subtotal + $shippingCost;
         $orderId   = 'PAYOU-' . strtoupper(Str::random(8)) . '-' . time();
 
         $transaction = Transaction::create([
@@ -87,6 +91,8 @@ class CheckoutController extends Controller
                 'product_type'  => $product->product_type,
                 'qty'           => $qty,
                 'unit_price'    => $unitPrice,
+                'shipping_cost' => $shippingCost,
+                'subtotal'      => $subtotal,
             ]),
             'ip_address' => $request->ip(),
         ]);
@@ -108,6 +114,15 @@ class CheckoutController extends Controller
                 'phone'      => $request->buyer_phone,
             ],
         ];
+
+        if ($shippingCost > 0) {
+            $snapParams['item_details'][] = [
+                'id'       => 'shipping-flat',
+                'price'    => $shippingCost,
+                'quantity' => 1,
+                'name'     => 'Ongkir Flat',
+            ];
+        }
 
         try {
             $snapToken = Snap::getSnapToken($snapParams);

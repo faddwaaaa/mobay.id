@@ -5,9 +5,16 @@ namespace App\Services;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Cache;
 
+/**
+ * Menggunakan api.co.id — GRATIS
+ * Endpoint ongkir : GET https://use.api.co.id/expedition/shipping-cost
+ * Endpoint wilayah: GET https://use.api.co.id/regional/indonesia/villages?search=...
+ *
+ * Auth header: x-api-co-id: YOUR_API_KEY
+ */
 class RajaOngkirService
 {
-    protected string $baseUrl = 'https://api.binderbyte.com/v1';
+    protected string $baseUrl = 'https://use.api.co.id';
     protected string $apiKey;
 
     public function __construct()
@@ -17,72 +24,75 @@ class RajaOngkirService
 
     // =========================================================
     // CEK ONGKIR
-    // GET /cost?api_key=...&origin=...&destination=...&weight=...&courier=...
-    // Weight dalam KG (bukan gram)
+    // GET /expedition/shipping-cost
+    //   ?origin_village_code=3204282001
+    //   &destination_village_code=3204402005
+    //   &weight=1   ← dalam KG
     // =========================================================
 
-    /**
-     * Cek ongkir ke semua kurir
-     *
-     * @param  string $origin       nama kota asal, e.g. "purwokerto"
-     * @param  string $destination  nama kota tujuan, e.g. "jakarta"
-     * @param  int    $weightGram   berat dalam GRAM (akan dikonversi ke KG)
-     */
-    public function getCost(string $origin, string $destination, int $weightGram): array
+    public function getCost(string $originVillageCode, string $destinationVillageCode, int $weightGram): array
     {
-        // Binderbyte pakai satuan KG, minimal 1 kg
         $weightKg = max(ceil($weightGram / 1000), 1);
 
-        $couriers = config('rajaongkir.couriers', ['jne', 'sicepat', 'jnt', 'anteraja', 'pos', 'tiki', 'lion', 'ide', 'sap']);
-        $courierStr = implode(',', $couriers);
+        $cacheKey = "ongkir_{$originVillageCode}_{$destinationVillageCode}_{$weightKg}";
 
-        $cacheKey = 'ongkir_' . md5("{$origin}_{$destination}_{$weightKg}_{$courierStr}");
-
-        try {
-            $raw = Cache::remember($cacheKey, now()->addMinutes(30), function () use ($origin, $destination, $weightKg, $courierStr) {
-                $res = Http::timeout(15)->get($this->baseUrl . '/cost', [
-                    'api_key'     => $this->apiKey,
-                    'origin'      => strtolower(trim($origin)),
-                    'destination' => strtolower(trim($destination)),
-                    'weight'      => $weightKg,
-                    'courier'     => $courierStr,
+        $raw = Cache::remember($cacheKey, now()->addMinutes(30), function () use ($originVillageCode, $destinationVillageCode, $weightKg) {
+            $res = Http::withHeaders(['x-api-co-id' => $this->apiKey])
+                ->timeout(15)
+                ->get($this->baseUrl . '/expedition/shipping-cost', [
+                    'origin_village_code'      => $originVillageCode,
+                    'destination_village_code' => $destinationVillageCode,
+                    'weight'                   => $weightKg,
                 ]);
 
-                $body = $res->json();
+            $body = $res->json();
 
-                if (($body['status'] ?? 0) !== 200) {
-                    throw new \RuntimeException($body['message'] ?? 'Binderbyte API error');
-                }
+            if (!($body['is_success'] ?? false)) {
+                throw new \RuntimeException($body['message'] ?? 'api.co.id error');
+            }
 
-                return $body['data']['costs'] ?? [];
-            });
+            return $body['data']['couriers'] ?? [];
+        });
 
-            // Normalize ke format yang dipakai frontend
-            $results = array_map(fn($item) => [
-                'courier'      => strtoupper($item['code'] ?? ''),
-                'courier_name' => $item['name'] ?? '',
-                'service'      => $item['service'] ?? '',
-                'description'  => $item['type'] ?? '',
-                'cost'         => (int)($item['price'] ?? 0),
-                'etd'          => $item['estimated'] ?? '-',
-            ], $raw);
+        // Normalize ke format frontend
+        $results = array_map(fn($item) => [
+            'courier'      => $item['courier_code'] ?? '',
+            'courier_name' => $item['courier_name'] ?? '',
+            'service'      => $item['courier_code'] ?? '',
+            'description'  => $item['courier_name'] ?? '',
+            'cost'         => (int)($item['price'] ?? 0),
+            'etd'          => $item['estimation'] ?? '-',
+        ], $raw);
 
-            // Filter yang harganya 0 (service tidak tersedia)
-            $results = array_values(array_filter($results, fn($r) => $r['cost'] > 0));
+        // Filter harga 0, sort termurah
+        $results = array_values(array_filter($results, fn($r) => $r['cost'] > 0));
+        usort($results, fn($a, $b) => $a['cost'] <=> $b['cost']);
 
-            // Sort termurah dulu
-            usort($results, fn($a, $b) => $a['cost'] <=> $b['cost']);
-
-            return $results;
-
-        } catch (\Throwable $e) {
-            \Log::error('Binderbyte getCost error: ' . $e->getMessage());
-            throw $e;
-        }
+        return $results;
     }
 
-    public function getAvailableCouriers(): array
+    // =========================================================
+    // SEARCH KELURAHAN (untuk autocomplete kota/kelurahan)
+    // GET /regional/indonesia/villages?search=purwokerto&limit=20
+    // Response: { data: [ { village_code, village_name, district_name, city_name, province_name } ] }
+    // =========================================================
+
+    public function searchVillages(string $keyword, int $limit = 20): array
     {
-        return config('rajaongkir.couriers', ['jne', 'sicepat', 'jnt', 'anteraja', 'pos', 'tiki', 'lion', 'ide', 'sap']);
+        if (strlen(trim($keyword)) < 2) return [];
+
+        $cacheKey = 'villages_' . md5($keyword . $limit);
+
+        return Cache::remember($cacheKey, now()->addMinutes(30), function () use ($keyword, $limit) {
+            $res = Http::withHeaders(['x-api-co-id' => $this->apiKey])
+                ->timeout(10)
+                ->get($this->baseUrl . '/regional/indonesia/villages', [
+                    'search' => $keyword,
+                    'limit'  => $limit,
+                ]);
+
+            $body = $res->json();
+            return $body['data'] ?? [];
+        });
     }
 }

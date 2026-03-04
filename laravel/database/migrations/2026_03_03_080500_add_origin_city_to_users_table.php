@@ -9,16 +9,17 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            // city_id dari RajaOngkir — kota asal pengiriman seller
-            $table->unsignedInteger('origin_city_id')->nullable()->after('email')->comment('ID kota asal (RajaOngkir)');
-            $table->string('origin_city_name')->nullable()->after('origin_city_id');
+            // village_code 10 digit dari api.co.id
+            $table->string('origin_village_code', 15)->nullable()->after('email');
+            // Label lengkap: "Purwokerto Utara, Purwokerto Utara, Banyumas"
+            $table->string('origin_city_name')->nullable()->after('origin_village_code');
         });
     }
 
     public function down(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn(['origin_city_id', 'origin_city_name']);
+            $table->dropColumn(['origin_village_code', 'origin_city_name']);
         });
     }
 };
