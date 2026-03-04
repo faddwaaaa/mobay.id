@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Services\RajaOngkirService;
-use App\Models\RajaongkirCity;
 use Illuminate\Http\Request;
 
 class RajaOngkirController extends Controller
@@ -11,49 +10,75 @@ class RajaOngkirController extends Controller
     public function __construct(protected RajaOngkirService $ongkir) {}
 
     // =========================================================
-    // SEARCH KELURAHAN/KOTA (autocomplete)
+    // SEARCH AREA (autocomplete)
     // GET /api/ongkir/cities?q=purwokerto
-    // Cari dari DB dulu (seeder), fallback ke api.co.id
     // =========================================================
 
     public function cities(Request $request)
     {
-        $q = trim($request->get('q', ''));
+        $q = preg_replace('/\s+/', ' ', trim((string) $request->get('q', '')));
         if (strlen($q) < 2) return response()->json([]);
 
-        // 1. Cari dari DB lokal dulu (cepat, tidak hit API)
-        $fromDb = RajaongkirCity::where('city_name', 'like', "%{$q}%")
-            ->orWhere('village_name', 'like', "%{$q}%")
-            ->orWhere('province', 'like', "%{$q}%")
-            ->orderBy('city_name')
-            ->limit(20)
-            ->get()
-            ->map(fn($c) => [
-                'village_code' => $c->village_code,
-                'label'        => $c->village_name . ', ' . $c->district_name . ', ' . $c->city_name . ', ' . $c->province,
-                'village_name' => $c->village_name,
-                'district_name'=> $c->district_name,
-                'city_name'    => $c->city_name,
-                'province'     => $c->province,
-            ]);
-
-        if ($fromDb->isNotEmpty()) {
-            return response()->json($fromDb);
-        }
-
-        // 2. Fallback: cari dari api.co.id
         try {
-            $results = $this->ongkir->searchVillages($q, 20);
+            $queries = [$q];
+            if (!str_ends_with($q, ' ')) {
+                $queries[] = $q . ' ';
+            }
+            if (str_contains($q, ' ')) {
+                $queries[] = str_replace(' ', '', $q);
+            }
+
+            $bucket = [];
+            foreach ($queries as $term) {
+                $rows = $this->ongkir->searchVillages($term, 20);
+                foreach ($rows as $v) {
+                    $key = (string) ($v['village_code'] ?? '');
+                    if ($key === '' || isset($bucket[$key])) {
+                        continue;
+                    }
+                    $bucket[$key] = $v;
+                }
+
+                if (count($bucket) >= 20) {
+                    break;
+                }
+            }
+
+            $results = array_slice(array_values($bucket), 0, 20);
+            $normalizedQ = mb_strtolower($q);
+            usort($results, function ($a, $b) use ($normalizedQ) {
+                $aVillage = mb_strtolower((string) ($a['village_name'] ?? ''));
+                $bVillage = mb_strtolower((string) ($b['village_name'] ?? ''));
+                $aCity = mb_strtolower((string) ($a['city_name'] ?? ''));
+                $bCity = mb_strtolower((string) ($b['city_name'] ?? ''));
+
+                $aStarts = str_starts_with($aVillage, $normalizedQ) || str_starts_with($aCity, $normalizedQ);
+                $bStarts = str_starts_with($bVillage, $normalizedQ) || str_starts_with($bCity, $normalizedQ);
+                if ($aStarts !== $bStarts) {
+                    return $aStarts ? -1 : 1;
+                }
+
+                $aContains = str_contains($aVillage, $normalizedQ) || str_contains($aCity, $normalizedQ);
+                $bContains = str_contains($bVillage, $normalizedQ) || str_contains($bCity, $normalizedQ);
+                if ($aContains !== $bContains) {
+                    return $aContains ? -1 : 1;
+                }
+
+                return strcmp($aVillage, $bVillage);
+            });
+
+            $results = array_slice($results, 0, 20);
+
             return response()->json(array_map(fn($v) => [
                 'village_code' => $v['village_code'],
                 'label'        => ($v['village_name'] ?? '') . ', ' . ($v['district_name'] ?? '') . ', ' . ($v['city_name'] ?? '') . ', ' . ($v['province_name'] ?? ''),
                 'village_name' => $v['village_name'] ?? '',
-                'district_name'=> $v['district_name'] ?? '',
-                'city_name'    => $v['city_name'] ?? '',
-                'province'     => $v['province_name'] ?? '',
+                'district_name' => $v['district_name'] ?? '',
+                'city_name' => $v['city_name'] ?? '',
+                'province' => $v['province_name'] ?? '',
             ], $results));
         } catch (\Throwable $e) {
-            return response()->json(['error' => 'Gagal memuat data wilayah'], 500);
+            return response()->json(['error' => 'Gagal memuat data area pengiriman'], 500);
         }
     }
 
@@ -89,9 +114,21 @@ class RajaOngkirController extends Controller
                 ],
             ]);
         } catch (\Throwable $e) {
+            $rawMessage = (string) $e->getMessage();
+            $lowerMessage = strtolower($rawMessage);
+
+            $publicMessage = 'Layanan ongkir sedang tidak tersedia. Silakan coba lagi nanti.';
+            if (str_contains($lowerMessage, 'no sufficient balance')) {
+                $publicMessage = 'Layanan ongkir belum aktif karena saldo akun pengiriman tidak mencukupi.';
+            } elseif (str_contains($lowerMessage, 'invalid or missing postal code')) {
+                $publicMessage = 'Area asal/tujuan belum valid. Pilih ulang area dari dropdown lalu simpan pengaturan pengiriman.';
+            } elseif (str_contains($lowerMessage, 'unauthorized') || str_contains($lowerMessage, 'invalid token') || str_contains($lowerMessage, 'invalid api')) {
+                $publicMessage = 'Konfigurasi layanan ongkir belum valid. Silakan hubungi admin toko.';
+            }
+
             return response()->json([
                 'success' => false,
-                'error'   => 'Gagal mengambil data ongkir: ' . $e->getMessage(),
+                'error'   => auth()->check() ? ('Gagal mengambil data ongkir: ' . $rawMessage) : $publicMessage,
             ], 500);
         }
     }

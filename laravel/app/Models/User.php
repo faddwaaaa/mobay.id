@@ -29,6 +29,7 @@ class User extends Authenticatable
         'avatar',
         'email_verified_at',
         'balance',
+        'origin_village_code',
         'origin_city_id',
         'origin_city_name'
     ];

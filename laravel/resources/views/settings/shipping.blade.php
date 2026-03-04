@@ -1,4 +1,6 @@
-@extends('layouts.app')
+@extends('layouts.dashboard')
+
+@section('title', 'Pengaturan Pengiriman | Payou.id')
 
 @section('content')
 <div class="min-h-screen bg-gray-50 p-4 md:p-6">
@@ -12,7 +14,7 @@
             </a>
             <div>
                 <h1 class="text-xl font-bold text-gray-800">Pengaturan Pengiriman</h1>
-                <p class="text-sm text-gray-500 mt-0.5">Atur kelurahan asal pengiriman produk fisik Anda</p>
+                <p class="text-sm text-gray-500 mt-0.5">Atur area asal pengiriman produk fisik Anda</p>
             </div>
         </div>
 
@@ -36,7 +38,7 @@
                     </div>
                     <div>
                         <h2 class="text-base font-semibold text-gray-800">Kelurahan Asal Pengiriman</h2>
-                        <p class="text-xs text-gray-500 mt-0.5">Digunakan untuk menghitung ongkos kirim ke pembeli via api.co.id (gratis)</p>
+                        <p class="text-xs text-gray-500 mt-0.5">Digunakan untuk menghitung ongkos kirim ke pembeli via Biteship API</p>
                     </div>
                 </div>
             </div>
@@ -60,9 +62,14 @@
                         <div class="relative">
                             <input type="text" id="originSearch"
                                    placeholder="Contoh: Purwokerto Utara, Kembangan..."
-                                   class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-sm focus:outline-none focus:border-blue-500 transition-colors"
+                                   class="w-full px-4 py-3 pr-12 border-2 border-gray-200 rounded-xl text-sm focus:outline-none focus:border-blue-500 transition-colors"
                                    value="{{ auth()->user()->origin_city_name ?? '' }}"
                                    autocomplete="off">
+                            <button type="button" id="clearOriginBtn"
+                                    class="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors hidden"
+                                    title="Hapus pilihan area">
+                                ×
+                            </button>
                             <div id="originDropdown"
                                  class="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-lg z-50 max-h-60 overflow-y-auto hidden"></div>
                         </div>
@@ -87,8 +94,8 @@
                     </div>
 
                     <div class="p-4 bg-gray-50 rounded-xl border border-gray-100 mb-5 text-xs text-gray-600 space-y-1.5">
-                        <div class="flex items-start gap-2"><span>✅</span><span><strong>Gratis selamanya</strong> — menggunakan api.co.id, tidak ada biaya subscribe.</span></div>
-                        <div class="flex items-start gap-2"><span>📦</span><span>14+ ekspedisi: JNE, J&T, SiCepat, SAP, Anteraja, Lion, ID Express, Ninja, dll.</span></div>
+                        <div class="flex items-start gap-2"><span>✅</span><span>Menggunakan <strong>Biteship API (Testing mode)</strong>.</span></div>
+                        <div class="flex items-start gap-2"><span>📦</span><span>Mendukung banyak kurir: JNE, J&T, SiCepat, AnterAja, POS, TIKI, dll.</span></div>
                         <div class="flex items-start gap-2"><span>⚖️</span><span>Pastikan berat produk fisik diisi dalam gram di halaman produk.</span></div>
                     </div>
 
@@ -104,8 +111,8 @@
         </div>
 
         <div class="mt-4 bg-white rounded-2xl border border-gray-200 shadow-sm p-5">
-            <h3 class="text-sm font-semibold text-gray-800 mb-1">🧪 Test Koneksi api.co.id</h3>
-            <p class="text-xs text-gray-500 mb-3">Pastikan API key dan endpoint ongkir bekerja</p>
+            <h3 class="text-sm font-semibold text-gray-800 mb-1">🧪 Test Koneksi Biteship</h3>
+            <p class="text-xs text-gray-500 mb-3">Pastikan API key testing mode dan endpoint ongkir bekerja</p>
             <div id="testResult" class="text-sm text-gray-500 italic mb-3">Belum ditest</div>
             <button type="button" onclick="testApi()"
                     class="px-4 py-2 text-sm border border-gray-200 rounded-lg hover:bg-gray-50 text-gray-600 transition-colors">
@@ -120,10 +127,14 @@ const originSearch   = document.getElementById('originSearch');
 const originDropdown = document.getElementById('originDropdown');
 const originVillage  = document.getElementById('originVillageCode');
 const originCity     = document.getElementById('originCityName');
+const clearOriginBtn = document.getElementById('clearOriginBtn');
 let searchTimer = null;
 
 originSearch.addEventListener('input', function(){
-    const q = this.value.trim(); clearTimeout(searchTimer);
+    const q = this.value.replace(/\s+/g, ' ').trim(); clearTimeout(searchTimer);
+    originVillage.value = '';
+    originCity.value = '';
+    toggleClearButton();
     if(q.length < 2){ originDropdown.classList.add('hidden'); return; }
     originDropdown.innerHTML = '<div class="px-4 py-2.5 text-xs text-gray-400">Mencari...</div>';
     originDropdown.classList.remove('hidden');
@@ -145,6 +156,7 @@ async function doSearch(q){
                 originSearch.value   = label;
                 originVillage.value  = v.village_code;
                 originCity.value     = label;
+                toggleClearButton();
                 originDropdown.classList.add('hidden');
             });
             originDropdown.appendChild(el);
@@ -156,28 +168,61 @@ document.addEventListener('click', e => {
     if(!originSearch.contains(e.target)) originDropdown.classList.add('hidden');
 });
 
+clearOriginBtn.addEventListener('click', function(){
+    originSearch.value = '';
+    originVillage.value = '';
+    originCity.value = '';
+    originDropdown.classList.add('hidden');
+    toggleClearButton();
+    originSearch.focus();
+});
+
+function toggleClearButton() {
+    if (originSearch.value.trim().length > 0 || originVillage.value) {
+        clearOriginBtn.classList.remove('hidden');
+    } else {
+        clearOriginBtn.classList.add('hidden');
+    }
+}
+
+toggleClearButton();
+
 document.querySelector('form').addEventListener('submit', function(e){
     if(!originVillage.value){ e.preventDefault(); alert('Pilih kelurahan dari daftar dropdown terlebih dahulu'); }
 });
 
 async function testApi(){
     const el = document.getElementById('testResult');
-    el.innerHTML = '<span style="color:#6b7280">Mengirim request test ke api.co.id...</span>';
+    el.innerHTML = '<span style="color:#6b7280">Mengirim request test ke Biteship...</span>';
     try{
+        if (!originVillage.value) {
+            el.innerHTML = '<span style="color:#dc2626">❌ Pilih area asal dari dropdown terlebih dahulu, lalu simpan.</span>';
+            return;
+        }
+
+        const areaRes = await fetch('/api/ongkir/cities?q=' + encodeURIComponent('jakarta'));
+        const areaData = await areaRes.json();
+        const destination = Array.isArray(areaData) && areaData.length ? areaData[0].village_code : null;
+
+        if (!destination) {
+            el.innerHTML = '<span style="color:#dc2626">❌ Gagal mengambil area tujuan untuk test. Coba lagi.</span>';
+            return;
+        }
+
         const res  = await fetch('/api/ongkir/cost', {
             method:'POST',
             headers:{'Content-Type':'application/json','X-CSRF-TOKEN':document.querySelector('meta[name="csrf-token"]').content},
             body: JSON.stringify({
-                origin_village_code:      '3302230003',  // contoh: Purwokerto
-                destination_village_code: '3174040006',  // contoh: Jakarta
+                origin_village_code:      originVillage.value,
+                destination_village_code: destination,
                 weight: 1000,
             }),
         });
         const data = await res.json();
         if(data.success && data.data && data.data.length){
-            el.innerHTML = `<span style="color:#16a34a">✅ Berhasil! ${data.data.length} layanan kurir tersedia. api.co.id bekerja normal.</span>`;
+            el.innerHTML = `<span style="color:#16a34a">✅ Berhasil! ${data.data.length} layanan kurir tersedia. Biteship bekerja normal.</span>`;
         } else {
-            el.innerHTML = `<span style="color:#dc2626">❌ ${data.error || 'Tidak ada data. Periksa RAJAONGKIR_API_KEY di .env'}</span>`;
+            el.innerHTML = `<span style="color:#dc2626">❌ ${data.error || 'Tidak ada data. Periksa BITESHIP_API_KEY di .env'}</span>`;
         }
     } catch(e){ el.innerHTML='<span style="color:#dc2626">❌ Gagal terhubung. Coba lagi.</span>'; }
 }

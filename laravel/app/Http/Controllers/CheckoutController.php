@@ -62,6 +62,12 @@ class CheckoutController extends Controller
             if (empty($request->buyer_address)) {
                 return response()->json(['error' => true, 'message' => 'Alamat pengiriman wajib diisi untuk produk fisik.'], 422);
             }
+            if (empty($request->destination_village_code)) {
+                return response()->json(['error' => true, 'message' => 'Pilih area tujuan pengiriman terlebih dahulu.'], 422);
+            }
+            if (!isset($request->selected_ongkir_cost) || (int) $request->selected_ongkir_cost <= 0) {
+                return response()->json(['error' => true, 'message' => 'Pilih layanan pengiriman terlebih dahulu.'], 422);
+            }
         }
 
         $qty       = $product->product_type === 'digital' ? 1 : (int) $request->qty;
@@ -69,7 +75,7 @@ class CheckoutController extends Controller
         $unitPrice = (int) ($product->discount ?: $product->price);
         $subtotal  = $unitPrice * $qty;
         $shippingCost = $product->product_type === 'fisik'
-            ? max((int) ($product->shipping_cost ?? 0), 0)
+            ? max((int) ($request->selected_ongkir_cost ?? 0), 0)
             : 0;
         $amount    = $subtotal + $shippingCost;
         $orderId   = 'PAYOU-' . strtoupper(Str::random(8)) . '-' . time();
@@ -93,6 +99,10 @@ class CheckoutController extends Controller
                 'unit_price'    => $unitPrice,
                 'shipping_cost' => $shippingCost,
                 'subtotal'      => $subtotal,
+                'destination_village_code' => $request->destination_village_code ?? null,
+                'destination_label' => $request->destination_label ?? null,
+                'selected_courier' => $request->selected_courier ?: 'OTHER',
+                'selected_service' => $request->selected_service ?: 'Standard',
             ]),
             'ip_address' => $request->ip(),
         ]);
@@ -116,11 +126,12 @@ class CheckoutController extends Controller
         ];
 
         if ($shippingCost > 0) {
+            $courierLabel = strtoupper((string) ($request->selected_courier ?: 'OTHER'));
             $snapParams['item_details'][] = [
-                'id'       => 'shipping-flat',
+                'id'       => 'shipping',
                 'price'    => $shippingCost,
                 'quantity' => 1,
-                'name'     => 'Ongkir Flat',
+                'name'     => 'Ongkir ' . $courierLabel,
             ];
         }
 
