@@ -214,7 +214,7 @@ Route::middleware(['auth'])->group(function () {
 */
 Route::middleware('auth')->group(function () {
     Route::get('/pesanan', [OrderController::class, 'index'])->name('orders.index');
-    Route::post('/pesanan/{id}/update-status', [OrderController::class, 'updateStatus'])->name('orders.update-status');
+    Route::get('/pesanan/{id}', [OrderController::class, 'show'])->name('orders.show');
 });
 
 
