@@ -3,14 +3,15 @@
 return [
     /*
     |--------------------------------------------------------------------------
-    | api.co.id API Key — GRATIS
+    | Biteship API Key (Testing Mode / Production)
     |--------------------------------------------------------------------------
-    | Daftar di https://dashboard.api.co.id
-    | Aktifkan: "API Wilayah Indonesia" + "Expedition API"
-    |
     | Isi di .env:
-    |   RAJAONGKIR_API_KEY=your_api_key_here
+    |   BITESHIP_API_KEY=your_api_key_here
+    |
+    | Catatan:
+    | Tetap fallback ke RAJAONGKIR_API_KEY untuk backward compatibility.
     */
-    'api_key' => env('RAJAONGKIR_API_KEY', ''),
-    'base_url' => 'https://use.api.co.id',
+    'api_key' => env('BITESHIP_API_KEY', env('RAJAONGKIR_API_KEY', '')),
+    'base_url' => env('BITESHIP_BASE_URL', 'https://api.biteship.com/v1'),
+    'couriers' => explode(',', env('BITESHIP_COURIERS', 'jne,sicepat,jnt,anteraja,tiki,pos')),
 ];

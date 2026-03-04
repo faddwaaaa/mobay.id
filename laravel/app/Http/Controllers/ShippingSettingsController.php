@@ -15,7 +15,7 @@ class ShippingSettingsController extends Controller
     public function save(Request $request)
     {
         $request->validate([
-            'origin_village_code' => 'required|string|max:15',
+            'origin_village_code' => 'required|string|max:100',
             'origin_city_name'    => 'required|string|max:255',
         ]);
 
