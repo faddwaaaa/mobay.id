@@ -16,8 +16,7 @@ return new class extends Migration
             $table->string('ip_address', 255);
             $table->string('user_agent', 255);
             $table->string('referer', 255)->nullable();
-            $table->timestamp('created_at');
-            $table->timestamp('updated_at');
+            $table->timestamps();
             
             $table->foreign('link_id')->references('id')->on('links')->onDelete('cascade');
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
