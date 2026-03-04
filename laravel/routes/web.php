@@ -266,6 +266,12 @@ Route::middleware('auth')->group(function () {
         ]);
     })->name('qrcode.show');
 
+    // Notifications
+    Route::get('/notifications', [App\Http\Controllers\NotificationController::class, 'index'])->name('notifications.index');
+    Route::get('/notifications/unread-count', [App\Http\Controllers\NotificationController::class, 'unreadCount'])->name('notifications.unread');
+    Route::post('/notifications/mark-all', [App\Http\Controllers\NotificationController::class, 'markAllRead'])->name('notifications.markAll');
+    Route::post('/notifications/{notification}/read', [App\Http\Controllers\NotificationController::class, 'markRead'])->name('notifications.read');
+
     // Produk
     Route::get('/produk', [ProductController::class, 'index'])->name('products.manage');
     Route::post('/produk', [ProductController::class, 'store'])->name('products.store');

@@ -64,27 +64,24 @@
         }
         .cart-badge.visible { display: flex; }
 
+        /* ── HAMBURGER: 9 titik seragam ── */
         .hamburger {
             width: 34px; height: 34px;
             display: grid;
-            grid-template-columns: repeat(3, 5px);
-            grid-template-rows: repeat(3, 5px);
-            gap: 3.5px;
+            grid-template-columns: repeat(3, 4px);
+            grid-template-rows: repeat(3, 4px);
+            gap: 4px;
             place-content: center;
             cursor: pointer;
             border-radius: 8px;
-            transition: background 0.2s, transform 0.15s;
         }
-        .hamburger:hover { background: #f3f4f6; transform: scale(1.05); }
         .hamburger:active { transform: scale(0.93); }
         .hamburger span {
-            width: 5px; height: 5px;
+            width: 4px; height: 4px;
             background: #374151;
             border-radius: 50%;
             display: block;
-            transition: background 0.2s;
         }
-        .hamburger:hover span { background: #2563eb; }
 
         .search-bar-wrap {
             position: sticky; top: 61px; z-index: 99;
@@ -668,13 +665,28 @@ const SEARCH_ICONS = {
 };
 const THUMB_CLASS = { product: 'thumb-product', link: 'thumb-link', text: 'thumb-text', other: 'thumb-other' };
 
+// ─── SCROLL LOCK (fix mobile background scroll) ──────────────────
+let scrollY = 0;
+function lockScroll() {
+    scrollY = window.scrollY;
+    document.body.style.position = 'fixed';
+    document.body.style.top      = `-${scrollY}px`;
+    document.body.style.width    = '100%';
+}
+function unlockScroll() {
+    document.body.style.position = '';
+    document.body.style.top      = '';
+    document.body.style.width    = '';
+    window.scrollTo(0, scrollY);
+}
+
 // ─── FULLSCREEN MENU ─────────────────────────────────────────────
 const hamburger       = document.getElementById('hamburger');
 const fullmenuOverlay = document.getElementById('fullmenuOverlay');
 const fullmenuClose   = document.getElementById('fullmenuClose');
 
-function openMenu()  { fullmenuOverlay.classList.add('active');    document.body.style.overflow = 'hidden'; }
-function closeMenu() { fullmenuOverlay.classList.remove('active'); document.body.style.overflow = 'auto'; }
+function openMenu()  { lockScroll();   fullmenuOverlay.classList.add('active'); }
+function closeMenu() { unlockScroll(); fullmenuOverlay.classList.remove('active'); }
 hamburger.addEventListener('click', openMenu);
 fullmenuClose.addEventListener('click', closeMenu);
 
@@ -695,7 +707,6 @@ document.querySelectorAll('.fullmenu-item[data-tab]').forEach(item => {
 function renderProductBlock(container, product) {
     const price      = parseFloat(product.price)       || 0;
     const discount   = parseFloat(product.discount)    || 0;
-    // Gunakan final_price dari server; fallback hitung sendiri
     const finalPrice = parseFloat(product.final_price) ||
                        ((discount > 0 && discount < price) ? discount : price);
     const hasDis  = finalPrice < price;
@@ -784,12 +795,11 @@ function handleProductClick(productId) {
             const hasDis  = finalPrice < price;
             const discPct = hasDis ? Math.round(((price - finalPrice) / price) * 100) : 0;
 
-            document.getElementById('detailTitle').textContent       = product.title;
-            document.getElementById('detailFinalPrice').textContent  = formatRupiah(finalPrice);
+            document.getElementById('detailTitle').textContent        = product.title;
+            document.getElementById('detailFinalPrice').textContent   = formatRupiah(finalPrice);
             document.getElementById('detailOriginalPrice').textContent = hasDis ? formatRupiah(price) : '';
-            document.getElementById('detailDescription').textContent = product.description ?? '';
+            document.getElementById('detailDescription').textContent  = product.description ?? '';
 
-            // Badge diskon
             const discBadge = document.getElementById('detailDiscountBadge');
             if (hasDis) {
                 discBadge.textContent   = `-${discPct}%`;
@@ -798,7 +808,6 @@ function handleProductClick(productId) {
                 discBadge.style.display = 'none';
             }
 
-            // Sembunyikan stok untuk produk digital
             const stockWrap = document.getElementById('detailStockWrap');
             if (product.product_type === 'digital' || product.stock === null) {
                 stockWrap.style.display = 'none';
@@ -814,15 +823,16 @@ function handleProductClick(productId) {
             document.getElementById('buyNowBtn').onclick = () => {
                 showToast('Ini mode preview — tidak bisa checkout', 'error');
             };
+
+            lockScroll();
             document.getElementById('productDetailModal').style.display = 'flex';
-            document.body.style.overflow = 'hidden';
         })
         .catch(() => showToast('Gagal memuat produk.', 'error'));
 }
 
 function closeProductDetail() {
     document.getElementById('productDetailModal').style.display = 'none';
-    document.body.style.overflow = 'auto';
+    unlockScroll();
     currentProductId = null;
 }
 
@@ -830,14 +840,14 @@ document.getElementById('btnAddToCart').addEventListener('click', () => {
     showToast('Ini mode preview — tidak bisa tambah ke keranjang', 'error');
 });
 
-// ─── CART DRAWER (preview mode) ──────────────────────────────────
+// ─── CART DRAWER ─────────────────────────────────────────────────
 const cartOverlay = document.getElementById('cartOverlay');
 const cartDrawer  = document.getElementById('cartDrawer');
 
 function openCart() {
+    lockScroll();
     cartOverlay.classList.add('active');
     cartDrawer.classList.add('active');
-    document.body.style.overflow = 'hidden';
     document.getElementById('cartItems').innerHTML = `
         <div class="cart-empty">
             ${CART_EMPTY_SVG}
@@ -848,7 +858,7 @@ function openCart() {
 function closeCart() {
     cartOverlay.classList.remove('active');
     cartDrawer.classList.remove('active');
-    document.body.style.overflow = 'auto';
+    unlockScroll();
 }
 cartOverlay.addEventListener('click', closeCart);
 document.getElementById('cartBtn').addEventListener('click', openCart);

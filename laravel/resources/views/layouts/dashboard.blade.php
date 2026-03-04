@@ -198,7 +198,21 @@
         .s-theme-opt:hover { background: var(--nav-hover-bg); color: var(--accent); }
         .s-theme-opt .check-icon { margin-left: auto; opacity: 0; font-size: 10px; }
 
-        .s-footer { flex-shrink: 0; padding: 7px 7px 12px; border-top: 1px solid var(--sidebar-border); }
+        /* ⬇ overflow visible agar panel notif tidak terpotong sidebar */
+        .s-footer {
+            flex-shrink: 0;
+            padding: 7px 7px 12px;
+            border-top: 1px solid var(--sidebar-border);
+            overflow: visible;
+        }
+
+        /* Baris profil + lonceng dalam satu row */
+        .s-footer-top {
+            display: flex;
+            align-items: center;
+            gap: 2px;
+            margin-bottom: 2px;
+        }
 
         .s-profile-link {
             display: flex;
@@ -208,7 +222,8 @@
             border-radius: var(--r-card);
             text-decoration: none;
             transition: background var(--ease);
-            margin-bottom: 2px;
+            flex: 1;
+            min-width: 0;
         }
 
         .s-profile-link:hover { background: var(--nav-hover-bg); }
@@ -393,22 +408,22 @@
         </a>
 
         <a href="{{ route('transactions.history') }}"
-   class="s-nav-item {{ request()->routeIs('transactions.*') ? 'active' : '' }}">
-    <span class="s-icon"><i class="fas fa-file-lines"></i></span>
-    Riwayat Transaksi
-</a>
+           class="s-nav-item {{ request()->routeIs('transactions.*') ? 'active' : '' }}">
+            <span class="s-icon"><i class="fas fa-file-lines"></i></span>
+            Riwayat Transaksi
+        </a>
 
-<a href="{{ route('payment.accounts.index') }}"
-   class="s-nav-item {{ request()->routeIs('payment.accounts.*') ? 'active' : '' }}">
-    <span class="s-icon"><i class="fas fa-building-columns"></i></span>
-    Rekening Bank
-</a>
+        <a href="{{ route('payment.accounts.index') }}"
+           class="s-nav-item {{ request()->routeIs('payment.accounts.*') ? 'active' : '' }}">
+            <span class="s-icon"><i class="fas fa-building-columns"></i></span>
+            Rekening Bank
+        </a>
 
-<a href="{{ route('settings.shipping') }}"
-   class="s-nav-item {{ request()->routeIs('settings.shipping') ? 'active' : '' }}">
-    <span class="s-icon"><i class="fas fa-truck"></i></span>
-    Pengaturan Pengiriman
-</a>
+        <a href="{{ route('settings.shipping') }}"
+           class="s-nav-item {{ request()->routeIs('settings.shipping') ? 'active' : '' }}">
+            <span class="s-icon"><i class="fas fa-truck"></i></span>
+            Pengaturan Pengiriman
+        </a>
 
         <div class="s-divider"></div>
         <div class="s-label">Preferensi</div>
@@ -435,21 +450,29 @@
     </nav>
 
     <div class="s-footer">
-        <a href="{{ route('dashboard.profile') }}" class="s-profile-link">
-            <div class="s-avatar">
-                @if ($avatar)
-                    <img src="{{ Str::startsWith($avatar, ['http://','https://']) ? $avatar : asset('storage/'.$avatar) }}"
-                         alt="{{ Auth::user()->name }}">
-                @else
-                    <img src="{{ asset('img/default-avatar.jpg') }}" alt="Avatar">
-                @endif
-            </div>
-            <div class="s-profile-info">
-                <div class="s-profile-name">{{ Auth::user()->name }}</div>
-                <div class="s-profile-uname">&#64;{{ $user->username }}</div>
-            </div>
-            <i class="fas fa-chevron-right s-profile-arrow"></i>
-        </a>
+        {{-- Baris atas: profil + tombol lonceng --}}
+        <div class="s-footer-top">
+            <a href="{{ route('dashboard.profile') }}" class="s-profile-link">
+                <div class="s-avatar">
+                    @if ($avatar)
+                        <img src="{{ Str::startsWith($avatar, ['http://','https://']) ? $avatar : asset('storage/'.$avatar) }}"
+                             alt="{{ Auth::user()->name }}">
+                    @else
+                        <img src="{{ asset('img/default-avatar.jpg') }}" alt="Avatar">
+                    @endif
+                </div>
+                <div class="s-profile-info">
+                    <div class="s-profile-name">{{ Auth::user()->name }}</div>
+                    <div class="s-profile-uname">&#64;{{ $user->username }}</div>
+                </div>
+                <i class="fas fa-chevron-right s-profile-arrow"></i>
+            </a>
+            {{-- 🔔 Tombol lonceng notifikasi --}}
+            <button class="notif-bell-btn" id="notifBellBtn" aria-label="Notifikasi">
+                <i class="fas fa-bell"></i>
+                <span class="notif-badge" id="notifBadge"></span>
+            </button>
+        </div>
 
         <a href="{{ route('logout') }}"
            class="s-logout"
@@ -473,9 +496,9 @@
 <script src="{{ asset('js/dashboard.js') }}"></script>
 <script src="{{ asset('js/darkmode.js') }}"></script>
 
-{{-- ⚠️  WAJIB ADA: Stack modal dari halaman child (links, dll.)
-     Posisi di sini (langsung child <body>) memastikan overlay
-     bisa menutupi sidebar (z-index: 200) tanpa terhalang stacking context --}}
+{{-- Notifikasi: panel + script (di luar sidebar agar z-index bebas) --}}
+@include('components.notification-bell')
+
 @stack('modals')
 
 <script>

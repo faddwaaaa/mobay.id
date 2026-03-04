@@ -469,7 +469,7 @@ document.querySelectorAll('.range-option').forEach(el => {
 
                     {{-- Quick amount buttons --}}
                     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:10px;">
-                        @foreach([10000,25000,50000,100000,500000,1000000] as $preset)
+                        @foreach([10000,50000,100000] as $preset)
                             <button type="button"
                                     onclick="setAmount({{ $preset }})"
                                     class="wd-preset-btn"

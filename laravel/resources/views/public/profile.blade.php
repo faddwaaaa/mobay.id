@@ -24,9 +24,6 @@
             overflow-x: hidden;
         }
 
-        /* ═══════════════════════════════════════
-           TOAST
-        ═══════════════════════════════════════ */
         .toast {
             position: fixed; bottom: 24px; left: 50%;
             transform: translateX(-50%) translateY(80px);
@@ -40,9 +37,6 @@
         .toast.success { background: #16a34a; }
         .toast.error   { background: #dc2626; }
 
-        /* ═══════════════════════════════════════
-           NAVBAR
-        ═══════════════════════════════════════ */
         .navbar {
             background: #fff; border-bottom: 1px solid #e5e7eb;
             position: sticky; top: 0; z-index: 100;
@@ -71,31 +65,27 @@
         }
         .cart-badge.visible { display: flex; }
 
+        /* ── HAMBURGER: 9 titik seragam ── */
         .hamburger {
             width: 34px; height: 34px;
             display: grid;
-            grid-template-columns: repeat(3, 5px);
-            grid-template-rows: repeat(3, 5px);
-            gap: 3.5px;
+            grid-template-columns: repeat(3, 4px);
+            grid-template-rows: repeat(3, 4px);
+            gap: 4px;
             place-content: center;
             cursor: pointer;
             border-radius: 8px;
-            transition: background 0.2s, transform 0.15s;
         }
-        .hamburger:hover { background: #f3f4f6; transform: scale(1.05); }
         .hamburger:active { transform: scale(0.93); }
         .hamburger span {
-            width: 5px; height: 5px;
+            width: 4px; height: 4px;
             background: #374151;
             border-radius: 50%;
             display: block;
-            transition: background 0.2s;
-        }
-        .hamburger:hover span { background: #2563eb; }
 
-        /* ═══════════════════════════════════════
-           SEARCH BAR
-        ═══════════════════════════════════════ */
+        }
+
+
         .search-bar-wrap {
             position: sticky; top: 61px; z-index: 99;
             background: #fff;
@@ -144,16 +134,13 @@
             background: #d1d5db; color: #fff;
             border: none; cursor: pointer; display: none;
             align-items: center; justify-content: center;
-            transition: background 0.2s;
+
             padding: 0;
         }
         .search-clear-btn svg { width: 10px; height: 10px; }
         .search-clear-btn.visible { display: flex; }
         .search-clear-btn:hover { background: #9ca3af; }
 
-        /* ═══════════════════════════════════════
-           SEARCH RESULTS
-        ═══════════════════════════════════════ */
         .search-results-overlay {
             position: fixed; inset: 0;
             background: rgba(0,0,0,0.35);
@@ -236,9 +223,6 @@
             padding: 10px 16px 4px;
         }
 
-        /* ═══════════════════════════════════════
-           FULLSCREEN OVERLAY MENU
-        ═══════════════════════════════════════ */
         .fullmenu-overlay {
             position: fixed; inset: 0;
             background: rgba(0, 0, 0, 0.85);
@@ -268,7 +252,7 @@
             background: rgba(255,255,255,0.1); border: none;
             color: #fff; font-size: 18px; cursor: pointer;
             display: flex; align-items: center; justify-content: center;
-            transition: background 0.2s;
+
         }
         .fullmenu-close:hover { background: rgba(255,255,255,0.2); }
 
@@ -306,9 +290,6 @@
             width: 100%; max-width: 320px; margin: 12px 0;
         }
 
-        /* ═══════════════════════════════════════
-           KONTEN UTAMA
-        ═══════════════════════════════════════ */
         .container { padding: 24px 16px; }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
@@ -334,9 +315,6 @@
         .profile-username { color: #6b7280; font-size: 13px; margin-bottom: 8px; }
         .profile-bio      { font-size: 13px; color: #374151; line-height: 1.5; }
 
-        /* ═══════════════════════════════════════
-           BLOCKS
-        ═══════════════════════════════════════ */
         .block { margin-bottom: 12px; }
         .block-text  { font-size: 14px; text-align: center; color: #374151; line-height: 1.6; }
         .block-link a {
@@ -349,7 +327,6 @@
         .block-image img   { width: 100%; border-radius: 12px; }
         .block-video iframe { width: 100%; height: 200px; border-radius: 12px; border: none; }
 
-        /* Skeleton */
         .product-skeleton { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; overflow: hidden; }
         .skeleton-img  { width: 100%; height: 200px; background: linear-gradient(90deg,#f3f4f6 25%,#e5e7eb 50%,#f3f4f6 75%); background-size: 200% 100%; animation: shimmer 1.4s infinite; }
         .skeleton-body { padding: 14px 16px; }
@@ -358,7 +335,6 @@
         .skeleton-line.w40 { width: 40%; }
         @keyframes shimmer { to { background-position: -200% 0; } }
 
-        /* Product card */
         .block-product {
             background: #fff; border: 1px solid #e5e7eb; border-radius: 12px;
             overflow: hidden; transition: box-shadow 0.2s, transform 0.2s, border-color 0.2s; cursor: pointer;
@@ -378,9 +354,6 @@
         .empty-state { text-align: center; padding: 40px 20px; color: #9ca3af; }
         .empty-icon  { width: 64px; height: 64px; background: #f3f4f6; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; color: #d1d5db; }
 
-        /* ═══════════════════════════════════════
-           PRODUCT DETAIL MODAL
-        ═══════════════════════════════════════ */
         .product-detail-overlay {
             position: fixed; inset: 0; background: rgba(0,0,0,0.45);
             display: none; justify-content: center; align-items: center; z-index: 9999; padding: 20px;
@@ -418,9 +391,6 @@
         .btn-buy { flex: 1; padding: 12px; background: #2563eb; color: white; border-radius: 10px; font-weight: 600; font-size: 15px; border: none; cursor: pointer; transition: background 0.2s; }
         .btn-buy:hover { background: #1d4ed8; }
 
-        /* ═══════════════════════════════════════
-           CART DRAWER
-        ═══════════════════════════════════════ */
         .cart-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 500; opacity: 0; visibility: hidden; transition: all 0.3s; }
         .cart-overlay.active { opacity: 1; visibility: visible; }
         .cart-drawer { position: fixed; right: 0; top: 0; bottom: 0; width: 100%; max-width: 420px; background: #fff; z-index: 501; transform: translateX(100%); transition: transform 0.3s ease; display: flex; flex-direction: column; overflow: hidden; }
@@ -514,7 +484,6 @@
     </div>
 </div>
 
-{{-- ═══════════ SEARCH RESULTS ═══════════ --}}
 <div class="search-results-overlay" id="searchResultsOverlay"></div>
 <div class="search-results-panel" id="searchResultsPanel"></div>
 
@@ -659,7 +628,6 @@
                 <span class="original-price" id="detailOriginalPrice"></span>
                 <span class="discount-badge-detail" id="detailDiscountBadge" style="display:none;"></span>
             </div>
-            {{-- Stok hanya ditampilkan untuk produk fisik --}}
             <div class="stock-info" id="detailStockWrap">Stok: <span id="detailStock"></span></div>
             <div class="detail-description">
                 <strong style="font-size:13px;color:#6b7280;letter-spacing:.5px;">DESKRIPSI</strong>
@@ -698,9 +666,7 @@
         </button>
     </div>
 </div>
-
 <script>
-// ─── HELPERS ─────────────────────────────────────────────────────
 const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
 
 function formatRupiah(n) {
@@ -732,7 +698,6 @@ function escHtml(str) {
     return d.innerHTML;
 }
 
-// ─── SVG ICONS ───────────────────────────────────────────────────
 const SEARCH_ICONS = {
     product: `<svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>`,
     link:    `<svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>`,
@@ -745,13 +710,25 @@ const PRODUCT_PLACEHOLDER_SVG = `<svg width="28" height="28" fill="none" stroke=
 const CART_PLACEHOLDER_SVG    = `<svg width="24" height="24" fill="none" stroke="#9ca3af" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>`;
 const CART_EMPTY_SVG          = `<svg width="40" height="40" fill="none" stroke="#d1d5db" stroke-width="1.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>`;
 
-// ─── FULLSCREEN MENU ─────────────────────────────────────────────
 const hamburger       = document.getElementById('hamburger');
 const fullmenuOverlay = document.getElementById('fullmenuOverlay');
 const fullmenuClose   = document.getElementById('fullmenuClose');
 
-function openMenu()  { fullmenuOverlay.classList.add('active');    document.body.style.overflow = 'hidden'; }
-function closeMenu() { fullmenuOverlay.classList.remove('active'); document.body.style.overflow = 'auto'; }
+let scrollY = 0;
+function openMenu() {
+    scrollY = window.scrollY;
+    document.body.style.position = 'fixed';
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.width = '100%';
+    fullmenuOverlay.classList.add('active');
+}
+function closeMenu() {
+    fullmenuOverlay.classList.remove('active');
+    document.body.style.position = '';
+    document.body.style.top = '';
+    document.body.style.width = '';
+    window.scrollTo(0, scrollY);
+}
 hamburger.addEventListener('click', openMenu);
 fullmenuClose.addEventListener('click', closeMenu);
 
@@ -766,11 +743,9 @@ document.querySelectorAll('.fullmenu-item[data-tab]').forEach(item => {
     });
 });
 
-// ─── RENDER PRODUCT BLOCK (card di halaman) ───────────────────────
 function renderProductBlock(container, product) {
     const price      = parseFloat(product.price)       || 0;
     const discount   = parseFloat(product.discount)    || 0;
-    // Gunakan final_price dari server; fallback hitung sendiri
     const finalPrice = parseFloat(product.final_price) ||
                        ((discount > 0 && discount < price) ? discount : price);
     const hasDis  = finalPrice < price;
@@ -797,15 +772,12 @@ function renderProductBlock(container, product) {
         </div>`;
 }
 
-// ─── DOMContentLoaded — BATCH LOAD ────────────────────────────────
 document.addEventListener('DOMContentLoaded', function () {
-    // Tracking profile view
     fetch(`/api/profile/{{ $user->username }}/view`, {
         method: 'POST',
         headers: { 'X-CSRF-TOKEN': csrfToken, 'Content-Type': 'application/json' }
     }).catch(() => {});
 
-    // Batch load semua produk sekaligus
     const productContainers = document.querySelectorAll('[data-product-id]');
     if (productContainers.length > 0) {
         const ids = [...new Set(
@@ -826,7 +798,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 });
             })
             .catch(() => {
-                // Fallback: fetch satu per satu
                 productContainers.forEach(container => {
                     const pid = container.getAttribute('data-product-id');
                     fetch(`/api/product/${pid}/data`)
@@ -839,18 +810,15 @@ document.addEventListener('DOMContentLoaded', function () {
             });
     }
 
-    // Cart badge
     apiCall('/api/cart').then(d => updateBadge(d.total_items)).catch(() => {});
 });
 
-// ─── CART BADGE ───────────────────────────────────────────────────
 function updateBadge(count) {
     const badge = document.getElementById('cartBadge');
     badge.textContent = count;
     badge.classList.toggle('visible', count > 0);
 }
 
-// ─── PRODUCT DETAIL MODAL ─────────────────────────────────────────
 let currentProductId = null;
 
 function handleProductClick(productId) {
@@ -867,22 +835,15 @@ function handleProductClick(productId) {
 
             const price      = parseFloat(product.price)       || 0;
             const discount   = parseFloat(product.discount)    || 0;
-            // Pakai final_price dari server langsung
             const finalPrice = parseFloat(product.final_price) ||
                                ((discount > 0 && discount < price) ? discount : price);
             const hasDis  = finalPrice < price;
             const discPct = hasDis ? Math.round(((price - finalPrice) / price) * 100) : 0;
 
-            // Judul
             document.getElementById('detailTitle').textContent = product.title;
-
-            // Harga final
             document.getElementById('detailFinalPrice').textContent = formatRupiah(finalPrice);
-
-            // Harga coret (hanya tampil jika ada diskon)
             document.getElementById('detailOriginalPrice').textContent = hasDis ? formatRupiah(price) : '';
 
-            // Badge diskon
             const discBadge = document.getElementById('detailDiscountBadge');
             if (hasDis) {
                 discBadge.textContent    = `-${discPct}%`;
@@ -891,7 +852,6 @@ function handleProductClick(productId) {
                 discBadge.style.display  = 'none';
             }
 
-            // Stok: sembunyikan untuk produk digital (stock === null)
             const stockWrap = document.getElementById('detailStockWrap');
             if (product.product_type === 'digital' || product.stock === null) {
                 stockWrap.style.display = 'none';
@@ -900,15 +860,12 @@ function handleProductClick(productId) {
                 document.getElementById('detailStock').textContent = product.stock;
             }
 
-            // Deskripsi
             document.getElementById('detailDescription').textContent = product.description ?? '';
 
-            // Gambar
             const img = document.getElementById('detailImage');
             if (product.image_url) { img.src = product.image_url; img.style.display = 'block'; }
             else img.style.display = 'none';
 
-            // Tombol beli
             document.getElementById('buyNowBtn').onclick = () => {
                 window.location.href = `/checkout/${product.id}`;
             };
@@ -937,7 +894,6 @@ document.getElementById('btnAddToCart').addEventListener('click', async () => {
     finally { btn.classList.remove('loading'); }
 });
 
-// ─── CART DRAWER ──────────────────────────────────────────────────
 const cartOverlay = document.getElementById('cartOverlay');
 const cartDrawer  = document.getElementById('cartDrawer');
 
@@ -1028,7 +984,6 @@ async function handleCheckout() {
     } catch { showToast('Gagal memproses checkout.', 'error'); }
 }
 
-// ─── SEARCH ───────────────────────────────────────────────────────
 const USERNAME             = '{{ $user->username }}';
 const searchBtn            = document.getElementById('searchBtn');
 const searchBarWrap        = document.getElementById('searchBarWrap');

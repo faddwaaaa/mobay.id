@@ -320,6 +320,29 @@ class CheckoutController extends Controller
         if ($seller) {
             $seller->increment('balance', (int) $transaction->amount);
             Log::info("✅ Saldo {$seller->name} +Rp{$transaction->amount} dari order {$transaction->order_id}");
+
+            // ── Notifikasi pesanan masuk ──
+            \App\Models\Notification::create([
+                'user_id' => $seller->id,
+                'type'    => 'order',
+                'title'   => 'Pesanan Baru Masuk!',
+                'message' => '📦 ' . ($notes['buyer_name'] ?? 'Pembeli') . ' memesan ' . ($notes['product_title'] ?? $product->title) . ' (#' . $transaction->order_id . ')',
+                'icon'    => 'fas fa-shopping-bag',
+                'link'    => '/riwayat',
+                'is_read' => false,
+            ]);
+
+            // ── Notifikasi pembayaran diterima ──
+            \App\Models\Notification::create([
+                'user_id' => $seller->id,
+                'type'    => 'payment',
+                'title'   => 'Pembayaran Diterima!',
+                'message' => '💰 Pembayaran #' . $transaction->order_id . ' sebesar Rp' . number_format((int) $transaction->amount, 0, ',', '.') . ' berhasil dikonfirmasi.',
+                'icon'    => 'fas fa-circle-check',
+                'link'    => '/riwayat',
+                'is_read' => false,
+            ]);
+
         } else {
             Log::error("❌ Seller user_id={$transaction->user_id} tidak ditemukan.");
         }
