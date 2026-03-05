@@ -108,6 +108,7 @@ class ProductController extends Controller
             'price'          => $request->price,
             'discount'       => $request->discount,
             'weight'         => $request->product_type === 'fisik' ? ($request->weight ?? 1000) : 0,
+            'shipping_enabled' => $request->product_type === 'fisik' ? $request->has('shipping_toggle') : false,
             'stock'          => $request->has('stock_toggle') ? $request->stock : null,
             'purchase_limit' => $request->has('limit_toggle') ? $request->purchase_limit : null,
         ]);
@@ -189,6 +190,7 @@ class ProductController extends Controller
             'price'          => $request->price,
             'discount'       => $request->discount,
             'weight'         => $request->product_type === 'fisik' ? ($request->weight ?? $product->weight ?? 1000) : 0,
+            'shipping_enabled' => $request->product_type === 'fisik' ? $request->has('shipping_toggle') : false,
             'stock'          => $request->has('stock_toggle') ? $request->stock : null,
             'purchase_limit' => $request->has('limit_toggle') ? $request->purchase_limit : null,
         ]);

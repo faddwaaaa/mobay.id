@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\AnalyticsController;
 use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\TransactionController;
 use App\Http\Controllers\Admin\WithdrawalController;
+use App\Http\Controllers\Admin\ProfileReportController;
 
 Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
@@ -42,3 +43,6 @@ Route::get('/withdrawals', [WithdrawalController::class, 'index'])->name('withdr
 Route::get('/withdrawals/{withdrawal}', [WithdrawalController::class, 'show'])->name('withdrawals.show');
 Route::patch('/withdrawals/{withdrawal}/approve', [WithdrawalController::class, 'approve'])->name('withdrawals.approve');
 Route::patch('/withdrawals/{withdrawal}/reject', [WithdrawalController::class, 'reject'])->name('withdrawals.reject');
+
+Route::get('/reports', [ProfileReportController::class, 'index'])->name('reports.index');
+Route::patch('/reports/{report}/status', [ProfileReportController::class, 'updateStatus'])->name('reports.updateStatus');

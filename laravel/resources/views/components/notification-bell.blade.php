@@ -1,4 +1,4 @@
-{{--
+﻿{{--
     resources/views/components/notification-bell.blade.php
     Di-include di layout SETELAH </aside>, bukan di dalam sidebar.
 --}}
@@ -25,16 +25,20 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 32px;
-    height: 32px;
-    border-radius: 8px;
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
     border: none;
     background: transparent;
     color: #9aaabb;
-    font-size: 14px;
+    font-size: 17px;
     cursor: pointer;
     transition: background 0.17s ease, color 0.17s ease;
     flex-shrink: 0;
+}
+
+.notif-bell-btn i {
+    line-height: 1;
 }
 
 .notif-bell-btn:hover {
@@ -44,11 +48,11 @@
 
 .notif-bell-btn.has-notif { color: var(--accent, #2356e8); }
 
-/* Badge — HIDDEN by default */
+/* Badge â€” HIDDEN by default */
 .notif-badge {
     position: absolute;
-    top: 3px;
-    right: 3px;
+    top: 2px;
+    right: 2px;
     min-width: 15px;
     height: 15px;
     border-radius: 999px;
@@ -80,7 +84,7 @@
 /* ---------- Panel ---------- */
 .notif-panel {
     position: fixed;
-    bottom: 80px;
+    top: 90px;
     left: calc(var(--sidebar-w, 220px) + 16px);
     width: 380px;
     max-height: 560px;
@@ -191,6 +195,7 @@
 
 .notif-item-icon.order   { background: #fff3e0; color: #f57c00; }
 .notif-item-icon.payment { background: #e8f5e9; color: #2e7d32; }
+.notif-item-icon.checkout { background: #eef2ff; color: #4338ca; }
 
 .notif-item-content { flex: 1; min-width: 0; }
 
@@ -230,7 +235,7 @@
 
 /* ---------- Mobile ---------- */
 @media (max-width: 768px) {
-    .notif-panel { left: 10px; right: 10px; width: auto; bottom: 60px; }
+    .notif-panel { left: 10px; right: 10px; width: auto; bottom: 60px; top: auto; }
 }
 
 /* ---------- Dark mode ---------- */
@@ -260,8 +265,9 @@ body.dark .notif-badge        { border-color: #1e2535; }
     const backdrop   = document.getElementById('notifBackdrop');
 
     // Bell sudah ada di HTML layout (bukan di-inject JS)
-    let bellBtn  = null;
-    let badge    = null;
+    let bellBtns   = [];
+    let badgeEls   = [];
+    let activeBell = null;
 
     let prevUnread    = -1;
     let panelOpen     = false;
@@ -290,7 +296,9 @@ body.dark .notif-badge        { border-color: #1e2535; }
         if (Notification.permission !== 'granted') return;
         var icon = type === 'payment'
             ? 'https://cdn-icons-png.flaticon.com/512/190/190411.png'
-            : 'https://cdn-icons-png.flaticon.com/512/891/891462.png';
+            : (type === 'checkout'
+                ? 'https://cdn-icons-png.flaticon.com/512/1170/1170576.png'
+                : 'https://cdn-icons-png.flaticon.com/512/891/891462.png');
         try {
             var n = new Notification(title, {
                 body: message,
@@ -335,59 +343,63 @@ body.dark .notif-badge        { border-color: #1e2535; }
         }, { once: true });
     });
 
-    function playOrderSound() {
-        // Pesanan masuk: "Tinggg" — sine, naik oktaf
+        function playCheckoutSound() {
+        // Checkout intent: kasir jadul "kring-klik" (pendek)
         try {
             var ac = getCtx();
             if (!ac) return;
             if (ac.state === 'suspended') { ac.resume(); return; }
 
-            var osc = ac.createOscillator();
-            var env = ac.createGain();
-            osc.connect(env);
-            env.connect(ac.destination);
-
-            osc.type = 'sine';
-            osc.frequency.setValueAtTime(660, ac.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(1320, ac.currentTime + 0.15);
-
-            env.gain.setValueAtTime(0.0001, ac.currentTime);
-            env.gain.exponentialRampToValueAtTime(0.4, ac.currentTime + 0.05);
-            env.gain.exponentialRampToValueAtTime(0.0001, ac.currentTime + 0.7);
-
-            osc.start(ac.currentTime);
-            osc.stop(ac.currentTime + 0.75);
-        } catch(e) { console.warn('playOrderSound error', e); }
-    }
-
-    function playPaymentSound() {
-        // Pembayaran masuk: "Cengkringg" — triangle, 2 nada sparkly
-        try {
-            var ac = getCtx();
-            if (!ac) return;
-            if (ac.state === 'suspended') { ac.resume(); return; }
-
-            // Nada 1
             var o1 = ac.createOscillator(); var g1 = ac.createGain();
             o1.connect(g1); g1.connect(ac.destination);
-            o1.type = 'triangle';
-            o1.frequency.setValueAtTime(1047, ac.currentTime);
+            o1.type = 'square';
+            o1.frequency.setValueAtTime(1100, ac.currentTime);
             g1.gain.setValueAtTime(0.0001, ac.currentTime);
-            g1.gain.exponentialRampToValueAtTime(0.35, ac.currentTime + 0.03);
-            g1.gain.exponentialRampToValueAtTime(0.0001, ac.currentTime + 0.3);
+            g1.gain.exponentialRampToValueAtTime(0.22, ac.currentTime + 0.02);
+            g1.gain.exponentialRampToValueAtTime(0.0001, ac.currentTime + 0.12);
             o1.start(ac.currentTime);
-            o1.stop(ac.currentTime + 0.35);
+            o1.stop(ac.currentTime + 0.13);
 
-            // Nada 2 (sedikit terlambat, lebih tinggi)
             var o2 = ac.createOscillator(); var g2 = ac.createGain();
             o2.connect(g2); g2.connect(ac.destination);
             o2.type = 'triangle';
-            o2.frequency.setValueAtTime(1568, ac.currentTime + 0.13);
-            g2.gain.setValueAtTime(0.0001, ac.currentTime + 0.13);
-            g2.gain.exponentialRampToValueAtTime(0.28, ac.currentTime + 0.16);
-            g2.gain.exponentialRampToValueAtTime(0.0001, ac.currentTime + 0.6);
-            o2.start(ac.currentTime + 0.13);
-            o2.stop(ac.currentTime + 0.65);
+            o2.frequency.setValueAtTime(760, ac.currentTime + 0.07);
+            g2.gain.setValueAtTime(0.0001, ac.currentTime + 0.07);
+            g2.gain.exponentialRampToValueAtTime(0.18, ac.currentTime + 0.1);
+            g2.gain.exponentialRampToValueAtTime(0.0001, ac.currentTime + 0.2);
+            o2.start(ac.currentTime + 0.07);
+            o2.stop(ac.currentTime + 0.21);
+        } catch(e) { console.warn('playCheckoutSound error', e); }
+    }
+
+    function playPaymentSound() {
+        // Pembayaran diterima: kasir jadul "cha-ching" (lebih panjang)
+        try {
+            var ac = getCtx();
+            if (!ac) return;
+            if (ac.state === 'suspended') { ac.resume(); return; }
+
+            var o1 = ac.createOscillator(); var g1 = ac.createGain();
+            o1.connect(g1); g1.connect(ac.destination);
+            o1.type = 'square';
+            o1.frequency.setValueAtTime(520, ac.currentTime);
+            o1.frequency.exponentialRampToValueAtTime(900, ac.currentTime + 0.08);
+            g1.gain.setValueAtTime(0.0001, ac.currentTime);
+            g1.gain.exponentialRampToValueAtTime(0.26, ac.currentTime + 0.03);
+            g1.gain.exponentialRampToValueAtTime(0.0001, ac.currentTime + 0.22);
+            o1.start(ac.currentTime);
+            o1.stop(ac.currentTime + 0.23);
+
+            var o2 = ac.createOscillator(); var g2 = ac.createGain();
+            o2.connect(g2); g2.connect(ac.destination);
+            o2.type = 'triangle';
+            o2.frequency.setValueAtTime(820, ac.currentTime + 0.1);
+            o2.frequency.exponentialRampToValueAtTime(1520, ac.currentTime + 0.22);
+            g2.gain.setValueAtTime(0.0001, ac.currentTime + 0.1);
+            g2.gain.exponentialRampToValueAtTime(0.32, ac.currentTime + 0.14);
+            g2.gain.exponentialRampToValueAtTime(0.0001, ac.currentTime + 0.52);
+            o2.start(ac.currentTime + 0.1);
+            o2.stop(ac.currentTime + 0.54);
         } catch(e) { console.warn('playPaymentSound error', e); }
     }
 
@@ -408,14 +420,16 @@ body.dark .notif-badge        { border-color: #1e2535; }
 
     // ---- Badge: hanya tampil jika count > 0 ----
     function updateBadge(count) {
-        if (!badge) return;
+        if (!badgeEls.length) return;
         if (count > 0) {
-            badge.textContent = count > 99 ? '99+' : count;
-            badge.classList.add('visible');
-            bellBtn && bellBtn.classList.add('has-notif');
+            badgeEls.forEach(function(badge) {
+                badge.textContent = count > 99 ? '99+' : count;
+                badge.classList.add('visible');
+            });
+            bellBtns.forEach(function(btn) { btn.classList.add('has-notif'); });
         } else {
-            badge.classList.remove('visible');
-            bellBtn && bellBtn.classList.remove('has-notif');
+            badgeEls.forEach(function(badge) { badge.classList.remove('visible'); });
+            bellBtns.forEach(function(btn) { btn.classList.remove('has-notif'); });
         }
     }
 
@@ -427,8 +441,10 @@ body.dark .notif-badge        { border-color: #1e2535; }
             return;
         }
         list.forEach(function(n) {
-            var iconClass = n.type === 'payment' ? 'fas fa-circle-check' : (n.icon || 'fas fa-shopping-bag');
-            var typeClass = n.type === 'payment' ? 'payment' : 'order';
+            var iconClass = n.type === 'payment'
+                ? 'fas fa-circle-check'
+                : (n.type === 'checkout' ? 'fas fa-cash-register' : (n.icon || 'fas fa-shopping-bag'));
+            var typeClass = n.type === 'payment' ? 'payment' : (n.type === 'checkout' ? 'checkout' : 'order');
             var el = document.createElement('div');
             el.className = 'notif-item' + (n.is_read ? '' : ' unread');
             el.dataset.id = n.id;
@@ -455,15 +471,20 @@ body.dark .notif-badge        { border-color: #1e2535; }
             var newUnread = data.unread_count;
 
             if (prevUnread >= 0 && newUnread > prevUnread) {
-                var newest     = notifications.slice(0, newUnread - prevUnread);
-                var hasPayment = newest.some(function(n) { return n.type === 'payment' && !n.is_read; });
-                var hasOrder   = newest.some(function(n) { return n.type === 'order'   && !n.is_read; });
+                var newest      = notifications.slice(0, newUnread - prevUnread);
+                var hasPayment  = newest.some(function(n) { return n.type === 'payment'  && !n.is_read; });
+                var hasCheckout = newest.some(function(n) { return n.type === 'checkout' && !n.is_read; });
+                var hasOrder    = newest.some(function(n) { return n.type === 'order'    && !n.is_read; });
                 if (hasPayment) {
                     playPaymentSound();
                     var pn = newest.find(function(n) { return n.type === 'payment' && !n.is_read; });
                     if (pn) showBrowserNotif(pn.title, pn.message, 'payment');
+                } else if (hasCheckout) {
+                    playCheckoutSound();
+                    var cn = newest.find(function(n) { return n.type === 'checkout' && !n.is_read; });
+                    if (cn) showBrowserNotif(cn.title, cn.message, 'checkout');
                 } else if (hasOrder) {
-                    playOrderSound();
+                    playCheckoutSound();
                     var on = newest.find(function(n) { return n.type === 'order' && !n.is_read; });
                     if (on) showBrowserNotif(on.title, on.message, 'order');
                 }
@@ -508,28 +529,51 @@ body.dark .notif-badge        { border-color: #1e2535; }
     }
 
     // ---- Panel ----
-    function openPanel()  { panelOpen = true;  render(notifications); panel.classList.add('open');    backdrop.classList.add('active'); }
+    function positionPanelNearBell() {
+        var anchorBtn = activeBell || bellBtns[0];
+        if (!anchorBtn || !panel) return;
+        if (window.innerWidth <= 768) {
+            panel.style.top = '';
+            panel.style.left = '';
+            return;
+        }
+
+        var rect = anchorBtn.getBoundingClientRect();
+        var panelWidth = 380;
+        var gap = 10;
+        var top = Math.max(12, rect.top - 2);
+        var left = rect.right + gap;
+        var maxLeft = window.innerWidth - panelWidth - 12;
+        if (left > maxLeft) left = maxLeft;
+
+        panel.style.top = top + 'px';
+        panel.style.left = left + 'px';
+    }
+
+    function openPanel()  { panelOpen = true;  render(notifications); positionPanelNearBell(); panel.classList.add('open'); backdrop.classList.add('active'); }
     function closePanel() { panelOpen = false; panel.classList.remove('open'); backdrop.classList.remove('active'); }
 
     // ---- Init setelah DOM siap ----
     document.addEventListener('DOMContentLoaded', function () {
-        bellBtn = document.getElementById('notifBellBtn');
-        badge   = document.getElementById('notifBadge');
+        bellBtns = Array.prototype.slice.call(document.querySelectorAll('.notif-bell-trigger'));
+        badgeEls = Array.prototype.slice.call(document.querySelectorAll('.notif-badge-trigger'));
 
         // Minta izin notifikasi browser
         requestNotifPermission();
 
-        if (bellBtn) {
-            bellBtn.addEventListener('click', function(e) {
+        bellBtns.forEach(function(btn) {
+            btn.addEventListener('click', function(e) {
                 e.stopPropagation();
+                activeBell = btn;
                 unlockAudio(); // pastikan audio siap saat user klik lonceng
                 panelOpen ? closePanel() : openPanel();
             });
-        }
+        });
 
         backdrop.addEventListener('click', closePanel);
         markAllBtn.addEventListener('click', function(e) { e.stopPropagation(); markAll(); });
         document.addEventListener('keydown', function(e) { if (e.key === 'Escape' && panelOpen) closePanel(); });
+        window.addEventListener('resize', function() { if (panelOpen) positionPanelNearBell(); });
 
         fetchNotifs();
         setInterval(fetchNotifs, POLL_INTERVAL);
@@ -537,3 +581,4 @@ body.dark .notif-badge        { border-color: #1e2535; }
 
 })();
 </script>
+

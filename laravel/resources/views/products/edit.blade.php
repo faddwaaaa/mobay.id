@@ -195,16 +195,31 @@
                     @if(($product->product_type ?? 'fisik') === 'fisik')
                     <div class="edit-card p-4">
                         <h3 class="text-sm font-semibold text-gray-800 mb-3">Pengiriman</h3>
-                        <div>
-                            <label class="edit-label">Berat Produk (gram)</label>
-                            <div class="relative">
-                                <input type="number" name="weight" id="editWeight-{{ $product->id }}"
-                                       class="edit-input pr-14"
-                                       value="{{ $product->weight ?? 1000 }}"
-                                       placeholder="1000" min="1">
-                                <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400 font-medium">gram</span>
+                        <div class="py-1">
+                            <div class="flex items-center justify-between mb-3">
+                                <div>
+                                    <p class="text-sm font-medium text-gray-700">Aktifkan Ongkir Otomatis</p>
+                                    <p class="text-xs text-gray-400 mt-0.5">Jika nonaktif, checkout tanpa ongkir (Rp0)</p>
+                                </div>
+                                <div class="edit-toggle-container">
+                                    <input type="checkbox" name="shipping_toggle" id="editShippingCheck-{{ $product->id }}"
+                                           class="edit-toggle-checkbox"
+                                           {{ ($product->shipping_enabled ?? true) ? 'checked' : '' }}
+                                           onchange="editToggleInput(this, 'editShippingWeightWrap-{{ $product->id }}', false)">
+                                    <label for="editShippingCheck-{{ $product->id }}" class="edit-toggle-label"></label>
+                                </div>
                             </div>
-                            <p class="text-xs text-gray-400 mt-1.5">Digunakan untuk kalkulasi ongkir otomatis via RajaOngkir</p>
+                            <div id="editShippingWeightWrap-{{ $product->id }}" class="{{ ($product->shipping_enabled ?? true) ? '' : 'hidden' }}">
+                                <label class="edit-label">Berat Produk (gram)</label>
+                                <div class="relative">
+                                    <input type="number" name="weight" id="editWeight-{{ $product->id }}"
+                                           class="edit-input pr-14"
+                                           value="{{ $product->weight ?? 1000 }}"
+                                           placeholder="1000" min="1">
+                                    <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400 font-medium">gram</span>
+                                </div>
+                                <p class="text-xs text-gray-400 mt-1.5">Digunakan untuk kalkulasi ongkir otomatis via RajaOngkir</p>
+                            </div>
                         </div>
                     </div>
                     @endif
@@ -393,11 +408,15 @@ function cleanNum(el) {
 }
 
 // ===== TOGGLE HELPERS =====
-function editToggleInput(checkbox, inputId) {
+function editToggleInput(checkbox, inputId, clearOnHide = true) {
     const input = document.getElementById(inputId);
     if (!input) return;
     input.classList.toggle('hidden', !checkbox.checked);
-    if (checkbox.checked) input.focus(); else input.value = '';
+    if (checkbox.checked) {
+        if (typeof input.focus === 'function') input.focus();
+    } else if (clearOnHide && 'value' in input) {
+        input.value = '';
+    }
 }
 
 // ===== PLATFORM SWITCHER =====

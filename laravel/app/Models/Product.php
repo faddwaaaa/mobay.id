@@ -17,7 +17,8 @@ class Product extends Model
         'discount',
         'stock',
         'purchase_limit',
-        'weight'
+        'weight',
+        'shipping_enabled',
     ];
 
     public function images() {
