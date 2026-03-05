@@ -29,6 +29,8 @@ class User extends Authenticatable
         'avatar',
         'email_verified_at',
         'balance',
+        'role',          
+        'is_suspended',
     ];
 
     protected $hidden = [

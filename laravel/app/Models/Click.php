@@ -12,6 +12,7 @@ class Click extends Model
     'ip_address',
     'user_agent',
     'referrer',  
+    'referrer_source',
     ];
 
     protected $casts = [

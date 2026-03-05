@@ -58,7 +58,6 @@ class LinkRedirectController extends Controller
                 // 1. Simpan click record - DATA REAL TIME
                 Click::create([
                     'link_id' => $link->id,
-                    'user_id' => $user->id,
                     'ip_address' => substr($ipAddress, 0, 255),
                     'user_agent' => substr($userAgent, 0, 255),
                     'referer' => $referer ? substr($referer, 0, 255) : null,
@@ -70,10 +69,11 @@ class LinkRedirectController extends Controller
                 $link->increment('views');
 
                 // 3. Track unique session
-                $this->trackSession($user, $ipAddress, $userAgent);
+                // $this->trackSession($user, $ipAddress, $userAgent);
             });
         } catch (\Exception $e) {
             Log::error('Failed to track click: ' . $e->getMessage());
+            dd($e->getMessage()); // ← tambah ini sementara
         }
     }
 

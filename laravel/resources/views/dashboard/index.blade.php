@@ -147,13 +147,17 @@
             <h3 style="font-size:16px;font-weight:700;margin:0 0 8px;">Total Views & Clicks</h3>
             <div style="display:flex;gap:20px;">
                 <div style="display:flex;align-items:center;gap:8px;">
-                    <span style="width:12px;height:12px;border-radius:50%;background:#f59e0b;display:inline-block;"></span>
-                    <span style="font-size:13px;color:#6b7280;">Views</span>
+                    <span title="Jumlah pengunjung yang membuka halaman profilmu" 
+                        style="width:12px;height:12px;border-radius:50%;background:#f59e0b;display:inline-block;cursor:help;"></span>
+                    <span title="Jumlah pengunjung yang membuka halaman profilmu"
+                        style="font-size:13px;color:#6b7280;cursor:help;border-bottom:1px dashed #d1d5db;">Views</span>
                     <span style="font-size:22px;font-weight:800;color:#111;" id="total-views-label">{{ number_format(array_sum($data)) }}</span>
                 </div>
                 <div style="display:flex;align-items:center;gap:8px;">
-                    <span style="width:12px;height:12px;border-radius:50%;background:#2563eb;display:inline-block;"></span>
-                    <span style="font-size:13px;color:#6b7280;">Clicks</span>
+                    <span title="Jumlah pengunjung yang mengklik link atau produk di halamanmu"
+      style="width:12px;height:12px;border-radius:50%;background:#2563eb;display:inline-block;cursor:help;"></span>
+<span title="Jumlah pengunjung yang mengklik link atau produk di halamanmu"
+      style="font-size:13px;color:#6b7280;cursor:help;border-bottom:1px dashed #d1d5db;">Clicks</span>
                     <span style="font-size:22px;font-weight:800;color:#111;" id="total-click-label">{{ number_format(array_sum($clicksData)) }}</span>
                 </div>
             </div>

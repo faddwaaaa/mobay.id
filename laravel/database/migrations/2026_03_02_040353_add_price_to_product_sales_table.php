@@ -12,7 +12,9 @@ return new class extends Migration
     public function up(): void
 {
     Schema::table('product_sales', function (Blueprint $table) {
-        $table->unsignedBigInteger('price')->default(0)->after('qty');
+        if (!Schema::hasColumn('product_sales', 'price')) {
+            $table->unsignedBigInteger('price')->default(0)->after('qty');
+        }
     });
 }
 
