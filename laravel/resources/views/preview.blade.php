@@ -321,7 +321,7 @@
             color: #fff; font-size: 18px; cursor: pointer;
             display: flex; align-items: center; justify-content: center;
         }
-        .fullmenu-close:hover { background: rgba(255,255,255,0.2); }
+        .fullmenu-close:hover { background: #ff0000; }
 
         .fullmenu-section-label {
             font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.35);
