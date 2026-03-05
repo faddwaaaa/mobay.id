@@ -236,6 +236,11 @@ Route::middleware('auth')->group(function () {
         Route::get('/', [AnalyticsController::class, 'index'])->name('index');
     });
 
+    // Premium (UI only)
+    Route::get('/premium', function () {
+        return view('premium.index');
+    })->name('premium.index');
+
     // Profile
     Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
     Route::get('/dashboard/profile', [ProfileController::class, 'profile'])->name('dashboard.profile');
@@ -335,6 +340,9 @@ Route::get('/go/{username}', [LinkRedirectController::class, 'redirect'])
 ->name('link.redirect');
 
 Route::get('/search', [SearchController::class, 'search']);
+Route::post('/report/{username}', [App\Http\Controllers\PublicProfileReportController::class, 'store'])
+    ->where('username', '[a-zA-Z0-9_]+')
+    ->name('public.profile.report');
 
 /*
 |--------------------------------------------------------------------------

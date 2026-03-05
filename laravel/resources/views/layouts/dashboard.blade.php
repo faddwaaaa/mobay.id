@@ -90,6 +90,7 @@
             margin: 0 auto;
         }
 
+
         .s-label {
             padding: 14px 17px 4px;
             font-size: 10px;
