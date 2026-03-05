@@ -56,6 +56,8 @@
             border-radius: 8px; cursor: pointer; transition: background 0.2s; position: relative;
         }
         .nav-icon:hover { background: #f3f4f6; }
+        .nav-icon.report { color: #be123c; }
+        .nav-icon.report:hover { background: #fff1f2; }
         .cart-badge {
             position: absolute; top: 2px; right: 2px;
             background: #ef4444; color: white;
@@ -222,6 +224,92 @@
             letter-spacing: 0.8px; text-transform: uppercase;
             padding: 10px 16px 4px;
         }
+
+        .report-modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.55);
+            backdrop-filter: blur(2px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            padding: 16px;
+        }
+        .report-modal-overlay.show { display: flex; }
+        .report-modal {
+            width: 100%;
+            max-width: 420px;
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 16px;
+            box-shadow: 0 24px 50px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+        .report-head {
+            padding: 14px 16px;
+            border-bottom: 1px solid #eef2f7;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .report-title {
+            font-size: 15px;
+            font-weight: 800;
+            color: #0f172a;
+        }
+        .report-close {
+            width: 30px;
+            height: 30px;
+            border-radius: 8px;
+            border: none;
+            background: #f1f5f9;
+            color: #475569;
+            cursor: pointer;
+        }
+        .report-body { padding: 14px 16px 16px; }
+        .report-sub { font-size: 12px; color: #64748b; margin-bottom: 10px; line-height: 1.45; }
+        .reason-list { display: grid; gap: 8px; margin-bottom: 10px; }
+        .reason-item {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 9px 10px;
+            cursor: pointer;
+            font-size: 13px;
+            color: #1e293b;
+            font-weight: 600;
+            background: #fff;
+        }
+        .reason-item:hover { border-color: #93c5fd; background: #eff6ff; }
+        .reason-item input { accent-color: #2563eb; }
+        .report-textarea {
+            width: 100%;
+            min-height: 92px;
+            border: 1px solid #dbe2ea;
+            border-radius: 10px;
+            padding: 10px 12px;
+            font-size: 13px;
+            color: #0f172a;
+            resize: vertical;
+            outline: none;
+            font-family: inherit;
+        }
+        .report-textarea:focus { border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,0.08); }
+        .report-actions { margin-top: 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .report-btn {
+            border: none;
+            border-radius: 10px;
+            padding: 10px 12px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .report-btn.cancel { background: #f1f5f9; color: #475569; }
+        .report-btn.submit { background: #dc2626; color: #fff; }
+        .report-btn.submit:disabled { opacity: .6; cursor: not-allowed; }
 
         .fullmenu-overlay {
             position: fixed; inset: 0;
@@ -447,6 +535,12 @@
             <div class="navbar-title">{{ $user->name }}</div>
         </div>
         <div class="navbar-right">
+            <div class="nav-icon report" id="reportBtn" title="Laporkan">
+                <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M5 3v18m0-11h11l-2 3 2 3H5"/>
+                </svg>
+            </div>
             <div class="nav-icon" id="searchBtn" title="Cari">
                 <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -486,6 +580,34 @@
 
 <div class="search-results-overlay" id="searchResultsOverlay"></div>
 <div class="search-results-panel" id="searchResultsPanel"></div>
+
+<div class="report-modal-overlay" id="reportModalOverlay">
+    <div class="report-modal" role="dialog" aria-modal="true" aria-labelledby="reportModalTitle">
+        <div class="report-head">
+            <div class="report-title" id="reportModalTitle">Laporkan Profil</div>
+            <button type="button" class="report-close" id="reportCloseBtn">✕</button>
+        </div>
+        <form id="reportForm" class="report-body">
+            <div class="report-sub">Pilih alasan laporan seperti fitur sosial media. Laporan akan ditinjau admin.</div>
+            <div class="reason-list">
+                <label class="reason-item"><input type="radio" name="reason" value="spam" required> Spam / Iklan Berlebihan</label>
+                <label class="reason-item"><input type="radio" name="reason" value="scam"> Penipuan / Scam</label>
+                <label class="reason-item"><input type="radio" name="reason" value="hate_speech"> Ujaran Kebencian</label>
+                <label class="reason-item"><input type="radio" name="reason" value="adult_content"> Konten Dewasa</label>
+                <label class="reason-item"><input type="radio" name="reason" value="violence"> Kekerasan / Ancaman</label>
+                <label class="reason-item"><input type="radio" name="reason" value="fake_account"> Akun Palsu</label>
+                <label class="reason-item"><input type="radio" name="reason" value="copyright"> Pelanggaran Hak Cipta</label>
+                <label class="reason-item"><input type="radio" name="reason" value="other"> Lainnya</label>
+            </div>
+            <textarea name="detail" class="report-textarea" maxlength="1000" placeholder="Detail tambahan (opsional)"></textarea>
+            <input type="hidden" name="page_url" value="{{ url()->current() }}">
+            <div class="report-actions">
+                <button type="button" class="report-btn cancel" id="reportCancelBtn">Batal</button>
+                <button type="submit" class="report-btn submit" id="reportSubmitBtn">Kirim Laporan</button>
+            </div>
+        </form>
+    </div>
+</div>
 
 {{-- ═══════════ FULLSCREEN MENU ═══════════ --}}
 <div class="fullmenu-overlay" id="fullmenuOverlay">
@@ -985,6 +1107,13 @@ async function handleCheckout() {
 }
 
 const USERNAME             = '{{ $user->username }}';
+const REPORT_ENDPOINT      = '{{ route('public.profile.report', $user->username) }}';
+const reportBtn            = document.getElementById('reportBtn');
+const reportModalOverlay   = document.getElementById('reportModalOverlay');
+const reportCloseBtn       = document.getElementById('reportCloseBtn');
+const reportCancelBtn      = document.getElementById('reportCancelBtn');
+const reportForm           = document.getElementById('reportForm');
+const reportSubmitBtn      = document.getElementById('reportSubmitBtn');
 const searchBtn            = document.getElementById('searchBtn');
 const searchBarWrap        = document.getElementById('searchBarWrap');
 const searchBackBtn        = document.getElementById('searchBackBtn');
@@ -994,6 +1123,65 @@ const searchResultsOverlay = document.getElementById('searchResultsOverlay');
 const searchResultsPanel   = document.getElementById('searchResultsPanel');
 
 let searchDebounce = null;
+
+function openReportModal() {
+    reportModalOverlay.classList.add('show');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeReportModal() {
+    reportModalOverlay.classList.remove('show');
+    document.body.style.overflow = 'auto';
+}
+
+if (reportBtn) reportBtn.addEventListener('click', openReportModal);
+if (reportCloseBtn) reportCloseBtn.addEventListener('click', closeReportModal);
+if (reportCancelBtn) reportCancelBtn.addEventListener('click', closeReportModal);
+if (reportModalOverlay) {
+    reportModalOverlay.addEventListener('click', (e) => {
+        if (e.target === reportModalOverlay) closeReportModal();
+    });
+}
+
+if (reportForm) {
+    reportForm.addEventListener('submit', async function (e) {
+        e.preventDefault();
+        const fd = new FormData(reportForm);
+        const reason = fd.get('reason');
+        if (!reason) {
+            showToast('Pilih alasan laporan terlebih dahulu.', 'error');
+            return;
+        }
+
+        reportSubmitBtn.disabled = true;
+        const oldLabel = reportSubmitBtn.textContent;
+        reportSubmitBtn.textContent = 'Mengirim...';
+
+        try {
+            const res = await fetch(REPORT_ENDPOINT, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': csrfToken,
+                    'Accept': 'application/json',
+                },
+                body: fd,
+            });
+            const json = await res.json();
+            if (!res.ok || !json.success) {
+                throw new Error(json.message || 'Gagal mengirim laporan.');
+            }
+
+            reportForm.reset();
+            closeReportModal();
+            showToast('Laporan berhasil dikirim. Terima kasih.', 'success');
+        } catch (err) {
+            showToast(err.message || 'Terjadi kesalahan saat mengirim laporan.', 'error');
+        } finally {
+            reportSubmitBtn.disabled = false;
+            reportSubmitBtn.textContent = oldLabel;
+        }
+    });
+}
 
 function openSearch()  { searchBarWrap.classList.add('open'); setTimeout(() => searchInput.focus(), 350); }
 function closeSearch() { searchBarWrap.classList.remove('open'); hideResults(); searchInput.value = ''; searchClearBtn.classList.remove('visible'); }

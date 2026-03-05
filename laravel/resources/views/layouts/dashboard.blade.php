@@ -1,4 +1,4 @@
-@php
+﻿@php
     use Illuminate\Support\Str;
 
     $user = Auth::user();
@@ -89,6 +89,7 @@
             display: block;
             margin: 0 auto;
         }
+
 
         .s-label {
             padding: 14px 17px 4px;
@@ -198,7 +199,7 @@
         .s-theme-opt:hover { background: var(--nav-hover-bg); color: var(--accent); }
         .s-theme-opt .check-icon { margin-left: auto; opacity: 0; font-size: 10px; }
 
-        /* ⬇ overflow visible agar panel notif tidak terpotong sidebar */
+        /* â¬‡ overflow visible agar panel notif tidak terpotong sidebar */
         .s-footer {
             flex-shrink: 0;
             padding: 7px 7px 12px;
@@ -212,6 +213,17 @@
             align-items: center;
             gap: 2px;
             margin-bottom: 2px;
+        }
+
+        .s-top-account {
+            flex-shrink: 0;
+            padding: 7px 7px 8px;
+            border-bottom: 1px solid var(--sidebar-border);
+            overflow: visible;
+        }
+
+        .s-top-account .s-footer-top {
+            margin-bottom: 0;
         }
 
         .s-profile-link {
@@ -302,6 +314,7 @@
             gap: 10px;
         }
 
+        .m-topbar-logo { margin-right: auto; }
         .m-topbar-logo img { height: 21px; }
 
         .m-hamburger {
@@ -365,6 +378,10 @@
             <img src="{{ asset('img/icon.png') }}" alt="Payou.id">
         </a>
     </div>
+    <button class="notif-bell-btn notif-bell-trigger" id="notifBellBtnMobile" aria-label="Notifikasi">
+        <i class="fas fa-bell"></i>
+        <span class="notif-badge notif-badge-trigger" id="notifBadgeMobile"></span>
+    </button>
 </div>
 
 <aside class="s-sidebar" id="sSidebar">
@@ -372,6 +389,30 @@
         <a href="{{ route('dashboard') }}">
             <img src="{{ asset('img/icon.png') }}" alt="Payou.id">
         </a>
+    </div>
+
+    <div class="s-top-account">
+        <div class="s-footer-top">
+            <a href="{{ route('dashboard.profile') }}" class="s-profile-link">
+                <div class="s-avatar">
+                    @if ($avatar)
+                        <img src="{{ Str::startsWith($avatar, ['http://','https://']) ? $avatar : asset('storage/'.$avatar) }}"
+                             alt="{{ Auth::user()->name }}">
+                    @else
+                        <img src="{{ asset('img/default-avatar.jpg') }}" alt="Avatar">
+                    @endif
+                </div>
+                <div class="s-profile-info">
+                    <div class="s-profile-name">{{ Auth::user()->name }}</div>
+                    <div class="s-profile-uname">&#64;{{ $user->username }}</div>
+                </div>
+                <i class="fas fa-chevron-right s-profile-arrow"></i>
+            </a>
+            <button class="notif-bell-btn notif-bell-trigger" id="notifBellBtnSidebar" aria-label="Notifikasi">
+                <i class="fas fa-bell"></i>
+                <span class="notif-badge notif-badge-trigger" id="notifBadgeSidebar"></span>
+            </button>
+        </div>
     </div>
 
     <nav class="s-nav">
@@ -457,29 +498,6 @@
     </nav>
 
     <div class="s-footer">
-        {{-- Baris atas: profil + tombol lonceng --}}
-        <div class="s-footer-top">
-            <a href="{{ route('dashboard.profile') }}" class="s-profile-link">
-                <div class="s-avatar">
-                    @if ($avatar)
-                        <img src="{{ Str::startsWith($avatar, ['http://','https://']) ? $avatar : asset('storage/'.$avatar) }}"
-                             alt="{{ Auth::user()->name }}">
-                    @else
-                        <img src="{{ asset('img/default-avatar.jpg') }}" alt="Avatar">
-                    @endif
-                </div>
-                <div class="s-profile-info">
-                    <div class="s-profile-name">{{ Auth::user()->name }}</div>
-                    <div class="s-profile-uname">&#64;{{ $user->username }}</div>
-                </div>
-                <i class="fas fa-chevron-right s-profile-arrow"></i>
-            </a>
-            {{-- 🔔 Tombol lonceng notifikasi --}}
-            <button class="notif-bell-btn" id="notifBellBtn" aria-label="Notifikasi">
-                <i class="fas fa-bell"></i>
-                <span class="notif-badge" id="notifBadge"></span>
-            </button>
-        </div>
 
         <a href="{{ route('logout') }}"
            class="s-logout"

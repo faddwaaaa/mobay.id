@@ -6,116 +6,188 @@
     <title>Pembayaran Berhasil</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --bg: #f4f7ff;
+            --card: #ffffff;
+            --line: #e5e7eb;
+            --ink: #0f172a;
+            --muted: #64748b;
+            --brand: #2356e8;
+            --ok: #16a34a;
+        }
         body {
-            font-family: system-ui, -apple-system, sans-serif;
-            background: #f9fafb;
+            font-family: "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
+            background: radial-gradient(circle at 10% 10%, #e7eeff 0%, var(--bg) 38%, #eef3ff 100%);
             min-height: 100vh;
-            display: flex;
+            color: var(--ink);
+            padding: 22px 14px 40px;
+        }
+        .wrap { max-width: 900px; margin: 0 auto; }
+        .hero {
+            background: linear-gradient(130deg, #1d4ed8 0%, #2356e8 48%, #3b82f6 100%);
+            border-radius: 20px;
+            padding: 24px 22px;
+            color: #fff;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 12px 40px rgba(35, 86, 232, .28);
+            margin-bottom: 14px;
+        }
+        .hero::before {
+            content: "";
+            position: absolute;
+            width: 220px;
+            height: 220px;
+            border-radius: 50%;
+            background: rgba(255,255,255,.1);
+            right: -70px;
+            top: -100px;
+        }
+        .hero h1 { font-size: 24px; font-weight: 800; margin-bottom: 6px; position: relative; z-index: 1; }
+        .hero p { font-size: 14px; opacity: .9; position: relative; z-index: 1; }
+        .badge {
+            display: inline-flex;
             align-items: center;
-            justify-content: center;
-            padding: 20px;
+            gap: 6px;
+            margin-top: 10px;
+            padding: 7px 12px;
+            border-radius: 999px;
+            background: rgba(255,255,255,.14);
+            border: 1px solid rgba(255,255,255,.28);
+            font-size: 12px;
+            font-weight: 700;
+            position: relative;
+            z-index: 1;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: 1.2fr .8fr;
+            gap: 14px;
         }
         .card {
-            max-width: 420px;
-            width: 100%;
-            background: #fff;
-            border: 1px solid #e5e7eb;
+            background: var(--card);
+            border: 1px solid var(--line);
             border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(15, 23, 42, .05);
             overflow: hidden;
-            text-align: center;
         }
-        .card-top {
-            background: #2563eb;
-            padding: 32px 24px 24px;
-            color: white;
+        .hd {
+            padding: 13px 16px;
+            border-bottom: 1px solid #eef2f7;
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: .07em;
+            text-transform: uppercase;
+            color: #6b7280;
         }
-        .success-icon {
-            width: 64px;
-            height: 64px;
-            background: rgba(255,255,255,0.2);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 16px;
-            font-size: 32px;
-        }
-        .card-top h1 { font-size: 22px; margin-bottom: 6px; }
-        .card-top p  { font-size: 14px; opacity: 0.85; }
-        .card-body { padding: 24px; }
-        .detail-row {
+        .bd { padding: 14px 16px; }
+        .row {
             display: flex;
             justify-content: space-between;
-            font-size: 14px;
+            gap: 14px;
+            font-size: 13px;
             padding: 8px 0;
-            border-bottom: 1px solid #f3f4f6;
-            color: #374151;
+            border-bottom: 1px dashed #edf2f7;
         }
-        .detail-row:last-child { border-bottom: none; }
-        .detail-row span:last-child { font-weight: 600; color: #111827; }
-        .btn {
-            display: block;
-            margin: 20px auto 0;
-            background: #2563eb;
-            color: #fff;
-            border: none;
-            border-radius: 8px;
-            padding: 12px 28px;
-            font-size: 14px;
-            font-weight: 600;
-            text-decoration: none;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-        .btn:hover { background: #1d4ed8; }
+        .row:last-child { border-bottom: none; }
+        .k { color: #64748b; }
+        .v { color: #0f172a; font-weight: 700; text-align: right; }
+        .v.ok { color: var(--ok); }
         .note {
-            margin-top: 16px;
-            font-size: 12px;
-            color: #6b7280;
+            margin-top: 10px;
+            background: #eff6ff;
+            color: #1e40af;
+            border: 1px solid #bfdbfe;
+            border-radius: 10px;
+            padding: 10px 12px;
+            font-size: 12.5px;
             line-height: 1.5;
+        }
+        .cta {
+            margin-top: 14px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            background: var(--brand);
+            color: #fff;
+            text-decoration: none;
+            border-radius: 12px;
+            padding: 12px 14px;
+            font-size: 14px;
+            font-weight: 700;
+        }
+        .cta:hover { background: #1d4ed8; }
+        @media (max-width: 860px) {
+            .grid { grid-template-columns: 1fr; }
+            .hero h1 { font-size: 21px; }
         }
     </style>
 </head>
 <body>
-    <div class="card">
-        <div class="card-top">
-            <div class="success-icon">✅</div>
-            <h1>Pembayaran Berhasil!</h1>
-            <p>Terima kasih atas pembelian Anda</p>
+@php
+    $storeUrl = $transaction && $transaction->user ? url('/' . $transaction->user->username) : url('/');
+    $qty = (int) ($notes['qty'] ?? 1);
+    $unitPrice = (int) ($notes['unit_price'] ?? 0);
+    $subtotal = (int) ($notes['subtotal'] ?? ($unitPrice * $qty));
+    $shipping = (int) ($notes['shipping_cost'] ?? 0);
+@endphp
+<div class="wrap">
+    <div class="hero">
+        <h1>Pembayaran Berhasil</h1>
+        <p>Pesanan Anda sudah kami terima dan sedang diproses.</p>
+        <div class="badge">Status: Lunas</div>
+    </div>
+
+    @if($transaction)
+    <div class="grid">
+        <div class="card">
+            <div class="hd">Ringkasan Pesanan</div>
+            <div class="bd">
+                <div class="row"><span class="k">No. Order</span><span class="v">{{ $transaction->order_id }}</span></div>
+                <div class="row"><span class="k">Produk</span><span class="v">{{ $notes['product_title'] ?? '-' }}</span></div>
+                <div class="row"><span class="k">Jenis Produk</span><span class="v">{{ strtoupper($notes['product_type'] ?? '-') }}</span></div>
+                <div class="row"><span class="k">Qty</span><span class="v">{{ number_format($qty) }}</span></div>
+                <div class="row"><span class="k">Harga Satuan</span><span class="v">Rp {{ number_format($unitPrice, 0, ',', '.') }}</span></div>
+                <div class="row"><span class="k">Subtotal</span><span class="v">Rp {{ number_format($subtotal, 0, ',', '.') }}</span></div>
+                <div class="row"><span class="k">Ongkir</span><span class="v">{{ $shipping > 0 ? 'Rp ' . number_format($shipping, 0, ',', '.') : 'Gratis Ongkir' }}</span></div>
+                <div class="row"><span class="k">Total Bayar</span><span class="v">Rp {{ number_format((int) $transaction->amount, 0, ',', '.') }}</span></div>
+                <div class="row"><span class="k">Metode Bayar</span><span class="v">{{ strtoupper($transaction->payment_method ?? '-') }}</span></div>
+                <div class="row"><span class="k">Status</span><span class="v ok">Lunas</span></div>
+            </div>
         </div>
-        <div class="card-body">
-            @if($transaction)
-                <div class="detail-row">
-                    <span>No. Order</span>
-                    <span>{{ $transaction->order_id }}</span>
-                </div>
-                <div class="detail-row">
-                    <span>Produk</span>
-                    <span>{{ $notes['product_title'] ?? '-' }}</span>
-                </div>
-                <div class="detail-row">
-                    <span>Total Bayar</span>
-                    <span>Rp {{ number_format($transaction->amount, 0, ',', '.') }}</span>
-                </div>
-                <div class="detail-row">
-                    <span>Status</span>
-                    <span style="color:#16a34a">✔ Lunas</span>
-                </div>
 
-                @if(isset($notes['product_type']) && $notes['product_type'] === 'digital')
-                    <div class="note">
-                        📧 File digital telah dikirim ke <strong>{{ $notes['buyer_email'] ?? '' }}</strong>.<br>
-                        Periksa folder inbox atau spam Anda.
-                    </div>
-                @elseif(isset($notes['product_type']) && $notes['product_type'] === 'umkm')
-                    <div class="note">
-                        📦 Pesanan Anda sedang diproses. Penjual akan segera menghubungi Anda melalui WhatsApp.
-                    </div>
+        <div class="card">
+            <div class="hd">Detail Pembeli</div>
+            <div class="bd">
+                <div class="row"><span class="k">Nama</span><span class="v">{{ $notes['buyer_name'] ?? '-' }}</span></div>
+                <div class="row"><span class="k">Email</span><span class="v">{{ $notes['buyer_email'] ?? '-' }}</span></div>
+                <div class="row"><span class="k">Telepon</span><span class="v">{{ $notes['buyer_phone'] ?? '-' }}</span></div>
+                <div class="row"><span class="k">Area Tujuan</span><span class="v">{{ $notes['destination_label'] ?? '-' }}</span></div>
+                <div class="row"><span class="k">Kurir</span><span class="v">{{ $notes['selected_courier'] ?? '-' }}</span></div>
+                <div class="row"><span class="k">Layanan</span><span class="v">{{ $notes['selected_service'] ?? '-' }}</span></div>
+                <div class="row"><span class="k">Waktu Transaksi</span><span class="v">{{ optional($transaction->created_at)->format('d M Y H:i') }}</span></div>
+
+                @if(($notes['product_type'] ?? '') === 'digital')
+                    <div class="note">File digital dikirim ke email pembeli. Cek inbox/spam untuk memastikan file diterima.</div>
+                @elseif(($notes['product_type'] ?? '') === 'fisik')
+                    <div class="note">Pesanan fisik akan diproses penjual. Simpan nomor order untuk kebutuhan follow-up.</div>
                 @endif
-            @endif
 
-            <a href="{{ url('/' . ($transaction->user->username ?? '')) }}" class="btn">← Kembali ke Toko</a>
+                <a href="{{ $storeUrl }}" class="cta">Kembali ke Toko</a>
+            </div>
         </div>
     </div>
+    @else
+    <div class="card">
+        <div class="bd">
+            Data transaksi tidak ditemukan.
+            <a href="{{ url('/') }}" class="cta" style="max-width:240px;">Kembali ke Beranda</a>
+        </div>
+    </div>
+    @endif
+</div>
 </body>
 </html>
+

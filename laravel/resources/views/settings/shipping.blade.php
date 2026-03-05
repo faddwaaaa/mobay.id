@@ -3,8 +3,7 @@
 @section('title', 'Pengaturan Pengiriman | Payou.id')
 
 @section('content')
-<div class="min-h-screen bg-gray-50 p-4 md:p-6">
-    <div class="max-w-2xl mx-auto">
+<div class="max-w-7xl mx-auto px-4 py-6" id="main-content">
 
         <div class="mb-6 flex items-center gap-3">
             <a href="{{ route('dashboard') }}" class="p-2 rounded-lg hover:bg-white transition-colors">
@@ -119,7 +118,6 @@
                 🔌 Test API Sekarang
             </button>
         </div>
-    </div>
 </div>
 
 <script>

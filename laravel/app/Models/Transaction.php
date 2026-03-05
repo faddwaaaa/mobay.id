@@ -33,6 +33,21 @@ class Transaction extends Model
     /**
      * Get the user that owns the transaction
      */
+
+    public function getProductTitleAttribute(): string
+{
+    if ($this->product_id && $this->product) {
+        return $this->product->title;
+    }
+    
+    // Ambil dari notes JSON
+    $notes = is_array($this->midtrans_response) 
+        ? $this->midtrans_response 
+        : json_decode($this->notes, true);
+        
+    return $notes['product_title'] ?? '—';
+}
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

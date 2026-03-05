@@ -94,15 +94,27 @@
                             </div>
                         </div>
 
-                        {{-- BERAT PRODUK --}}
+                        {{-- ONGKIR --}}
                         <div class="pt-4 border-t border-gray-100">
-                            <label class="form-label">Berat Produk (gram)</label>
-                            <div class="relative">
-                                <input type="number" name="weight" id="weightInput" class="form-input-green pr-14"
-                                       placeholder="1000" min="1" value="1000">
-                                <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400 font-medium">gram</span>
+                            <div class="flex items-center justify-between mb-3">
+                                <div>
+                                    <label class="form-label mb-0">Aktifkan Ongkir Otomatis</label>
+                                    <p class="text-xs text-gray-500">Jika nonaktif, checkout tanpa ongkir (Rp0)</p>
+                                </div>
+                                <div class="toggle-container">
+                                    <input type="checkbox" name="shipping_toggle" id="shippingCheck" class="toggle-checkbox" checked>
+                                    <label for="shippingCheck" class="toggle-label-green"></label>
+                                </div>
                             </div>
-                            <p class="text-xs text-gray-500 mt-1">Digunakan untuk kalkulasi ongkir otomatis</p>
+                            <div id="shippingWeightWrap">
+                                <label class="form-label">Berat Produk (gram)</label>
+                                <div class="relative">
+                                    <input type="number" name="weight" id="weightInput" class="form-input-green pr-14"
+                                           placeholder="1000" min="1" value="1000">
+                                    <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400 font-medium">gram</span>
+                                </div>
+                                <p class="text-xs text-gray-500 mt-1">Digunakan untuk kalkulasi ongkir otomatis</p>
+                            </div>
                         </div>
 
                         {{-- KELOLA STOK --}}
@@ -153,8 +165,8 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                             </svg>
                             <div class="text-xs text-gray-700">
-                                <p class="font-medium text-green-700">Ongkir Otomatis</p>
-                                <p class="mt-0.5">Ongkir dihitung otomatis via RajaOngkir berdasarkan berat dan kota pembeli.</p>
+                                <p class="font-medium text-green-700">Ongkir Opsional</p>
+                                <p class="mt-0.5">Aktif: ongkir otomatis via RajaOngkir. Nonaktif: ongkir Rp0 (gratis).</p>
                             </div>
                         </div>
                     </div>
@@ -201,6 +213,16 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     setupToggle('stockCheck', 'stockInput');
     setupToggle('limitCheck', 'limitInput');
+
+    const shippingCheck = document.getElementById('shippingCheck');
+    const shippingWeightWrap = document.getElementById('shippingWeightWrap');
+    if (shippingCheck && shippingWeightWrap) {
+        const syncShippingUI = () => {
+            shippingWeightWrap.classList.toggle('hidden', !shippingCheck.checked);
+        };
+        shippingCheck.addEventListener('change', syncShippingUI);
+        syncShippingUI();
+    }
 
     function fmtRupiah(val) { return val.toString().replace(/[^0-9]/g,'').replace(/\B(?=(\d{3})+(?!\d))/g,'.'); }
     function cleanRupiah(val) { const n=parseInt((val||'').toString().replace(/\./g,''),10); return isNaN(n)?0:n; }
