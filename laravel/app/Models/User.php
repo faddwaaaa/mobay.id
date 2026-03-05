@@ -31,6 +31,9 @@ class User extends Authenticatable
         'balance',
         'role',          
         'is_suspended',
+        'origin_village_code',
+        'origin_city_id',
+        'origin_city_name'
     ];
 
     protected $hidden = [

@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Product;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class OrderController extends Controller
 {
@@ -14,38 +15,42 @@ class OrderController extends Controller
         $this->middleware('auth');
     }
 
-    /**
-     * Show orders page (physical products only)
-     * GET /pesanan
-     */
     public function index(Request $request)
     {
-        $user = Auth::user();
-        
-        // Ambil ID produk fisik milik user
-        $myPhysicalProductIds = \App\Models\Product::where('user_id', $user->id)
-            ->where('product_type', 'umkm')
-            ->pluck('id')
-            ->toArray();
-        
-        // Ambil semua transaksi settlement
-        $allOrders = Transaction::where('status', 'settlement')
+        $seller = Auth::user();
+        $type = $request->get('type', 'fisik');
+        if (!in_array($type, ['fisik', 'digital'], true)) {
+            $type = 'fisik';
+        }
+
+        $sellerProducts = Product::where('user_id', $seller->id)
+            ->get(['id', 'title', 'product_type'])
+            ->keyBy('id');
+
+        $ordersCollection = Transaction::where('status', 'settlement')
             ->latest()
             ->get();
-        
-        // Filter hanya yang produknya milik user
-        $orders = $allOrders->filter(function($order) use ($myPhysicalProductIds) {
+
+        $orders = $ordersCollection->filter(function ($order) use ($sellerProducts, $type) {
             $notes = is_string($order->notes) ? json_decode($order->notes, true) : ($order->notes ?? []);
-            $productId = $notes['product_id'] ?? null;
-            
-            // Hanya tampilkan jika product_id ada di list produk fisik user
-            return $productId && in_array($productId, $myPhysicalProductIds);
-        });
-        
-        // Manual pagination
+            $productId = (int) ($notes['product_id'] ?? 0);
+            if (!$productId || !$sellerProducts->has($productId)) {
+                return false;
+            }
+
+            $productType = (string) ($notes['product_type'] ?? $sellerProducts[$productId]->product_type ?? '');
+            return $productType === $type;
+        })->map(function ($order) use ($sellerProducts) {
+            $notes = is_string($order->notes) ? json_decode($order->notes, true) : ($order->notes ?? []);
+            $productId = (int) ($notes['product_id'] ?? 0);
+            $order->order_notes = $notes;
+            $order->order_product = $sellerProducts->get($productId);
+            return $order;
+        })->values();
+
         $perPage = 10;
-        $currentPage = request()->get('page', 1);
-        $orders = new \Illuminate\Pagination\LengthAwarePaginator(
+        $currentPage = (int) $request->get('page', 1);
+        $paginatedOrders = new LengthAwarePaginator(
             $orders->forPage($currentPage, $perPage),
             $orders->count(),
             $perPage,
@@ -53,41 +58,41 @@ class OrderController extends Controller
             ['path' => request()->url(), 'query' => request()->query()]
         );
 
-        return view('orders', compact('orders'));
+        return view('orders.index', [
+            'orders' => $paginatedOrders,
+            'type' => $type,
+        ]);
     }
 
-    /**
-     * Update order status
-     * POST /pesanan/{id}/update-status
-     */
-    public function updateStatus(Request $request, $id)
+    public function show(int $id)
     {
-        $request->validate([
-            'status' => 'required|in:pending,processing,shipped,completed'
-        ]);
-
         $order = Transaction::findOrFail($id);
-        
-        // Verify ownership via notes
         $notes = is_string($order->notes) ? json_decode($order->notes, true) : ($order->notes ?? []);
-        $productId = $notes['product_id'] ?? null;
-        
-        if ($productId) {
-            $product = \App\Models\Product::find($productId);
-            if (!$product || $product->user_id !== Auth::id()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Unauthorized'
-                ], 403);
-            }
+        $productId = (int) ($notes['product_id'] ?? 0);
+        $product = $productId ? Product::find($productId) : null;
+
+        if (!$product || $product->user_id !== Auth::id()) {
+            abort(403);
         }
 
-        $order->update(['status' => $request->status]);
+        $buyerPhone = preg_replace('/\D+/', '', (string) ($notes['buyer_phone'] ?? ''));
+        if (str_starts_with($buyerPhone, '0')) {
+            $buyerPhone = '62' . substr($buyerPhone, 1);
+        } elseif (!str_starts_with($buyerPhone, '62')) {
+            $buyerPhone = '62' . $buyerPhone;
+        }
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Status pesanan berhasil diupdate',
-            'new_status' => $request->status
+        $waMessage = rawurlencode(
+            'Halo ' . ($notes['buyer_name'] ?? 'Kak') .
+            ', terkait pesanan #' . $order->order_id .
+            ' untuk produk "' . ($notes['product_title'] ?? $product->title) . '"'
+        );
+
+        return view('orders.show', [
+            'order' => $order,
+            'notes' => $notes,
+            'product' => $product,
+            'waLink' => $buyerPhone ? "https://wa.me/{$buyerPhone}?text={$waMessage}" : null,
         ]);
     }
 }

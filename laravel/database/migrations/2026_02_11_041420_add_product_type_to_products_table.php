@@ -11,6 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (!Schema::hasTable('products') || Schema::hasColumn('products', 'product_type')) {
+            return;
+        }
+
         Schema::table('products', function (Blueprint $table) {
             $table->enum('product_type', ['umkm', 'digital'])
                 ->default('umkm')
@@ -20,6 +24,10 @@ return new class extends Migration
 
     public function down(): void
     {
+        if (!Schema::hasTable('products') || !Schema::hasColumn('products', 'product_type')) {
+            return;
+        }
+
         Schema::table('products', function (Blueprint $table) {
             $table->dropColumn('product_type');
         });

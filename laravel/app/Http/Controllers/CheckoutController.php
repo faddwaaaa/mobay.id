@@ -52,7 +52,7 @@ class CheckoutController extends Controller
 
         $product = Product::with('files')->findOrFail($request->product_id);
 
-        if ($product->product_type === 'umkm') {
+        if ($product->product_type === 'fisik') {
             if ($product->stock !== null && $product->stock < $request->qty) {
                 return response()->json(['error' => true, 'message' => 'Stok tidak mencukupi. Tersedia: ' . $product->stock], 422);
             }
@@ -62,12 +62,22 @@ class CheckoutController extends Controller
             if (empty($request->buyer_address)) {
                 return response()->json(['error' => true, 'message' => 'Alamat pengiriman wajib diisi untuk produk fisik.'], 422);
             }
+            if (empty($request->destination_village_code)) {
+                return response()->json(['error' => true, 'message' => 'Pilih area tujuan pengiriman terlebih dahulu.'], 422);
+            }
+            if (!isset($request->selected_ongkir_cost) || (int) $request->selected_ongkir_cost <= 0) {
+                return response()->json(['error' => true, 'message' => 'Pilih layanan pengiriman terlebih dahulu.'], 422);
+            }
         }
 
         $qty       = $product->product_type === 'digital' ? 1 : (int) $request->qty;
         // FIX: Gunakan ?: bukan ?? supaya discount bernilai 0 tetap fallback ke price
         $unitPrice = (int) ($product->discount ?: $product->price);
-        $amount    = $unitPrice * $qty;
+        $subtotal  = $unitPrice * $qty;
+        $shippingCost = $product->product_type === 'fisik'
+            ? max((int) ($request->selected_ongkir_cost ?? 0), 0)
+            : 0;
+        $amount    = $subtotal + $shippingCost;
         $orderId   = 'PAYOU-' . strtoupper(Str::random(8)) . '-' . time();
 
         $transaction = Transaction::create([
@@ -87,6 +97,12 @@ class CheckoutController extends Controller
                 'product_type'  => $product->product_type,
                 'qty'           => $qty,
                 'unit_price'    => $unitPrice,
+                'shipping_cost' => $shippingCost,
+                'subtotal'      => $subtotal,
+                'destination_village_code' => $request->destination_village_code ?? null,
+                'destination_label' => $request->destination_label ?? null,
+                'selected_courier' => $request->selected_courier ?: 'OTHER',
+                'selected_service' => $request->selected_service ?: 'Standard',
             ]),
             'ip_address' => $request->ip(),
         ]);
@@ -108,6 +124,16 @@ class CheckoutController extends Controller
                 'phone'      => $request->buyer_phone,
             ],
         ];
+
+        if ($shippingCost > 0) {
+            $courierLabel = strtoupper((string) ($request->selected_courier ?: 'OTHER'));
+            $snapParams['item_details'][] = [
+                'id'       => 'shipping',
+                'price'    => $shippingCost,
+                'quantity' => 1,
+                'name'     => 'Ongkir ' . $courierLabel,
+            ];
+        }
 
         try {
             $snapToken = Snap::getSnapToken($snapParams);
@@ -291,7 +317,7 @@ class CheckoutController extends Controller
         }
 
         // 2. Kurangi stok produk fisik
-        if ($product->product_type === 'umkm' && $product->stock !== null) {
+        if ($product->product_type === 'fisik' && $product->stock !== null) {
             $product->decrement('stock', $notes['qty'] ?? 1);
         }
 
@@ -305,6 +331,29 @@ class CheckoutController extends Controller
         if ($seller) {
             $seller->increment('balance', (int) $transaction->amount);
             Log::info("✅ Saldo {$seller->name} +Rp{$transaction->amount} dari order {$transaction->order_id}");
+
+            // ── Notifikasi pesanan masuk ──
+            \App\Models\Notification::create([
+                'user_id' => $seller->id,
+                'type'    => 'order',
+                'title'   => 'Pesanan Baru Masuk!',
+                'message' => '📦 ' . ($notes['buyer_name'] ?? 'Pembeli') . ' memesan ' . ($notes['product_title'] ?? $product->title) . ' (#' . $transaction->order_id . ')',
+                'icon'    => 'fas fa-shopping-bag',
+                'link'    => '/riwayat',
+                'is_read' => false,
+            ]);
+
+            // ── Notifikasi pembayaran diterima ──
+            \App\Models\Notification::create([
+                'user_id' => $seller->id,
+                'type'    => 'payment',
+                'title'   => 'Pembayaran Diterima!',
+                'message' => '💰 Pembayaran #' . $transaction->order_id . ' sebesar Rp' . number_format((int) $transaction->amount, 0, ',', '.') . ' berhasil dikonfirmasi.',
+                'icon'    => 'fas fa-circle-check',
+                'link'    => '/riwayat',
+                'is_read' => false,
+            ]);
+
         } else {
             Log::error("❌ Seller user_id={$transaction->user_id} tidak ditemukan.");
         }

@@ -24,7 +24,8 @@ use App\Http\Controllers\{
     CartController,
     PaymentAccountController,
     SearchController,
-    OrderController
+    OrderController,
+    RajaOngkirController
 };
 
 /*
@@ -85,6 +86,9 @@ Route::middleware(['auth', 'verified'])->prefix('payment')->name('payment.')->gr
 |--------------------------------------------------------------------------
 */
 Route::prefix('api')->group(function () {
+    // Ongkir (Binderbyte)
+    Route::get('/ongkir/cities', [RajaOngkirController::class, 'cities']);
+    Route::post('/ongkir/cost', [RajaOngkirController::class, 'cost']);
 
     // Midtrans callback
     Route::post('/callback/midtrans', [CallbackController::class, 'handleMidtransCallback'])
@@ -195,6 +199,14 @@ Route::middleware(['auth', 'verified'])->prefix('payment')->name('payment.')->gr
 
 });
 
+
+use App\Http\Controllers\ShippingSettingsController;
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/settings/shipping',  [ShippingSettingsController::class, 'index'])->name('settings.shipping');
+    Route::post('/settings/shipping', [ShippingSettingsController::class, 'save'])->name('settings.shipping.save');
+});
+
 /*
 |--------------------------------------------------------------------------
 | ORDER ROUTES
@@ -202,7 +214,7 @@ Route::middleware(['auth', 'verified'])->prefix('payment')->name('payment.')->gr
 */
 Route::middleware('auth')->group(function () {
     Route::get('/pesanan', [OrderController::class, 'index'])->name('orders.index');
-    Route::post('/pesanan/{id}/update-status', [OrderController::class, 'updateStatus'])->name('orders.update-status');
+    Route::get('/pesanan/{id}', [OrderController::class, 'show'])->name('orders.show');
 });
 
 
@@ -253,6 +265,12 @@ Route::middleware('auth')->group(function () {
             'todayScans' => 0,
         ]);
     })->name('qrcode.show');
+
+    // Notifications
+    Route::get('/notifications', [App\Http\Controllers\NotificationController::class, 'index'])->name('notifications.index');
+    Route::get('/notifications/unread-count', [App\Http\Controllers\NotificationController::class, 'unreadCount'])->name('notifications.unread');
+    Route::post('/notifications/mark-all', [App\Http\Controllers\NotificationController::class, 'markAllRead'])->name('notifications.markAll');
+    Route::post('/notifications/{notification}/read', [App\Http\Controllers\NotificationController::class, 'markRead'])->name('notifications.read');
 
     // Produk
     Route::get('/produk', [ProductController::class, 'index'])->name('products.manage');

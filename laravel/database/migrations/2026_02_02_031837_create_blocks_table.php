@@ -16,20 +16,18 @@ return new class extends Migration
 
             // Relasi ke page
             $table->foreignId('page_id')
-                  ->constrained()
-                  ->cascadeOnDelete();
+                ->constrained()
+                ->cascadeOnDelete();
 
             // Tipe block (text, image, link, video, product)
             $table->string('type');
 
-            // Relasi ke product (optional)
-            $table->foreignId('product_id')
-                  ->nullable()
-                  ->constrained()
-                  ->nullOnDelete(); // 🔥 lebih aman
+            // Relasi ke product (optional). FK ditambahkan di migration terpisah
+            // karena tabel products dibuat setelah migration ini.
+            $table->unsignedBigInteger('product_id')->nullable();
 
             // Content fleksibel (nullable untuk product block)
-            $table->json('content')->nullable(); // 🔥 WAJIB nullable
+            $table->json('content')->nullable();
 
             // Urutan block
             $table->integer('position')->default(0);

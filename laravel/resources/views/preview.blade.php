@@ -64,27 +64,24 @@
         }
         .cart-badge.visible { display: flex; }
 
+        /* ── HAMBURGER: 9 titik seragam ── */
         .hamburger {
             width: 34px; height: 34px;
             display: grid;
-            grid-template-columns: repeat(3, 5px);
-            grid-template-rows: repeat(3, 5px);
-            gap: 3.5px;
+            grid-template-columns: repeat(3, 4px);
+            grid-template-rows: repeat(3, 4px);
+            gap: 4px;
             place-content: center;
             cursor: pointer;
             border-radius: 8px;
-            transition: background 0.2s, transform 0.15s;
         }
-        .hamburger:hover { background: #f3f4f6; transform: scale(1.05); }
         .hamburger:active { transform: scale(0.93); }
         .hamburger span {
-            width: 5px; height: 5px;
+            width: 4px; height: 4px;
             background: #374151;
             border-radius: 50%;
             display: block;
-            transition: background 0.2s;
         }
-        .hamburger:hover span { background: #2563eb; }
 
         .search-bar-wrap {
             position: sticky; top: 61px; z-index: 99;
@@ -338,6 +335,7 @@
         .empty-state { text-align: center; padding: 40px 20px; color: #9ca3af; }
         .empty-icon  { width: 64px; height: 64px; background: #f3f4f6; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; color: #d1d5db; }
 
+        /* PRODUCT DETAIL MODAL */
         .product-detail-overlay {
             position: fixed; inset: 0; background: rgba(0,0,0,0.45);
             display: none; justify-content: center; align-items: center; z-index: 9999; padding: 20px;
@@ -360,6 +358,7 @@
         .detail-price   { display: flex; align-items: center; gap: 10px; }
         .final-price    { font-size: 22px; font-weight: 700; color: #2563eb; }
         .original-price { text-decoration: line-through; color: #999; font-size: 14px; }
+        .discount-badge-detail { background: #fee2e2; color: #dc2626; font-size: 12px; font-weight: 600; padding: 3px 8px; border-radius: 6px; }
         .stock-info     { font-size: 13px; color: #555; }
         .detail-description { font-size: 14px; color: #444; line-height: 1.6; }
         .detail-buttons { display: flex; gap: 10px; padding: 16px; border-top: 1px solid #e5e7eb; background: #fff; flex-shrink: 0; }
@@ -373,6 +372,7 @@
         .btn-buy { flex: 1; padding: 12px; background: #2563eb; color: white; border-radius: 10px; font-weight: 600; font-size: 15px; border: none; cursor: pointer; transition: background 0.2s; }
         .btn-buy:hover { background: #1d4ed8; }
 
+        /* CART DRAWER */
         .cart-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 500; opacity: 0; visibility: hidden; transition: all 0.3s; }
         .cart-overlay.active { opacity: 1; visibility: visible; }
         .cart-drawer { position: fixed; right: 0; top: 0; bottom: 0; width: 100%; max-width: 420px; background: #fff; z-index: 501; transform: translateX(100%); transition: transform 0.3s ease; display: flex; flex-direction: column; overflow: hidden; }
@@ -393,10 +393,8 @@
 <body>
 
 @php
-    // Ambil page yang sesuai dengan query param ?page=
     $selectedPageId = request()->query('page');
     $activePage = null;
-
     if ($selectedPageId && $user->pages) {
         $activePage = $user->pages->firstWhere('id', $selectedPageId);
     }
@@ -600,8 +598,10 @@
             <div class="detail-price">
                 <span class="final-price"    id="detailFinalPrice"></span>
                 <span class="original-price" id="detailOriginalPrice"></span>
+                <span class="discount-badge-detail" id="detailDiscountBadge" style="display:none;"></span>
             </div>
-            <div class="stock-info">Stok: <span id="detailStock"></span></div>
+            {{-- Stok hanya ditampilkan untuk produk fisik --}}
+            <div class="stock-info" id="detailStockWrap">Stok: <span id="detailStock"></span></div>
             <div class="detail-description">
                 <strong style="font-size:13px;color:#6b7280;letter-spacing:.5px;">DESKRIPSI</strong>
                 <p id="detailDescription" style="margin-top:6px;"></p>
@@ -665,44 +665,52 @@ const SEARCH_ICONS = {
 };
 const THUMB_CLASS = { product: 'thumb-product', link: 'thumb-link', text: 'thumb-text', other: 'thumb-other' };
 
+// ─── SCROLL LOCK (fix mobile background scroll) ──────────────────
+let scrollY = 0;
+function lockScroll() {
+    scrollY = window.scrollY;
+    document.body.style.position = 'fixed';
+    document.body.style.top      = `-${scrollY}px`;
+    document.body.style.width    = '100%';
+}
+function unlockScroll() {
+    document.body.style.position = '';
+    document.body.style.top      = '';
+    document.body.style.width    = '';
+    window.scrollTo(0, scrollY);
+}
+
 // ─── FULLSCREEN MENU ─────────────────────────────────────────────
 const hamburger       = document.getElementById('hamburger');
 const fullmenuOverlay = document.getElementById('fullmenuOverlay');
 const fullmenuClose   = document.getElementById('fullmenuClose');
 
-function openMenu()  { fullmenuOverlay.classList.add('active');    document.body.style.overflow = 'hidden'; }
-function closeMenu() { fullmenuOverlay.classList.remove('active'); document.body.style.overflow = 'auto'; }
+function openMenu()  { lockScroll();   fullmenuOverlay.classList.add('active'); }
+function closeMenu() { unlockScroll(); fullmenuOverlay.classList.remove('active'); }
 hamburger.addEventListener('click', openMenu);
 fullmenuClose.addEventListener('click', closeMenu);
 
-// Klik item menu → switch tab langsung (tanpa reload)
 document.querySelectorAll('.fullmenu-item[data-tab]').forEach(item => {
     item.addEventListener('click', () => {
         const tab    = item.dataset.tab;
         const pageId = item.dataset.pageId;
-
-        // Update active state menu
         document.querySelectorAll('.fullmenu-item').forEach(n => n.classList.remove('active'));
         item.classList.add('active');
-
-        // Switch tab konten
         document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
         document.getElementById(`tab-${tab}`)?.classList.add('active');
-
         closeMenu();
-
-        // Load produk untuk tab yang baru ditampilkan (jika belum)
         loadProductsInTab(tab);
     });
 });
 
 // ─── RENDER PRODUCT BLOCK ────────────────────────────────────────
 function renderProductBlock(container, product) {
-    const price      = product.price    ?? 0;
-    const discount   = product.discount ?? null;
-    const finalPrice = product.final_price ?? ((discount && discount > 0 && discount < price) ? discount : price);
-    const hasDis     = finalPrice < price;
-    const discPct    = hasDis ? Math.round(((price - finalPrice) / price) * 100) : 0;
+    const price      = parseFloat(product.price)       || 0;
+    const discount   = parseFloat(product.discount)    || 0;
+    const finalPrice = parseFloat(product.final_price) ||
+                       ((discount > 0 && discount < price) ? discount : price);
+    const hasDis  = finalPrice < price;
+    const discPct = hasDis ? Math.round(((price - finalPrice) / price) * 100) : 0;
 
     const imgHtml   = product.image_url
         ? `<img src="${product.image_url}" alt="${escHtml(product.title)}">`
@@ -729,11 +737,8 @@ function renderProductBlock(container, product) {
 function loadProductsInTab(tabId) {
     const tabEl = document.getElementById(`tab-${tabId}`);
     if (!tabEl) return;
-
     const containers = tabEl.querySelectorAll('[data-product-id]');
     if (!containers.length) return;
-
-    // Skip jika sudah ter-render (tidak ada skeleton lagi)
     const stillSkeleton = [...containers].filter(c => c.querySelector('.product-skeleton'));
     if (!stillSkeleton.length) return;
 
@@ -753,7 +758,6 @@ function loadProductsInTab(tabId) {
             });
         })
         .catch(() => {
-            // Fallback: fetch satu per satu
             stillSkeleton.forEach(container => {
                 const pid = container.getAttribute('data-product-id');
                 fetch(`/api/product/${pid}/data`)
@@ -768,7 +772,6 @@ function loadProductsInTab(tabId) {
 
 // ─── DOMContentLoaded ────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', function () {
-    // Load produk hanya di tab yang aktif saat ini
     const activeTab = document.querySelector('.tab-content.active');
     if (activeTab) {
         loadProductsInTab(activeTab.id.replace('tab-', ''));
@@ -784,16 +787,34 @@ function handleProductClick(productId) {
         .then(r => r.json())
         .then(product => {
             currentProductId = product.id;
-            const price      = product.price    ?? 0;
-            const discount   = product.discount ?? null;
-            const finalPrice = product.final_price ?? ((discount && discount > 0 && discount < price) ? discount : price);
-            const hasDis     = finalPrice < price;
 
-            document.getElementById('detailTitle').textContent         = product.title;
-            document.getElementById('detailDescription').textContent   = product.description ?? '';
-            document.getElementById('detailStock').textContent         = product.stock ?? 0;
-            document.getElementById('detailFinalPrice').textContent    = formatRupiah(finalPrice);
+            const price      = parseFloat(product.price)       || 0;
+            const discount   = parseFloat(product.discount)    || 0;
+            const finalPrice = parseFloat(product.final_price) ||
+                               ((discount > 0 && discount < price) ? discount : price);
+            const hasDis  = finalPrice < price;
+            const discPct = hasDis ? Math.round(((price - finalPrice) / price) * 100) : 0;
+
+            document.getElementById('detailTitle').textContent        = product.title;
+            document.getElementById('detailFinalPrice').textContent   = formatRupiah(finalPrice);
             document.getElementById('detailOriginalPrice').textContent = hasDis ? formatRupiah(price) : '';
+            document.getElementById('detailDescription').textContent  = product.description ?? '';
+
+            const discBadge = document.getElementById('detailDiscountBadge');
+            if (hasDis) {
+                discBadge.textContent   = `-${discPct}%`;
+                discBadge.style.display = 'inline-block';
+            } else {
+                discBadge.style.display = 'none';
+            }
+
+            const stockWrap = document.getElementById('detailStockWrap');
+            if (product.product_type === 'digital' || product.stock === null) {
+                stockWrap.style.display = 'none';
+            } else {
+                stockWrap.style.display = '';
+                document.getElementById('detailStock').textContent = product.stock;
+            }
 
             const img = document.getElementById('detailImage');
             if (product.image_url) { img.src = product.image_url; img.style.display = 'block'; }
@@ -802,15 +823,16 @@ function handleProductClick(productId) {
             document.getElementById('buyNowBtn').onclick = () => {
                 showToast('Ini mode preview — tidak bisa checkout', 'error');
             };
+
+            lockScroll();
             document.getElementById('productDetailModal').style.display = 'flex';
-            document.body.style.overflow = 'hidden';
         })
         .catch(() => showToast('Gagal memuat produk.', 'error'));
 }
 
 function closeProductDetail() {
     document.getElementById('productDetailModal').style.display = 'none';
-    document.body.style.overflow = 'auto';
+    unlockScroll();
     currentProductId = null;
 }
 
@@ -823,9 +845,9 @@ const cartOverlay = document.getElementById('cartOverlay');
 const cartDrawer  = document.getElementById('cartDrawer');
 
 function openCart() {
+    lockScroll();
     cartOverlay.classList.add('active');
     cartDrawer.classList.add('active');
-    document.body.style.overflow = 'hidden';
     document.getElementById('cartItems').innerHTML = `
         <div class="cart-empty">
             ${CART_EMPTY_SVG}
@@ -836,7 +858,7 @@ function openCart() {
 function closeCart() {
     cartOverlay.classList.remove('active');
     cartDrawer.classList.remove('active');
-    document.body.style.overflow = 'auto';
+    unlockScroll();
 }
 cartOverlay.addEventListener('click', closeCart);
 document.getElementById('cartBtn').addEventListener('click', openCart);

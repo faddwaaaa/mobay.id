@@ -3,10 +3,9 @@
 
 <div id="editModalOverlay-{{ $product->id }}"
      class="fixed inset-0 hidden"
-     style="z-index:9990; background:rgba(15,23,42,0.5); backdrop-filter:blur(5px); -webkit-backdrop-filter:blur(5px);
+     style="z-index:9990; background:rgba(15,23,42,0.5); backdrop-filter:blur(5px);
             opacity:0; transition:opacity 0.2s ease;"
-     onclick="closeEditModal({{ $product->id }})">
-</div>
+     onclick="closeEditModal({{ $product->id }})"></div>
 
 <div id="editModal-{{ $product->id }}"
      class="fixed inset-0 hidden"
@@ -19,32 +18,25 @@
         {{-- HEADER --}}
         <div class="flex items-center justify-between p-5 border-b border-gray-100 flex-shrink-0">
             <div class="flex items-center gap-3">
-                <div class="p-2 rounded-lg"
-                     style="{{ ($product->product_type ?? 'fisik') === 'digital' ? 'background:#eff6ff' : 'background:#f0fdf4' }}">
-                    <svg class="w-5 h-5" style="{{ ($product->product_type ?? 'fisik') === 'digital' ? 'color:#2563eb' : 'display:none' }}"
-                         fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                <div class="p-2 rounded-lg" style="{{ ($product->product_type ?? 'fisik') === 'digital' ? 'background:#eff6ff' : 'background:#f0fdf4' }}">
+                    <svg class="w-5 h-5" style="{{ ($product->product_type ?? 'fisik') === 'digital' ? 'color:#2563eb' : 'display:none' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                     </svg>
-                    <svg class="w-5 h-5" style="{{ ($product->product_type ?? 'fisik') !== 'digital' ? 'color:#16a34a' : 'display:none' }}"
-                         fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                              d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                    <svg class="w-5 h-5" style="{{ ($product->product_type ?? 'fisik') !== 'digital' ? 'color:#16a34a' : 'display:none' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
                     </svg>
                 </div>
                 <div>
                     <h2 class="text-base font-bold text-gray-800">
                         Edit Produk
-                        <span style="font-size:11px; padding:2px 8px; border-radius:999px; font-weight:600; margin-left:6px;
-                                     {{ ($product->product_type ?? 'fisik') === 'digital' ? 'background:#eff6ff; color:#2563eb' : 'background:#f0fdf4; color:#16a34a' }}">
+                        <span style="font-size:11px; padding:2px 8px; border-radius:999px; font-weight:600; margin-left:6px; {{ ($product->product_type ?? 'fisik') === 'digital' ? 'background:#eff6ff; color:#2563eb' : 'background:#f0fdf4; color:#16a34a' }}">
                             {{ ($product->product_type ?? 'fisik') === 'digital' ? 'Digital' : 'Fisik' }}
                         </span>
                     </h2>
                     <p class="text-xs text-gray-500 mt-0.5">Perbarui informasi produk Anda</p>
                 </div>
             </div>
-            <button onclick="closeEditModal({{ $product->id }})"
-                    class="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-400 hover:text-gray-600">
+            <button onclick="closeEditModal({{ $product->id }})" class="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-400 hover:text-gray-600">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                 </svg>
@@ -60,6 +52,13 @@
                 @method('PUT')
                 <input type="hidden" name="product_type" value="{{ $product->product_type ?? 'fisik' }}">
 
+                {{-- Hidden input ID gambar lama untuk auto-replace --}}
+                @if($product->images->count())
+                <input type="hidden"
+                       id="existingImageIds-{{ $product->id }}"
+                       value="{{ $product->images->pluck('id')->join(',') }}">
+                @endif
+
                 <div class="space-y-5">
 
                     {{-- GAMBAR SAAT INI --}}
@@ -68,11 +67,6 @@
                             <div>
                                 <h3 class="text-sm font-semibold text-gray-800">Gambar Saat Ini</h3>
                                 <p class="text-xs text-gray-500 mt-0.5">Centang gambar yang ingin dihapus</p>
-                            </div>
-                            <div class="p-2 bg-orange-50 rounded-lg">
-                                <svg class="w-4 h-4 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                                </svg>
                             </div>
                         </div>
                         @if($product->images->count())
@@ -104,20 +98,7 @@
                                 <h3 class="text-sm font-semibold text-gray-800">Tambah Gambar Baru</h3>
                                 <p class="text-xs text-gray-500 mt-0.5">PNG, JPG, JPEG — dikompresi otomatis</p>
                             </div>
-                            <div class="p-2 bg-blue-50 rounded-lg">
-                                <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                                </svg>
-                            </div>
                         </div>
-
-                        {{-- Hidden input untuk menyimpan ID gambar lama --}}
-                        @if($product->images->count())
-                        <input type="hidden"
-                               id="existingImageIds-{{ $product->id }}"
-                               value="{{ $product->images->pluck('id')->join(',') }}">
-                        @endif
-
                         <div class="border-2 border-dashed border-gray-200 rounded-xl p-4 text-center hover:border-blue-400 transition-colors cursor-pointer">
                             <input type="file" id="editNewImages-{{ $product->id }}" multiple accept="image/*" class="hidden">
                             <label for="editNewImages-{{ $product->id }}" class="cursor-pointer block">
@@ -147,7 +128,7 @@
                         </div>
                     </div>
 
-                    {{-- FILE UNTUK PEMBELI (hanya digital) --}}
+                    {{-- FILE DIGITAL --}}
                     @php
                         $existingPlatform = 'upload';
                         $existingFileUrl  = '';
@@ -157,22 +138,10 @@
                             $existingFileUrl  = $firstFile->file_url ?? '';
                         }
                     @endphp
-
                     <div id="editFileSection-{{ $product->id }}"
                          class="edit-card p-4 {{ ($product->product_type ?? 'fisik') === 'digital' ? '' : 'hidden' }}">
-                        <div class="flex items-center justify-between mb-4">
-                            <div>
-                                <h3 class="text-sm font-semibold text-gray-800">File untuk Pembeli</h3>
-                                <p class="text-xs text-gray-500 mt-0.5">File atau link yang diterima pembeli setelah transaksi</p>
-                            </div>
-                            <div class="p-2 bg-blue-50 rounded-lg">
-                                <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                                </svg>
-                            </div>
-                        </div>
+                        <h3 class="text-sm font-semibold text-gray-800 mb-3">File untuk Pembeli</h3>
                         <div class="mb-4">
-                            <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Platform</p>
                             <div class="flex flex-wrap gap-2" id="editPlatformBtns-{{ $product->id }}">
                                 <button type="button" class="edit-platform-btn {{ $existingPlatform === 'upload'  ? 'active' : '' }}" data-platform="upload">Upload</button>
                                 <button type="button" class="edit-platform-btn {{ $existingPlatform === 'dropbox' ? 'active' : '' }}" data-platform="dropbox">Dropbox</button>
@@ -181,23 +150,7 @@
                             </div>
                         </div>
                         <input type="hidden" name="file_platform" id="editFilePlatform-{{ $product->id }}" value="{{ $existingPlatform }}">
-                        <div id="editPanelUpload-{{ $product->id }}" class="{{ $existingPlatform === 'upload' ? '' : 'hidden' }}">
-                            @if(isset($product->files) && $product->files->where('platform', 'upload')->count())
-                            <div class="mb-3">
-                                <p class="text-xs font-semibold text-gray-600 mb-2">File Saat Ini</p>
-                                <div class="space-y-2">
-                                    @foreach($product->files->where('platform', 'upload') as $file)
-                                    <div class="flex items-center justify-between p-2.5 bg-gray-50 rounded-lg border border-gray-200 group">
-                                        <span class="text-xs text-gray-700 truncate">{{ basename($file->file ?? 'File') }}</span>
-                                        <label class="flex items-center gap-1.5 text-xs text-red-500 cursor-pointer flex-shrink-0 ml-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <input type="checkbox" name="delete_files[]" value="{{ $file->id }}" class="w-3.5 h-3.5 accent-red-500">
-                                            Hapus
-                                        </label>
-                                    </div>
-                                    @endforeach
-                                </div>
-                            </div>
-                            @endif
+                        <div id="editPanelUpload-{{ $product->id }}"  class="{{ $existingPlatform === 'upload'  ? '' : 'hidden' }}">
                             <div class="border-2 border-dashed border-gray-200 rounded-xl p-4 text-center hover:border-blue-400 transition-colors cursor-pointer">
                                 <input type="file" id="editFileUpload-{{ $product->id }}" multiple class="hidden">
                                 <label for="editFileUpload-{{ $product->id }}" class="cursor-pointer block">
@@ -208,19 +161,16 @@
                             <div id="editFileList-{{ $product->id }}" class="space-y-2 mt-3"></div>
                         </div>
                         <div id="editPanelDropbox-{{ $product->id }}" class="{{ $existingPlatform === 'dropbox' ? '' : 'hidden' }}">
-                            <input type="url" id="editUrlDropbox-{{ $product->id }}" class="edit-input"
-                                   placeholder="https://www.dropbox.com/s/..."
+                            <input type="url" id="editUrlDropbox-{{ $product->id }}" class="edit-input" placeholder="https://www.dropbox.com/s/..."
                                    value="{{ $existingPlatform === 'dropbox' ? $existingFileUrl : '' }}">
                         </div>
-                        <div id="editPanelGdrive-{{ $product->id }}" class="{{ $existingPlatform === 'gdrive' ? '' : 'hidden' }}">
-                            <input type="url" id="editUrlGdrive-{{ $product->id }}" class="edit-input"
-                                   placeholder="https://drive.google.com/file/d/..."
-                                   value="{{ $existingPlatform === 'gdrive' ? $existingFileUrl : '' }}">
+                        <div id="editPanelGdrive-{{ $product->id }}"  class="{{ $existingPlatform === 'gdrive'  ? '' : 'hidden' }}">
+                            <input type="url" id="editUrlGdrive-{{ $product->id }}"  class="edit-input" placeholder="https://drive.google.com/file/d/..."
+                                   value="{{ $existingPlatform === 'gdrive'  ? $existingFileUrl : '' }}">
                         </div>
-                        <div id="editPanelOther-{{ $product->id }}" class="{{ $existingPlatform === 'other' ? '' : 'hidden' }}">
-                            <input type="url" id="editUrlOther-{{ $product->id }}" class="edit-input"
-                                   placeholder="https://..."
-                                   value="{{ $existingPlatform === 'other' ? $existingFileUrl : '' }}">
+                        <div id="editPanelOther-{{ $product->id }}"   class="{{ $existingPlatform === 'other'   ? '' : 'hidden' }}">
+                            <input type="url" id="editUrlOther-{{ $product->id }}"   class="edit-input" placeholder="https://..."
+                                   value="{{ $existingPlatform === 'other'   ? $existingFileUrl : '' }}">
                         </div>
                     </div>
 
@@ -241,38 +191,30 @@
                         </div>
                     </div>
 
-                    {{-- ONGKOS KIRIM (hanya fisik) --}}
-                    {{-- @if(($product->product_type ?? 'fisik') === 'fisik')
+                    {{-- BERAT PRODUK (hanya fisik) --}}
+                    @if(($product->product_type ?? 'fisik') === 'fisik')
                     <div class="edit-card p-4">
-                        <h3 class="text-sm font-semibold text-gray-800 mb-3">Ongkos Kirim</h3>
-                        <div class="flex items-center justify-between mb-3">
-                            <div>
-                                <p class="text-sm font-medium text-gray-700">Tetapkan Ongkir</p>
-                                <p class="text-xs text-gray-400 mt-0.5">Ditambahkan ke total pembayaran pembeli</p>
+                        <h3 class="text-sm font-semibold text-gray-800 mb-3">Pengiriman</h3>
+                        <div>
+                            <label class="edit-label">Berat Produk (gram)</label>
+                            <div class="relative">
+                                <input type="number" name="weight" id="editWeight-{{ $product->id }}"
+                                       class="edit-input pr-14"
+                                       value="{{ $product->weight ?? 1000 }}"
+                                       placeholder="1000" min="1">
+                                <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400 font-medium">gram</span>
                             </div>
-                            <div class="edit-toggle-container">
-                                <input type="checkbox" id="editShippingCheck-{{ $product->id }}"
-                                       class="edit-toggle-checkbox"
-                                       {{ $product->shipping_cost ? 'checked' : '' }}
-                                       onchange="editToggleShipping(this, {{ $product->id }})">
-                                <label for="editShippingCheck-{{ $product->id }}" class="edit-toggle-label-amber"></label>
-                            </div>
+                            <p class="text-xs text-gray-400 mt-1.5">Digunakan untuk kalkulasi ongkir otomatis via RajaOngkir</p>
                         </div>
-                        <input type="text" id="editShippingInput-{{ $product->id }}"
-                               class="edit-input {{ $product->shipping_cost ? '' : 'hidden' }}"
-                               value="{{ $product->shipping_cost ? number_format($product->shipping_cost, 0, ',', '.') : '' }}"
-                               placeholder="Contoh: 15.000"
-                               oninput="formatRupiah(this)">
                     </div>
-                    @endif --}}
+                    @endif
 
                     {{-- STOK & BATAS PEMBELIAN --}}
                     <div class="edit-card p-4 space-y-1">
                         <h3 class="text-sm font-semibold text-gray-800 mb-3">
                             {{ ($product->product_type ?? 'fisik') === 'digital' ? 'Batas Pembelian' : 'Stok & Batas Pembelian' }}
                         </h3>
-                        <div class="py-3 border-b border-gray-100"
-                             style="{{ ($product->product_type ?? 'fisik') === 'digital' ? 'display:none' : '' }}">
+                        <div class="py-3 border-b border-gray-100" style="{{ ($product->product_type ?? 'fisik') === 'digital' ? 'display:none' : '' }}">
                             <div class="flex items-center justify-between">
                                 <div>
                                     <p class="text-sm font-medium text-gray-700">Kelola Stok</p>
@@ -353,20 +295,12 @@
 .edit-textarea { width:100%; padding:9px 12px; border:1.5px solid #e5e7eb; border-radius:8px; font-size:13px; transition:all .2s; resize:vertical; min-height:90px; background:white; color:#1f2937; }
 .edit-textarea:focus { outline:none; border-color:#3b82f6; box-shadow:0 0 0 3px rgba(59,130,246,.1); }
 .edit-img-item:has(input:checked) { border-color:#ef4444 !important; opacity:.75; }
-.edit-img-item:has(input:checked) > div { background-color:rgba(239,68,68,.35); }
-.edit-img-item:has(input:checked) > div > div { opacity:1; transform:scale(1); }
-/* Toggle biru (stok & limit) */
 .edit-toggle-container { position:relative; }
 .edit-toggle-checkbox { display:none; }
 .edit-toggle-label { display:block; width:44px; height:24px; background:#e5e7eb; border-radius:999px; position:relative; cursor:pointer; transition:background .2s ease; }
 .edit-toggle-label::after { content:''; position:absolute; top:2px; left:2px; width:20px; height:20px; background:white; border-radius:50%; transition:transform .2s ease; box-shadow:0 1px 3px rgba(0,0,0,.15); }
 .edit-toggle-checkbox:checked + .edit-toggle-label { background:#3b82f6; }
 .edit-toggle-checkbox:checked + .edit-toggle-label::after { transform:translateX(20px); }
-/* Toggle amber (ongkir) */
-.edit-toggle-label-amber { display:block; width:44px; height:24px; background:#e5e7eb; border-radius:999px; position:relative; cursor:pointer; transition:background .2s ease; }
-.edit-toggle-label-amber::after { content:''; position:absolute; top:2px; left:2px; width:20px; height:20px; background:white; border-radius:50%; transition:transform .2s ease; box-shadow:0 1px 3px rgba(0,0,0,.15); }
-.edit-toggle-checkbox:checked + .edit-toggle-label-amber { background:#f59e0b; }
-.edit-toggle-checkbox:checked + .edit-toggle-label-amber::after { transform:translateX(20px); }
 .edit-platform-btn { display:inline-flex; align-items:center; gap:5px; padding:6px 14px; border-radius:999px; font-size:12px; font-weight:500; border:1.5px solid #d1d5db; color:#374151; background:white; cursor:pointer; transition:all 0.18s; }
 .edit-platform-btn:hover { border-color:#3b82f6; color:#2563eb; background:#eff6ff; }
 .edit-platform-btn.active { background:#2563eb; color:white; border-color:#2563eb; }
@@ -375,7 +309,7 @@
 .edit-preview-remove { position:absolute; top:4px; right:4px; width:22px; height:22px; background:rgba(239,68,68,0.9); border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; opacity:0; transition:opacity 0.2s; }
 .edit-preview-img-wrap:hover .edit-preview-remove { opacity:1; }
 .edit-img-ready-dot { position:absolute; bottom:4px; right:4px; width:7px; height:7px; border-radius:50%; background:#2563eb; border:1.5px solid white; }
-@keyframes editSpin { from { transform:rotate(0deg); } to { transform:rotate(360deg); } }
+@keyframes editSpin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
 </style>
 
 <script>
@@ -395,10 +329,7 @@ function _collectExistingImageIds(productId) {
     // Reset state gambar & checkbox saat modal dibuka
     const form = document.getElementById('editForm-' + productId);
     if (form) {
-        form.querySelectorAll('.edit-img-item').forEach(item => {
-            item.style.opacity = '';
-            item.style.outline = '';
-        });
+        form.querySelectorAll('.edit-img-item').forEach(item => { item.style.opacity = ''; item.style.outline = ''; });
         form.querySelectorAll('input[name="delete_images[]"]').forEach(cb => { cb.checked = false; });
     }
     // Reset array gambar baru dan preview
@@ -445,14 +376,14 @@ function closeEditModal(id) {
 
 document.addEventListener('keydown', function(e) {
     if (e.key !== 'Escape') return;
-    document.querySelectorAll('[id^="editModal-"]').forEach(modal => {
-        if (modal.style.display === 'flex') closeEditModal(modal.id.replace('editModal-', ''));
+    document.querySelectorAll('[id^="editModal-"]').forEach(m => {
+        if (m.style.display === 'flex') closeEditModal(m.id.replace('editModal-', ''));
     });
 });
 
 // ===== FORMAT RUPIAH =====
 function formatRupiah(input) {
-    const angka = (input.value || '').replace(/[^0-9]/g, '');
+    const angka = input.value.replace(/[^0-9]/g, '');
     input.value = angka ? new Intl.NumberFormat('id-ID').format(angka) : '';
 }
 function cleanNum(el) {
@@ -468,12 +399,6 @@ function editToggleInput(checkbox, inputId) {
     input.classList.toggle('hidden', !checkbox.checked);
     if (checkbox.checked) input.focus(); else input.value = '';
 }
-function editToggleShipping(cb, productId) {
-    const inp = document.getElementById('editShippingInput-' + productId);
-    if (!inp) return;
-    inp.classList.toggle('hidden', !cb.checked);
-    if (cb.checked) inp.focus(); else inp.value = '';
-}
 
 // ===== PLATFORM SWITCHER =====
 function _setupEditPlatformSwitcher(productId) {
@@ -481,10 +406,10 @@ function _setupEditPlatformSwitcher(productId) {
     if (!container) return;
     const platformHidden = document.getElementById('editFilePlatform-' + productId);
     const panels = {
-        upload:  document.getElementById('editPanelUpload-'  + productId),
-        dropbox: document.getElementById('editPanelDropbox-' + productId),
-        gdrive:  document.getElementById('editPanelGdrive-'  + productId),
-        other:   document.getElementById('editPanelOther-'   + productId),
+        upload: document.getElementById('editPanelUpload-'  + productId),
+        dropbox:document.getElementById('editPanelDropbox-' + productId),
+        gdrive: document.getElementById('editPanelGdrive-'  + productId),
+        other:  document.getElementById('editPanelOther-'   + productId),
     };
     container.addEventListener('click', function(e) {
         const btn = e.target.closest('.edit-platform-btn');
@@ -497,7 +422,7 @@ function _setupEditPlatformSwitcher(productId) {
     });
 }
 
-// ===== FILE LIST (untuk pembeli digital) =====
+// ===== FILE LIST =====
 function _setupEditFileUpload(productId) {
     const input = document.getElementById('editFileUpload-' + productId);
     if (!input) return;
@@ -519,7 +444,7 @@ function editRenderFileList(productId) {
         const div = document.createElement('div');
         div.className = 'flex items-center justify-between p-2.5 bg-blue-50 rounded-lg border border-blue-200';
         div.innerHTML = `<span class="text-xs text-gray-700 truncate flex-1">${f.name}</span>
-            <button type="button" onclick="editRemoveFile(${productId}, ${index})"
+            <button type="button" onclick="editRemoveFile(${productId},${index})"
                     class="w-5 h-5 bg-red-100 hover:bg-red-200 rounded-full flex items-center justify-center ml-2 flex-shrink-0">
                 <svg class="w-2.5 h-2.5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>`;
@@ -532,7 +457,6 @@ function editRemoveFile(productId, index) {
 
 // ===== IMAGE COMPRESSION =====
 function editCompressImage(file) {
-    const maxSizeKB = 150, maxWidth = 1024, quality = 0.75;
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.onerror = () => reject(new Error('read error'));
@@ -541,19 +465,16 @@ function editCompressImage(file) {
             img.onerror = () => reject(new Error('load error'));
             img.onload = function() {
                 const canvas = document.createElement('canvas');
-                let { width, height } = img;
-                if (width > maxWidth) { height = Math.round(height * maxWidth / width); width = maxWidth; }
+                let {width, height} = img;
+                if (width > 1024) { height = Math.round(height*1024/width); width = 1024; }
                 canvas.width = width; canvas.height = height;
                 canvas.getContext('2d').drawImage(img, 0, 0, width, height);
-                let q = quality;
+                let q = 0.75;
                 function tryCompress() {
                     canvas.toBlob(blob => {
                         if (!blob) { reject(new Error('blob error')); return; }
-                        if (blob.size / 1024 > maxSizeKB && q > 0.2) { q -= 0.08; tryCompress(); return; }
-                        resolve({
-                            file: new File([blob], file.name.replace(/\.[^.]+$/, '.jpg'), { type:'image/jpeg', lastModified:Date.now() }),
-                            previewUrl: URL.createObjectURL(blob)
-                        });
+                        if (blob.size/1024 > 150 && q > 0.2) { q -= 0.08; tryCompress(); return; }
+                        resolve({ file: new File([blob], file.name.replace(/\.[^.]+$/,'.jpg'), {type:'image/jpeg',lastModified:Date.now()}), previewUrl: URL.createObjectURL(blob) });
                     }, 'image/jpeg', q);
                 }
                 tryCompress();
@@ -576,13 +497,10 @@ function _setupEditImageCompression(productId) {
     input.addEventListener('change', async function() {
         const files = Array.from(this.files).filter(f => f.type.match('image.*'));
         if (!files.length) return;
-
         statusEl.classList.remove('hidden');
         statusEl.innerHTML = `<div style="display:flex;align-items:center;gap:6px;color:#9ca3af;font-size:11px;"><svg style="width:12px;height:12px;animation:editSpin 1s linear infinite;flex-shrink:0;" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" style="opacity:.3"/><path fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" style="opacity:.7"/></svg>Mengompresi...</div>`;
         const results = await Promise.allSettled(files.map(f => editCompressImage(f)));
-        results.forEach((r, i) => {
-            if (r.status === 'fulfilled') _editUploadedImages[productId].push({ id: Date.now() + i, file: r.value.file, previewUrl: r.value.previewUrl });
-        });
+        results.forEach((r, i) => { if (r.status==='fulfilled') _editUploadedImages[productId].push({id:Date.now()+i, file:r.value.file, previewUrl:r.value.previewUrl}); });
         _renderEditImagePreview(productId, previewEl, labelText, statusEl);
         statusEl.innerHTML = `<div style="display:flex;align-items:center;gap:5px;color:#9ca3af;font-size:11px;"><span style="width:7px;height:7px;border-radius:50%;background:#2563eb;display:inline-block;flex-shrink:0;"></span>${_editUploadedImages[productId].length} gambar siap diupload</div>`;
         this.value = '';
@@ -595,10 +513,7 @@ function _renderEditImagePreview(productId, previewEl, labelText, statusEl) {
     images.forEach((img, idx) => {
         const div = document.createElement('div');
         div.className = 'edit-preview-img-wrap';
-        div.innerHTML = `<img src="${img.previewUrl}" loading="lazy"><div class="edit-img-ready-dot"></div>
-            <div class="edit-preview-remove" data-idx="${idx}">
-                <svg style="width:10px;height:10px;color:white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-            </div>`;
+        div.innerHTML = `<img src="${img.previewUrl}" loading="lazy"><div class="edit-img-ready-dot"></div><div class="edit-preview-remove" data-idx="${idx}"><svg style="width:10px;height:10px;color:white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></div>`;
         previewEl.appendChild(div);
     });
     previewEl.querySelectorAll('.edit-preview-remove').forEach(btn => {
@@ -613,16 +528,14 @@ function _renderEditImagePreview(productId, previewEl, labelText, statusEl) {
     labelText.textContent = images.length ? `Tambah lagi (${images.length} dipilih)` : 'Klik untuk upload gambar baru';
 }
 
-// ===== SUBMIT EDIT FORM =====
+// ===== SUBMIT =====
 async function submitEditForm(productId) {
     const form = document.getElementById('editForm-' + productId);
     if (!form) return;
 
-    const priceEl    = document.getElementById('editPrice-'         + productId);
-    const discountEl = document.getElementById('editDiscount-'      + productId);
-    const shippingEl = document.getElementById('editShippingInput-' + productId);
-    const shippingCk = document.getElementById('editShippingCheck-' + productId);
-    const platformEl = document.getElementById('editFilePlatform-'  + productId);
+    const priceEl    = document.getElementById('editPrice-'    + productId);
+    const discountEl = document.getElementById('editDiscount-' + productId);
+    const platformEl = document.getElementById('editFilePlatform-' + productId);
 
     const btn     = document.getElementById('editSaveBtn-'     + productId);
     const btnText = document.getElementById('editSaveBtnText-' + productId);
@@ -631,30 +544,22 @@ async function submitEditForm(productId) {
 
     const fd = new FormData(form);
 
+    // Harga bersih
     fd.set('price',    cleanNum(priceEl)    || 0);
     fd.set('discount', cleanNum(discountEl) || '');
 
-    if (shippingCk && shippingCk.checked && shippingEl && shippingEl.value.trim()) {
-        fd.set('shipping_cost', cleanNum(shippingEl));
-    } else {
-        fd.delete('shipping_cost');
-    }
-
+    // file_url dari platform aktif
     const platform = platformEl ? platformEl.value : 'upload';
     if (platform !== 'upload') {
         const urlMap = { dropbox: 'editUrlDropbox-', gdrive: 'editUrlGdrive-', other: 'editUrlOther-' };
         const urlInputEl = document.getElementById((urlMap[platform] || 'editUrlOther-') + productId);
-        if (urlInputEl && urlInputEl.value.trim()) {
-            fd.set('file_url', urlInputEl.value.trim());
-        }
+        if (urlInputEl && urlInputEl.value.trim()) fd.set('file_url', urlInputEl.value.trim());
     }
 
-    // Tambahkan gambar baru
+    // Gambar baru
     fd.delete('images[]');
     const newImages = _editUploadedImages[productId] || [];
-    newImages.forEach(img => {
-        fd.append('images[]', img.file, img.file.name);
-    });
+    newImages.forEach(img => fd.append('images[]', img.file, img.file.name));
 
     // Jika ada gambar baru → otomatis hapus semua gambar lama
     if (newImages.length > 0) {
@@ -667,12 +572,9 @@ async function submitEditForm(productId) {
         }
     }
 
-    // Tambahkan file pembeli baru
+    // File pembeli baru
     fd.delete('files[]');
-    const files = _editUploadedFiles[productId] || [];
-    files.forEach(f => {
-        fd.append('files[]', f.file, f.file.name);
-    });
+    (_editUploadedFiles[productId] || []).forEach(f => fd.append('files[]', f.file, f.file.name));
 
     try {
         const res = await fetch(form.action, {
@@ -680,17 +582,9 @@ async function submitEditForm(productId) {
             headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content') },
             body: fd,
         });
-
-        if (res.redirected) {
-            window.location.href = res.url;
-            return;
-        }
-        if (res.ok) {
-            window.location.href = res.url || window.location.href;
-        } else {
-            const text = await res.text();
-            document.open(); document.write(text); document.close();
-        }
+        if (res.redirected) { window.location.href = res.url; return; }
+        if (res.ok) { window.location.href = res.url || window.location.href; }
+        else { const text = await res.text(); document.open(); document.write(text); document.close(); }
     } catch(err) {
         console.error('Edit submit error:', err);
         alert('Terjadi kesalahan saat menyimpan. Silakan coba lagi.');
@@ -699,7 +593,7 @@ async function submitEditForm(productId) {
     }
 }
 
-// ===== INISIALISASI SEMUA MODAL =====
+// ===== INIT =====
 document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('[id^="editNewImages-"]').forEach(el => {
         const productId = el.id.replace('editNewImages-', '');
