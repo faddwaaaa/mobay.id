@@ -406,6 +406,12 @@
             <span class="s-icon"><i class="fas fa-shopping-bag"></i></span>
             Produk
         </a>
+        
+        <a href="{{ route('orders.index') }}"
+           class="s-nav-item {{ request()->routeIs('orders.*') ? 'active' : '' }}">
+            <span class="s-icon"><i class="fas fa-box-open"></i></span>
+            Pesanan
+        </a>
 
         <a href="{{ route('transactions.history') }}"
            class="s-nav-item {{ request()->routeIs('transactions.*') ? 'active' : '' }}">
@@ -425,11 +431,6 @@
             Pengaturan Pengiriman
         </a>
 
-        <a href="{{ route('orders.index') }}"
-           class="s-nav-item {{ request()->routeIs('orders.*') ? 'active' : '' }}">
-            <span class="s-icon"><i class="fas fa-box-open"></i></span>
-            Pesanan
-        </a>
 
         <div class="s-divider"></div>
         <div class="s-label">Preferensi</div>

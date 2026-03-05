@@ -507,7 +507,7 @@
             @endforeach
         @endif
         <div class="fullmenu-divider"></div>
-        <div class="fullmenu-section-label">Member Area</div>
+        <div class="fullmenu-section-label">Area Member</div>
         <div class="fullmenu-item" onclick="window.location.href='/login'">
             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
