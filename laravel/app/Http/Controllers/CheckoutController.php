@@ -36,6 +36,111 @@ class CheckoutController extends Controller
         return view('checkout', compact('product', 'seller'));
     }
 
+    public function checkpointStore(Request $request)
+    {
+        $request->validate([
+            'product_id'     => 'required|exists:products,id',
+            'buyer_name'     => 'required|string|max:255',
+            'buyer_email'    => 'required|email|max:255',
+            'buyer_phone'    => 'required|string|max:20',
+            'qty'            => 'nullable|integer|min:1',
+            'payment_method' => 'required|string',
+        ]);
+
+        $product = Product::findOrFail($request->product_id);
+        $shippingEnabled = $product->product_type === 'fisik'
+            ? (bool) ($product->shipping_enabled ?? true)
+            : false;
+
+        $qty = $product->product_type === 'digital' ? 1 : max((int) ($request->qty ?? 1), 1);
+
+        if ($product->product_type === 'fisik') {
+            if ($product->stock !== null && $product->stock < $qty) {
+                return back()->withErrors(['qty' => 'Stok tidak mencukupi. Tersedia: ' . $product->stock])->withInput();
+            }
+            if ($product->purchase_limit && $qty > $product->purchase_limit) {
+                return back()->withErrors(['qty' => 'Batas pembelian maks. ' . $product->purchase_limit . ' per transaksi.'])->withInput();
+            }
+            if (empty($request->buyer_address)) {
+                return back()->withErrors(['buyer_address' => 'Alamat pengiriman wajib diisi untuk produk fisik.'])->withInput();
+            }
+            if ($shippingEnabled) {
+                if (empty($request->destination_village_code)) {
+                    return back()->withErrors(['destination_village_code' => 'Pilih area tujuan pengiriman terlebih dahulu.'])->withInput();
+                }
+                if (!isset($request->selected_ongkir_cost) || (int) $request->selected_ongkir_cost <= 0) {
+                    return back()->withErrors(['selected_ongkir_cost' => 'Pilih layanan pengiriman terlebih dahulu.'])->withInput();
+                }
+            }
+        }
+
+        $payload = [
+            'product_id'                => (int) $product->id,
+            'buyer_name'                => (string) $request->buyer_name,
+            'buyer_email'               => (string) $request->buyer_email,
+            'buyer_phone'               => (string) $request->buyer_phone,
+            'buyer_address'             => $request->buyer_address,
+            'buyer_notes'               => $request->buyer_notes,
+            'qty'                       => $qty,
+            'payment_method'            => (string) $request->payment_method,
+            'destination_village_code'  => $shippingEnabled ? $request->destination_village_code : null,
+            'destination_label'         => $shippingEnabled ? $request->destination_label : null,
+            'selected_courier'          => $shippingEnabled ? ($request->selected_courier ?: 'OTHER') : 'FREE',
+            'selected_service'          => $shippingEnabled ? ($request->selected_service ?: 'Standard') : 'Tanpa Ongkir',
+            'selected_ongkir_cost'      => $shippingEnabled ? (int) ($request->selected_ongkir_cost ?? 0) : 0,
+        ];
+
+        session(['checkout_checkpoint' => $payload]);
+
+        // Notif intent checkout: pembeli sudah masuk halaman checkpoint/review pembayaran
+        \App\Models\Notification::create([
+            'user_id' => $product->user_id,
+            'type'    => 'checkout',
+            'title'   => 'Pembeli Siap Checkout',
+            'message' => '🛒 ' . ($payload['buyer_name'] ?? 'Pembeli') . ' sedang mereview pembayaran untuk ' . $product->title . '.',
+            'icon'    => 'fas fa-cash-register',
+            'link'    => '/riwayat',
+            'is_read' => false,
+        ]);
+
+        return redirect()->route('checkout.checkpoint.show');
+    }
+
+    public function checkpointShow(Request $request)
+    {
+        $payload = session('checkout_checkpoint');
+        if (!$payload || empty($payload['product_id'])) {
+            return redirect()->route('home');
+        }
+
+        $product = Product::with(['images'])->find($payload['product_id']);
+        if (!$product) {
+            return redirect()->route('home');
+        }
+
+        $seller = User::find($product->user_id);
+        $shippingEnabled = $product->product_type === 'fisik'
+            ? (bool) ($product->shipping_enabled ?? true)
+            : false;
+        $qty = $product->product_type === 'digital' ? 1 : max((int) ($payload['qty'] ?? 1), 1);
+        $unitPrice = (int) ($product->discount ?: $product->price);
+        $subtotal = $unitPrice * $qty;
+        $shippingCost = $shippingEnabled ? max((int) ($payload['selected_ongkir_cost'] ?? 0), 0) : 0;
+        $total = $subtotal + $shippingCost;
+
+        return view('checkout-checkpoint', compact(
+            'product',
+            'seller',
+            'payload',
+            'qty',
+            'unitPrice',
+            'subtotal',
+            'shippingCost',
+            'total',
+            'shippingEnabled'
+        ));
+    }
+
     // =========================================================
     // PROCESS
     // =========================================================
@@ -51,6 +156,9 @@ class CheckoutController extends Controller
         ]);
 
         $product = Product::with('files')->findOrFail($request->product_id);
+        $shippingEnabled = $product->product_type === 'fisik'
+            ? (bool) ($product->shipping_enabled ?? true)
+            : false;
 
         if ($product->product_type === 'fisik') {
             if ($product->stock !== null && $product->stock < $request->qty) {
@@ -62,11 +170,13 @@ class CheckoutController extends Controller
             if (empty($request->buyer_address)) {
                 return response()->json(['error' => true, 'message' => 'Alamat pengiriman wajib diisi untuk produk fisik.'], 422);
             }
-            if (empty($request->destination_village_code)) {
-                return response()->json(['error' => true, 'message' => 'Pilih area tujuan pengiriman terlebih dahulu.'], 422);
-            }
-            if (!isset($request->selected_ongkir_cost) || (int) $request->selected_ongkir_cost <= 0) {
-                return response()->json(['error' => true, 'message' => 'Pilih layanan pengiriman terlebih dahulu.'], 422);
+            if ($shippingEnabled) {
+                if (empty($request->destination_village_code)) {
+                    return response()->json(['error' => true, 'message' => 'Pilih area tujuan pengiriman terlebih dahulu.'], 422);
+                }
+                if (!isset($request->selected_ongkir_cost) || (int) $request->selected_ongkir_cost <= 0) {
+                    return response()->json(['error' => true, 'message' => 'Pilih layanan pengiriman terlebih dahulu.'], 422);
+                }
             }
         }
 
@@ -74,7 +184,7 @@ class CheckoutController extends Controller
         // FIX: Gunakan ?: bukan ?? supaya discount bernilai 0 tetap fallback ke price
         $unitPrice = (int) ($product->discount ?: $product->price);
         $subtotal  = $unitPrice * $qty;
-        $shippingCost = $product->product_type === 'fisik'
+        $shippingCost = ($product->product_type === 'fisik' && $shippingEnabled)
             ? max((int) ($request->selected_ongkir_cost ?? 0), 0)
             : 0;
         $amount    = $subtotal + $shippingCost;
@@ -97,12 +207,13 @@ class CheckoutController extends Controller
                 'product_type'  => $product->product_type,
                 'qty'           => $qty,
                 'unit_price'    => $unitPrice,
+                'shipping_enabled' => $shippingEnabled,
                 'shipping_cost' => $shippingCost,
                 'subtotal'      => $subtotal,
                 'destination_village_code' => $request->destination_village_code ?? null,
                 'destination_label' => $request->destination_label ?? null,
-                'selected_courier' => $request->selected_courier ?: 'OTHER',
-                'selected_service' => $request->selected_service ?: 'Standard',
+                'selected_courier' => $shippingEnabled ? ($request->selected_courier ?: 'OTHER') : 'FREE',
+                'selected_service' => $shippingEnabled ? ($request->selected_service ?: 'Standard') : 'Tanpa Ongkir',
             ]),
             'ip_address' => $request->ip(),
         ]);

@@ -5,6 +5,10 @@
 @php
     use Illuminate\Support\Str;
     $user = Auth::user();
+    $publicProfileUrl = url('/' . $user->username);
+    $savedAccountsCount = $user->paymentAccounts()->count();
+    $primaryAccount = $user->paymentAccounts()->where('is_default', true)->first()
+                    ?? $user->paymentAccounts()->first();
 @endphp
 
 @section('content')
@@ -16,11 +20,13 @@
     .page-header > div:first-child h1 { font-size: 20px !important; }
     .page-header > div:first-child > div { font-size: 13px !important; }
     .page-header button { width: 100%; justify-content: center; }
-    .balance-card { grid-template-columns: 1fr !important; padding: 24px !important; text-align: center; }
+    .dashboard-top-grid { grid-template-columns: 1fr !important; }
+    .balance-card { padding: 24px !important; text-align: center; }
     .balance-card > div:first-child { margin-bottom: 20px; }
     .balance-card > div:first-child > div:nth-child(2) { font-size: 36px !important; }
     .balance-card > div:last-child { justify-content: center !important; }
     .balance-card button { width: 100%; }
+    .account-card { margin-top: 0 !important; }
     .chart-card { padding: 16px !important; }
     .chart-card > div:first-child { flex-direction: column; align-items: flex-start !important; gap: 8px; }
     .chart-card h3 { font-size: 15px !important; }
@@ -36,35 +42,26 @@
 </style>
 
 <!-- ================= HEADER ================= -->
-<div class="page-header" style="display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:24px;">
-    <div>
-        <h1 style="font-size:24px;font-weight:700;margin-bottom:4px;">Dashboard</h1>
-        <div style="font-size:14px;color:#374151;margin-bottom:4px;">
-            Selamat datang kembali, <strong>{{ $user->name }}</strong> 👋
+<div style="margin-bottom: 24px;">
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
+                <!-- <a href="{{ route('dashboard') }}" style="width: 36px; height: 36px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; display: flex; align-items: center; justify-content: center; text-decoration: none; transition: all 0.2s;">
+                    <i class="fas fa-arrow-left" style="font-size: 14px; color: #475569;"></i>
+                </a> -->
+                <div>
+                    <h1 style="margin: 0; font-size: 24px; font-weight: 600; color: #000000;">Dashboard</h1>
+                    <p style="margin: 0; font-size: 14px; color: #797979;">Dashboard <strong>{{ $user->name }}</strong></p>
+                </div>
+            </div>
         </div>
-        <div style="display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;">
-            <i class="fas fa-link" style="font-size:12px;color:#2563eb;"></i>
-            <a href="{{ url('/' . $user->username) }}" target="_blank" style="color:#2563eb;text-decoration:none;">
-                {{ url('/' . $user->username) }}
-            </a>
-        </div>
-    </div>
-    <button type="button" onclick="openQRModal('{{ $user->username }}')"
-            style="display:flex;align-items:center;gap:8px;padding:10px 16px;border-radius:12px;
-                   border:1px solid #dbeafe;background:#eff6ff;color:#2563eb;font-size:14px;
-                   font-weight:600;cursor:pointer;white-space:nowrap;">
-        <i class="fas fa-share-alt"></i>
-        <span>Bagikan Link Anda</span>
-    </button>
-</div>
 
 <!-- ================= SALDO ================= -->
 {{-- ================= SALDO CARD — ganti bagian balance-card di dashboard ================= --}}
+<div class="dashboard-top-grid"
+     style="display:grid;grid-template-columns:minmax(320px,1.15fr) minmax(280px,0.85fr);gap:18px;align-items:stretch;margin-bottom:32px;">
 <div class="balance-card"
-     style="position:relative;overflow:hidden;border-radius:20px;padding:28px 32px;
-            margin-bottom:32px;
-            background:linear-gradient(135deg, #1a3fa8 0%, #2356e8 45%, #3b82f6 100%);
-            color:#ffffff;box-shadow:0 12px 40px rgba(35,86,232,.35);">
+     style="position:relative;overflow:hidden;border-radius:20px;padding:20px 22px;
+             background:linear-gradient(135deg, #1a3fa8 0%, #2356e8 45%, #3b82f6 100%);
+             color:#ffffff;box-shadow:0 12px 40px rgba(35,86,232,.35);display:flex;">
 
     {{-- Dekorasi lingkaran kanan --}}
     <div style="position:absolute;top:-40px;right:-40px;width:200px;height:200px;
@@ -75,40 +72,44 @@
                 border-radius:50%;background:rgba(255,255,255,.05);pointer-events:none;"></div>
 
     {{-- Isi card --}}
-    <div style="position:relative;z-index:1;">
+    <div style="position:relative;z-index:1;display:flex;flex-direction:column;gap:12px;justify-content:space-between;min-height:100%;width:100%;">
 
-        {{-- Label bank (dari rekening utama jika ada) --}}
-        @php
-            $primaryAccount = auth()->user()->paymentAccounts()->where('is_default', true)->first()
-                            ?? auth()->user()->paymentAccounts()->first();
-        @endphp
-
-        @if($primaryAccount)
-            <div style="font-size:15px;font-weight:700;margin-bottom:18px;opacity:.95;letter-spacing:.01em;">
-                Saldo Tersedia
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
+            <div style="font-size:13px;font-weight:700;opacity:.9;letter-spacing:.03em;text-transform:uppercase;">
+                {{ $primaryAccount ? 'Saldo Tersedia' : 'Saldo Payou.id' }}
             </div>
-        @else
-            <div style="font-size:15px;font-weight:700;margin-bottom:18px;opacity:.7;">
-                Saldo Payou.id
-            </div>
-        @endif
+            <span style="padding:5px 10px;border-radius:999px;background:rgba(255,255,255,.18);
+                         font-size:11px;font-weight:700;white-space:nowrap;">
+                Real-time
+            </span>
+        </div>
 
         {{-- Saldo --}}
-        <div style="margin-bottom:22px;">
-            <div style="font-size:11px;font-weight:600;opacity:.7;letter-spacing:.08em;
-                        text-transform:uppercase;margin-bottom:6px;"></div>
-            <div style="font-size:42px;font-weight:800;line-height:1;
-                        font-family:'Plus Jakarta Sans',sans-serif;letter-spacing:-.5px;">
+        <div style="margin-bottom:4px;">
+            <div style="font-size:52px;font-weight:800;line-height:.96;
+                        font-family:'Plus Jakarta Sans',sans-serif;letter-spacing:-1px;">
                 Rp {{ number_format($balance ?? 0, 0, ',', '.') }}
+            </div>
+            <div style="margin-top:8px;font-size:12px;opacity:.86;">
+                
+            </div>
+        </div>
+
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <div style="padding:7px 10px;border-radius:999px;background:rgba(255,255,255,.12);font-size:12px;font-weight:600;">
+                Saldo siap ditarik
+            </div>
+            <div style="padding:7px 10px;border-radius:999px;background:rgba(255,255,255,.12);font-size:12px;font-weight:600;">
+                Proses cepat
             </div>
         </div>
 
         {{-- Tombol tarik saldo --}}
-        <div style="margin-top:20px;">
+        <div style="margin-top:0;display:flex;gap:10px;flex-wrap:wrap;">
             <button id="btn-withdraw" onclick="openWithdrawModal()"
-                    style="display:inline-flex;align-items:center;gap:8px;
-                           padding:11px 22px;border-radius:12px;border:none;cursor:pointer;
-                           font-size:14px;font-weight:700;font-family:'Plus Jakarta Sans',sans-serif;
+                    style="display:inline-flex;align-items:center;justify-content:center;gap:8px;flex:1;min-width:150px;
+                           padding:12px 18px;border-radius:12px;border:none;cursor:pointer;
+                           font-size:14px;font-weight:800;font-family:'Plus Jakarta Sans',sans-serif;
                            background:#ffffff;color:#1a3fa8;
                            box-shadow:0 6px 20px rgba(0,0,0,.18);
                            transition:transform .15s,box-shadow .15s;white-space:nowrap;"
@@ -117,17 +118,95 @@
                 <i class="fas fa-arrow-up" style="font-size:13px;"></i>
                 Tarik Saldo
             </button>
+            <a href="{{ url('/riwayat') }}"
+               style="display:inline-flex;align-items:center;justify-content:center;gap:8px;flex:1;min-width:150px;
+                      padding:12px 18px;border-radius:12px;border:1px solid rgba(255,255,255,.4);
+                      color:#fff;text-decoration:none;font-size:14px;font-weight:700;background:rgba(255,255,255,.08);">
+                <i class="fas fa-clock-rotate-left" style="font-size:12px;"></i>
+                Riwayat
+            </a>
         </div>
     </div>
+</div>
+
+<div class="account-card"
+     style="background:#ffffff;border-radius:20px;padding:22px;border:1px solid #e5e7eb;
+            box-shadow:0 10px 28px rgba(0,0,0,.05);display:flex;flex-direction:column;justify-content:space-between;">
+    <div>
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px;">
+            <div style="display:flex;align-items:center;gap:10px;min-width:0;">
+                <div style="width:38px;height:38px;border-radius:12px;background:#eaf2ff;color:#1d4ed8;
+                            display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;flex-shrink:0;">
+                    {{ strtoupper(substr($user->name, 0, 1)) }}
+                </div>
+                <div style="min-width:0;">
+                    <div style="font-size:15px;font-weight:800;color:#111827;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                        {{ $user->name }}
+                    </div>
+                    <div style="font-size:12px;color:#6b7280;">{{ '@' . $user->username }}</div>
+                </div>
+            </div>
+            <!-- <span style="padding:5px 10px;border-radius:999px;background:#ecfdf5;color:#047857;
+                         font-size:11px;font-weight:700;white-space:nowrap;">
+                {{ ($activeLinks ?? 0) > 0 ? 'Akun Aktif' : 'Belum Aktif' }}
+            </span> -->
+        </div>
+
+        <div style="display:grid;gap:10px;margin-bottom:14px;">
+            <div style="padding:11px 12px;background:#f8fafc;border:1px solid #eef2f7;border-radius:12px;">
+                <div style="font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;">Link Publik</div>
+                <a href="{{ $publicProfileUrl }}" target="_blank"
+                   style="display:block;font-size:13px;font-weight:600;color:#2563eb;text-decoration:none;margin-top:3px;word-break:break-all;">
+                    {{ $publicProfileUrl }}
+                </a>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(3, 1fr);gap:8px;">
+                <div style="padding:10px;border-radius:12px;background:#f8fafc;border:1px solid #eef2f7;">
+                    <div style="font-size:11px;color:#6b7280;font-weight:700;">Total Link</div>
+                    <div style="font-size:13px;font-weight:800;color:#0f172a;margin-top:2px;">{{ $totalLinks ?? 0 }}</div>
+                </div>
+                <div style="padding:10px;border-radius:12px;background:#f8fafc;border:1px solid #eef2f7;">
+                    <div style="font-size:11px;color:#6b7280;font-weight:700;">Link Aktif</div>
+                    <div style="font-size:13px;font-weight:800;color:#0f172a;margin-top:2px;">{{ $activeLinks ?? 0 }}/{{ $totalLinks ?? 0 }}</div>
+                </div>
+                <div style="padding:10px;border-radius:12px;background:#f8fafc;border:1px solid #eef2f7;">
+                    <div style="font-size:11px;color:#6b7280;font-weight:700;">Rekening</div>
+                    <div style="font-size:13px;font-weight:800;color:#0f172a;margin-top:2px;">{{ $savedAccountsCount }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <button type="button" onclick="openQRModal('{{ $user->username }}')"
+                style="flex:1;min-width:130px;display:inline-flex;align-items:center;justify-content:center;gap:8px;
+                       border:none;border-radius:12px;padding:11px 12px;background:#2563eb;color:#fff;
+                       font-size:13px;font-weight:700;cursor:pointer;">
+            <i class="fas fa-share-alt"></i> Bagikan
+        </button>
+        <button type="button" onclick="copyPublicProfileLink('{{ $publicProfileUrl }}')"
+                style="flex:1;min-width:130px;display:inline-flex;align-items:center;justify-content:center;gap:8px;
+                       border:1px solid #d1d5db;border-radius:12px;padding:11px 12px;background:#fff;color:#1f2937;
+                       font-size:13px;font-weight:700;cursor:pointer;">
+            <i class="fas fa-copy"></i> Salin Link
+        </button>
+    </div>
+</div>
 </div>
 
 <style>
 @media (max-width: 640px) {
     .balance-card {
-        padding: 22px 20px !important;
+        padding: 18px 16px !important;
     }
-    .balance-card [style*="font-size:42px"] {
-        font-size: 32px !important;
+    .balance-card [style*="font-size:52px"] {
+        font-size: 40px !important;
+    }
+    .account-card {
+        padding: 18px !important;
+    }
+    .account-card [style*="grid-template-columns:repeat(3, 1fr)"] {
+        grid-template-columns: 1fr !important;
     }
     .balance-card [style*="font-size:15px"][style*="font-weight:700"] {
         font-size: 13px !important;
@@ -199,6 +278,32 @@ let chartInstance = null;
 const initialLabels = @json($labels);
 const initialViews  = @json($data);
 const initialClicks = @json($clicksData);
+
+async function copyPublicProfileLink(link) {
+    try {
+        if (navigator.clipboard?.writeText) {
+            await navigator.clipboard.writeText(link);
+        } else {
+            const tempInput = document.createElement('input');
+            tempInput.value = link;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand('copy');
+            tempInput.remove();
+        }
+        if (typeof wdToast === 'function') {
+            wdToast('success', 'Link profil berhasil disalin.');
+        } else {
+            alert('Link profil berhasil disalin.');
+        }
+    } catch (e) {
+        if (typeof wdToast === 'function') {
+            wdToast('error', 'Gagal menyalin link. Coba lagi.');
+        } else {
+            alert('Gagal menyalin link. Coba lagi.');
+        }
+    }
+}
 
 function buildChart(labels, views, clicks) {
     const ctx = document.getElementById('clickChart').getContext('2d');

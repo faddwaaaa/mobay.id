@@ -7,19 +7,20 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <style>
         * { margin:0; padding:0; box-sizing:border-box; }
-        body { font-family:system-ui,-apple-system,sans-serif; background:#f9fafb; min-height:100vh; padding:20px 16px 40px; }
-        .top-bar { max-width:500px; margin:0 auto 20px; display:flex; align-items:center; gap:12px; }
+        :root { --ink:#0f172a; --muted:#64748b; --line:#e5e7eb; --brand:#2356e8; --bg:#f3f6ff; }
+        body { font-family:system-ui,-apple-system,sans-serif; background:radial-gradient(circle at 10% 10%, #e8efff 0%, var(--bg) 42%, #eef2ff 100%); min-height:100vh; padding:20px 16px 40px; color:var(--ink); }
+        .top-bar { max-width:860px; margin:0 auto 16px; display:flex; align-items:center; gap:12px; }
         .btn-back { width:36px; height:36px; border-radius:8px; border:1px solid #e5e7eb; background:#fff; display:flex; align-items:center; justify-content:center; cursor:pointer; text-decoration:none; color:#374151; transition:all .2s; flex-shrink:0; }
         .btn-back:hover { border-color:#2563eb; color:#2563eb; background:#eff6ff; }
-        .top-bar-title { font-size:16px; font-weight:600; color:#111827; }
-        .card { max-width:500px; margin:0 auto 16px; background:#fff; border:1px solid #e5e7eb; border-radius:12px; overflow:hidden; }
-        .card-header { padding:14px 16px; border-bottom:1px solid #e5e7eb; font-size:13px; font-weight:600; color:#6b7280; text-transform:uppercase; letter-spacing:.5px; }
+        .top-bar-title { font-size:18px; font-weight:700; color:#111827; }
+        .card { max-width:860px; margin:0 auto 14px; background:#fff; border:1px solid #e5e7eb; border-radius:14px; overflow:hidden; box-shadow:0 8px 26px rgba(15,23,42,.05); }
+        .card-header { padding:14px 16px; border-bottom:1px solid #e5e7eb; font-size:12px; font-weight:800; color:#6b7280; text-transform:uppercase; letter-spacing:.08em; }
         .card-body { padding:16px; }
         .product-row { display:flex; gap:14px; align-items:flex-start; }
         .product-img { width:80px; height:80px; border-radius:8px; object-fit:cover; flex-shrink:0; border:1px solid #e5e7eb; }
         .product-img-ph { width:80px; height:80px; border-radius:8px; background:#eff6ff; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:28px; border:1px solid #e5e7eb; }
         .product-meta { flex:1; min-width:0; }
-        .badge { display:inline-flex; align-items:center; gap:4px; font-size:11px; font-weight:600; padding:2px 8px; border-radius:20px; margin-bottom:6px; }
+        .badge { display:inline-flex; align-items:center; gap:4px; font-size:11px; font-weight:700; padding:3px 9px; border-radius:20px; margin-bottom:6px; }
         .badge.fisik { background:#f0fdf4; color:#16a34a; }
         .badge.digital { background:#eff6ff; color:#2563eb; }
         .product-meta h2 { font-size:15px; font-weight:700; color:#111827; margin-bottom:6px; line-height:1.4; }
@@ -28,6 +29,10 @@
         .price-ori { font-size:13px; color:#9ca3af; text-decoration:line-through; }
         .disc-badge { background:#fee2e2; color:#dc2626; font-size:11px; font-weight:700; padding:2px 6px; border-radius:4px; }
         .seller-row { display:flex; align-items:center; gap:10px; padding:12px 0 0; margin-top:12px; border-top:1px solid #f3f4f6; }
+        .meta-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; margin-top:12px; }
+        .meta-box { border:1px solid #edf2f7; background:#f8fafc; border-radius:10px; padding:8px 10px; }
+        .meta-box .mk { font-size:10px; color:#6b7280; text-transform:uppercase; font-weight:700; letter-spacing:.05em; margin-bottom:3px; }
+        .meta-box .mv { font-size:12px; color:#0f172a; font-weight:700; }
         .seller-ava { width:32px; height:32px; border-radius:50%; object-fit:cover; flex-shrink:0; }
         .seller-ava-ph { width:32px; height:32px; border-radius:50%; background:#eff6ff; display:flex; align-items:center; justify-content:center; font-size:14px; flex-shrink:0; }
         .form-group { margin-bottom:14px; }
@@ -76,16 +81,20 @@
         .sum-row.total { font-weight:700; font-size:16px; color:#111827; padding-top:12px; margin-top:6px; border-top:1px solid #e5e7eb; }
         .sum-row.total .total-amt { color:#2563eb; font-size:18px; }
         .sum-ph { color:#9ca3af; font-style:italic; font-size:12px; }
-        .btn-pay { width:100%; max-width:500px; margin:0 auto; display:block; background:#2563eb; color:#fff; border:none; border-radius:10px; padding:14px; font-size:15px; font-weight:700; cursor:pointer; transition:background .2s; }
+        .btn-pay { width:100%; max-width:860px; margin:0 auto; display:block; background:#2563eb; color:#fff; border:none; border-radius:12px; padding:14px; font-size:15px; font-weight:700; cursor:pointer; transition:background .2s; box-shadow:0 8px 20px rgba(37,99,235,.24); }
         .btn-pay:hover:not(:disabled) { background:#1d4ed8; }
         .btn-pay:disabled { background:#93c5fd; cursor:not-allowed; }
         .spinner { display:none; width:16px; height:16px; border:2px solid rgba(255,255,255,.4); border-top-color:#fff; border-radius:50%; animation:spin .7s linear infinite; margin-right:8px; vertical-align:middle; }
-        .alert-info { max-width:500px; margin:0 auto 16px; padding:12px 14px; border-radius:8px; font-size:13px; display:flex; align-items:flex-start; gap:8px; background:#eff6ff; border:1px solid #bfdbfe; color:#1d4ed8; }
+        .alert-info { max-width:860px; margin:0 auto 14px; padding:12px 14px; border-radius:10px; font-size:13px; display:flex; align-items:flex-start; gap:8px; background:#eff6ff; border:1px solid #bfdbfe; color:#1d4ed8; }
         .checkout-alert { position:fixed; top:18px; right:18px; z-index:9999; min-width:240px; max-width:360px; padding:11px 13px; border-radius:10px; font-size:13px; font-weight:600; line-height:1.4; box-shadow:0 10px 28px rgba(0,0,0,.18); opacity:0; transform:translateY(-8px); transition:all .2s ease; pointer-events:none; }
         .checkout-alert.show { opacity:1; transform:translateY(0); }
         .checkout-alert.error { background:#fff1f2; border:1px solid #fecdd3; color:#be123c; }
         .checkout-alert.success { background:#ecfdf5; border:1px solid #bbf7d0; color:#166534; }
-        .secure { max-width:500px; margin:12px auto 0; text-align:center; font-size:12px; color:#9ca3af; display:flex; align-items:center; justify-content:center; gap:5px; }
+        .secure { max-width:860px; margin:12px auto 0; text-align:center; font-size:12px; color:#9ca3af; display:flex; align-items:center; justify-content:center; gap:5px; }
+        @media (max-width: 700px) {
+            .meta-grid { grid-template-columns:1fr; }
+            .top-bar-title { font-size:16px; }
+        }
     </style>
 </head>
 <body>
@@ -147,11 +156,32 @@
             </div>
         </div>
         @endif
+        <div class="meta-grid">
+            <div class="meta-box">
+                <div class="mk">SKU Produk</div>
+                <div class="mv">#{{ $product->id }}</div>
+            </div>
+            <div class="meta-box">
+                <div class="mk">Pengiriman</div>
+                <div class="mv">
+                    @if($product->product_type === 'fisik')
+                        {{ ($product->shipping_enabled ?? true) ? 'Ongkir Otomatis' : 'Gratis Ongkir' }}
+                    @else
+                        Digital Delivery
+                    @endif
+                </div>
+            </div>
+            <div class="meta-box">
+                <div class="mk">Metode Bayar</div>
+                <div class="mv">Midtrans (Snap)</div>
+            </div>
+        </div>
     </div>
 </div>
 
-<form id="checkoutForm" autocomplete="off">
+<form id="checkoutForm" autocomplete="off" method="POST" action="{{ route('checkout.checkpoint.store') }}">
     @csrf
+    <input type="hidden" name="product_id" value="{{ $product->id }}">
     {{-- DATA PEMBELI --}}
     <div class="card">
         <div class="card-header">Data Pembeli</div>
@@ -174,6 +204,7 @@
 
             @if($product->product_type === 'fisik')
 
+            @if(($product->shipping_enabled ?? true))
             {{-- AREA TUJUAN --}}
             <div class="form-group">
                 <label>Kelurahan / Kecamatan Tujuan <span class="req">*</span></label>
@@ -234,6 +265,44 @@
                 <input type="hidden" name="selected_service" id="selService" value="">
                 <input type="hidden" name="selected_ongkir_cost" id="selCost" value="0">
             </div>
+            @else
+            <div class="form-group">
+                <label>Alamat Lengkap <span class="req">*</span></label>
+                <textarea name="buyer_address" placeholder="Nama jalan, nomor rumah, RT/RW..." required></textarea>
+            </div>
+            <div class="form-group">
+                <label>Catatan untuk Penjual</label>
+                <input type="text" name="buyer_notes" placeholder="Warna, ukuran, atau keterangan lain (opsional)">
+            </div>
+            {{-- QTY (tetap ada walau ongkir nonaktif) --}}
+            @php $maxQty = $product->purchase_limit ?? ($product->stock ?? 99); @endphp
+            <div class="form-group">
+                <label>Jumlah <span class="req">*</span></label>
+                <div class="qty-wrap">
+                    <div class="qty-info">
+                        @if($product->purchase_limit) Maks. {{ $product->purchase_limit }}/transaksi
+                        @elseif($product->stock) Stok: {{ $product->stock }}
+                        @else Pilih jumlah @endif
+                    </div>
+                    <div class="qty-ctrl">
+                        <button type="button" class="qty-btn" id="qtyMinus" onclick="changeQty(-1)" disabled>
+                            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path d="M5 12h14"/></svg>
+                        </button>
+                        <input type="number" id="qtyDisplay" class="qty-input" value="1" min="1" max="{{ $maxQty }}" inputmode="numeric">
+                        <button type="button" class="qty-btn" id="qtyPlus" onclick="changeQty(1)">
+                            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+                        </button>
+                    </div>
+                </div>
+                <input type="number" name="qty" id="qtyHidden" value="1" min="1" max="{{ $maxQty }}" style="display:none">
+            </div>
+            <input type="hidden" name="selected_courier" id="selCourier" value="FREE">
+            <input type="hidden" name="selected_service" id="selService" value="Tanpa Ongkir">
+            <input type="hidden" name="selected_ongkir_cost" id="selCost" value="0">
+            <div class="form-group">
+                <div class="hint" style="margin-top:0;color:#16a34a;">Ongkir tidak diaktifkan untuk produk ini (Gratis Ongkir).</div>
+            </div>
+            @endif
 
             @else
                 <input type="hidden" name="qty" value="1">
@@ -256,7 +325,13 @@
             <div class="sum-row"><span>Subtotal</span><span id="sumSubtotal">Rp {{ number_format($product->discount ?? $product->price, 0, ',', '.') }}</span></div>
             <div class="sum-row">
                 <span>Ongkos Kirim</span>
-                <span id="sumShipping"><span class="sum-ph">Pilih area tujuan dulu</span></span>
+                <span id="sumShipping">
+                    @if(($product->shipping_enabled ?? true))
+                        <span class="sum-ph">Pilih area tujuan dulu</span>
+                    @else
+                        Gratis Ongkir
+                    @endif
+                </span>
             </div>
             @endif
             <div class="sum-row total">
@@ -266,21 +341,20 @@
         </div>
     </div>
 
-    <button type="submit" class="btn-pay" id="btnPay" @if($product->product_type==='fisik') disabled @endif>
+    <button type="submit" class="btn-pay" id="btnPay" @if($product->product_type==='fisik' && ($product->shipping_enabled ?? true)) disabled @endif>
         <span class="spinner" id="paySpinner"></span>
-        <span id="btnPayText">{{ $product->product_type === 'fisik' ? 'Pilih Ongkir Dulu' : 'Bayar Sekarang' }}</span>
+        <span id="btnPayText">{{ $product->product_type === 'fisik' && ($product->shipping_enabled ?? true) ? 'Pilih Ongkir Dulu' : 'Lanjut ke Review Pembayaran' }}</span>
     </button>
 </form>
 
 <div class="secure">🔒 Pembayaran aman & terenkripsi via Midtrans</div>
 <div id="checkoutAlert" class="checkout-alert error"></div>
 
-<script src="https://app.sandbox.midtrans.com/snap/snap.js"
-        data-client-key="{{ config('midtrans.client_key') }}"></script>
 <script>
 const UNIT_PRICE           = {{ $product->discount ?? $product->price ?? 0 }};
 const MAX_QTY              = {{ $product->purchase_limit ?? ($product->stock ?? 99) }};
 const PRODUCT_TYPE         = '{{ $product->product_type }}';
+const SHIPPING_ENABLED     = {{ ($product->product_type === 'fisik' && ($product->shipping_enabled ?? true)) ? 'true' : 'false' }};
 const ORIGIN_AREA_ID       = '{{ $seller->origin_village_code ?? '' }}';
 const WEIGHT_GRAM          = {{ (int) ($product->weight ?? 1000) }};
 
@@ -295,13 +369,13 @@ function fmtRp(n) { return 'Rp ' + new Intl.NumberFormat('id-ID').format(n); }
 function updateSummary(qty) {
     qty = Math.min(Math.max(qty, 1), MAX_QTY);
     const sub = UNIT_PRICE * qty;
-    const ship = PRODUCT_TYPE === 'fisik' ? selectedCost : 0;
+    const ship = PRODUCT_TYPE === 'fisik' ? (SHIPPING_ENABLED ? selectedCost : 0) : 0;
     const tot = sub + ship;
     const elQ=document.getElementById('sumQty'), elS=document.getElementById('sumSubtotal'), elT=document.getElementById('sumTotal');
     if(elQ) elQ.textContent = qty;
     if(elS) elS.textContent = fmtRp(sub);
     const elShip = document.getElementById('sumShipping');
-    if(elShip && PRODUCT_TYPE === 'fisik') elShip.textContent = ship > 0 ? fmtRp(ship) : 'Belum dipilih';
+    if(elShip && PRODUCT_TYPE === 'fisik') elShip.textContent = SHIPPING_ENABLED ? (ship > 0 ? fmtRp(ship) : 'Belum dipilih') : 'Gratis Ongkir';
     if(elT) elT.textContent = fmtRp(tot);
 }
 
@@ -318,7 +392,7 @@ function applyQty(n, options = {}){
     if(qtyPlus)    qtyPlus.disabled=n>=MAX_QTY;
     updateSummary(n);
 
-    if (reloadOngkir && PRODUCT_TYPE === 'fisik' && destinationArea && ORIGIN_AREA_ID) {
+    if (reloadOngkir && PRODUCT_TYPE === 'fisik' && SHIPPING_ENABLED && destinationArea && ORIGIN_AREA_ID) {
         loadOngkir(ORIGIN_AREA_ID, destinationArea.village_code, WEIGHT_GRAM * n);
     }
 }
@@ -346,11 +420,11 @@ if (citySearch) {
         if (destVillageCodeEl) destVillageCodeEl.value = '';
         if (destLabelEl) destLabelEl.value = '';
         if (cityBadge) cityBadge.style.display = 'none';
-        clearCourierSelection();
+        if (SHIPPING_ENABLED) clearCourierSelection();
         updateSummary(currentQty);
 
         clearTimeout(cityTimer);
-        if (q.length < 3) {
+        if (!SHIPPING_ENABLED || q.length < 3) {
             cityDropdown.classList.remove('show');
             return;
         }
@@ -399,6 +473,8 @@ function selectCity(v) {
     if (cityBadgeText) cityBadgeText.textContent = `${label}${v.province ? ', ' + v.province : ''}`;
     if (cityBadge) cityBadge.style.display = 'inline-flex';
     cityDropdown.classList.remove('show');
+
+    if (!SHIPPING_ENABLED) return;
 
     if (!ORIGIN_AREA_ID) {
         showOngkirError('Penjual belum mengatur area asal pengiriman.');
@@ -489,7 +565,7 @@ function selectOngkir(el, item) {
     document.getElementById('selService').value = serviceName;
     document.getElementById('selCost').value = selectedCost;
     document.getElementById('btnPay').disabled = false;
-    document.getElementById('btnPayText').textContent = 'Bayar Sekarang';
+    document.getElementById('btnPayText').textContent = 'Lanjut ke Review Pembayaran';
     updateSummary(currentQty);
 }
 
@@ -507,8 +583,8 @@ function clearCourierSelection() {
     document.getElementById('selCourier').value = '';
     document.getElementById('selService').value = '';
     document.getElementById('selCost').value = '0';
-    if (btn && PRODUCT_TYPE === 'fisik') btn.disabled = true;
-    if (txt && PRODUCT_TYPE === 'fisik') txt.textContent = 'Pilih Ongkir Dulu';
+    if (btn && PRODUCT_TYPE === 'fisik' && SHIPPING_ENABLED) btn.disabled = true;
+    if (txt && PRODUCT_TYPE === 'fisik' && SHIPPING_ENABLED) txt.textContent = 'Pilih Ongkir Dulu';
 }
 
 let alertTimer = null;
@@ -523,10 +599,10 @@ function showCheckoutAlert(message, type = 'error') {
     alertTimer = setTimeout(() => el.classList.remove('show'), 3000);
 }
 
-// ===== SUBMIT =====
-document.getElementById('checkoutForm').addEventListener('submit',async function(e){
+// ===== SUBMIT TO CHECKPOINT =====
+document.getElementById('checkoutForm').addEventListener('submit', function(e){
     e.preventDefault();
-    if (PRODUCT_TYPE === 'fisik') {
+    if (PRODUCT_TYPE === 'fisik' && SHIPPING_ENABLED) {
         if (!ORIGIN_AREA_ID) {
             showCheckoutAlert('Penjual belum mengatur area asal pengiriman.');
             return;
@@ -549,29 +625,8 @@ document.getElementById('checkoutForm').addEventListener('submit',async function
     }
     applyQty(parseInt(qtyDisplay?qtyDisplay.value:1,10), { reloadOngkir: false });
     const btn=document.getElementById('btnPay'), spinner=document.getElementById('paySpinner'), btnTxt=document.getElementById('btnPayText');
-    btn.disabled=true; spinner.style.display='inline-block'; btnTxt.textContent='Memproses...';
-    const data=Object.fromEntries(new FormData(this).entries());
-    try{
-        const res=await fetch('{{ route("checkout.process") }}',{
-            method:'POST',
-            headers:{'Content-Type':'application/json','X-CSRF-TOKEN':document.querySelector('meta[name="csrf-token"]').content,'Accept':'application/json'},
-            body:JSON.stringify({product_id:{{ $product->id }},...data}),
-        });
-        const result=await res.json();
-        if(!res.ok||result.error) throw new Error(result.message||'Terjadi kesalahan.');
-        snap.pay(result.snap_token,{
-            onSuccess:()=>window.location.href='{{ route("checkout.success") }}?order_id='+result.order_id,
-            onPending:()=>window.location.href='{{ route("checkout.pending") }}?order_id='+result.order_id,
-            onError:()=>{ showCheckoutAlert('Pembayaran gagal. Coba lagi.'); resetBtn(); },
-            onClose:()=>resetBtn(),
-        });
-    } catch(err){ showCheckoutAlert(err.message||'Gagal menghubungi server.'); resetBtn(); }
-    function resetBtn(){
-        const needCourier = PRODUCT_TYPE==='fisik'&&!document.getElementById('selCourier').value;
-        btn.disabled = needCourier;
-        spinner.style.display='none';
-        btnTxt.textContent = needCourier ? 'Pilih Ongkir Dulu' : 'Bayar Sekarang';
-    }
+    btn.disabled=true; spinner.style.display='inline-block'; btnTxt.textContent='Membuka Halaman Review...';
+    this.submit();
 });
 </script>
 </body>
