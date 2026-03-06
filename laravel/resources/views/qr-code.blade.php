@@ -35,9 +35,9 @@
 
                 {{-- QR Code Container --}}
                 <div style="background: linear-gradient(145deg, #ffffff 0%, #f8fbff 100%); border: 2px solid #e6f0ff; border-radius: 16px; padding: 32px; margin-bottom: 20px; display: flex; justify-content: center; align-items: center; min-height: 280px; position: relative; box-shadow: 0 8px 20px rgba(0,102,204,0.08);">
-                    {{-- Logo Payou di tengah QR --}}
-                    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 48px; height: 48px; background: #ffffff; border-radius: 12px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,102,204,0.15); border: 2px solid #ffffff; z-index: 10; pointer-events: none;">
-                        <span style="color: #0066CC; font-weight: 700; font-size: 14px; letter-spacing: -0.5px;">payou</span>
+                    {{-- Logo payou.id di tengah QR --}}
+                    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 64px; height: 36px; background: #ffffff; border-radius: 10px; display: flex; align-items: center; justify-content: center; box-shadow: 0 3px 12px rgba(0,102,204,0.22); border: 2px solid #e6f0ff; z-index: 10; pointer-events: none;">
+                        <span style="color: #0066CC; font-weight: 800; font-size: 12px; letter-spacing: -0.3px; line-height: 1;">payou<span style="color: #3b82f6;">.</span>id</span>
                     </div>
                     <div id="qrcode-main" style="filter: drop-shadow(0 4px 8px rgba(0,102,204,0.1));"></div>
                 </div>
@@ -121,7 +121,6 @@
                             <button onclick="changeColor('#ea580c', this)" class="color-btn" title="Oranye"
                                 style="width: 38px; height: 38px; background: #ea580c; border-radius: 50%; border: 3px solid #e2e8f0; cursor: pointer; transition: all 0.2s;">
                             </button>
-                            {{-- Custom color picker --}}
                             <label title="Pilih Warna Kustom"
                                 style="width: 38px; height: 38px; border-radius: 50%; border: 2px dashed #cbd5e1; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; overflow: hidden; position: relative;">
                                 <i class="fas fa-plus" style="font-size: 13px; color: #94a3b8; pointer-events: none; position: relative; z-index: 1;"></i>
@@ -229,19 +228,18 @@
 {{-- ════════════════════════════════════════════════
      POSTER HIDDEN — hanya untuk WhatsApp Share
      ════════════════════════════════════════════════ --}}
-<div id="qr-poster-design" style="position:fixed; top:-9999px; left:-9999px; width:500px; height:550px; background:#ffffff; padding:25px; box-sizing:border-box; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; display:flex; flex-direction:column;">
+<div id="qr-poster-design" style="position:fixed; top:-9999px; left:-9999px; width:500px; height:550px; background:#ffffff; padding:25px; box-sizing:border-box; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; display:flex; flex-direction:column;">
     <div style="display:flex; align-items:center; gap:12px; margin-bottom:15px; flex-shrink:0;">
         <div style="display:flex; flex-direction:column;">
             <span style="font-size:22px; font-weight:700; color:#0066CC; letter-spacing:-0.5px; line-height:1.2;">payou.id</span>
             <span style="font-size:13px; color:#64748B; margin-top:2px;">Digital Business Card</span>
         </div>
     </div>
-    <div style="padding:8px 18px; display:inline-block; margin-bottom:15px; width:fit-content; flex-shrink:0;">
-        <span style="color:#475569; font-size:15px; font-weight:500;" id="poster-username">@{{ $userSlug ?? 'username' }}</span>
-    </div>
-    <div style="display:flex; justify-content:center; align-items:center; margin-bottom:20px; background:linear-gradient(145deg, #ffffff, #f8fbff); padding:20px; border-radius:24px; box-shadow:0 15px 35px rgba(0,102,204,0.15); border:1px solid #e6f0ff; flex:1; position:relative;">
-        <div style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); width:56px; height:56px; background:#ffffff; border-radius:14px; display:flex; align-items:center; justify-content:justify-content; justify-content:center; box-shadow:0 4px 12px rgba(0,102,204,0.2); border:3px solid #ffffff; z-index:10; pointer-events:none;">
-            <span style="color:#0066CC; font-weight:700; font-size:16px; letter-spacing:-0.5px; padding-bottom:15px;">payou</span>
+    {{-- Username Badge dihapus --}}
+    <div style="display:flex; justify-content:center; align-items:center; margin-bottom:20px; background:linear-gradient(145deg,#ffffff,#f8fbff); padding:20px; border-radius:24px; box-shadow:0 15px 35px rgba(0,102,204,0.15); border:1px solid #e6f0ff; flex:1; position:relative;">
+        {{-- Logo payou.id pill di tengah QR poster --}}
+        <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:72px; height:40px; background:#ffffff; border-radius:11px; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 14px rgba(0,102,204,0.22); border:2px solid #e6f0ff; z-index:10; pointer-events:none;">
+            <span style="color:#0066CC; font-weight:800; font-size:13px; letter-spacing:-0.3px; line-height:1;">payou<span style="color:#3b82f6;">.</span>id</span>
         </div>
         <div id="poster-qrcode" style="display:flex; justify-content:center; align-items:center;"></div>
     </div>
@@ -263,7 +261,7 @@
         </div>
     </div>
     <div style="border-top:1px solid #E2E8F0; padding-top:10px; text-align:center; flex-shrink:0;">
-        <span style="color:#94A3B8; font-size:10px;">© 2024 payou.id · All rights reserved</span>
+        <span style="color:#94A3B8; font-size:10px;">© 2026 payou.id · All rights reserved</span>
     </div>
 </div>
 
@@ -277,21 +275,10 @@ button { transition: all 0.2s ease; }
 button:hover { transform: translateY(-1px); opacity: 0.9; }
 button:active { transform: translateY(0); }
 
-#qrcode-main {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-#qrcode-main img,
-#qrcode-main canvas {
-    border-radius: 8px;
-    width: 180px !important;
-    height: 180px !important;
-}
+#qrcode-main { display: flex; justify-content: center; align-items: center; }
+#qrcode-main img, #qrcode-main canvas { border-radius: 8px; width: 180px !important; height: 180px !important; }
 
 .copy-success { background: #10b981 !important; }
-
-/* Color btn active */
 .color-btn { outline: none; }
 .color-btn.active {
     border-color: white !important;
@@ -299,22 +286,16 @@ button:active { transform: translateY(0); }
     transform: scale(1.13) !important;
 }
 
-/* WhatsApp loading */
 .share-loading { opacity: 0.7; pointer-events: none; position: relative; }
 .share-loading::after {
-    content: '';
-    position: absolute;
+    content: ''; position: absolute;
     width: 14px; height: 14px;
-    border: 2px solid #ffffff;
-    border-top-color: transparent;
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-    right: 10px; top: 50%;
-    transform: translateY(-50%);
+    border: 2px solid #ffffff; border-top-color: transparent;
+    border-radius: 50%; animation: spin 0.8s linear infinite;
+    right: 10px; top: 50%; transform: translateY(-50%);
 }
 @keyframes spin { to { transform: translateY(-50%) rotate(360deg); } }
 
-/* Use case animations */
 @keyframes iconBounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-7px)} }
 @keyframes iconPulse  { 0%,100%{transform:scale(1)}    50%{transform:scale(1.2)} }
 .use-case-card:nth-child(1) .use-case-icon { animation: iconBounce 2s ease-in-out infinite 0s; }
@@ -335,7 +316,6 @@ button:active { transform: translateY(0); }
 </style>
 
 <script>
-// ─── Globals ───────────────────────────────────────────
 let currentUrl      = '{{ url("/" . ($userSlug ?? "username")) }}';
 let currentUsername = '{{ $userSlug ?? "username" }}';
 let currentColor    = '#0066CC';
@@ -349,14 +329,11 @@ const COLOR_NAMES = {
     '#ea580c': 'Oranye',
 };
 
-// ─── Init ──────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', function () {
     generateQRCode();
-    document.getElementById('poster-username').textContent  = '@' + currentUsername;
     document.getElementById('poster-watermark').textContent = '@' + currentUsername;
 });
 
-// ─── Generate QR ───────────────────────────────────────
 function generateQRCode() {
     const container = document.getElementById('qrcode-main');
     container.innerHTML = '';
@@ -369,32 +346,22 @@ function generateQRCode() {
     });
 }
 
-// ─── Ganti Warna ───────────────────────────────────────
 function changeColor(color, el) {
     currentColor = color;
-
-    // reset semua color-btn
     document.querySelectorAll('.color-btn').forEach(btn => {
         btn.classList.remove('active');
         btn.style.borderColor = '#e2e8f0';
         btn.style.boxShadow   = '';
         btn.style.transform   = '';
     });
-
-    if (el && el.tagName === 'BUTTON') {
-        el.classList.add('active');
-    }
-
-    // update label
+    if (el && el.tagName === 'BUTTON') el.classList.add('active');
     const name    = COLOR_NAMES[color.toUpperCase()] || COLOR_NAMES[color] || 'Kustom';
     const labelEl = document.getElementById('color-label');
     labelEl.textContent = `${color.toUpperCase()} (${name})`;
     labelEl.style.color = color;
-
     generateQRCode();
 }
 
-// ─── Copy Link ─────────────────────────────────────────
 async function copyLink() {
     const btn = document.getElementById('copy-btn');
     const ok  = () => {
@@ -411,60 +378,52 @@ async function copyLink() {
     } catch {
         try {
             const ta = document.createElement('textarea');
-            ta.value = currentUrl;
-            ta.style.cssText = 'position:fixed;opacity:0;';
+            ta.value = currentUrl; ta.style.cssText = 'position:fixed;opacity:0;';
             document.body.appendChild(ta); ta.select();
-            document.execCommand('copy');
-            document.body.removeChild(ta); ok();
+            document.execCommand('copy'); document.body.removeChild(ta); ok();
         } catch { alert('Gagal menyalin. Link: ' + currentUrl); }
     }
 }
 
-// ─── Download QR Bersih ────────────────────────────────
-// Output: PNG persegi 440×460 px — QR penuh + logo payou + @username
 function downloadQR() {
     const srcCanvas = document.querySelector('#qrcode-main canvas');
     if (!srcCanvas) { alert('QR Code belum siap, coba lagi.'); return; }
 
-    const QR_SIZE = 400;   // ukuran QR
-    const PAD     = 20;    // padding putih sekeliling QR
-    const LABEL_H = 40;    // area @username di bawah
+    const QR_SIZE = 400;
+    const PAD     = 20;
+    const LABEL_H = 40;
     const W = QR_SIZE + PAD * 2;
     const H = QR_SIZE + PAD * 2 + LABEL_H;
 
     const out = document.createElement('canvas');
-    out.width  = W;
-    out.height = H;
-    const ctx  = out.getContext('2d');
+    out.width = W; out.height = H;
+    const ctx = out.getContext('2d');
 
-    // background putih bersih
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, W, H);
-
-    // gambar QR dengan padding di semua sisi
     ctx.drawImage(srcCanvas, PAD, PAD, QR_SIZE, QR_SIZE);
 
-    // Logo 'payou' di tengah QR - kotak persegi bujur sangkar
-    const BOX   = 72;
-    const logoX = (W - BOX) / 2;
-    const logoY = PAD + (QR_SIZE - BOX) / 2;
-    // shadow
-    ctx.shadowColor   = 'rgba(0,102,204,0.20)';
-    ctx.shadowBlur    = 14;
-    ctx.shadowOffsetY = 3;
-    // kotak putih rounded persegi
+    // ── Logo payou.id — pill landscape di tengah ──
+    const BOX_W = 110; const BOX_H = 46;
+    const logoX = (W - BOX_W) / 2;
+    const logoY = PAD + (QR_SIZE - BOX_H) / 2;
+    ctx.shadowColor = 'rgba(0,102,204,0.22)'; ctx.shadowBlur = 16; ctx.shadowOffsetY = 3;
     ctx.fillStyle = '#ffffff';
-    ctx.beginPath();
-    ctx.roundRect(logoX, logoY, BOX, BOX, 12);
-    ctx.fill();
-    // reset shadow
+    ctx.beginPath(); ctx.roundRect(logoX, logoY, BOX_W, BOX_H, 12); ctx.fill();
     ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
-    // teks "payou" — selalu biru, tidak ikut warna QR
-    ctx.fillStyle    = '#0066CC';
-    ctx.font         = 'bold 16px Arial, sans-serif';
-    ctx.textAlign    = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText('payou', W / 2, logoY + BOX / 2);
+    // border tipis biru muda
+    ctx.strokeStyle = '#e6f0ff'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.roundRect(logoX, logoY, BOX_W, BOX_H, 12); ctx.stroke();
+    // "payou" biru tua
+    ctx.fillStyle = '#0066CC'; ctx.font = 'bold 18px Arial, sans-serif';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText('payou', W / 2 - 12, logoY + BOX_H / 2);
+    // titik biru muda
+    ctx.fillStyle = '#3b82f6';
+    ctx.fillText('.', W / 2 + 20, logoY + BOX_H / 2);
+    // "id" biru tua
+    ctx.fillStyle = '#0066CC';
+    ctx.fillText('id', W / 2 + 32, logoY + BOX_H / 2);
     ctx.textBaseline = 'alphabetic';
 
     // watermark @username — ikut warna QR aktif
@@ -476,56 +435,37 @@ function downloadQR() {
     const link    = document.createElement('a');
     link.download = `payou-${currentUsername}.png`;
     link.href     = out.toDataURL('image/png', 1.0);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    document.body.appendChild(link); link.click(); document.body.removeChild(link);
 }
 
-// ─── Print QR ──────────────────────────────────────────
 function printQR() {
     const srcCanvas = document.querySelector('#qrcode-main canvas');
     if (!srcCanvas) { alert('QR Code belum siap.'); return; }
-
     const dataUrl = srcCanvas.toDataURL('image/png', 1.0);
     const win = window.open('', '_blank', 'width=520,height=620');
     win.document.write(`<!DOCTYPE html>
-<html>
-<head>
-<title>Print QR Code — @${currentUsername}</title>
+<html><head><title>Print QR Code — @${currentUsername}</title>
 <style>
-  * { margin:0; padding:0; box-sizing:border-box; }
-  body {
-    display:flex; flex-direction:column; align-items:center; justify-content:center;
-    min-height:100vh; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;
-    background:#fff; padding:32px;
-  }
-  .logo { font-size:22px; font-weight:700; color:#0066CC; letter-spacing:-0.5px; text-align:center; }
-  .sub  { font-size:12px; color:#64748B; text-align:center; margin-top:4px; margin-bottom:20px; }
-  .qr-wrap {
-    border:2px solid #e6f0ff; border-radius:16px; padding:24px;
-    background:linear-gradient(145deg,#fff,#f8fbff);
-    box-shadow:0 8px 24px rgba(0,102,204,0.10); margin-bottom:16px;
-  }
-  .qr-wrap img { display:block; width:240px; height:240px; border-radius:6px; }
-  .username { font-size:15px; font-weight:700; color:${currentColor}; text-align:center; margin-bottom:6px; }
-  .url      { font-size:11px; color:#94a3b8; text-align:center; }
-  @media print { button { display:none !important; } }
-</style>
-</head>
-<body>
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;background:#fff;padding:32px;}
+  .logo{font-size:22px;font-weight:700;color:#0066CC;letter-spacing:-0.5px;text-align:center;}
+  .sub{font-size:12px;color:#64748B;text-align:center;margin-top:4px;margin-bottom:20px;}
+  .qr-wrap{border:2px solid #e6f0ff;border-radius:16px;padding:24px;background:linear-gradient(145deg,#fff,#f8fbff);box-shadow:0 8px 24px rgba(0,102,204,0.10);margin-bottom:16px;}
+  .qr-wrap img{display:block;width:240px;height:240px;border-radius:6px;}
+  .username{font-size:15px;font-weight:700;color:${currentColor};text-align:center;margin-bottom:6px;}
+  .url{font-size:11px;color:#94a3b8;text-align:center;}
+  @media print{button{display:none!important;}}
+</style></head><body>
   <div class="logo">payou.id</div>
   <div class="sub">Digital Business Card</div>
   <div class="qr-wrap"><img src="${dataUrl}" alt="QR Code"></div>
   <div class="username">@${currentUsername}</div>
   <div class="url">${currentUrl}</div>
   <script>window.onload=function(){setTimeout(function(){window.print();},400);};<\/script>
-</body>
-</html>`);
+</body></html>`);
     win.document.close();
 }
 
-// ─── WhatsApp Share ────────────────────────────────────
-// Menggunakan poster digital yang sama persis dengan qr-modal component.
 async function shareWhatsApp() {
     const shareBtn          = document.getElementById('whatsapp-share-btn');
     const posterDesign      = document.getElementById('qr-poster-design');
@@ -536,10 +476,12 @@ async function shareWhatsApp() {
 
     try {
         posterQrContainer.innerHTML = '';
+        document.getElementById('poster-watermark').textContent = '@' + currentUsername;
+
         new QRCode(posterQrContainer, {
             text: currentUrl,
             width: 220, height: 220,
-            colorDark: '#0066CC',   // poster selalu biru Payou
+            colorDark: '#0066CC',
             colorLight: '#ffffff',
             correctLevel: QRCode.CorrectLevel.H,
         });
@@ -547,13 +489,9 @@ async function shareWhatsApp() {
         await new Promise(resolve => setTimeout(resolve, 500));
 
         const canvas = await html2canvas(posterDesign, {
-            scale: 2,
-            backgroundColor: '#ffffff',
-            allowTaint: false,
-            useCORS: true,
-            logging: false,
-            windowWidth: 500,
-            windowHeight: 550,
+            scale: 2, backgroundColor: '#ffffff',
+            allowTaint: false, useCORS: true, logging: false,
+            windowWidth: 500, windowHeight: 550,
         });
 
         const message = `Halo 👋\n\nSaya ingin berbagi kartu digital Payou.id saya:\n${currentUrl}\n\nSilakan scan QR code di bawah ini untuk terhubung dengan saya.\n\nTerima kasih! 🙏`;
@@ -566,15 +504,12 @@ async function shareWhatsApp() {
             const link    = document.createElement('a');
             link.download = `payou-${currentUsername}.png`;
             link.href     = canvas.toDataURL('image/png');
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+            document.body.appendChild(link); link.click(); document.body.removeChild(link);
             setTimeout(() => {
                 window.open(`https://web.whatsapp.com/send?text=${encodeURIComponent(message)}`, '_blank');
             }, 1000);
             alert('✓ Gambar sudah didownload\n\nSilakan kirim gambar + pesan ini ke kontak Anda di WhatsApp Web');
         }
-
     } catch (error) {
         console.error('Error:', error);
         if (error.name !== 'AbortError' && !error.message?.includes('cancel')) {
@@ -586,7 +521,6 @@ async function shareWhatsApp() {
     }
 }
 
-// ─── Native Share ──────────────────────────────────────
 async function shareQR() {
     if (navigator.share) {
         try {
