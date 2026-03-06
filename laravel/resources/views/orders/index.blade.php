@@ -57,7 +57,6 @@
     border: 1px solid #e5e7eb;
     border-radius: 16px;
     padding: 18px 20px;
-    margin-bottom: 12px;
     color: inherit;
     transition: .2s ease;
 }
@@ -83,12 +82,17 @@
     border: 1px solid #e2e8f0;
     border-radius: 999px;
     padding: 4px 10px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 180px;
 }
 .riwayat-badge {
     font-size: 11px;
     font-weight: 700;
     border-radius: 999px;
     padding: 5px 10px;
+    flex-shrink: 0;
 }
 .riwayat-badge.fisik {
     background: #dcfce7;
@@ -101,11 +105,14 @@
     color: #1d4ed8;
 }
 .riwayat-title {
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 700;
     color: #0f172a;
     margin: 0 0 7px;
     line-height: 1.45;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 .riwayat-meta {
     display: flex;
@@ -115,7 +122,7 @@
     color: #64748b;
 }
 .riwayat-amount {
-    font-size: 21px;
+    font-size: 20px;
     font-weight: 800;
     color: #2563eb;
     margin-top: 11px;
@@ -132,11 +139,16 @@
     border-radius: 16px;
     background: #fff;
     color: #94a3b8;
+    grid-column: 1 / -1;
 }
 .riwayat-empty i {
     font-size: 40px;
     margin-bottom: 10px;
     display: block;
+}
+
+@media (max-width: 768px) {
+    .orders-grid { grid-template-columns: 1fr !important; }
 }
 </style>
 
@@ -151,38 +163,42 @@
         <a href="{{ route('orders.index', ['type' => 'digital']) }}" class="riwayat-tab {{ $type === 'digital' ? 'active' : '' }}">Pesanan Digital</a>
     </div>
 
-    @if($orders->count() === 0)
-        <div class="riwayat-empty">
-            <i class="fas fa-inbox"></i>
-            Belum ada pesanan untuk kategori ini.
-        </div>
-    @else
-        @foreach($orders as $order)
-            @php
-                $notes = $order->order_notes ?? [];
-                $qty = (int) ($notes['qty'] ?? 1);
-                $buyerName = $notes['buyer_name'] ?? '-';
-                $productTitle = $notes['product_title'] ?? ($order->order_product->title ?? '-');
-                $typeBadge = ($notes['product_type'] ?? 'fisik') === 'digital' ? 'digital' : 'fisik';
-            @endphp
-            <a href="{{ route('orders.show', $order->id) }}" class="riwayat-card">
-                <div class="riwayat-card-header">
-                    <span class="riwayat-code">{{ $order->order_id }}</span>
-                    <span class="riwayat-badge {{ $typeBadge }}">{{ strtoupper($typeBadge) }}</span>
-                </div>
-                <div class="riwayat-title">{{ $productTitle }}</div>
-                <div class="riwayat-meta">
-                    <span><strong>Pembeli:</strong> {{ $buyerName }}</span>
-                    <span><strong>Qty:</strong> {{ $qty }}</span>
-                </div>
-                <div class="riwayat-amount">Rp {{ number_format((int) $order->amount, 0, ',', '.') }}</div>
-                <div class="riwayat-date">{{ optional($order->created_at)->format('d M Y, H:i') }} WIB</div>
-            </a>
-        @endforeach
+    <div class="orders-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+        @if($orders->count() === 0)
+            <div class="riwayat-empty">
+                <i class="fas fa-inbox"></i>
+                Belum ada pesanan untuk kategori ini.
+            </div>
+        @else
+            @foreach($orders as $order)
+                @php
+                    $notes = $order->order_notes ?? [];
+                    $qty = (int) ($notes['qty'] ?? 1);
+                    $buyerName = $notes['buyer_name'] ?? '-';
+                    $productTitle = $notes['product_title'] ?? ($order->order_product->title ?? '-');
+                    $typeBadge = ($notes['product_type'] ?? 'fisik') === 'digital' ? 'digital' : 'fisik';
+                @endphp
+                <a href="{{ route('orders.show', $order->id) }}" class="riwayat-card">
+                    <div class="riwayat-card-header">
+                        <span class="riwayat-code">{{ $order->order_id }}</span>
+                        <span class="riwayat-badge {{ $typeBadge }}">{{ strtoupper($typeBadge) }}</span>
+                    </div>
+                    <div class="riwayat-title">{{ $productTitle }}</div>
+                    <div class="riwayat-meta">
+                        <span><strong>Pembeli:</strong> {{ $buyerName }}</span>
+                        <span><strong>Qty:</strong> {{ $qty }}</span>
+                    </div>
+                    <div class="riwayat-amount">Rp {{ number_format((int) $order->amount, 0, ',', '.') }}</div>
+                    <div class="riwayat-date">{{ optional($order->created_at)->format('d M Y, H:i') }} WIB</div>
+                </a>
+            @endforeach
+        @endif
+    </div>
 
-        <div style="margin-top:16px;">
-            {{ $orders->appends(['type' => $type])->links() }}
-        </div>
+    @if($orders->count() > 0)
+    <div style="margin-top:16px;">
+        {{ $orders->appends(['type' => $type])->links() }}
+    </div>
     @endif
 </div>
 @endsection

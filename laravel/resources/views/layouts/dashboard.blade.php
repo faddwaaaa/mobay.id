@@ -9,6 +9,15 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
+    <script>
+        (function() {
+            const t = localStorage.getItem('payou_theme');
+            if (t === 'dark' || (!t && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+            }
+        })();
+    </script>
+    <link rel="stylesheet" href="...">
     <title>@yield('title', 'Dashboard | Payou.id')</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
