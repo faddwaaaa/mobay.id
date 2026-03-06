@@ -233,9 +233,9 @@
                     <span style="font-size:22px;font-weight:800;color:#111;" id="total-views-label">{{ number_format(array_sum($data)) }}</span>
                 </div>
                 <div style="display:flex;align-items:center;gap:8px;">
-                    <span title="Jumlah pengunjung yang mengklik link atau produk di halamanmu"
+                    <span title="Jumlah pengunjung yang mengklik produk di halamanmu"
       style="width:12px;height:12px;border-radius:50%;background:#2563eb;display:inline-block;cursor:help;"></span>
-<span title="Jumlah pengunjung yang mengklik link atau produk di halamanmu"
+<span title="Jumlah pengunjung yang mengklik produk di halamanmu"
       style="font-size:13px;color:#6b7280;cursor:help;border-bottom:1px dashed #d1d5db;">Clicks</span>
                     <span style="font-size:22px;font-weight:800;color:#111;" id="total-click-label">{{ number_format(array_sum($clicksData)) }}</span>
                 </div>

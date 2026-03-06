@@ -25,20 +25,18 @@ class TransactionController extends Controller
      * Show transaction history page
      * GET /riwayat
      */
-    public function history()
+    public function history(Request $request)
     {
         $user = auth()->user();
 
-        // Ambil transaksi pembayaran (checkout)
         $payments = \App\Models\Transaction::where('user_id', $user->id)
             ->whereIn('payment_method', ['gopay', 'qris', 'bca_va', 'bni_va', 'echannel', 'shopeepay', 'credit_card'])
             ->latest()
-            ->paginate(10, ['*'], 'payments');
+            ->paginate(10, ['*'], 'page');
 
-        // Ambil transaksi penarikan
         $withdrawals = Withdrawal::where('user_id', $user->id)
             ->latest()
-            ->paginate(10, ['*'], 'withdrawals');
+            ->paginate(10, ['*'], 'wpage');
 
         return view('transactions.history', compact('payments', 'withdrawals'));
     }
