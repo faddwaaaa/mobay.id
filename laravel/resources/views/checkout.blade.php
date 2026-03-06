@@ -313,33 +313,42 @@
     <input type="hidden" name="payment_method" value="gopay">
 
     {{-- RINGKASAN --}}
-    <div class="card">
-        <div class="card-header">Ringkasan Pembayaran</div>
-        <div class="card-body">
-            <div class="sum-row">
-                <span>Harga satuan</span>
-                <span>Rp {{ number_format($product->discount ?? $product->price, 0, ',', '.') }}</span>
-            </div>
-            @if($product->product_type === 'fisik')
-            <div class="sum-row"><span>Jumlah</span><span id="sumQty">1</span></div>
-            <div class="sum-row"><span>Subtotal</span><span id="sumSubtotal">Rp {{ number_format($product->discount ?? $product->price, 0, ',', '.') }}</span></div>
-            <div class="sum-row">
-                <span>Ongkos Kirim</span>
-                <span id="sumShipping">
-                    @if(($product->shipping_enabled ?? true))
-                        <span class="sum-ph">Pilih area tujuan dulu</span>
-                    @else
-                        Gratis Ongkir
-                    @endif
-                </span>
-            </div>
-            @endif
-            <div class="sum-row total">
-                <span>Total Pembayaran</span>
-                <span class="total-amt" id="sumTotal">Rp {{ number_format((int) ($product->discount ?? $product->price), 0, ',', '.') }}</span>
-            </div>
+<div class="card">
+    <div class="card-header">Ringkasan Pembayaran</div>
+    <div class="card-body">
+        <div class="sum-row">
+            <span>Harga satuan</span>
+            <span>Rp {{ number_format($product->discount ?? $product->price, 0, ',', '.') }}</span>
+        </div>
+        @if($product->product_type === 'fisik')
+        <div class="sum-row"><span>Jumlah</span><span id="sumQty">1</span></div>
+        <div class="sum-row"><span>Subtotal</span><span id="sumSubtotal">Rp {{ number_format($product->discount ?? $product->price, 0, ',', '.') }}</span></div>
+        <div class="sum-row">
+            <span>Ongkos Kirim</span>
+            <span id="sumShipping">
+                @if(($product->shipping_enabled ?? true))
+                    <span class="sum-ph">Pilih area tujuan dulu</span>
+                @else
+                    Gratis Ongkir
+                @endif
+            </span>
+        </div>
+        @endif
+        {{-- BIAYA LAYANAN 5% --}}
+        <div class="sum-row" style="color:#6b7280;">
+            <span style="display:flex;align-items:center;gap:6px;">
+                Biaya Layanan
+                <span style="font-size:10px;padding:2px 6px;background:#fef3c7;color:#854d0e;
+                             border-radius:4px;font-weight:700;">5%</span>
+            </span>
+            <span id="sumFee" style="color:#b45309;">Rp 0</span>
+        </div>
+        <div class="sum-row total">
+            <span>Total Pembayaran</span>
+            <span class="total-amt" id="sumTotal">Rp {{ number_format((int) ($product->discount ?? $product->price), 0, ',', '.') }}</span>
         </div>
     </div>
+</div>
 
     <button type="submit" class="btn-pay" id="btnPay" @if($product->product_type==='fisik' && ($product->shipping_enabled ?? true)) disabled @endif>
         <span class="spinner" id="paySpinner"></span>
@@ -368,15 +377,29 @@ function fmtRp(n) { return 'Rp ' + new Intl.NumberFormat('id-ID').format(n); }
 // ===== SUMMARY =====
 function updateSummary(qty) {
     qty = Math.min(Math.max(qty, 1), MAX_QTY);
-    const sub = UNIT_PRICE * qty;
+    const sub  = UNIT_PRICE * qty;
     const ship = PRODUCT_TYPE === 'fisik' ? (SHIPPING_ENABLED ? selectedCost : 0) : 0;
-    const tot = sub + ship;
-    const elQ=document.getElementById('sumQty'), elS=document.getElementById('sumSubtotal'), elT=document.getElementById('sumTotal');
-    if(elQ) elQ.textContent = qty;
-    if(elS) elS.textContent = fmtRp(sub);
+    const base = sub + ship;
+    const fee  = Math.ceil(base * 0.05);   // 5% biaya layanan
+    const tot  = base + fee;
+
+    const elQ    = document.getElementById('sumQty');
+    const elS    = document.getElementById('sumSubtotal');
     const elShip = document.getElementById('sumShipping');
-    if(elShip && PRODUCT_TYPE === 'fisik') elShip.textContent = SHIPPING_ENABLED ? (ship > 0 ? fmtRp(ship) : 'Belum dipilih') : 'Gratis Ongkir';
-    if(elT) elT.textContent = fmtRp(tot);
+    const elFee  = document.getElementById('sumFee');
+    const elT    = document.getElementById('sumTotal');
+
+    if (elQ) elQ.textContent = qty;
+    if (elS) elS.textContent = fmtRp(sub);
+
+    if (elShip && PRODUCT_TYPE === 'fisik') {
+        elShip.textContent = SHIPPING_ENABLED
+            ? (ship > 0 ? fmtRp(ship) : 'Belum dipilih')
+            : 'Gratis Ongkir';
+    }
+
+    if (elFee) elFee.textContent = fmtRp(fee);
+    if (elT)   elT.textContent   = fmtRp(tot);
 }
 
 // ===== QTY =====
