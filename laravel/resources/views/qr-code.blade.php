@@ -1,3 +1,4 @@
+
 @extends('layouts.dashboard')
 @section('title', 'QR Code | Payou.id')
 

@@ -34,4 +34,16 @@ return [
     */
     'dev_pin' => env('PAYMENT_DEV_PIN', '123456'),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Platform Fee
+    |--------------------------------------------------------------------------
+    |
+    | payment_fee_percent: fee checkout untuk pembeli (dalam persen)
+    | withdraw_fee: biaya tetap per penarikan saldo user (dalam Rupiah)
+    |
+    */
+    'payment_fee_percent' => (float) env('PAYMENT_FEE_PERCENT', 5),
+    'withdraw_fee' => (int) env('PAYMENT_WITHDRAW_FEE', 3000),
+
 ];
