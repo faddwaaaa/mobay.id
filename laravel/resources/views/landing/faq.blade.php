@@ -181,7 +181,7 @@
                     </svg>
                 </button>
                 <div class="faq-answer">
-                    <p>Platform fee 2.5%, payment gateway sesuai provider (±1-3%), dan biaya withdraw Rp 2.500.</p>
+                    <p>Platform fee 5%, payment gateway sesuai provider (±1-3%), dan biaya withdraw Rp 3.000.</p>
                 </div>
             </div>
 

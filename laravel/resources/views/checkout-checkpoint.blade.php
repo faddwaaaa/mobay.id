@@ -83,6 +83,8 @@
                 <div class="row"><span class="k">Harga Satuan</span><span class="v">Rp {{ number_format($productPrice, 0, ',', '.') }}</span></div>
                 <div class="row"><span class="k">Subtotal</span><span class="v">Rp {{ number_format($subtotal, 0, ',', '.') }}</span></div>
                 <div class="row"><span class="k">Ongkir</span><span class="v">{{ $shippingEnabled ? 'Rp ' . number_format($shippingCost, 0, ',', '.') : 'Gratis Ongkir' }}</span></div>
+                <div class="row"><span class="k">Biaya Layanan ({{ rtrim(rtrim(number_format($paymentFeePercent, 2, '.', ''), '0'), '.') }}%)</span><span class="v">Rp {{ number_format($paymentFeeAmount, 0, ',', '.') }}</span></div>
+                <div class="row"><span class="k">Total Dasar</span><span class="v">Rp {{ number_format($baseTotal, 0, ',', '.') }}</span></div>
                 <div class="row"><span class="k">Total Pembayaran</span><span class="v">Rp {{ number_format($total, 0, ',', '.') }}</span></div>
                 <div class="row"><span class="k">Kurir</span><span class="v">{{ $payload['selected_courier'] ?? '-' }}</span></div>
                 <div class="row"><span class="k">Layanan</span><span class="v">{{ $payload['selected_service'] ?? '-' }}</span></div>
