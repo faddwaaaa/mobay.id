@@ -7,7 +7,12 @@
 <div class="notif-panel" id="notifPanel" role="dialog" aria-label="Panel Notifikasi">
     <div class="notif-panel-header">
         <span class="notif-panel-title">Notifikasi</span>
-        <button class="notif-mark-all-btn" id="notifMarkAll">Tandai Semua Dibaca</button>
+        <div class="notif-header-actions">
+            <button class="notif-mark-all-btn" id="notifMarkAll">Tandai Semua Dibaca</button>
+            <button class="notif-delete-all-btn" id="notifDeleteAll" title="Hapus Semua">
+                <i class="fas fa-trash-alt"></i>
+            </button>
+        </div>
     </div>
     <div class="notif-panel-body" id="notifPanelBody">
         <div class="notif-empty-state">
@@ -27,7 +32,7 @@
 </audio>
 
 <style>
-/* ---------- Bell Button (ada di dalam .s-footer-top di layout) ---------- */
+/* ---------- Bell Button ---------- */
 .notif-bell-btn {
     position: relative;
     display: flex;
@@ -45,9 +50,7 @@
     flex-shrink: 0;
 }
 
-.notif-bell-btn i {
-    line-height: 1;
-}
+.notif-bell-btn i { line-height: 1; }
 
 .notif-bell-btn:hover {
     background: var(--nav-hover-bg, #f3f7ff);
@@ -56,22 +59,18 @@
 
 .notif-bell-btn.has-notif { color: var(--accent, #2356e8); }
 
-/* Badge — HIDDEN by default */
+/* Badge */
 .notif-badge {
     position: absolute;
-    top: 2px;
-    right: 2px;
-    min-width: 15px;
-    height: 15px;
+    top: 2px; right: 2px;
+    min-width: 15px; height: 15px;
     border-radius: 999px;
     background: #e53e3e;
     color: #fff;
-    font-size: 8.5px;
-    font-weight: 700;
+    font-size: 8.5px; font-weight: 700;
     font-family: var(--nav-font, 'Plus Jakarta Sans', sans-serif);
     display: none;
-    align-items: center;
-    justify-content: center;
+    align-items: center; justify-content: center;
     padding: 0 3px;
     border: 1.5px solid #fff;
     pointer-events: none;
@@ -95,7 +94,7 @@
     top: 90px;
     left: calc(var(--sidebar-w, 220px) + 16px);
     width: 380px;
-    max-height: 560px;
+    max-height: 530px;
     background: #fff;
     border-radius: 14px;
     box-shadow: 0 8px 40px rgba(35,86,232,.13), 0 2px 8px rgba(0,0,0,.08);
@@ -127,17 +126,21 @@
 
 .notif-panel-title {
     font-family: var(--nav-font, 'Plus Jakarta Sans', sans-serif);
-    font-size: 15px;
-    font-weight: 700;
+    font-size: 15px; font-weight: 700;
     color: #111827;
 }
 
+/* Header actions group */
+.notif-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
 .notif-mark-all-btn {
-    background: none;
-    border: none;
+    background: none; border: none;
     font-family: var(--nav-font, 'Plus Jakarta Sans', sans-serif);
-    font-size: 11.5px;
-    font-weight: 600;
+    font-size: 11.5px; font-weight: 600;
     color: var(--accent, #2356e8);
     cursor: pointer;
     padding: 3px 6px;
@@ -146,6 +149,23 @@
 }
 
 .notif-mark-all-btn:hover { background: #e8f0fe; }
+
+/* Tombol hapus semua */
+.notif-delete-all-btn {
+    background: none; border: none;
+    color: #cbd5e0;
+    font-size: 12px;
+    cursor: pointer;
+    padding: 4px 6px;
+    border-radius: 5px;
+    transition: background .15s, color .15s;
+    display: flex; align-items: center; justify-content: center;
+}
+
+.notif-delete-all-btn:hover {
+    background: #fff5f5;
+    color: #e53e3e;
+}
 
 /* ---------- Body ---------- */
 .notif-panel-body {
@@ -173,9 +193,7 @@
 .notif-empty-state i { font-size: 36px; color: #c4cdd9; }
 .notif-empty-state p {
     font-family: var(--nav-font, 'Plus Jakarta Sans', sans-serif);
-    font-size: 13.5px;
-    margin: 0;
-    color: #a0aec0;
+    font-size: 13.5px; margin: 0; color: #a0aec0;
 }
 
 /* ---------- Notif Item ---------- */
@@ -187,12 +205,36 @@
     cursor: pointer;
     transition: background .14s;
     border-bottom: 1px solid #f4f7fc;
+    position: relative;
 }
 
 .notif-item:last-child  { border-bottom: none; }
 .notif-item:hover       { background: #f7f9ff; }
 .notif-item.unread      { background: #f0f5ff; }
 .notif-item.unread:hover{ background: #e8f0fe; }
+
+/* Tombol hapus per item — muncul saat hover, ditengah secara vertikal */
+.notif-item-delete {
+    width: 30px; height: 30px;
+    border-radius: 8px;
+    background: none; border: none;
+    color: #c4cdd9;
+    font-size: 15px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    opacity: 0;
+    flex-shrink: 0;
+    align-self: center;
+    transition: opacity .15s, background .15s, color .15s;
+    z-index: 2;
+}
+
+.notif-item:hover .notif-item-delete { opacity: 1; }
+
+.notif-item-delete:hover {
+    background: #fff5f5;
+    color: #e53e3e;
+}
 
 .notif-item-icon {
     width: 40px; height: 40px;
@@ -257,22 +299,28 @@ body.dark .notif-item-title   { color: #e8edf8; }
 body.dark .notif-item-msg     { color: #8899b4; }
 body.dark .notif-empty-state  { border-color: #2d3748; }
 body.dark .notif-badge        { border-color: #1e2535; }
+body.dark .notif-delete-all-btn { color: #4a5568; }
+body.dark .notif-delete-all-btn:hover { background: #2d1f1f; color: #fc8181; }
+body.dark .notif-item-delete  { color: #4a5568; }
+body.dark .notif-item-delete:hover { background: #2d1f1f; color: #fc8181; }
 </style>
 
 <script>
 (function () {
-    var POLL_INTERVAL = 3000;
-    var API_LIST      = '/notifications';
-    var API_MARK_ALL  = '/notifications/mark-all';
-    var API_MARK_ONE  = function(id) { return '/notifications/' + id + '/read'; };
-    var CSRF          = document.querySelector('meta[name="csrf-token"]') ? document.querySelector('meta[name="csrf-token"]').content : '';
+    var POLL_INTERVAL  = 3000;
+    var API_LIST       = '/notifications';
+    var API_MARK_ALL   = '/notifications/mark-all';
+    var API_MARK_ONE   = function(id) { return '/notifications/' + id + '/read'; };
+    var API_DELETE_ONE = function(id) { return '/notifications/' + id; };
+    var API_DELETE_ALL = '/notifications';
+    var CSRF           = document.querySelector('meta[name="csrf-token"]') ? document.querySelector('meta[name="csrf-token"]').content : '';
 
-    var panel      = document.getElementById('notifPanel');
-    var panelBody  = document.getElementById('notifPanelBody');
-    var markAllBtn = document.getElementById('notifMarkAll');
-    var backdrop   = document.getElementById('notifBackdrop');
+    var panel         = document.getElementById('notifPanel');
+    var panelBody     = document.getElementById('notifPanelBody');
+    var markAllBtn    = document.getElementById('notifMarkAll');
+    var deleteAllBtn  = document.getElementById('notifDeleteAll');
+    var backdrop      = document.getElementById('notifBackdrop');
 
-    // Audio elements dari HTML (MP3 di-embed via base64)
     var audioPayment  = document.getElementById('notifAudioPayment');
     var audioCheckout = document.getElementById('notifAudioCheckout');
 
@@ -285,53 +333,30 @@ body.dark .notif-badge        { border-color: #1e2535; }
     var notifications = [];
 
     // ---- Browser Push Notification ----
-    var notifPermission = 'default';
-
     function requestNotifPermission() {
         if (!('Notification' in window)) return;
-        if (Notification.permission === 'granted') {
-            notifPermission = 'granted';
-            return;
-        }
+        if (Notification.permission === 'granted') return;
         if (Notification.permission !== 'denied') {
-            Notification.requestPermission().then(function(permission) {
-                notifPermission = permission;
-            });
-        } else {
-            notifPermission = Notification.permission;
+            Notification.requestPermission().then(function(p) {});
         }
     }
 
     function showBrowserNotif(title, message, type) {
-        if (!('Notification' in window)) return;
-        if (Notification.permission !== 'granted') return;
+        if (!('Notification' in window) || Notification.permission !== 'granted') return;
         var icon = type === 'payment'
             ? 'https://cdn-icons-png.flaticon.com/512/190/190411.png'
             : (type === 'checkout'
                 ? 'https://cdn-icons-png.flaticon.com/512/1170/1170576.png'
                 : 'https://cdn-icons-png.flaticon.com/512/891/891462.png');
         try {
-            var n = new Notification(title, {
-                body: message,
-                icon: icon,
-                badge: icon,
-                tag: 'payou-notif-' + Date.now(),
-                requireInteraction: false,
-            });
-            n.onclick = function() {
-                window.focus();
-                n.close();
-            };
+            var n = new Notification(title, { body: message, icon: icon, tag: 'payou-notif-' + Date.now() });
+            n.onclick = function() { window.focus(); n.close(); };
             setTimeout(function() { n.close(); }, 6000);
         } catch(e) {}
     }
 
-    // ---- Audio via HTML <audio> elements (MP3 embedded) ----
-    var audioReady = false;
-
+    // ---- Audio ----
     function unlockAudio() {
-        audioReady = true;
-        // Unlock kedua audio element dengan silent play
         [audioPayment, audioCheckout].forEach(function(el) {
             if (!el) return;
             el.volume = 0;
@@ -339,9 +364,7 @@ body.dark .notif-badge        { border-color: #1e2535; }
             if (p && p.then) {
                 p.then(function() { el.pause(); el.currentTime = 0; el.volume = 1; })
                  .catch(function() { el.volume = 1; });
-            } else {
-                el.pause(); el.currentTime = 0; el.volume = 1;
-            }
+            } else { el.pause(); el.currentTime = 0; el.volume = 1; }
         });
     }
 
@@ -354,22 +377,12 @@ body.dark .notif-badge        { border-color: #1e2535; }
 
     function playPaymentSound() {
         if (!audioPayment) return;
-        try {
-            audioPayment.currentTime = 0;
-            audioPayment.volume = 1;
-            var p = audioPayment.play();
-            if (p && p.catch) p.catch(function(e) { console.warn('playPaymentSound error', e); });
-        } catch(e) { console.warn('playPaymentSound error', e); }
+        try { audioPayment.currentTime = 0; audioPayment.volume = 1; var p = audioPayment.play(); if (p && p.catch) p.catch(function(){}); } catch(e) {}
     }
 
     function playCheckoutSound() {
         if (!audioCheckout) return;
-        try {
-            audioCheckout.currentTime = 0;
-            audioCheckout.volume = 1;
-            var p = audioCheckout.play();
-            if (p && p.catch) p.catch(function(e) { console.warn('playCheckoutSound error', e); });
-        } catch(e) { console.warn('playCheckoutSound error', e); }
+        try { audioCheckout.currentTime = 0; audioCheckout.volume = 1; var p = audioCheckout.play(); if (p && p.catch) p.catch(function(){}); } catch(e) {}
     }
 
     // ---- Helpers ----
@@ -383,7 +396,7 @@ body.dark .notif-badge        { border-color: #1e2535; }
 
     function escHtml(str) {
         return String(str).replace(/[&<>"']/g, function(c) {
-            return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":' &#39;'}[c];
+            return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"}[c];
         });
     }
 
@@ -424,8 +437,21 @@ body.dark .notif-badge        { border-color: #1e2535; }
                     '<div class="notif-item-msg">' + escHtml(n.message) + '</div>' +
                     '<div class="notif-item-time">' + timeAgo(n.created_at) + '</div>' +
                 '</div>' +
-                (!n.is_read ? '<div class="notif-unread-dot"></div>' : '');
-            el.addEventListener('click', function() { markOne(n.id, el, n.link); });
+                (!n.is_read ? '<div class="notif-unread-dot"></div>' : '') +
+                '<button class="notif-item-delete" title="Hapus notifikasi"><i class="fas fa-times"></i></button>';
+
+            // Klik item → mark read
+            el.addEventListener('click', function(e) {
+                if (e.target.closest('.notif-item-delete')) return; // jangan trigger markOne
+                markOne(n.id, el, n.link);
+            });
+
+            // Klik tombol hapus
+            el.querySelector('.notif-item-delete').addEventListener('click', function(e) {
+                e.stopPropagation();
+                deleteOne(n.id, el);
+            });
+
             panelBody.appendChild(el);
         });
     }
@@ -497,19 +523,56 @@ body.dark .notif-badge        { border-color: #1e2535; }
         } catch(e) {}
     }
 
+    // ---- Delete ----
+    async function deleteOne(id, el) {
+        try {
+            var wasUnread = el.classList.contains('unread');
+            // Animasi keluar
+            el.style.transition = 'opacity .18s, transform .18s';
+            el.style.opacity = '0';
+            el.style.transform = 'translateX(16px)';
+            await fetch(API_DELETE_ONE(id), {
+                method: 'DELETE',
+                headers: { 'X-CSRF-TOKEN': CSRF, 'X-Requested-With': 'XMLHttpRequest' }
+            });
+            setTimeout(function() { el.remove(); checkEmpty(); }, 180);
+            notifications = notifications.filter(function(n) { return n.id != id; });
+            if (wasUnread) {
+                prevUnread = Math.max(0, prevUnread - 1);
+                updateBadge(prevUnread);
+            }
+        } catch(e) {}
+    }
+
+    async function deleteAll() {
+        if (!notifications.length) return;
+        if (!confirm('Hapus semua notifikasi?')) return;
+        try {
+            await fetch(API_DELETE_ALL, {
+                method: 'DELETE',
+                headers: { 'X-CSRF-TOKEN': CSRF, 'X-Requested-With': 'XMLHttpRequest' }
+            });
+            notifications = [];
+            prevUnread = 0;
+            updateBadge(0);
+            render([]);
+        } catch(e) {}
+    }
+
+    function checkEmpty() {
+        if (!panelBody.querySelector('.notif-item')) {
+            panelBody.innerHTML = '<div class="notif-empty-state"><i class="fas fa-bell"></i><p>Ups, belum ada notifikasi</p></div>';
+        }
+    }
+
     // ---- Panel ----
     function positionPanelNearBell() {
         var anchorBtn = activeBell || bellBtns[0];
         if (!anchorBtn || !panel) return;
-        if (window.innerWidth <= 768) {
-            panel.style.top = '';
-            panel.style.left = '';
-            return;
-        }
+        if (window.innerWidth <= 768) { panel.style.top = ''; panel.style.left = ''; return; }
         var rect = anchorBtn.getBoundingClientRect();
-        var panelWidth = 380;
-        var gap = 10;
-        var top = Math.max(12, rect.top - 2);
+        var panelWidth = 380, gap = 10;
+        var top  = Math.max(12, rect.top - 2);
         var left = rect.right + gap;
         var maxLeft = window.innerWidth - panelWidth - 12;
         if (left > maxLeft) left = maxLeft;
@@ -538,6 +601,7 @@ body.dark .notif-badge        { border-color: #1e2535; }
 
         backdrop.addEventListener('click', closePanel);
         markAllBtn.addEventListener('click', function(e) { e.stopPropagation(); markAll(); });
+        deleteAllBtn.addEventListener('click', function(e) { e.stopPropagation(); deleteAll(); });
         document.addEventListener('keydown', function(e) { if (e.key === 'Escape' && panelOpen) closePanel(); });
         window.addEventListener('resize', function() { if (panelOpen) positionPanelNearBell(); });
 

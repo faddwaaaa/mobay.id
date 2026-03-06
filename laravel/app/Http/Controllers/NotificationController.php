@@ -10,7 +10,6 @@ class NotificationController extends Controller
 {
     /**
      * Return JSON list of notifications (latest 30) + unread count.
-     * Called by the frontend via AJAX/polling.
      */
     public function index()
     {
@@ -61,5 +60,27 @@ class NotificationController extends Controller
         $count = Notification::forUser(Auth::id())->unread()->count();
 
         return response()->json(['unread_count' => $count]);
+    }
+
+    /**
+     * Delete a single notification.
+     */
+    public function destroy(Notification $notification)
+    {
+        abort_unless($notification->user_id === Auth::id(), 403);
+
+        $notification->delete();
+
+        return response()->json(['success' => true]);
+    }
+
+    /**
+     * Delete ALL notifications for the current user.
+     */
+    public function destroyAll()
+    {
+        Notification::forUser(Auth::id())->delete();
+
+        return response()->json(['success' => true]);
     }
 }

@@ -501,6 +501,10 @@
 </head>
 <body>
 
+@php
+    $requestedPageId = request()->query('page');
+@endphp
+
 <div class="toast" id="toast"></div>
 
 <div class="page-wrapper">
@@ -566,7 +570,12 @@
         @if($user->pages && $user->pages->count() > 0)
             <div class="fullmenu-section-label">Halaman</div>
             @foreach($user->pages as $userPage)
-                <div class="fullmenu-item {{ $loop->first ? 'active' : '' }}"
+                @php
+                    $isActiveMenu = $requestedPageId
+                        ? (string)$userPage->id === (string)$requestedPageId
+                        : $loop->first;
+                @endphp
+                <div class="fullmenu-item {{ $isActiveMenu ? 'active' : '' }}"
                      data-tab="page-{{ $userPage->id }}">
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -592,7 +601,12 @@
 <div class="container">
     @if($user->pages && $user->pages->count() > 0)
         @foreach($user->pages as $userPage)
-            <div class="tab-content {{ $loop->first ? 'active' : '' }}"
+            @php
+                $isActiveTab = $requestedPageId
+                    ? (string)$userPage->id === (string)$requestedPageId
+                    : $loop->first;
+            @endphp
+            <div class="tab-content {{ $isActiveTab ? 'active' : '' }}"
                  id="tab-page-{{ $userPage->id }}">
 
                 <div class="user-profile">

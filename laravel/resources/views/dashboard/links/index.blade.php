@@ -791,6 +791,12 @@ function showBuilderToast(msg, type) {
 // PAGE FUNCTIONS
 // ============================================
 function selectPage(pageId) {
+    // ── PERBAIKAN: update iframe preview terlebih dahulu, lalu redirect ──
+    const iframe = document.getElementById('preview');
+    if (iframe) {
+        iframe.src = `{{ url('/preview/'.$user->username) }}?page=${pageId}&t=` + Date.now();
+    }
+    // Redirect halaman agar block list di kiri juga ikut berganti
     window.location.href = `{{ route('links.index') }}?page=${pageId}`;
 }
 
