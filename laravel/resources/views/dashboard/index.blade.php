@@ -376,8 +376,15 @@ document.querySelectorAll('.range-option').forEach(el => {
 @endsection
 
 {{-- ============================================================
-     MODAL WITHDRAW — versi baru pakai rekening tersimpan
-     Letakkan di @push('modals') pada dashboard blade
+     MODAL WITHDRAW — IMPROVED VERSION
+     - Breakdown amount, fee, total potongan
+     - Tombol custom nominal
+============================================================ --}}
+{{-- ============================================================
+     MODAL WITHDRAW — IMPROVED VERSION
+     - Breakdown amount, fee, total potongan
+     - Tombol custom nominal
+     - Keterangan jumlah yang akan ditarik
 ============================================================ --}}
 @push('modals')
 
@@ -410,7 +417,7 @@ document.querySelectorAll('.range-option').forEach(el => {
                 </div>
                 <div>
                     <h3 style="margin:0;font-size:17px;font-weight:700;color:#0f172a;">Tarik Saldo</h3>
-                    <p style="margin:0;font-size:12px;color:#94a3b8;">Min. penarikan Rp 10.000</p>
+                    <p style="margin:0;font-size:12px;color:#94a3b8;">Minimal penarikan Rp 10.000</p>
                 </div>
             </div>
             <button onclick="closeWithdrawModal()"
@@ -456,7 +463,6 @@ document.querySelectorAll('.range-option').forEach(el => {
                     </a>
                 </div>
 
-                {{-- Ada rekening --}}
                 @php
                     $savedAccounts = auth()->user()->paymentAccounts()
                         ->orderByDesc('is_default')
@@ -471,15 +477,11 @@ document.querySelectorAll('.range-option').forEach(el => {
                                 $decryptedNumber = $acc->account_number_encrypted;
                                 $masked = '•••• ' . $acc->account_number_last4;
                                 $bankColors = [
-                                    'BCA'     => ['bg'=>'#e3eeff','color'=>'#003d82'],
-                                    'BRI'     => ['bg'=>'#e3e8f5','color'=>'#003087'],
-                                    'BNI'     => ['bg'=>'#fff0e8','color'=>'#f26722'],
+                                    'BCA' => ['bg'=>'#e3eeff','color'=>'#003d82'],
+                                    'BRI' => ['bg'=>'#e3e8f5','color'=>'#003087'],
+                                    'BNI' => ['bg'=>'#fff0e8','color'=>'#f26722'],
                                     'MANDIRI' => ['bg'=>'#e3eeff','color'=>'#00529b'],
-                                    'BSI'     => ['bg'=>'#e8f5e9','color'=>'#1b5e20'],
-                                    'CIMB'    => ['bg'=>'#fce4ec','color'=>'#b71c1c'],
-                                    'GOPAY'   => ['bg'=>'#e8f5e9','color'=>'#00880a'],
-                                    'OVO'     => ['bg'=>'#f3e5f5','color'=>'#6a1b9a'],
-                                    'DANA'    => ['bg'=>'#e3f2fd','color'=>'#1565c0'],
+                                    'BSI' => ['bg'=>'#e8f5e9','color'=>'#1b5e20'],
                                 ];
                                 $clr = $bankColors[$acc->bank_code] ?? ['bg'=>'#f1f5f9','color'=>'#64748b'];
                             @endphp
@@ -529,17 +531,7 @@ document.querySelectorAll('.range-option').forEach(el => {
                         @endforeach
                     </div>
 
-                    {{-- Preview rekening terpilih --}}
-                    <div id="wd-account-preview"
-                         style="display:flex;align-items:center;gap:10px;margin-top:10px;
-                                padding:10px 13px;background:#f0f9ff;border:1px solid #bae6fd;
-                                border-radius:9px;font-size:12.5px;color:#0369a1;">
-                        <i class="fas fa-circle-check" style="color:#0284c7;font-size:13px;flex-shrink:0;"></i>
-                        <span id="wd-preview-text">—</span>
-                    </div>
-
                 @else
-                    {{-- Tidak ada rekening --}}
                     <div style="text-align:center;padding:28px 20px;background:#f8fafd;
                                 border:1.5px dashed #dde5f0;border-radius:12px;">
                         <div style="width:46px;height:46px;background:#e8f0fe;border-radius:50%;
@@ -551,7 +543,7 @@ document.querySelectorAll('.range-option').forEach(el => {
                             Belum ada rekening tersimpan
                         </div>
                         <div style="font-size:12.5px;color:#9aaabb;margin-bottom:16px;">
-                            Tambahkan rekening bank terlebih dahulu untuk melakukan penarikan
+                            Tambahkan rekening bank terlebih dahulu
                         </div>
                         <a href="{{ route('payment.accounts.index') }}"
                            style="display:inline-flex;align-items:center;gap:7px;padding:10px 18px;
@@ -580,36 +572,125 @@ document.querySelectorAll('.range-option').forEach(el => {
                     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:10px;">
                         @foreach([10000,50000,100000] as $preset)
                             <button type="button"
-                                    onclick="setAmount({{ $preset }})"
+                                    onclick="setAmount({{ $preset }}, this)"
                                     class="wd-preset-btn"
                                     style="padding:9px 6px;border-radius:8px;border:1.5px solid #e2e8f0;
                                            background:#f8fafd;font-size:12px;font-weight:600;
                                            color:#475569;cursor:pointer;transition:all .15s;">
-                                Rp {{ number_format($preset,0,',','.') }}
+                                {{ number_format($preset,0,',','.') }}
                             </button>
                         @endforeach
                     </div>
 
-                    <div style="position:relative;">
-                        <span style="position:absolute;left:13px;top:50%;transform:translateY(-50%);
-                                     font-size:14px;font-weight:700;color:#9aaabb;">Rp</span>
-                        <input type="number" id="wd-amount-input"
-                               min="10000" max="{{ $balance ?? 0 }}"
-                               placeholder="0"
-                               oninput="onAmountInput()"
-                               style="width:100%;padding:12px 13px 12px 36px;
-                                      border:1.5px solid #e2e8f0;border-radius:9px;
-                                      font-size:18px;font-weight:700;color:#111827;
-                                      outline:none;font-family:'Plus Jakarta Sans',sans-serif;
-                                      transition:border-color .18s,box-shadow .18s;background:#f8fafd;"
-                               onfocus="this.style.borderColor='#2356e8';this.style.boxShadow='0 0 0 3px rgba(35,86,232,.1)';this.style.background='#fff';"
-                               onblur="this.style.borderColor='#e2e8f0';this.style.boxShadow='none';" />
+                    {{-- Tombol Custom Nominal --}}
+                    <div id="custom-amount-trigger" style="margin-bottom:12px;">
+                        <button type="button"
+                                onclick="showCustomInput()"
+                                style="width:100%;padding:10px;border-radius:8px;
+                                       border:1.5px dashed #cbd5e1;background:#f8fafc;
+                                       font-size:13px;font-weight:600;color:#64748b;
+                                       cursor:pointer;transition:all .15s;
+                                       display:flex;align-items:center;justify-content:center;gap:8px;"
+                                onmouseenter="this.style.borderColor='#2563eb';this.style.color='#2563eb'"
+                                onmouseleave="this.style.borderColor='#cbd5e1';this.style.color='#64748b'">
+                            <i class="fas fa-edit"></i>
+                            Masukkan Nominal Custom
+                        </button>
+                    </div>
+
+                    {{-- Custom Input (hidden initially) --}}
+                    <div id="custom-amount-input" style="display:none;">
+                        <div style="position:relative;margin-bottom:8px;">
+                            <span style="position:absolute;left:13px;top:50%;transform:translateY(-50%);
+                                         font-size:14px;font-weight:700;color:#9aaabb;">Rp</span>
+                            <input type="number" id="wd-amount-input"
+                                   min="10000" max="{{ $balance ?? 0 }}"
+                                   placeholder="0"
+                                   oninput="onAmountInput()"
+                                   style="width:100%;padding:12px 13px 12px 36px;
+                                          border:1.5px solid #e2e8f0;border-radius:9px;
+                                          font-size:18px;font-weight:700;color:#111827;
+                                          outline:none;font-family:'Plus Jakarta Sans',sans-serif;
+                                          transition:border-color .18s,box-shadow .18s;background:#f8fafd;"
+                                   onfocus="this.style.borderColor='#2356e8';this.style.boxShadow='0 0 0 3px rgba(35,86,232,.1)';this.style.background='#fff';"
+                                   onblur="this.style.borderColor='#e2e8f0';this.style.boxShadow='none';" />
+                        </div>
+                        <button type="button"
+                                onclick="hideCustomInput()"
+                                style="width:100%;padding:8px;border-radius:6px;
+                                       border:none;background:#f1f5f9;color:#64748b;
+                                       font-size:12px;font-weight:600;cursor:pointer;">
+                            <i class="fas fa-times"></i> Batal
+                        </button>
                     </div>
 
                     <div id="wd-amount-hint"
-                         style="font-size:11.5px;color:#9aaabb;margin-top:5px;display:flex;align-items:center;gap:5px;">
+                         style="font-size:11.5px;color:#9aaabb;margin-top:8px;display:flex;align-items:center;gap:5px;">
                         <i class="fas fa-circle-info"></i>
-                        <span>Masukkan nominal yang ingin ditarik</span>
+                        <span>Pilih nominal atau masukkan nominal custom</span>
+                    </div>
+
+                    {{-- ── Keterangan Jumlah Akan Ditarik ──────────── --}}
+                    <div id="wd-selected-amount-info"
+                         style="display:none;margin-top:10px;padding:12px 14px;
+                                background:#e8f0fe;border:1.5px solid #c7d8ff;border-radius:10px;
+                                align-items:center;justify-content:space-between;
+                                transition:all .2s ease;">
+                        <div style="display:flex;align-items:center;gap:8px;">
+                            <i class="fas fa-money-bill-wave" style="color:#2356e8;font-size:14px;"></i>
+                            <span style="font-size:13px;font-weight:600;color:#334155;">Jumlah akan ditarik:</span>
+                        </div>
+                        <span id="wd-selected-amount-value"
+                              style="font-size:16px;font-weight:800;color:#2356e8;
+                                     font-family:'Plus Jakarta Sans',sans-serif;">
+                            Rp 0
+                        </span>
+                    </div>
+
+                </div>
+
+                {{-- ── Breakdown Biaya ────────────────────────────── --}}
+                <div id="wd-breakdown"
+                     style="display:none;background:#f8fafd;border:1px solid #e2e8f0;
+                            border-radius:11px;padding:14px 16px;margin-bottom:18px;">
+                    <div style="font-size:11.5px;font-weight:700;color:#9aaabb;
+                                text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px;
+                                display:flex;align-items:center;gap:6px;">
+                        <i class="fas fa-file-invoice-dollar"></i>
+                        Detail Penarikan
+                    </div>
+                    <div style="display:flex;flex-direction:column;gap:10px;">
+                        {{-- Jumlah Penarikan --}}
+                        <div style="display:flex;justify-content:space-between;align-items:center;">
+                            <span style="font-size:13px;color:#64748b;">Jumlah Penarikan</span>
+                            <span id="breakdown-amount" style="font-size:15px;font-weight:700;color:#111827;">Rp 0</span>
+                        </div>
+
+                        {{-- Fee Withdraw --}}
+                        <div style="display:flex;justify-content:space-between;align-items:center;">
+                            <span style="font-size:13px;color:#64748b;display:flex;align-items:center;gap:5px;">
+                                Fee Withdraw
+                                <span style="font-size:10px;padding:2px 6px;background:#fef3c7;
+                                             color:#854d0e;border-radius:4px;font-weight:600;">Fixed</span>
+                            </span>
+                            <span id="breakdown-fee" style="font-size:15px;font-weight:700;color:#b45309;">Rp 3.000</span>
+                        </div>
+
+                        <div style="height:1px;background:#e2e8f0;"></div>
+
+                        {{-- Total Potongan --}}
+                        <div style="display:flex;justify-content:space-between;align-items:center;">
+                            <span style="font-size:13px;color:#111827;font-weight:600;">Total Potongan Saldo</span>
+                            <span id="breakdown-total" style="font-size:16px;font-weight:800;color:#dc2626;">Rp 0</span>
+                        </div>
+
+                        {{-- Sisa Saldo --}}
+                        <div style="padding:10px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;">
+                            <div style="display:flex;justify-content:space-between;align-items:center;">
+                                <span style="font-size:12px;color:#1e40af;font-weight:600;">Sisa Saldo Setelah Penarikan</span>
+                                <span id="breakdown-remaining" style="font-size:15px;font-weight:800;color:#1e40af;">Rp 0</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -630,31 +711,6 @@ document.querySelectorAll('.range-option').forEach(el => {
                                      transition:border-color .18s,box-shadow .18s;"
                               onfocus="this.style.borderColor='#2356e8';this.style.boxShadow='0 0 0 3px rgba(35,86,232,.1)';this.style.background='#fff';"
                               onblur="this.style.borderColor='#e2e8f0';this.style.boxShadow='none';"></textarea>
-                </div>
-
-                {{-- ── Ringkasan ───────────────────────────────────── --}}
-                <div id="wd-summary"
-                     style="display:none;background:#f8fafd;border:1px solid #e2e8f0;
-                            border-radius:11px;padding:14px 16px;margin-bottom:18px;">
-                    <div style="font-size:11.5px;font-weight:700;color:#9aaabb;
-                                text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px;">
-                        Ringkasan Penarikan
-                    </div>
-                    <div style="display:flex;flex-direction:column;gap:8px;">
-                        <div style="display:flex;justify-content:space-between;font-size:13px;">
-                            <span style="color:#64748b;">Rekening tujuan</span>
-                            <span id="sum-account" style="font-weight:700;color:#111827;text-align:right;max-width:60%;">—</span>
-                        </div>
-                        <div style="display:flex;justify-content:space-between;font-size:13px;">
-                            <span style="color:#64748b;">Jumlah ditarik</span>
-                            <span id="sum-amount" style="font-weight:700;color:#2356e8;">—</span>
-                        </div>
-                        <div style="height:1px;background:#f1f5f9;"></div>
-                        <div style="display:flex;justify-content:space-between;font-size:13px;">
-                            <span style="color:#64748b;">Sisa saldo</span>
-                            <span id="sum-remaining" style="font-weight:700;color:#111827;">—</span>
-                        </div>
-                    </div>
                 </div>
 
                 {{-- ── Footer Buttons ──────────────────────────────── --}}
@@ -694,191 +750,214 @@ document.querySelectorAll('.range-option').forEach(el => {
 
 <style>
 @keyframes wdSpin { to { transform: rotate(360deg); } }
-
-.wd-account-option:has(input:checked) {
-    border-color: #2356e8 !important;
-    background: #f5f8ff !important;
-}
-
-.wd-preset-btn:hover {
-    background: #e8f0fe !important;
-    border-color: #c7d8ff !important;
-    color: #2356e8 !important;
-}
-
-.wd-preset-btn.active {
-    background: #2356e8 !important;
-    border-color: #2356e8 !important;
-    color: #fff !important;
-}
+.wd-account-option:has(input:checked) { border-color: #2356e8 !important; background: #f5f8ff !important; }
+.wd-preset-btn:hover { background: #e8f0fe !important; border-color: #c7d8ff !important; color: #2356e8 !important; }
+.wd-preset-btn.active { background: #2356e8 !important; border-color: #2356e8 !important; color: #fff !important; }
+@keyframes wdToastIn { from { transform: translateX(16px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+@keyframes wdFadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+#wd-selected-amount-info { animation: wdFadeIn .2s ease; }
 </style>
 
 <script>
-// ── State ──────────────────────────────────────────────────────────────────
 const WD_BALANCE    = {{ $balance ?? 0 }};
+const WD_MIN_AMOUNT = 10000;
+const WD_FEE        = 3000;
 const WD_ROUTES     = { store: '/withdrawal' };
 const WD_CSRF       = () => document.querySelector('meta[name="csrf-token"]').content;
 let   wdSelectedAcc = null;
+let   wdSelectedAmount = 0;
 
-// ── Open / Close ───────────────────────────────────────────────────────────
 function openWithdrawModal() {
     const overlay = document.getElementById('withdrawOverlay');
     const modal   = document.getElementById('withdraw-modal');
     const card    = document.getElementById('withdrawCard');
-
     modal.style.display = 'flex';
-    card.getBoundingClientRect(); // reflow
-
-    overlay.style.opacity     = '1';
+    card.getBoundingClientRect();
+    overlay.style.opacity = '1';
     overlay.style.pointerEvents = 'auto';
-    card.style.opacity        = '1';
-    card.style.transform      = 'translateY(0)';
+    card.style.opacity = '1';
+    card.style.transform = 'translateY(0)';
     document.body.style.overflow = 'hidden';
-
-    // Auto-select default account
     const defaultRadio = document.querySelector('#wd-account-list input[type="radio"]:checked');
     if (defaultRadio) onAccountSelect(defaultRadio);
 }
 
 function closeWithdrawModal() {
     const overlay = document.getElementById('withdrawOverlay');
-    const modal   = document.getElementById('withdraw-modal');
-    const card    = document.getElementById('withdrawCard');
-
-    overlay.style.opacity      = '0';
+    const modal = document.getElementById('withdraw-modal');
+    const card = document.getElementById('withdrawCard');
+    overlay.style.opacity = '0';
     overlay.style.pointerEvents = 'none';
-    card.style.opacity         = '0';
-    card.style.transform       = 'translateY(20px)';
-
+    card.style.opacity = '0';
+    card.style.transform = 'translateY(20px)';
     setTimeout(() => {
         modal.style.display = 'none';
         document.body.style.overflow = '';
+        hideCustomInput();
+        wdSelectedAmount = 0;
+        document.querySelectorAll('.wd-preset-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById('wd-breakdown').style.display = 'none';
+        showSelectedAmountInfo(0);
     }, 220);
 }
 
 document.getElementById('withdrawOverlay').addEventListener('click', closeWithdrawModal);
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeWithdrawModal(); });
 
-// ── Account select ─────────────────────────────────────────────────────────
 function onAccountSelect(radio) {
-    const label   = radio.closest('label.wd-account-option');
-    const holder  = label.dataset.holder;
-    const masked  = label.dataset.masked;
-    const bankName= label.dataset.bankName;
-
+    const label = radio.closest('label.wd-account-option');
     wdSelectedAcc = {
-        id:       label.dataset.accountId,
-        holder:   holder,
-        number:   label.dataset.number,
-        bank:     label.dataset.bank,
-        bankName: bankName,
-        masked:   masked,
+        id: label.dataset.accountId,
+        holder: label.dataset.holder,
+        number: label.dataset.number,
+        bank: label.dataset.bank,
+        bankName: label.dataset.bankName,
+        masked: label.dataset.masked,
     };
-
-    // Style semua option
     document.querySelectorAll('.wd-account-option').forEach(l => {
         const r = l.querySelector('input[type="radio"]');
         if (r && r.checked) {
             l.style.borderColor = '#2356e8';
-            l.style.background  = '#f5f8ff';
+            l.style.background = '#f5f8ff';
         } else {
             l.style.borderColor = '#e8edf5';
-            l.style.background  = '#fff';
+            l.style.background = '#fff';
         }
     });
-
-    document.getElementById('wd-preview-text').textContent =
-        `${holder} · ${masked} (${bankName})`;
-
-    updateSummary();
+    updateBreakdown();
 }
 
-// ── Amount ─────────────────────────────────────────────────────────────────
-function setAmount(amount) {
-    document.getElementById('wd-amount-input').value = amount;
-    document.querySelectorAll('.wd-preset-btn').forEach(btn => btn.classList.remove('active'));
-    event.currentTarget.classList.add('active');
-    onAmountInput();
+function showCustomInput() {
+    document.getElementById('custom-amount-trigger').style.display = 'none';
+    document.getElementById('custom-amount-input').style.display = 'block';
+    document.querySelectorAll('.wd-preset-btn').forEach(b => b.classList.remove('active'));
+    showSelectedAmountInfo(0);
+    setTimeout(() => document.getElementById('wd-amount-input').focus(), 100);
+}
+
+function hideCustomInput(skipReset) {
+    document.getElementById('custom-amount-trigger').style.display = 'block';
+    document.getElementById('custom-amount-input').style.display = 'none';
+    document.getElementById('wd-amount-input').value = '';
+    if (!skipReset) {
+        wdSelectedAmount = 0;
+        showSelectedAmountInfo(0);
+        updateBreakdown();
+    }
+}
+
+function setAmount(amount, btn) {
+    hideCustomInput(true); // skip reset
+    wdSelectedAmount = amount;
+    document.querySelectorAll('.wd-preset-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    showSelectedAmountInfo(amount);
+    updateBreakdown();
 }
 
 function onAmountInput() {
+    const val = parseInt(document.getElementById('wd-amount-input').value) || 0;
+    wdSelectedAmount = val;
+    const hint = document.getElementById('wd-amount-hint');
     const input = document.getElementById('wd-amount-input');
-    const val   = parseInt(input.value) || 0;
-    const hint  = document.getElementById('wd-amount-hint');
-
-    // Clear preset active jika user ketik manual
-    if (document.activeElement === input) {
-        document.querySelectorAll('.wd-preset-btn').forEach(b => b.classList.remove('active'));
-    }
 
     if (val <= 0) {
-        hint.innerHTML = '<i class="fas fa-circle-info"></i><span>Masukkan nominal yang ingin ditarik</span>';
+        hint.innerHTML = '<i class="fas fa-circle-info"></i><span>Masukkan nominal penarikan</span>';
         hint.style.color = '#9aaabb';
-    } else if (val < 10000) {
-        hint.innerHTML = '<i class="fas fa-triangle-exclamation"></i><span>Minimal penarikan Rp 10.000</span>';
+        showSelectedAmountInfo(0);
+    } else if (val < WD_MIN_AMOUNT) {
+        hint.innerHTML = `<i class="fas fa-triangle-exclamation"></i><span>Minimal penarikan Rp ${formatRp(WD_MIN_AMOUNT)}</span>`;
         hint.style.color = '#e53e3e';
         input.style.borderColor = '#e53e3e';
-    } else if (val > WD_BALANCE) {
-        hint.innerHTML = '<i class="fas fa-triangle-exclamation"></i><span>Melebihi saldo tersedia</span>';
+        showSelectedAmountInfo(val, true);
+    } else if ((val + WD_FEE) > WD_BALANCE) {
+        hint.innerHTML = `<i class="fas fa-triangle-exclamation"></i><span>Saldo tidak cukup (termasuk fee Rp ${formatRp(WD_FEE)})</span>`;
         hint.style.color = '#e53e3e';
         input.style.borderColor = '#e53e3e';
+        showSelectedAmountInfo(val, true);
     } else {
         hint.innerHTML = '<i class="fas fa-check"></i><span>Nominal valid</span>';
         hint.style.color = '#16a34a';
         input.style.borderColor = '#22c55e';
+        showSelectedAmountInfo(val);
     }
-
-    updateSummary();
+    updateBreakdown();
 }
 
-// ── Summary ────────────────────────────────────────────────────────────────
+function showSelectedAmountInfo(amount, isError = false) {
+    const el = document.getElementById('wd-selected-amount-info');
+    const valEl = document.getElementById('wd-selected-amount-value');
+    if (!amount || amount <= 0) {
+        el.style.display = 'none';
+        return;
+    }
+    el.style.display = 'flex';
+    el.style.background = isError ? '#fef2f2' : '#e8f0fe';
+    el.style.borderColor = isError ? '#fca5a5' : '#c7d8ff';
+    valEl.style.color = isError ? '#dc2626' : '#2356e8';
+    valEl.textContent = 'Rp ' + formatRp(amount);
+
+    // Ganti icon sesuai state
+    const icon = el.querySelector('i');
+    if (icon) {
+        icon.className = isError
+            ? 'fas fa-triangle-exclamation'
+            : 'fas fa-money-bill-wave';
+        icon.style.color = isError ? '#dc2626' : '#2356e8';
+    }
+}
+
 function formatRp(n) {
-    return 'Rp ' + n.toLocaleString('id-ID');
+    return n.toLocaleString('id-ID');
 }
 
-function updateSummary() {
-    const summary   = document.getElementById('wd-summary');
-    const val       = parseInt(document.getElementById('wd-amount-input')?.value) || 0;
-    const isValid   = val >= 10000 && val <= WD_BALANCE && wdSelectedAcc;
+function updateBreakdown() {
+    const breakdown = document.getElementById('wd-breakdown');
+    const isValid = wdSelectedAmount >= WD_MIN_AMOUNT && (wdSelectedAmount + WD_FEE) <= WD_BALANCE && wdSelectedAcc;
 
-    if (!isValid) { summary.style.display = 'none'; return; }
+    if (!isValid || wdSelectedAmount === 0) {
+        breakdown.style.display = 'none';
+        return;
+    }
 
-    summary.style.display = 'block';
-    document.getElementById('sum-account').textContent  =
-        `${wdSelectedAcc.holder} · ${wdSelectedAcc.masked}`;
-    document.getElementById('sum-amount').textContent   = formatRp(val);
-    document.getElementById('sum-remaining').textContent = formatRp(WD_BALANCE - val);
+    const totalDeduction = wdSelectedAmount + WD_FEE;
+    const remaining = WD_BALANCE - totalDeduction;
+
+    breakdown.style.display = 'block';
+    document.getElementById('breakdown-amount').textContent = 'Rp ' + formatRp(wdSelectedAmount);
+    document.getElementById('breakdown-fee').textContent = 'Rp ' + formatRp(WD_FEE);
+    document.getElementById('breakdown-total').textContent = 'Rp ' + formatRp(totalDeduction);
+    document.getElementById('breakdown-remaining').textContent = 'Rp ' + formatRp(remaining);
 }
 
-// ── Submit ─────────────────────────────────────────────────────────────────
 async function handleWithdrawSubmit() {
-    const val   = parseInt(document.getElementById('wd-amount-input').value) || 0;
-    const notes = document.getElementById('wd-notes')?.value || '';
-
     if (!wdSelectedAcc) {
-        wdToast('error', 'Pilih rekening tujuan terlebih dahulu.'); return;
+        wdToast('error', 'Pilih rekening tujuan terlebih dahulu.');
+        return;
     }
-    if (val < 10000) {
-        wdToast('error', 'Minimal penarikan Rp 10.000.'); return;
+    if (wdSelectedAmount < WD_MIN_AMOUNT) {
+        wdToast('error', `Minimal penarikan Rp ${formatRp(WD_MIN_AMOUNT)}.`);
+        return;
     }
-    if (val > WD_BALANCE) {
-        wdToast('error', 'Nominal melebihi saldo tersedia.'); return;
+    if ((wdSelectedAmount + WD_FEE) > WD_BALANCE) {
+        wdToast('error', `Saldo tidak cukup. Total potongan Rp ${formatRp(wdSelectedAmount + WD_FEE)}.`);
+        return;
     }
 
     wdSetLoading(true);
-
+    const notes = document.getElementById('wd-notes')?.value || '';
     const formData = new FormData();
-    formData.append('_token',         WD_CSRF());
-    formData.append('amount',         val);
+    formData.append('_token', WD_CSRF());
+    formData.append('amount', wdSelectedAmount);
     formData.append('payment_account_id', wdSelectedAcc.id);
-    formData.append('bank_code',      wdSelectedAcc.bank);
-    formData.append('bank_name',      wdSelectedAcc.bankName);
+    formData.append('bank_code', wdSelectedAcc.bank);
+    formData.append('bank_name', wdSelectedAcc.bankName);
     formData.append('account_number', wdSelectedAcc.number);
-    formData.append('account_name',   wdSelectedAcc.holder);
-    formData.append('notes',          notes);
+    formData.append('account_name', wdSelectedAcc.holder);
+    formData.append('notes', notes);
 
     try {
-        const res    = await fetch(WD_ROUTES.store, {
+        const res = await fetch(WD_ROUTES.store, {
             method: 'POST',
             headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': WD_CSRF() },
             body: formData,
@@ -900,20 +979,19 @@ async function handleWithdrawSubmit() {
 }
 
 function wdSetLoading(loading) {
-    const btn  = document.getElementById('submit-withdraw-btn');
+    const btn = document.getElementById('submit-withdraw-btn');
     const icon = document.getElementById('wd-submit-icon');
-    const txt  = document.getElementById('wd-submit-text');
+    const txt = document.getElementById('wd-submit-text');
     const spin = document.getElementById('wd-spinner');
-    btn.disabled       = loading;
+    btn.disabled = loading;
     icon.style.display = loading ? 'none' : '';
     spin.style.display = loading ? 'block' : 'none';
-    txt.textContent    = loading ? 'Memproses...' : 'Ajukan Penarikan';
+    txt.textContent = loading ? 'Memproses...' : 'Ajukan Penarikan';
 }
 
-// ── Toast notif ringan ─────────────────────────────────────────────────────
 function wdToast(type, message) {
     const colors = { success: '#22c55e', error: '#e53e3e', warning: '#f59e0b', info: '#2356e8' };
-    const icons  = { success: 'fa-circle-check', error: 'fa-circle-xmark', warning: 'fa-triangle-exclamation', info: 'fa-circle-info' };
+    const icons = { success: 'fa-circle-check', error: 'fa-circle-xmark', warning: 'fa-triangle-exclamation', info: 'fa-circle-info' };
     const el = document.createElement('div');
     el.style.cssText = `position:fixed;bottom:22px;right:22px;z-index:99999;
         background:#fff;border:1px solid #e2e8f0;border-left:3px solid ${colors[type]};
@@ -925,17 +1003,11 @@ function wdToast(type, message) {
     document.body.appendChild(el);
     setTimeout(() => {
         el.style.transition = 'opacity .25s,transform .25s';
-        el.style.opacity = '0'; el.style.transform = 'translateX(16px)';
+        el.style.opacity = '0';
+        el.style.transform = 'translateX(16px)';
         setTimeout(() => el.remove(), 250);
     }, 3600);
 }
 </script>
-
-<style>
-@keyframes wdToastIn {
-    from { transform: translateX(16px); opacity: 0; }
-    to   { transform: translateX(0); opacity: 1; }
-}
-</style>
 
 @endpush

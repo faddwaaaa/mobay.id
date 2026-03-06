@@ -342,7 +342,7 @@
             display: flex; align-items: center; justify-content: center;
 
         }
-        .fullmenu-close:hover { background: rgba(255,255,255,0.2); }
+        .fullmenu-close:hover { background: #ff0000; }
 
         .fullmenu-section-label {
             font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.35);
@@ -616,7 +616,7 @@
     </div>
     <div class="fullmenu-body">
         @if($user->pages && $user->pages->count() > 0)
-            <div class="fullmenu-section-label">Pages</div>
+            <div class="fullmenu-section-label">Halaman</div>
             @foreach($user->pages as $userPage)
                 <div class="fullmenu-item {{ $loop->first ? 'active' : '' }}"
                      data-tab="page-{{ $userPage->id }}">
@@ -629,13 +629,13 @@
             @endforeach
         @endif
         <div class="fullmenu-divider"></div>
-        <div class="fullmenu-section-label">Member Area</div>
+        <div class="fullmenu-section-label">Ruang Pengguna</div>
         <div class="fullmenu-item" onclick="window.location.href='/login'">
             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                       d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
             </svg>
-            Login
+            Masuk / Daftar
         </div>
     </div>
 </div>

@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AdminWalletLedger;
 use App\Models\Product;
 use App\Models\Transaction;
 use App\Models\ProductSale;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
 use Midtrans\Config;
@@ -126,7 +128,10 @@ class CheckoutController extends Controller
         $unitPrice = (int) ($product->discount ?: $product->price);
         $subtotal = $unitPrice * $qty;
         $shippingCost = $shippingEnabled ? max((int) ($payload['selected_ongkir_cost'] ?? 0), 0) : 0;
-        $total = $subtotal + $shippingCost;
+        $baseTotal = $subtotal + $shippingCost;
+        $paymentFeePercent = (float) config('payment.payment_fee_percent', 5);
+        $paymentFeeAmount = (int) ceil($baseTotal * ($paymentFeePercent / 100));
+        $total = $baseTotal + $paymentFeeAmount;
 
         return view('checkout-checkpoint', compact(
             'product',
@@ -136,6 +141,9 @@ class CheckoutController extends Controller
             'unitPrice',
             'subtotal',
             'shippingCost',
+            'baseTotal',
+            'paymentFeePercent',
+            'paymentFeeAmount',
             'total',
             'shippingEnabled'
         ));
@@ -187,7 +195,10 @@ class CheckoutController extends Controller
         $shippingCost = ($product->product_type === 'fisik' && $shippingEnabled)
             ? max((int) ($request->selected_ongkir_cost ?? 0), 0)
             : 0;
-        $amount    = $subtotal + $shippingCost;
+        $baseTotal = $subtotal + $shippingCost;
+        $paymentFeePercent = (float) config('payment.payment_fee_percent', 5);
+        $paymentFeeAmount = (int) ceil($baseTotal * ($paymentFeePercent / 100));
+        $amount = $baseTotal + $paymentFeeAmount;
         $orderId   = 'PAYOU-' . strtoupper(Str::random(8)) . '-' . time();
 
         $transaction = Transaction::create([
@@ -210,6 +221,10 @@ class CheckoutController extends Controller
                 'shipping_enabled' => $shippingEnabled,
                 'shipping_cost' => $shippingCost,
                 'subtotal'      => $subtotal,
+                'base_total'    => $baseTotal,
+                'payment_fee_percent' => $paymentFeePercent,
+                'payment_fee_amount' => $paymentFeeAmount,
+                'seller_amount' => $baseTotal,
                 'destination_village_code' => $request->destination_village_code ?? null,
                 'destination_label' => $request->destination_label ?? null,
                 'selected_courier' => $shippingEnabled ? ($request->selected_courier ?: 'OTHER') : 'FREE',
@@ -243,6 +258,15 @@ class CheckoutController extends Controller
                 'price'    => $shippingCost,
                 'quantity' => 1,
                 'name'     => 'Ongkir ' . $courierLabel,
+            ];
+        }
+
+        if ($paymentFeeAmount > 0) {
+            $snapParams['item_details'][] = [
+                'id'       => 'platform-fee',
+                'price'    => $paymentFeeAmount,
+                'quantity' => 1,
+                'name'     => 'Biaya Layanan',
             ];
         }
 
@@ -370,6 +394,8 @@ class CheckoutController extends Controller
 
         $productId = $notes['product_id'] ?? null;
         $unitPrice = $notes['unit_price'] ?? 0;
+        $sellerAmount = (int) ($notes['seller_amount'] ?? $transaction->amount);
+        $paymentFeeAmount = (int) ($notes['payment_fee_amount'] ?? 0);
 
         // ── DEBUG LOG ──
         Log::info('DEBUG handleSuccessfulPayment', [
@@ -377,6 +403,8 @@ class CheckoutController extends Controller
             'notes'      => $notes,
             'unit_price' => $unitPrice,
             'productId'  => $productId,
+            'seller_amount' => $sellerAmount,
+            'payment_fee_amount' => $paymentFeeAmount,
         ]);
 
         // ── Guard double-processing ──
@@ -440,8 +468,8 @@ class CheckoutController extends Controller
         // 4. Tambah saldo seller
         $seller = User::find($transaction->user_id);
         if ($seller) {
-            $seller->increment('balance', (int) $transaction->amount);
-            Log::info("✅ Saldo {$seller->name} +Rp{$transaction->amount} dari order {$transaction->order_id}");
+            $seller->increment('balance', $sellerAmount);
+            Log::info("✅ Saldo {$seller->name} +Rp{$sellerAmount} dari order {$transaction->order_id}");
 
             // ── Notifikasi pesanan masuk ──
             \App\Models\Notification::create([
@@ -459,7 +487,7 @@ class CheckoutController extends Controller
                 'user_id' => $seller->id,
                 'type'    => 'payment',
                 'title'   => 'Pembayaran Diterima!',
-                'message' => '💰 Pembayaran #' . $transaction->order_id . ' sebesar Rp' . number_format((int) $transaction->amount, 0, ',', '.') . ' berhasil dikonfirmasi.',
+                'message' => '💰 Pembayaran #' . $transaction->order_id . ' sebesar Rp' . number_format((int) $sellerAmount, 0, ',', '.') . ' berhasil dikonfirmasi.',
                 'icon'    => 'fas fa-circle-check',
                 'link'    => '/riwayat',
                 'is_read' => false,
@@ -468,6 +496,8 @@ class CheckoutController extends Controller
         } else {
             Log::error("❌ Seller user_id={$transaction->user_id} tidak ditemukan.");
         }
+
+        $this->creditAdminWalletFeePayment($paymentFeeAmount, $transaction);
     }
 
     // =========================================================
@@ -504,5 +534,30 @@ class CheckoutController extends Controller
         } catch (\Exception $e) {
             Log::error('Gagal kirim email digital: ' . $e->getMessage());
         }
+    }
+
+    private function creditAdminWalletFeePayment(int $feeAmount, Transaction $transaction): void
+    {
+        if ($feeAmount <= 0) {
+            return;
+        }
+
+        DB::transaction(function () use ($feeAmount, $transaction) {
+            $lastBalance = (int) (AdminWalletLedger::query()
+                ->lockForUpdate()
+                ->latest('id')
+                ->value('balance_after') ?? 0);
+
+            AdminWalletLedger::create([
+                'source' => 'fee_payment',
+                'direction' => 'credit',
+                'amount' => $feeAmount,
+                'balance_after' => $lastBalance + $feeAmount,
+                'reference_type' => Transaction::class,
+                'reference_id' => $transaction->id,
+                'description' => 'Fee payment dari order ' . $transaction->order_id,
+                'created_by' => null,
+            ]);
+        });
     }
 }

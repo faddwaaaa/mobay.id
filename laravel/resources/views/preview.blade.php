@@ -9,6 +9,19 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
+        /* ─── FIX IFRAME: semua fixed element center dengan benar ─── */
+        html, body {
+            width: 375px;
+            max-width: 375px;
+            overflow-x: hidden;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+        html::-webkit-scrollbar,
+        body::-webkit-scrollbar {
+            display: none;
+        }
+
         body {
             font-family: system-ui, -apple-system, sans-serif;
             background: #f9fafb;
@@ -16,24 +29,83 @@
         }
 
         .page-wrapper {
-            max-width: 420px;
-            margin: 0 auto;
+            width: 375px;
+            max-width: 375px;
             background: #f9fafb;
             min-height: 100vh;
             position: relative;
             overflow-x: hidden;
+            scrollbar-width: none;
+        }
+        .page-wrapper::-webkit-scrollbar { display: none; }
+
+        /* ─── FIX: semua overlay/modal fixed pakai lebar 375px, mulai dari top:0 ─── */
+        .product-detail-overlay,
+        .cart-overlay,
+        .fullmenu-overlay,
+        .search-results-overlay {
+            width: 375px !important;
+            left: 0 !important;
+            right: auto !important;
+            top: 0 !important;
+            bottom: 0 !important;
+            max-width: 375px !important;
+        }
+
+        .search-results-panel {
+            left: 0 !important;
+            right: 0 !important;
+            width: 375px !important;
+            max-width: 375px !important;
+        }
+
+        .cart-drawer {
+            left: 0 !important;
+            right: auto !important;
+            top: 0 !important;
+            bottom: 0 !important;
+            width: 375px !important;
+            max-width: 375px !important;
+            transform: translateX(100%) !important;
+        }
+        .cart-drawer.active {
+            transform: translateX(0) !important;
+        }
+
+        /* Modal produk - overlay full, box tepat center */
+        .product-detail-overlay {
+            display: none;
+            justify-content: center !important;
+            align-items: center !important;
+            padding: 0 20px !important;
+            box-sizing: border-box !important;
+        }
+        .product-detail-box {
+            width: 100% !important;
+            max-width: 100% !important;
+            margin: 0 !important;
+            position: relative !important;
+            left: 0 !important;
+            right: 0 !important;
+            transform: none !important;
+            float: none !important;
         }
 
         .toast {
-            position: fixed; bottom: 24px; left: 50%;
-            transform: translateX(-50%) translateY(80px);
+            position: fixed;
+            bottom: 24px;
+            left: 20px !important;
+            right: 20px !important;
+            width: auto !important;
+            transform: translateY(80px);
             background: #111827; color: #fff;
             padding: 10px 20px; border-radius: 50px;
             font-size: 13px; font-weight: 500; z-index: 9999;
             opacity: 0; transition: all 0.35s cubic-bezier(.34,1.56,.64,1);
             white-space: nowrap; pointer-events: none;
+            text-align: center;
         }
-        .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+        .toast.show { opacity: 1; transform: translateY(0); }
         .toast.success { background: #16a34a; }
         .toast.error   { background: #dc2626; }
 
@@ -47,6 +119,7 @@
             display: flex; justify-content: space-between; align-items: center;
         }
         .navbar-left  { display: flex; align-items: center; gap: 12px; }
+        .navbar-title { font-size: 16px; font-weight: 600; color: #111827; }
         .navbar-right { display: flex; gap: 8px; }
 
         .nav-icon {
@@ -64,7 +137,6 @@
         }
         .cart-badge.visible { display: flex; }
 
-        /* ── HAMBURGER: 9 titik seragam ── */
         .hamburger {
             width: 34px; height: 34px;
             display: grid;
@@ -112,7 +184,8 @@
             border: 1.5px solid #e5e7eb; border-radius: 10px;
             font-size: 14px; color: #111827; background: #f9fafb;
             outline: none; transition: border-color 0.2s, background 0.2s;
-            -webkit-appearance: none; appearance: none;
+            -webkit-appearance: none;
+            appearance: none;
         }
         .search-input:focus { border-color: #2563eb; background: #fff; }
         .search-input::placeholder { color: #9ca3af; }
@@ -120,7 +193,9 @@
         .search-input::-webkit-search-cancel-button,
         .search-input::-webkit-search-results-button,
         .search-input::-webkit-search-results-decoration {
-            -webkit-appearance: none; appearance: none; display: none !important;
+            -webkit-appearance: none;
+            appearance: none;
+            display: none !important;
         }
         .search-clear-btn {
             position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
@@ -128,7 +203,7 @@
             background: #d1d5db; color: #fff;
             border: none; cursor: pointer; display: none;
             align-items: center; justify-content: center;
-            transition: background 0.2s; padding: 0;
+            padding: 0;
         }
         .search-clear-btn svg { width: 10px; height: 10px; }
         .search-clear-btn.visible { display: flex; }
@@ -158,8 +233,10 @@
             pointer-events: none;
         }
         .search-results-panel.active {
-            opacity: 1; transform: translateY(0); pointer-events: auto;
+            opacity: 1; transform: translateY(0);
+            pointer-events: auto;
         }
+
         .search-result-item {
             display: flex; align-items: center; gap: 12px;
             padding: 12px 16px; cursor: pointer;
@@ -168,6 +245,7 @@
         }
         .search-result-item:last-child { border-bottom: none; }
         .search-result-item:hover { background: #f9fafb; }
+
         .search-result-thumb {
             width: 46px; height: 46px; border-radius: 10px;
             flex-shrink: 0; overflow: hidden;
@@ -178,6 +256,7 @@
         .thumb-link    { background: #f0fdf4; color: #16a34a; }
         .thumb-text    { background: #fffbeb; color: #d97706; }
         .thumb-other   { background: #f3f4f6; color: #6b7280; }
+
         .search-result-info { flex: 1; min-width: 0; }
         .search-result-title {
             font-size: 14px; font-weight: 600; color: #111827;
@@ -197,6 +276,7 @@
         .badge-link    { background: #dcfce7; color: #16a34a; }
         .badge-text    { background: #fef9c3; color: #a16207; }
         .badge-other   { background: #f3f4f6; color: #6b7280; }
+
         .search-state {
             display: flex; flex-direction: column; align-items: center;
             justify-content: center; padding: 32px 20px; gap: 8px;
@@ -218,14 +298,17 @@
             z-index: 500;
             opacity: 0; visibility: hidden;
             transition: opacity 0.25s ease, visibility 0.25s ease;
-            display: flex; flex-direction: column; align-items: center;
+            display: flex; flex-direction: column;
+            align-items: center;
         }
         .fullmenu-overlay.active { opacity: 1; visibility: visible; }
+
         .fullmenu-body {
             flex: 1; display: flex; flex-direction: column;
             align-items: center; justify-content: center;
             overflow-y: auto; width: 100%; padding: 60px 20px 40px;
         }
+
         .fullmenu-close-wrap {
             width: 100%; max-width: 320px;
             position: absolute; top: 16px;
@@ -237,9 +320,9 @@
             background: rgba(255,255,255,0.1); border: none;
             color: #fff; font-size: 18px; cursor: pointer;
             display: flex; align-items: center; justify-content: center;
-            transition: background 0.2s;
         }
-        .fullmenu-close:hover { background: rgba(255,255,255,0.2); }
+        .fullmenu-close:hover { background: #ff0000; }
+
         .fullmenu-section-label {
             font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.35);
             letter-spacing: 1px; text-transform: uppercase;
@@ -247,6 +330,7 @@
             width: 100%; max-width: 320px;
         }
         .fullmenu-section-label:first-child { margin-top: 0; }
+
         .fullmenu-item {
             display: flex; align-items: center; justify-content: center; gap: 12px;
             padding: 14px 32px; color: rgba(255,255,255,0.85);
@@ -262,10 +346,12 @@
         .fullmenu-overlay.active .fullmenu-item:nth-child(3) { transition-delay: 0.15s; }
         .fullmenu-overlay.active .fullmenu-item:nth-child(4) { transition-delay: 0.20s; }
         .fullmenu-overlay.active .fullmenu-item:nth-child(5) { transition-delay: 0.25s; }
+
         .fullmenu-item:hover { background: rgba(255,255,255,0.08); color: #fff; }
         .fullmenu-item.active { color: #fff; background: rgba(59,130,246,0.2); }
         .fullmenu-item svg { width: 18px; height: 18px; flex-shrink: 0; opacity: 0.7; }
         .fullmenu-item.active svg { opacity: 1; }
+
         .fullmenu-divider {
             height: 1px; background: rgba(255,255,255,0.08);
             width: 100%; max-width: 320px; margin: 12px 0;
@@ -335,79 +421,91 @@
         .empty-state { text-align: center; padding: 40px 20px; color: #9ca3af; }
         .empty-icon  { width: 64px; height: 64px; background: #f3f4f6; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; color: #d1d5db; }
 
-        /* PRODUCT DETAIL MODAL */
         .product-detail-overlay {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.45);
-            display: none; justify-content: center; align-items: center; z-index: 9999; padding: 20px;
+            position: fixed;
+            background: rgba(0,0,0,0.55);
+            z-index: 9999;
         }
         .product-detail-box {
-            position: relative; background: white; width: 100%; max-width: 420px;
-            border-radius: 20px; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.15);
-            display: flex; flex-direction: column; max-height: 90vh;
+            position: relative; background: white;
+            width: 100%;
+            border-radius: 20px; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+            display: flex; flex-direction: column; max-height: 85vh;
         }
         .product-detail-close {
             position: absolute; top: 12px; left: 12px; z-index: 10;
             background: rgba(255,255,255,0.9); backdrop-filter: blur(4px);
             border: none; border-radius: 50%;
-            width: 35px; height: 35px; font-weight: bold; cursor: pointer; font-size: 14px;
+            width: 36px; height: 36px; font-weight: bold; cursor: pointer; font-size: 16px;
         }
         .product-detail-image  { width: 100%; height: 220px; background: #f3f4f6; flex-shrink: 0; }
         .product-detail-image img { width: 100%; height: 100%; object-fit: cover; }
         .product-detail-content { padding: 20px; display: flex; flex-direction: column; gap: 12px; overflow-y: auto; }
-        .product-detail-content h2 { font-size: 20px; font-weight: 700; }
+        .product-detail-content h2 { font-size: 22px; font-weight: 700; }
         .detail-price   { display: flex; align-items: center; gap: 10px; }
-        .final-price    { font-size: 22px; font-weight: 700; color: #2563eb; }
-        .original-price { text-decoration: line-through; color: #999; font-size: 14px; }
-        .discount-badge-detail { background: #fee2e2; color: #dc2626; font-size: 12px; font-weight: 600; padding: 3px 8px; border-radius: 6px; }
-        .stock-info     { font-size: 13px; color: #555; }
-        .detail-description { font-size: 14px; color: #444; line-height: 1.6; }
+        .final-price    { font-size: 24px; font-weight: 700; color: #2563eb; }
+        .original-price { text-decoration: line-through; color: #999; font-size: 16px; }
+        .discount-badge-detail { background: #fee2e2; color: #dc2626; font-size: 13px; font-weight: 600; padding: 3px 8px; border-radius: 6px; }
+        .stock-info     { font-size: 15px; color: #555; }
+        .detail-description { font-size: 15px; color: #444; line-height: 1.6; }
         .detail-buttons { display: flex; gap: 10px; padding: 16px; border-top: 1px solid #e5e7eb; background: #fff; flex-shrink: 0; }
         .btn-cart {
-            width: 48px; height: 48px; min-width: 48px;
+            width: 52px; height: 52px; min-width: 52px;
             display: flex; align-items: center; justify-content: center;
             border: 1px solid #2563eb; border-radius: 10px; background: #fff;
             font-size: 20px; cursor: pointer; transition: all 0.2s;
         }
         .btn-cart:hover   { background: #eff6ff; }
-        .btn-buy { flex: 1; padding: 12px; background: #2563eb; color: white; border-radius: 10px; font-weight: 600; font-size: 15px; border: none; cursor: pointer; transition: background 0.2s; }
+        .btn-cart.loading { opacity: 0.6; pointer-events: none; }
+        .btn-buy { flex: 1; padding: 14px; background: #2563eb; color: white; border-radius: 10px; font-weight: 600; font-size: 16px; border: none; cursor: pointer; transition: background 0.2s; }
         .btn-buy:hover { background: #1d4ed8; }
 
-        /* CART DRAWER */
         .cart-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 500; opacity: 0; visibility: hidden; transition: all 0.3s; }
         .cart-overlay.active { opacity: 1; visibility: visible; }
-        .cart-drawer { position: fixed; right: 0; top: 0; bottom: 0; width: 100%; max-width: 420px; background: #fff; z-index: 501; transform: translateX(100%); transition: transform 0.3s ease; display: flex; flex-direction: column; overflow: hidden; }
+        .cart-drawer { position: fixed; top: 0; bottom: 0; width: 375px; max-width: 375px; background: #fff; z-index: 501; transform: translateX(100%); transition: transform 0.3s ease; display: flex; flex-direction: column; overflow: hidden; }
         .cart-drawer.active { transform: translateX(0); }
         .cart-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid #e5e7eb; flex-shrink: 0; }
         .cart-header h3 { font-size: 17px; font-weight: 700; color: #111827; }
         .cart-close { width: 32px; height: 32px; border-radius: 50%; background: #f3f4f6; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; }
         .cart-close:hover { background: #e5e7eb; }
         .cart-items { flex: 1; overflow-y: auto; padding: 16px 20px; }
+        .cart-item { display: flex; gap: 12px; padding: 12px 0; border-bottom: 1px solid #f3f4f6; animation: fadeInUp 0.2s ease; }
+        .cart-item-img { width: 64px; height: 64px; border-radius: 10px; background: #f3f4f6; flex-shrink: 0; overflow: hidden; }
+        .cart-item-img img { width: 100%; height: 100%; object-fit: cover; }
+        .cart-item-img-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: #9ca3af; }
+        .cart-item-info { flex: 1; min-width: 0; }
+        .cart-item-title { font-size: 13px; font-weight: 600; color: #111827; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 4px; }
+        .cart-item-price { font-size: 13px; font-weight: 700; color: #2563eb; margin-bottom: 8px; }
+        .qty-control { display: inline-flex; align-items: center; border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; }
+        .qty-btn { width: 28px; height: 28px; border: none; background: #f9fafb; cursor: pointer; font-size: 15px; font-weight: 600; display: flex; align-items: center; justify-content: center; transition: background 0.2s; color: #374151; }
+        .qty-btn:hover { background: #e5e7eb; }
+        .qty-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+        .qty-value { min-width: 32px; text-align: center; font-size: 13px; font-weight: 600; padding: 0 4px; color: #111827; background: #fff; }
+        .cart-item-remove { align-self: flex-start; margin-top: 2px; flex-shrink: 0; width: 26px; height: 26px; border-radius: 6px; background: none; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #9ca3af; transition: all 0.2s; }
+        .cart-item-remove:hover { background: #fee2e2; color: #dc2626; }
         .cart-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 200px; gap: 12px; color: #9ca3af; }
-        .cart-empty p { font-size: 14px; text-align: center; padding: 0 16px; }
+        .cart-empty p { font-size: 14px; }
         .cart-footer { padding: 16px 20px; border-top: 1px solid #e5e7eb; flex-shrink: 0; background: #fff; }
+        .cart-summary { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+        .cart-summary-label { font-size: 13px; color: #6b7280; }
+        .cart-summary-total { font-size: 18px; font-weight: 700; color: #111827; }
+        .btn-checkout { width: 100%; padding: 14px; background: #2563eb; color: white; border: none; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; transition: background 0.2s; }
+        .btn-checkout:hover { background: #1d4ed8; }
+        .btn-checkout:disabled { opacity: 0.5; cursor: not-allowed; }
         .cart-loading { display: flex; align-items: center; justify-content: center; height: 120px; color: #6b7280; font-size: 14px; gap: 8px; }
+
         @keyframes spin { to { transform: rotate(360deg); } }
         .spinner { width: 18px; height: 18px; border: 2px solid #e5e7eb; border-top-color: #2563eb; border-radius: 50%; animation: spin 0.6s linear infinite; }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
-
-@php
-    $selectedPageId = request()->query('page');
-    $activePage = null;
-    if ($selectedPageId && $user->pages) {
-        $activePage = $user->pages->firstWhere('id', $selectedPageId);
-    }
-    if (!$activePage && $user->pages) {
-        $activePage = $user->pages->first();
-    }
-@endphp
 
 <div class="toast" id="toast"></div>
 
 <div class="page-wrapper">
 
-{{-- NAVBAR --}}
+{{-- ═══════════ NAVBAR ═══════════ --}}
 <div class="navbar">
     <div class="navbar-container">
         <div class="navbar-left">
@@ -416,6 +514,7 @@
                 <span></span><span></span><span></span>
                 <span></span><span></span><span></span>
             </div>
+            <div class="navbar-title">{{ $user->name }}</div>
         </div>
         <div class="navbar-right">
             <div class="nav-icon" id="searchBtn" title="Cari">
@@ -435,7 +534,7 @@
     </div>
 </div>
 
-{{-- SEARCH BAR --}}
+{{-- ═══════════ SEARCH BAR ═══════════ --}}
 <div class="search-bar-wrap" id="searchBarWrap">
     <div class="search-bar-inner">
         <button class="search-back-btn" id="searchBackBtn" title="Tutup">
@@ -458,18 +557,17 @@
 <div class="search-results-overlay" id="searchResultsOverlay"></div>
 <div class="search-results-panel" id="searchResultsPanel"></div>
 
-{{-- FULLSCREEN MENU --}}
+{{-- ═══════════ FULLSCREEN MENU ═══════════ --}}
 <div class="fullmenu-overlay" id="fullmenuOverlay">
     <div class="fullmenu-close-wrap">
         <button class="fullmenu-close" id="fullmenuClose">✕</button>
     </div>
     <div class="fullmenu-body">
         @if($user->pages && $user->pages->count() > 0)
-            <div class="fullmenu-section-label">Pages</div>
+            <div class="fullmenu-section-label">Halaman</div>
             @foreach($user->pages as $userPage)
-                <div class="fullmenu-item {{ $activePage && $activePage->id == $userPage->id ? 'active' : '' }}"
-                     data-tab="page-{{ $userPage->id }}"
-                     data-page-id="{{ $userPage->id }}">
+                <div class="fullmenu-item {{ $loop->first ? 'active' : '' }}"
+                     data-tab="page-{{ $userPage->id }}">
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                               d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
@@ -479,22 +577,22 @@
             @endforeach
         @endif
         <div class="fullmenu-divider"></div>
-        <div class="fullmenu-section-label">Member Area</div>
-        <div class="fullmenu-item" onclick="window.location.href='/login'">
+        <div class="fullmenu-section-label">Ruang Pengguna</div>
+        <div class="fullmenu-item">
             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                       d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
             </svg>
-            Login
+            Masuk / Daftar
         </div>
     </div>
 </div>
 
-{{-- KONTEN UTAMA --}}
+{{-- ═══════════ KONTEN UTAMA ═══════════ --}}
 <div class="container">
     @if($user->pages && $user->pages->count() > 0)
         @foreach($user->pages as $userPage)
-            <div class="tab-content {{ $activePage && $activePage->id == $userPage->id ? 'active' : '' }}"
+            <div class="tab-content {{ $loop->first ? 'active' : '' }}"
                  id="tab-page-{{ $userPage->id }}">
 
                 <div class="user-profile">
@@ -586,7 +684,7 @@
     @endif
 </div>
 
-{{-- PRODUCT DETAIL MODAL --}}
+{{-- ═══════════ PRODUCT DETAIL MODAL ═══════════ --}}
 <div class="product-detail-overlay" id="productDetailModal">
     <div class="product-detail-box">
         <button class="product-detail-close" onclick="closeProductDetail()">✕</button>
@@ -600,7 +698,6 @@
                 <span class="original-price" id="detailOriginalPrice"></span>
                 <span class="discount-badge-detail" id="detailDiscountBadge" style="display:none;"></span>
             </div>
-            {{-- Stok hanya ditampilkan untuk produk fisik --}}
             <div class="stock-info" id="detailStockWrap">Stok: <span id="detailStock"></span></div>
             <div class="detail-description">
                 <strong style="font-size:13px;color:#6b7280;letter-spacing:.5px;">DESKRIPSI</strong>
@@ -619,7 +716,7 @@
     </div>
 </div>
 
-{{-- CART DRAWER --}}
+{{-- ═══════════ CART DRAWER ═══════════ --}}
 <div class="cart-overlay" id="cartOverlay"></div>
 <div class="cart-drawer" id="cartDrawer">
     <div class="cart-header">
@@ -629,12 +726,18 @@
     <div class="cart-items" id="cartItems">
         <div class="cart-loading"><div class="spinner"></div> Memuat...</div>
     </div>
-    <div class="cart-footer" id="cartFooter" style="display:none"></div>
+    <div class="cart-footer" id="cartFooter" style="display:none">
+        <div class="cart-summary">
+            <span class="cart-summary-label">Total Pembayaran</span>
+            <span class="cart-summary-total" id="cartTotal">Rp 0</span>
+        </div>
+        <button class="btn-checkout" id="btnCheckout" onclick="handleCheckout()">
+            Lanjut ke Pembayaran
+        </button>
+    </div>
 </div>
-
 <script>
 const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
-const USERNAME  = '{{ $user->username }}';
 
 function formatRupiah(n) {
     return 'Rp ' + new Intl.NumberFormat('id-ID').format(Math.round(n));
@@ -647,15 +750,23 @@ function showToast(msg, type = 'default') {
     clearTimeout(toastTimer);
     toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
 }
+async function apiCall(url, method = 'GET', body = null) {
+    const opts = {
+        method,
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' }
+    };
+    if (body) opts.body = JSON.stringify(body);
+    const res  = await fetch(url, opts);
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || 'Terjadi kesalahan.');
+    return data;
+}
 function escHtml(str) {
     if (!str) return '';
     const d = document.createElement('div');
     d.textContent = str;
     return d.innerHTML;
 }
-
-const PRODUCT_PLACEHOLDER_SVG = `<svg width="28" height="28" fill="none" stroke="#2563eb" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>`;
-const CART_EMPTY_SVG = `<svg width="40" height="40" fill="none" stroke="#d1d5db" stroke-width="1.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>`;
 
 const SEARCH_ICONS = {
     product: `<svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>`,
@@ -665,45 +776,43 @@ const SEARCH_ICONS = {
 };
 const THUMB_CLASS = { product: 'thumb-product', link: 'thumb-link', text: 'thumb-text', other: 'thumb-other' };
 
-// ─── SCROLL LOCK (fix mobile background scroll) ──────────────────
-let scrollY = 0;
-function lockScroll() {
-    scrollY = window.scrollY;
-    document.body.style.position = 'fixed';
-    document.body.style.top      = `-${scrollY}px`;
-    document.body.style.width    = '100%';
-}
-function unlockScroll() {
-    document.body.style.position = '';
-    document.body.style.top      = '';
-    document.body.style.width    = '';
-    window.scrollTo(0, scrollY);
-}
+const PRODUCT_PLACEHOLDER_SVG = `<svg width="28" height="28" fill="none" stroke="#2563eb" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>`;
+const CART_PLACEHOLDER_SVG    = `<svg width="24" height="24" fill="none" stroke="#9ca3af" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>`;
+const CART_EMPTY_SVG          = `<svg width="40" height="40" fill="none" stroke="#d1d5db" stroke-width="1.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>`;
 
-// ─── FULLSCREEN MENU ─────────────────────────────────────────────
 const hamburger       = document.getElementById('hamburger');
 const fullmenuOverlay = document.getElementById('fullmenuOverlay');
 const fullmenuClose   = document.getElementById('fullmenuClose');
 
-function openMenu()  { lockScroll();   fullmenuOverlay.classList.add('active'); }
-function closeMenu() { unlockScroll(); fullmenuOverlay.classList.remove('active'); }
+let scrollY = 0;
+function openMenu() {
+    scrollY = window.scrollY;
+    document.body.style.position = 'fixed';
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.width = '375px';
+    fullmenuOverlay.classList.add('active');
+}
+function closeMenu() {
+    fullmenuOverlay.classList.remove('active');
+    document.body.style.position = '';
+    document.body.style.top = '';
+    document.body.style.width = '375px';
+    window.scrollTo(0, scrollY);
+}
 hamburger.addEventListener('click', openMenu);
 fullmenuClose.addEventListener('click', closeMenu);
 
 document.querySelectorAll('.fullmenu-item[data-tab]').forEach(item => {
     item.addEventListener('click', () => {
-        const tab    = item.dataset.tab;
-        const pageId = item.dataset.pageId;
+        const tab = item.dataset.tab;
         document.querySelectorAll('.fullmenu-item').forEach(n => n.classList.remove('active'));
         item.classList.add('active');
         document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
         document.getElementById(`tab-${tab}`)?.classList.add('active');
         closeMenu();
-        loadProductsInTab(tab);
     });
 });
 
-// ─── RENDER PRODUCT BLOCK ────────────────────────────────────────
 function renderProductBlock(container, product) {
     const price      = parseFloat(product.price)       || 0;
     const discount   = parseFloat(product.discount)    || 0;
@@ -733,56 +842,62 @@ function renderProductBlock(container, product) {
         </div>`;
 }
 
-// ─── LOAD PRODUCTS IN TAB ────────────────────────────────────────
-function loadProductsInTab(tabId) {
-    const tabEl = document.getElementById(`tab-${tabId}`);
-    if (!tabEl) return;
-    const containers = tabEl.querySelectorAll('[data-product-id]');
-    if (!containers.length) return;
-    const stillSkeleton = [...containers].filter(c => c.querySelector('.product-skeleton'));
-    if (!stillSkeleton.length) return;
-
-    const ids = [...new Set([...stillSkeleton].map(el => el.getAttribute('data-product-id')))].join(',');
-
-    fetch(`/api/products/batch?ids=${ids}`)
-        .then(r => r.json())
-        .then(productsMap => {
-            stillSkeleton.forEach(container => {
-                const pid     = container.getAttribute('data-product-id');
-                const product = productsMap[pid];
-                if (product) {
-                    renderProductBlock(container, product);
-                } else {
-                    container.innerHTML = `<div style="background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:20px;text-align:center;color:#9ca3af;font-size:13px;">Produk tidak tersedia</div>`;
-                }
-            });
-        })
-        .catch(() => {
-            stillSkeleton.forEach(container => {
-                const pid = container.getAttribute('data-product-id');
-                fetch(`/api/product/${pid}/data`)
-                    .then(r => r.json())
-                    .then(p  => renderProductBlock(container, p))
-                    .catch(() => {
-                        container.innerHTML = `<div style="background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:20px;text-align:center;color:#9ca3af;font-size:13px;">Produk tidak tersedia</div>`;
-                    });
-            });
-        });
-}
-
-// ─── DOMContentLoaded ────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', function () {
-    const activeTab = document.querySelector('.tab-content.active');
-    if (activeTab) {
-        loadProductsInTab(activeTab.id.replace('tab-', ''));
+    fetch(`/api/profile/{{ $user->username }}/view`, {
+        method: 'POST',
+        headers: { 'X-CSRF-TOKEN': csrfToken, 'Content-Type': 'application/json' }
+    }).catch(() => {});
+
+    const productContainers = document.querySelectorAll('[data-product-id]');
+    if (productContainers.length > 0) {
+        const ids = [...new Set(
+            [...productContainers].map(el => el.getAttribute('data-product-id'))
+        )].join(',');
+
+        fetch(`/api/products/batch?ids=${ids}`)
+            .then(r => r.json())
+            .then(productsMap => {
+                productContainers.forEach(container => {
+                    const pid     = container.getAttribute('data-product-id');
+                    const product = productsMap[pid];
+                    if (product) {
+                        renderProductBlock(container, product);
+                    } else {
+                        container.innerHTML = `<div style="background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:20px;text-align:center;color:#9ca3af;font-size:13px;">Produk tidak tersedia</div>`;
+                    }
+                });
+            })
+            .catch(() => {
+                productContainers.forEach(container => {
+                    const pid = container.getAttribute('data-product-id');
+                    fetch(`/api/product/${pid}/data`)
+                        .then(r => r.json())
+                        .then(p  => renderProductBlock(container, p))
+                        .catch(() => {
+                            container.innerHTML = `<div style="background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:20px;text-align:center;color:#9ca3af;font-size:13px;">Produk tidak tersedia</div>`;
+                        });
+                });
+            });
     }
+
+    apiCall('/api/cart').then(d => updateBadge(d.total_items)).catch(() => {});
 });
 
-// ─── PRODUCT DETAIL MODAL ────────────────────────────────────────
+function updateBadge(count) {
+    const badge = document.getElementById('cartBadge');
+    badge.textContent = count;
+    badge.classList.toggle('visible', count > 0);
+}
+
 let currentProductId = null;
 
 function handleProductClick(productId) {
     if (!productId) return;
+    fetch(`/api/product/${productId}/view`, {
+        method: 'POST',
+        headers: { 'X-CSRF-TOKEN': csrfToken, 'Content-Type': 'application/json' }
+    }).catch(() => {});
+
     fetch(`/api/product/${productId}/data`)
         .then(r => r.json())
         .then(product => {
@@ -795,17 +910,16 @@ function handleProductClick(productId) {
             const hasDis  = finalPrice < price;
             const discPct = hasDis ? Math.round(((price - finalPrice) / price) * 100) : 0;
 
-            document.getElementById('detailTitle').textContent        = product.title;
-            document.getElementById('detailFinalPrice').textContent   = formatRupiah(finalPrice);
+            document.getElementById('detailTitle').textContent = product.title;
+            document.getElementById('detailFinalPrice').textContent = formatRupiah(finalPrice);
             document.getElementById('detailOriginalPrice').textContent = hasDis ? formatRupiah(price) : '';
-            document.getElementById('detailDescription').textContent  = product.description ?? '';
 
             const discBadge = document.getElementById('detailDiscountBadge');
             if (hasDis) {
-                discBadge.textContent   = `-${discPct}%`;
-                discBadge.style.display = 'inline-block';
+                discBadge.textContent    = `-${discPct}%`;
+                discBadge.style.display  = 'inline-block';
             } else {
-                discBadge.style.display = 'none';
+                discBadge.style.display  = 'none';
             }
 
             const stockWrap = document.getElementById('detailStockWrap');
@@ -816,54 +930,131 @@ function handleProductClick(productId) {
                 document.getElementById('detailStock').textContent = product.stock;
             }
 
+            document.getElementById('detailDescription').textContent = product.description ?? '';
+
             const img = document.getElementById('detailImage');
             if (product.image_url) { img.src = product.image_url; img.style.display = 'block'; }
             else img.style.display = 'none';
 
             document.getElementById('buyNowBtn').onclick = () => {
-                showToast('Ini mode preview — tidak bisa checkout', 'error');
+                window.location.href = `/checkout/${product.id}`;
             };
 
-            lockScroll();
             document.getElementById('productDetailModal').style.display = 'flex';
+            document.body.style.overflow = 'hidden';
         })
         .catch(() => showToast('Gagal memuat produk.', 'error'));
 }
 
 function closeProductDetail() {
     document.getElementById('productDetailModal').style.display = 'none';
-    unlockScroll();
+    document.body.style.overflow = 'auto';
     currentProductId = null;
 }
 
-document.getElementById('btnAddToCart').addEventListener('click', () => {
-    showToast('Ini mode preview — tidak bisa tambah ke keranjang', 'error');
+document.getElementById('btnAddToCart').addEventListener('click', async () => {
+    if (!currentProductId) return;
+    const btn = document.getElementById('btnAddToCart');
+    btn.classList.add('loading');
+    try {
+        const data = await apiCall('/api/cart/add', 'POST', { product_id: currentProductId, quantity: 1 });
+        updateBadge(data.total_items);
+        showToast('Produk ditambahkan ke keranjang!', 'success');
+    } catch (err) { showToast(err.message, 'error'); }
+    finally { btn.classList.remove('loading'); }
 });
 
-// ─── CART DRAWER ─────────────────────────────────────────────────
 const cartOverlay = document.getElementById('cartOverlay');
 const cartDrawer  = document.getElementById('cartDrawer');
 
-function openCart() {
-    lockScroll();
-    cartOverlay.classList.add('active');
-    cartDrawer.classList.add('active');
-    document.getElementById('cartItems').innerHTML = `
-        <div class="cart-empty">
-            ${CART_EMPTY_SVG}
-            <p>Ini mode preview.<br>Keranjang tidak aktif.</p>
-        </div>`;
-    document.getElementById('cartFooter').style.display = 'none';
-}
-function closeCart() {
-    cartOverlay.classList.remove('active');
-    cartDrawer.classList.remove('active');
-    unlockScroll();
-}
+function openCart()  { cartOverlay.classList.add('active'); cartDrawer.classList.add('active'); document.body.style.overflow = 'hidden'; loadCart(); }
+function closeCart() { cartOverlay.classList.remove('active'); cartDrawer.classList.remove('active'); document.body.style.overflow = 'auto'; }
 cartOverlay.addEventListener('click', closeCart);
 document.getElementById('cartBtn').addEventListener('click', openCart);
 
-// ─── SEARCH ──────────────────────────────────────────────────────
+async function loadCart() {
+    const container = document.getElementById('cartItems');
+    const footer    = document.getElementById('cartFooter');
+    container.innerHTML = `<div class="cart-loading"><div class="spinner"></div> Memuat...</div>`;
+    footer.style.display = 'none';
+    try { renderCartItems(await apiCall('/api/cart')); }
+    catch { container.innerHTML = `<div class="cart-empty">${CART_EMPTY_SVG}<p>Gagal memuat keranjang.</p></div>`; }
+}
+
+function renderCartItems(data) {
+    const container   = document.getElementById('cartItems');
+    const footer      = document.getElementById('cartFooter');
+    const totalEl     = document.getElementById('cartTotal');
+    const checkoutBtn = document.getElementById('btnCheckout');
+
+    if (!data.items || data.items.length === 0) {
+        container.innerHTML = `<div class="cart-empty">${CART_EMPTY_SVG}<p>Keranjangmu masih kosong.</p></div>`;
+        footer.style.display = 'none'; return;
+    }
+
+    container.innerHTML = data.items.map(item => `
+        <div class="cart-item" id="cart-item-${item.id}">
+            <div class="cart-item-img">
+                ${item.image_url
+                    ? `<img src="${item.image_url}" alt="${escHtml(item.title)}">`
+                    : `<div class="cart-item-img-placeholder">${CART_PLACEHOLDER_SVG}</div>`}
+            </div>
+            <div class="cart-item-info">
+                <div class="cart-item-title">${escHtml(item.title)}</div>
+                <div class="cart-item-price">
+                    ${formatRupiah(item.final_price)}
+                    ${item.has_discount ? `<span style="font-size:11px;color:#9ca3af;text-decoration:line-through;margin-left:4px;">${formatRupiah(item.original_price)}</span>` : ''}
+                </div>
+                <div class="qty-control">
+                    <button class="qty-btn" onclick="changeQty(${item.id},${item.quantity - 1},${item.stock})" ${item.quantity <= 1 ? 'disabled' : ''}>−</button>
+                    <span class="qty-value">${item.quantity}</span>
+                    <button class="qty-btn" onclick="changeQty(${item.id},${item.quantity + 1},${item.stock})" ${item.quantity >= item.stock ? 'disabled' : ''}>+</button>
+                </div>
+            </div>
+            <button class="cart-item-remove" onclick="removeItem(${item.id})" title="Hapus">
+                <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                </svg>
+            </button>
+        </div>`).join('');
+
+    totalEl.textContent   = formatRupiah(data.total_price);
+    footer.style.display  = 'block';
+    checkoutBtn.disabled  = false;
+}
+
+async function changeQty(id, newQty, stock) {
+    if (newQty < 1 || newQty > stock) return;
+    try {
+        const data = await apiCall(`/api/cart/${id}`, 'PATCH', { quantity: newQty });
+        updateBadge(data.total_items);
+        renderCartItems(await apiCall('/api/cart'));
+    } catch (err) { showToast(err.message, 'error'); }
+}
+
+async function removeItem(id) {
+    const itemEl = document.getElementById(`cart-item-${id}`);
+    if (itemEl) { itemEl.style.opacity = '0.5'; itemEl.style.transition = 'opacity 0.2s'; }
+    try {
+        const data = await apiCall(`/api/cart/${id}`, 'DELETE');
+        updateBadge(data.total_items);
+        showToast('Produk dihapus dari keranjang.');
+        renderCartItems(await apiCall('/api/cart'));
+    } catch (err) { showToast(err.message, 'error'); if (itemEl) itemEl.style.opacity = '1'; }
+}
+
+async function handleCheckout() {
+    try {
+        const data = await apiCall('/api/cart');
+        if (!data.items || data.items.length === 0) { showToast('Keranjang kosong.', 'error'); return; }
+        if (data.items.length === 1) { window.location.href = `/checkout/${data.items[0].product_id}`; return; }
+        if (confirm(`Keranjang berisi ${data.items.length} produk.\nCheckout per produk. Lanjut "${data.items[0].title}"?`))
+            window.location.href = `/checkout/${data.items[0].product_id}`;
+    } catch { showToast('Gagal memproses checkout.', 'error'); }
+}
+
+const USERNAME             = '{{ $user->username }}';
 const searchBtn            = document.getElementById('searchBtn');
 const searchBarWrap        = document.getElementById('searchBarWrap');
 const searchBackBtn        = document.getElementById('searchBackBtn');
@@ -893,9 +1084,9 @@ function highlight(text, query) {
 
 function renderState(stateType, title, sub) {
     const icons = {
-        loading:  `<svg width="28" height="28" fill="none" stroke="#9ca3af" stroke-width="1.8" viewBox="0 0 24 24" style="animation:spin .8s linear infinite"><path stroke-linecap="round" stroke-linejoin="round" d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"/></svg>`,
-        noresult: `<svg width="28" height="28" fill="none" stroke="#9ca3af" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 115 11a6 6 0 0112 0z"/></svg>`,
-        error:    `<svg width="28" height="28" fill="none" stroke="#ef4444" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>`,
+        loading:   `<svg width="28" height="28" fill="none" stroke="#9ca3af" stroke-width="1.8" viewBox="0 0 24 24" style="animation:spin .8s linear infinite"><path stroke-linecap="round" stroke-linejoin="round" d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"/></svg>`,
+        noresult:  `<svg width="28" height="28" fill="none" stroke="#9ca3af" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 115 11a6 6 0 0112 0z"/></svg>`,
+        error:     `<svg width="28" height="28" fill="none" stroke="#ef4444" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>`,
     };
     searchResultsPanel.innerHTML = `
         <div class="search-state">
@@ -926,12 +1117,14 @@ function renderResults(results, query) {
         renderState('noresult', 'Tidak ditemukan', `Tidak ada hasil untuk "${query}"`);
         return;
     }
+
     const labelMap = { product: 'Produk', link: 'Link', text: 'Konten', other: 'Lainnya' };
     const groups   = { product: [], link: [], text: [], other: [] };
     results.map(normalizeItem).forEach(item => {
         const key = groups[item.type] !== undefined ? item.type : 'other';
         groups[key].push(item);
     });
+
     let html = '';
     for (const [type, items] of Object.entries(groups)) {
         if (!items.length) continue;
@@ -945,8 +1138,10 @@ function renderResults(results, query) {
             const subHtml = type === 'product'
                 ? `<div class="search-result-price">${formatRupiah(item.final_price)}</div>`
                 : (item.subtitle ? `<div class="search-result-meta">${escHtml(String(item.subtitle))}</div>` : '');
+
             const itemJson = JSON.stringify(item)
                 .replace(/</g, '\\u003c').replace(/>/g, '\\u003e').replace(/&/g, '\\u0026');
+
             html += `<div class="search-result-item" onclick='handleSearchResultClick(${itemJson})'>
                 <div class="search-result-thumb ${item.image_url ? '' : thumbClass}">${thumbInner}</div>
                 <div class="search-result-info">
@@ -977,7 +1172,6 @@ function handleSearchResultClick(item) {
                 document.querySelectorAll('.fullmenu-item[data-tab]').forEach(n => {
                     n.classList.toggle('active', n.dataset.tab === tabId);
                 });
-                loadProductsInTab(tabId);
             }
             setTimeout(() => blockEl.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100);
         }

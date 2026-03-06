@@ -300,21 +300,40 @@
                     <p class="text-sm text-gray-600">Tampilan di mobile device</p>
                 </div>
                 
-                <!-- PHONE FRAME -->
-                <div class="relative mx-auto" style="width:300px; margin-left: auto; margin-right: 0;">
-                    <div class="relative bg-gray-900 rounded-[36px] p-2 shadow-2xl">
-                        <div class="mb-4"></div>
-                        <div class="bg-white rounded-[28px] preview-screen-wrap">
-                            <iframe
-                                id="preview"
-                                src="{{ url('/preview/'.$user->username) }}?page={{ $activePage->id ?? '' }}&t={{ time() }}"
-                                frameborder="0">
-                            </iframe>
-                        </div>
-                        <div class="h-1 w-24 bg-gray-800 rounded-full mx-auto mt-2"></div>
-                    </div>
+                <div style="position:relative;width:290px;height:550px;border-radius:42px;background:linear-gradient(160deg,#dde0e4 0%,#c2c7cc 40%,#d4d8db 70%,#b0b5ba 100%);box-shadow:0 0 0 1px rgba(255,255,255,0.6),0 0 0 2.5px #909599,0 0 0 3.5px #636870,0 0 0 5px #bec3c8,0 20px 44px rgba(0,0,0,0.35),inset 0 1px 0 rgba(255,255,255,0.45);">
+    <div style="position:absolute;right:-3px;top:130px;width:3px;height:56px;background:linear-gradient(to right,#888d94,#b2b7bc);border-radius:0 3px 3px 0;"></div>
+    <div style="position:absolute;left:-3px;top:80px;width:3px;height:20px;background:linear-gradient(to left,#888d94,#b2b7bc);border-radius:3px 0 0 3px;"></div>
+    <div style="position:absolute;left:-3px;top:107px;width:3px;height:36px;background:linear-gradient(to left,#888d94,#b2b7bc);border-radius:3px 0 0 3px;"></div>
+    <div style="position:absolute;left:-3px;top:152px;width:3px;height:36px;background:linear-gradient(to left,#888d94,#b2b7bc);border-radius:3px 0 0 3px;"></div>
+    <div style="position:absolute;inset:5px;border-radius:38px;background:#080808;overflow:hidden;">
+        <div style="position:absolute;inset:0;border-radius:38px;background:#fff;overflow:hidden;">
+            <!-- Status bar -->
+            <div style="position:absolute;top:0;left:0;right:0;height:44px;z-index:30;display:flex;align-items:flex-end;justify-content:space-between;padding:0 18px 6px;background:#fff;pointer-events:none;">
+                <span style="font-size:11px;font-weight:600;color:#111;">9:41</span>
+                <div style="display:flex;align-items:center;gap:3px;">
+                    <svg width="13" height="10" viewBox="0 0 17 12" fill="#111"><rect x="0" y="7" width="3" height="5" rx="0.8"/><rect x="4.5" y="4.5" width="3" height="7.5" rx="0.8"/><rect x="9" y="2" width="3" height="10" rx="0.8"/><rect x="13.5" y="0" width="3" height="12" rx="0.8" opacity="0.3"/></svg>
+                    <svg width="12" height="10" viewBox="0 0 16 12" fill="#111"><circle cx="8" cy="10.5" r="1.5"/><path d="M3.5 6.5a6.5 6.5 0 019 0" stroke="#111" stroke-width="1.5" stroke-linecap="round" fill="none"/><path d="M1 4a10 10 0 0114 0" stroke="#111" stroke-width="1.5" stroke-linecap="round" fill="none" opacity="0.45"/></svg>
+                    <svg width="19" height="10" viewBox="0 0 25 12" fill="#111"><rect x="0.5" y="0.5" width="21" height="11" rx="2.5" stroke="#111" stroke-width="1" fill="none"/><rect x="22" y="3.5" width="2.5" height="5" rx="1" fill="#111" opacity="0.4"/><rect x="2" y="2" width="16" height="8" rx="1.5"/></svg>
                 </div>
             </div>
+            <!-- Dynamic island / notch -->
+            <div style="position:absolute;top:10px;left:50%;transform:translateX(-50%);width:90px;height:25px;background:#080808;border-radius:14px;z-index:40;"></div>
+            <!-- iframe area -->
+            <div style="position:absolute;top:44px;left:0;right:0;bottom:0;border-radius:0 0 38px 38px;overflow:hidden;">
+                <iframe
+                    id="preview"
+                    src="{{ url('/preview/'.$user->username) }}?page={{ $activePage->id ?? '' }}&t={{ time() }}"
+                    frameborder="0"
+                    style="position:absolute;top:0;left:0;width:375px;height:calc(100% / 0.7467);transform:scale(0.7467);transform-origin:top left;border:none;background:#fff;display:block;">
+                </iframe>
+            </div>
+            <!-- Home indicator -->
+            <div style="position:absolute;bottom:7px;left:50%;transform:translateX(-50%);width:90px;height:3px;background:rgba(0,0,0,0.22);border-radius:2px;z-index:30;pointer-events:none;"></div>
+            <!-- Glass reflection -->
+            <div style="position:absolute;inset:0;border-radius:38px;background:linear-gradient(130deg,rgba(255,255,255,0.16) 0%,rgba(255,255,255,0.05) 28%,transparent 55%);pointer-events:none;z-index:50;"></div>
+        </div>
+    </div>
+</div>      </div>
         </div>
     </div>
 </div>
@@ -621,7 +640,8 @@
 @media (min-width: 1024px) {
     #preview-sticky-wrapper {
         position: sticky;
-        top: 24px;
+        top: 0;
+        padding-top: 8px;
     }
 }
 </style>
@@ -1195,6 +1215,52 @@ document.addEventListener('DOMContentLoaded', function() {
     // Auto-open product modal dari session
     var shouldOpenProductModal = {{ session('openProductModal') ? 'true' : 'false' }};
     if (shouldOpenProductModal && currentPageId) setTimeout(openProductModal, 500);
+
+    // SCROLL LOCK saat HP preview penuh kelihatan
+    (function() {
+        const phoneWrap = document.getElementById('preview-sticky-wrapper');
+        const rightCol  = document.querySelector('.lg\\:w-1\\/3');  // ← tambah ini
+        if (!phoneWrap || window.innerWidth < 1024) return;
+
+        let lockPhase    = false;
+        let scrollBuffer = 0;
+        const THRESHOLD  = 80;
+        let mouseOnRight = false;  // ← tambah ini
+
+        // Track mouse di kolom kanan
+        if (rightCol) {
+            rightCol.addEventListener('mouseenter', () => mouseOnRight = true);
+            rightCol.addEventListener('mouseleave', () => { mouseOnRight = false; lockPhase = false; scrollBuffer = 0; });
+        }
+
+        function isPhoneFullyVisible() {
+            const rect = phoneWrap.getBoundingClientRect();
+            return rect.top <= 4 && rect.bottom <= window.innerHeight + 4;
+        }
+
+        window.addEventListener('scroll', function() {
+            if (!isPhoneFullyVisible()) {
+                lockPhase    = false;
+                scrollBuffer = 0;
+            } else if (!lockPhase) {
+                lockPhase    = true;
+                scrollBuffer = 0;
+            }
+        }, { passive: true });
+
+        document.addEventListener('wheel', function(e) {
+            if (!mouseOnRight) return;  // ← tambah ini: skip kalau cursor di kiri
+            if (!isPhoneFullyVisible()) return;
+            if (!lockPhase) return;
+            scrollBuffer += Math.abs(e.deltaY);
+            if (scrollBuffer < THRESHOLD) {
+                e.preventDefault();
+            } else {
+                lockPhase    = false;
+                scrollBuffer = 0;
+            }
+        }, { passive: false });
+    })();
 });
 </script>
 @endpush

@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\TopUpRequest;
 use App\Http\Requests\WithdrawRequest;
+use App\Models\AdminWalletLedger;
 use App\Models\Withdrawal;
+use App\Models\User;
 use App\Services\PaymentService;
 use Exception;
 use Illuminate\Http\Request;
@@ -174,11 +176,13 @@ class TransactionController extends Controller
             $user   = auth()->user();
             $data   = $request->validated();
             $amount = (int) $data['amount'];
+            $withdrawFee = (int) config('payment.withdraw_fee', 3000);
+            $totalDeduction = $amount + $withdrawFee;
 
-            if ((int) $user->balance < $amount) {
+            if ((int) $user->balance < $totalDeduction) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Saldo tidak cukup. Saldo Anda: Rp ' . number_format($user->balance, 0, ',', '.'),
+                    'message' => 'Saldo tidak cukup. Total potongan (nominal + fee): Rp ' . number_format($totalDeduction, 0, ',', '.'),
                 ], 400);
             }
 
@@ -190,31 +194,67 @@ class TransactionController extends Controller
                 ], 400);
             }
 
-            $withdrawal = DB::transaction(function () use ($user, $data, $amount) {
-                $user->decrement('balance', $amount);
-                return Withdrawal::create([
+            $withdrawal = DB::transaction(function () use ($user, $data, $amount, $withdrawFee, $totalDeduction) {
+                $lockedUser = User::whereKey($user->id)->lockForUpdate()->firstOrFail();
+                if ((int) $lockedUser->balance < $totalDeduction) {
+                    throw new Exception('Saldo tidak cukup untuk nominal + fee penarikan.');
+                }
+
+                $lockedUser->decrement('balance', $totalDeduction);
+
+                $noteParts = [];
+                if (!empty($data['notes'])) {
+                    $noteParts[] = trim((string) $data['notes']);
+                }
+                if ($withdrawFee > 0) {
+                    $noteParts[] = 'Fee withdraw Rp ' . number_format($withdrawFee, 0, ',', '.');
+                }
+
+                $withdrawal = Withdrawal::create([
                     'user_id'        => $user->id,
                     'amount'         => $amount,
                     'status'         => 'pending',
                     'bank_name'      => $data['bank_name'] ?? null,
                     'account_name'   => $data['account_name'] ?? null,
                     'account_number' => $data['account_number'] ?? null,
-                    'notes'          => $data['notes'] ?? null,
+                    'notes'          => !empty($noteParts) ? implode(' | ', $noteParts) : null,
                     'ip_address'     => request()->ip(),
                 ]);
+
+                if ($withdrawFee > 0) {
+                    $lastBalance = (int) (AdminWalletLedger::query()
+                        ->lockForUpdate()
+                        ->latest('id')
+                        ->value('balance_after') ?? 0);
+
+                    AdminWalletLedger::create([
+                        'source' => 'fee_withdraw',
+                        'direction' => 'credit',
+                        'amount' => $withdrawFee,
+                        'balance_after' => $lastBalance + $withdrawFee,
+                        'reference_type' => Withdrawal::class,
+                        'reference_id' => $withdrawal->id,
+                        'description' => 'Fee withdraw user #' . $user->id,
+                        'created_by' => null,
+                    ]);
+                }
+
+                return $withdrawal;
             });
 
             Log::info('Withdrawal request created', [
                 'user_id'       => $user->id,
                 'withdrawal_id' => $withdrawal->id,
                 'amount'        => $amount,
+                'fee'           => $withdrawFee,
+                'total_deduction' => $totalDeduction,
                 'balance_now'   => $user->fresh()->balance,
             ]);
 
             return response()->json([
                 'success'       => true,
                 'withdrawal_id' => $withdrawal->id,
-                'message'       => 'Permintaan penarikan berhasil diajukan! Saldo akan ditransfer dalam 1-3 hari kerja.',
+                'message'       => 'Permintaan penarikan berhasil diajukan. Biaya withdraw Rp ' . number_format($withdrawFee, 0, ',', '.') . ' telah dipotong.',
             ]);
 
         } catch (Exception $e) {

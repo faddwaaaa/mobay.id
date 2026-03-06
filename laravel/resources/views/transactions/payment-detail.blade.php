@@ -392,6 +392,18 @@
                     <span class="detail-label">Waktu Transaksi</span>
                     <span class="detail-value">{{ $transaction->created_at->format('d M Y, H:i') }} WIB</span>
                 </div>
+                @if(isset($notes['base_total']))
+                <div class="detail-item">
+                    <span class="detail-label">Total Dasar Produk</span>
+                    <span class="detail-value">Rp {{ number_format((int) $notes['base_total'], 0, ',', '.') }}</span>
+                </div>
+                @endif
+                @if(isset($notes['payment_fee_amount']))
+                <div class="detail-item">
+                    <span class="detail-label">Biaya Layanan</span>
+                    <span class="detail-value">Rp {{ number_format((int) $notes['payment_fee_amount'], 0, ',', '.') }}</span>
+                </div>
+                @endif
                 <div class="detail-item">
                     <span class="detail-label">Total Pembayaran</span>
                     <span class="detail-value highlight">Rp {{ number_format($transaction->amount, 0, ',', '.') }}</span>
