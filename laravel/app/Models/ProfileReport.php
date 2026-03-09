@@ -28,10 +28,10 @@ class ProfileReport extends Model
     ];
 
     protected $casts = [
-        'reviewed_at'     => 'datetime',
-        'evidence_paths'  => 'array',
-        'triggered_freeze'=> 'boolean',
-    ];
+    'evidence_paths'  => 'array',   // ← otomatis decode JSON jadi array
+    'reviewed_at'     => 'datetime',
+    'triggered_freeze'=> 'boolean',
+];
 
     // Bobot per kategori untuk risk scoring
     public const RISK_WEIGHTS = [
@@ -44,6 +44,8 @@ class ProfileReport extends Model
         'spam'          => 1,
         'other'         => 1,
     ];
+
+
 
     // Ambang laporan untuk auto-flag (BUKAN auto-suspend)
     public const FREEZE_THRESHOLD     = 10; // laporan unik dalam 1 jam
@@ -83,4 +85,5 @@ class ProfileReport extends Model
         if ($s >= 5)  return 'SEDANG';
         return 'RENDAH';
     }
+    
 }

@@ -53,6 +53,19 @@ require __DIR__ . '/auth.php';
 
 /*
 |--------------------------------------------------------------------------
+| HALAMAN SUSPENDED — di luar auth agar bisa diakses user yang disuspend
+|--------------------------------------------------------------------------
+*/
+Route::get('/suspended', function () {
+    if (auth()->check() && !auth()->user()->is_suspended) {
+        return redirect()->route('dashboard');
+    }
+    return view('suspended');
+})->name('suspended');
+
+
+/*
+|--------------------------------------------------------------------------
 | CHECKOUT — HARUS DI LUAR AUTH & DI ATAS PUBLIC PROFILE
 |--------------------------------------------------------------------------
 */
@@ -81,59 +94,39 @@ Route::middleware(['auth', 'verified'])->prefix('payment')->name('payment.')->gr
 |--------------------------------------------------------------------------
 */
 Route::prefix('api')->group(function () {
-    // Ongkir (Binderbyte)
     Route::get('/ongkir/cities', [RajaOngkirController::class, 'cities']);
     Route::post('/ongkir/cost', [RajaOngkirController::class, 'cost']);
 
-    // Midtrans callback
     Route::post('/callback/midtrans', [CallbackController::class, 'handleMidtransCallback'])->name('midtrans.callback');
 
-    // Transaksi
     Route::post('/topup', [TransactionController::class, 'createTopUp']);
     Route::post('/withdraw', [TransactionController::class, 'createWithdraw']);
     Route::get('/transactions', [TransactionController::class, 'getTransactionHistory']);
     Route::get('/withdrawals', [TransactionController::class, 'getWithdrawalHistory']);
 
-    // Produk
     Route::get('/product/{id}/data', [ProductController::class, 'apiShow']);
     Route::get('/product/{id}', [ProductController::class, 'apiShow']);
     Route::post('/product/{id}/view', [ProductController::class, 'trackView']);
-
-    // Batch produk (untuk render skeleton di profil publik)
     Route::get('/products/batch', [ProductController::class, 'apiBatch']);
 
-    // Catat kunjungan halaman profil publik
     Route::post('/profile/{username}/view', [PublicProfileController::class, 'trackProfileView']);
 
-    // Cart
     Route::get('/cart',          [CartController::class, 'index']);
     Route::post('/cart/add',     [CartController::class, 'add']);
     Route::patch('/cart/{id}',   [CartController::class, 'update']);
     Route::delete('/cart/clear', [CartController::class, 'clear']);
     Route::delete('/cart/{id}',  [CartController::class, 'remove']);
 
-    // Blocks (AJAX fetch saat pindah halaman)
     Route::get('/blocks', function (Request $request) {
         $pageId = $request->query('page_id');
-        if (!$pageId) {
-            return response()->json(['success' => false, 'message' => 'Page ID required'], 400);
-        }
+        if (!$pageId) return response()->json(['success' => false, 'message' => 'Page ID required'], 400);
         $page = \App\Models\Page::with('blocks')->find($pageId);
-        if (!$page) {
-            return response()->json(['success' => false, 'message' => 'Page not found'], 404);
-        }
-        if ($page->user_id !== auth()->id()) {
-            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
-        }
-        $blocks = $page->blocks->sortBy('position')->map(function ($block) {
-            return [
-                'id'         => $block->id,
-                'type'       => $block->type,
-                'content'    => $block->content,
-                'product_id' => $block->product_id ?? null,
-                'position'   => $block->position,
-            ];
-        })->values();
+        if (!$page) return response()->json(['success' => false, 'message' => 'Page not found'], 404);
+        if ($page->user_id !== auth()->id()) return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
+        $blocks = $page->blocks->sortBy('position')->map(fn ($b) => [
+            'id' => $b->id, 'type' => $b->type, 'content' => $b->content,
+            'product_id' => $b->product_id ?? null, 'position' => $b->position,
+        ])->values();
         return response()->json(['success' => true, 'blocks' => $blocks, 'pageTitle' => $page->title]);
     })->middleware('auth')->name('api.blocks');
 });
@@ -175,79 +168,43 @@ Route::middleware('auth')->group(function () {
 
 /*
 |--------------------------------------------------------------------------
-| ADMIN ROUTES
-|--------------------------------------------------------------------------
-*/
-Route::prefix('admin')->middleware(['auth'])->group(function () {
-
-    Route::get('/dashboard', [App\Http\Controllers\Admin\DashboardController::class, 'index'])
-        ->name('admin.dashboard');
-
-    // Urutan penting: /export dan /{report}/evidence/{index}
-    // harus di atas /{report} agar tidak tertangkap wildcard
-    Route::get   ('/reports',                           [ProfileReportController::class, 'index'])       ->name('admin.reports.index');
-    Route::get   ('/reports/export',                    [ProfileReportController::class, 'exportCsv'])   ->name('admin.reports.export');
-    Route::get   ('/reports/{report}',                  [ProfileReportController::class, 'show'])         ->name('admin.reports.show');
-    Route::patch ('/reports/{report}/status',           [ProfileReportController::class, 'updateStatus'])->name('admin.reports.updateStatus');
-    Route::patch ('/reports/{report}/note',             [ProfileReportController::class, 'saveNote'])    ->name('admin.reports.saveNote');
-    Route::get   ('/reports/{report}/evidence',         [ProfileReportController::class, 'viewEvidence'])->name('admin.reports.evidence');
-    Route::get   ('/reports/{report}/evidence/{index}', [ProfileReportController::class, 'evidenceFile'])->name('admin.reports.evidence.file');
-
-});
-
-
-/*
-|--------------------------------------------------------------------------
 | AUTHENTICATED ROUTES
 |--------------------------------------------------------------------------
 */
 Route::middleware('auth')->group(function () {
 
-    // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/dashboard/chart-data', [DashboardController::class, 'chartData']);
 
-    // Analytics
     Route::prefix('analitik')->name('analitik.')->group(function () {
         Route::get('/', [AnalyticsController::class, 'index'])->name('index');
     });
 
-    // Premium
     Route::get('/premium', fn () => view('premium.index'))->name('premium.index');
 
-    // Profile
     Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
     Route::get('/dashboard/profile', [ProfileController::class, 'profile'])->name('dashboard.profile');
     Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    // Links
     Route::get('/links', [LinkController::class, 'index'])->name('links.index');
 
-    // Pages
     Route::post('/pages', [PageController::class, 'store'])->name('pages.store');
     Route::put('/pages/{page}', [PageController::class, 'update'])->name('pages.update');
     Route::delete('/pages/{page}', [PageController::class, 'destroy'])->name('pages.destroy');
     Route::get('/pages/{page}/edit', [PageController::class, 'edit'])->name('pages.edit');
 
-    // Blocks
     Route::get('/blocks/create', fn () => view('dashboard.links.blocks.create'))->name('blocks.create');
     Route::post('/blocks/reorder', [BlockController::class, 'reorder'])->name('blocks.reorder');
     Route::resource('blocks', BlockController::class)->only(['store', 'update', 'destroy']);
     Route::post('/blocks/add-product', [BlockController::class, 'addProductBlock'])->name('blocks.addProduct');
 
-    // QR Code
     Route::get('/qr-code', function () {
         $user = Auth::user();
-        return view('qr-code', [
-            'userSlug'   => $user->username,
-            'totalScans' => 0,
-            'todayScans' => 0,
-        ]);
+        return view('qr-code', ['userSlug' => $user->username, 'totalScans' => 0, 'todayScans' => 0]);
     })->name('qrcode.show');
 
-    // Notifications
     Route::get('/notifications', [App\Http\Controllers\NotificationController::class, 'index'])->name('notifications.index');
     Route::get('/notifications/unread-count', [App\Http\Controllers\NotificationController::class, 'unreadCount'])->name('notifications.unread');
     Route::post('/notifications/mark-all', [App\Http\Controllers\NotificationController::class, 'markAllRead'])->name('notifications.markAll');
@@ -255,13 +212,11 @@ Route::middleware('auth')->group(function () {
     Route::delete('/notifications/all', [App\Http\Controllers\NotificationController::class, 'destroyAll'])->name('notifications.destroyAll');
     Route::delete('/notifications/{notification}', [App\Http\Controllers\NotificationController::class, 'destroy'])->name('notifications.destroy');
 
-    // Produk
     Route::get('/produk', [ProductController::class, 'index'])->name('products.manage');
     Route::post('/produk', [ProductController::class, 'store'])->name('products.store');
     Route::delete('/produk/{produk}', [ProductController::class, 'destroy'])->name('products.destroy');
     Route::put('/produk/{product}/update', [ProductController::class, 'update'])->name('products.update');
 
-    // Topup & Withdraw
     Route::get('/dashboard/topup', [TransactionController::class, 'showTopupForm'])->name('topup.form');
     Route::get('/dashboard/topup/success', [TransactionController::class, 'topupSuccess'])->name('topup.success');
     Route::get('/dashboard/topup/error', [TransactionController::class, 'topupError'])->name('topup.error');
@@ -269,19 +224,14 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboard/withdraw', [TransactionController::class, 'showWithdrawForm'])->name('withdraw.form');
     Route::post('/withdrawal', [TransactionController::class, 'createWithdraw'])->name('withdrawal.store');
 
-    // Debug
     Route::get('/debug-last-trx', function () {
         $trx = App\Models\Transaction::latest()->first();
-        return [
-            'order_id'   => $trx->order_id ?? null,
-            'status'     => $trx->status ?? null,
-            'amount'     => $trx->amount ?? null,
-            'notes'      => is_string($trx->notes ?? null) ? json_decode($trx->notes, true) : $trx->notes,
-            'created_at' => $trx->created_at ?? null,
-        ];
+        return ['order_id' => $trx->order_id ?? null, 'status' => $trx->status ?? null,
+                'amount' => $trx->amount ?? null,
+                'notes' => is_string($trx->notes ?? null) ? json_decode($trx->notes, true) : $trx->notes,
+                'created_at' => $trx->created_at ?? null];
     });
 
-    // Logout
     Route::post('/logout', function () {
         Auth::logout();
         request()->session()->invalidate();
@@ -335,6 +285,10 @@ Route::get('/{short_code}', function ($short_code) {
         $user = \App\Models\User::where('username', $short_code)
             ->with(['pages' => fn ($q) => $q->where('is_active', 1)->with('blocks')])
             ->firstOrFail();
+
+        // Blokir profil user yang disuspend
+        if ($user->is_suspended) abort(404);
+
         $page = $user->pages->first();
         return view('public.profile', compact('user', 'page'));
     }
@@ -352,6 +306,10 @@ Route::get('/{username}', function ($username) {
     $user = User::where('username', $username)
         ->with(['pages' => fn ($q) => $q->where('is_active', 1)->with('blocks')])
         ->firstOrFail();
+
+    // Blokir profil user yang disuspend
+    if ($user->is_suspended) abort(404);
+
     $page = $user->pages->first();
     return view('public.profile', compact('user', 'page'));
 })->where('username', '[a-zA-Z0-9_]+')

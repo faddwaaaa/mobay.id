@@ -19,14 +19,14 @@
         default    => ucfirst($report->status),
     };
     $reasonLabels = [
-        'spam'          => ['label' => 'Spam',                 'bg' => '#fff7ed', 'color' => '#c2410c'],
-        'scam'          => ['label' => 'Penipuan / Scam',      'bg' => '#fee2e2', 'color' => '#b91c1c'],
-        'hate_speech'   => ['label' => 'Ujaran Kebencian',     'bg' => '#f3e8ff', 'color' => '#7e22ce'],
-        'adult_content' => ['label' => 'Konten Dewasa',        'bg' => '#fce7f3', 'color' => '#be185d'],
-        'violence'      => ['label' => 'Kekerasan / Ancaman',  'bg' => '#fee2e2', 'color' => '#991b1b'],
-        'fake_account'  => ['label' => 'Akun Palsu',           'bg' => '#fef9c3', 'color' => '#92400e'],
-        'copyright'     => ['label' => 'Pelanggaran Hak Cipta','bg' => '#eff3ff', 'color' => '#1d4ed8'],
-        'other'         => ['label' => 'Lainnya',              'bg' => '#f1f5f9', 'color' => '#475569'],
+        'spam'          => ['label' => 'Spam',                  'bg' => '#fff7ed', 'color' => '#c2410c'],
+        'scam'          => ['label' => 'Penipuan / Scam',       'bg' => '#fee2e2', 'color' => '#b91c1c'],
+        'hate_speech'   => ['label' => 'Ujaran Kebencian',      'bg' => '#f3e8ff', 'color' => '#7e22ce'],
+        'adult_content' => ['label' => 'Konten Dewasa',         'bg' => '#fce7f3', 'color' => '#be185d'],
+        'violence'      => ['label' => 'Kekerasan / Ancaman',   'bg' => '#fee2e2', 'color' => '#991b1b'],
+        'fake_account'  => ['label' => 'Akun Palsu',            'bg' => '#fef9c3', 'color' => '#92400e'],
+        'copyright'     => ['label' => 'Pelanggaran Hak Cipta', 'bg' => '#eff3ff', 'color' => '#1d4ed8'],
+        'other'         => ['label' => 'Lainnya',               'bg' => '#f1f5f9', 'color' => '#475569'],
     ];
     $r = $reasonLabels[$report->reason] ?? ['label' => $report->reason, 'bg' => '#f1f5f9', 'color' => '#475569'];
 
@@ -40,6 +40,16 @@
     };
     $pct = min(100, ($score / 40) * 100);
     $ip  = $report->reporter_ip ?? $report->ip_address ?? null;
+
+    // Ambil evidence_paths — bisa berupa string JSON atau array (tergantung cast model)
+    $evidencePaths = $report->evidence_paths;
+    if (is_string($evidencePaths) && !empty($evidencePaths)) {
+        $evidencePaths = json_decode($evidencePaths, true) ?? [];
+    }
+    if (!is_array($evidencePaths)) {
+        $evidencePaths = [];
+    }
+    $evidenceCount = count($evidencePaths);
 @endphp
 
 <style>
@@ -74,7 +84,6 @@
 .u-row        { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
 .u-av         { width: 38px; height: 38px; border-radius: 10px; background: var(--bg); border: 1.5px solid var(--line); display: flex; align-items: center; justify-content: center; flex-shrink: 0; overflow: hidden; }
 .u-av img     { width: 100%; height: 100%; object-fit: cover; }
-.u-av svg     { color: var(--ink4); }
 .u-name       { font-size: 13px; font-weight: 800; color: var(--ink); }
 .u-slug       { font-size: 11px; color: var(--ink3); font-family: var(--mono); }
 .u-stat       { display: flex; justify-content: space-between; align-items: center; padding: 7px 0; border-top: 1.5px solid var(--line); font-size: 12px; }
@@ -103,7 +112,7 @@
 .ev-thumb { display: block; aspect-ratio: 1; border-radius: 10px; overflow: hidden; border: 1.5px solid var(--line); background: var(--bg); transition: border-color .15s; }
 .ev-thumb:hover { border-color: var(--b400); }
 .ev-thumb img { width: 100%; height: 100%; object-fit: cover; }
-.ev-fb    { width: 100%; height: 100%; display: none; flex-direction: column; align-items: center; justify-content: center; gap: 6px; color: var(--ink4); font-size: 11px; }
+.ev-fb    { width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; color: var(--ink4); font-size: 11px; }
 .ev-label { text-align: center; font-size: 11px; color: var(--ink3); font-weight: 600; margin-top: 5px; }
 .ev-hover { position: absolute; inset: 0; border-radius: 10px; background: rgba(0,0,0,0); display: flex; align-items: center; justify-content: center; transition: background .15s; }
 .ev-item:hover .ev-hover { background: rgba(0,0,0,.2); }
@@ -119,7 +128,6 @@
 .page-sub { font-size: 11.5px; color: var(--ink3); font-weight: 600; margin-top: 3px; display: flex; align-items: center; gap: 5px; }
 .page-sub a { color: var(--ink3); text-decoration: none; }
 .page-sub a:hover { color: var(--b500); }
-.page-sub svg { color: var(--ink4); }
 </style>
 
 {{-- ── Header ── --}}
@@ -166,306 +174,373 @@
 {{-- ── Grid utama ── --}}
 <div class="rp-grid">
 
-    {{-- KOLOM KIRI --}}
-    <div>
+{{-- ═══════════════ KOLOM KIRI ═══════════════ --}}
+<div>
 
-        {{-- Informasi Laporan --}}
-        <div class="card" style="margin-bottom:14px;">
-            <div class="card-head">
-                <div>
-                    <div class="card-title">Informasi Laporan</div>
-                    <div class="card-sub" style="font-family:var(--mono);">{{ $report->ticket_code }}</div>
-                </div>
-                <span class="badge {{ $statusColor }}">{{ $statusLabel }}</span>
-            </div>
-
+    {{-- Informasi Laporan --}}
+    <div class="card" style="margin-bottom:14px;">
+        <div class="card-head">
             <div>
-                <div class="rp-row">
-                    <div class="rp-label">Kategori</div>
-                    <div class="rp-val">
-                        <span style="display:inline-block;padding:3px 10px;border-radius:6px;font-size:11px;font-weight:800;background:{{ $r['bg'] }};color:{{ $r['color'] }};">{{ $r['label'] }}</span>
-                    </div>
-                </div>
-
-                <div class="rp-row">
-                    <div class="rp-label">Deskripsi Pelapor</div>
-                    <div class="rp-val" style="align-items:flex-start;padding-top:14px;padding-bottom:14px;">
-                        @if($report->detail)
-                            <div class="rp-desc">{{ $report->detail }}</div>
-                        @else
-                            <span style="color:var(--ink4);font-style:italic;">Pelapor tidak mengisi deskripsi tambahan.</span>
-                        @endif
-                    </div>
-                </div>
-
-                <div class="rp-row">
-                    <div class="rp-label">URL Dilaporkan</div>
-                    <div class="rp-val" style="flex-direction:column;align-items:flex-start;">
-                        @if($report->page_url)
-                            <a href="{{ $report->page_url }}" target="_blank" style="display:inline-flex;align-items:flex-start;gap:4px;">
-                                <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="flex-shrink:0;margin-top:1px"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
-                                {{ $report->page_url }}
-                            </a>
-                            <span style="font-size:11px;color:var(--ink4);">Klik untuk membuka halaman yang dilaporkan di tab baru.</span>
-                        @else
-                            <span style="color:var(--ink4);">—</span>
-                        @endif
-                    </div>
-                </div>
-
-                <div class="rp-row">
-                    <div class="rp-label">IP Pelapor</div>
-                    <div class="rp-val">
-                        @if($ip)
-                            <code>{{ $ip }}</code>
-                            <a href="https://ipinfo.io/{{ $ip }}" target="_blank" style="font-size:11px;">Cek lokasi IP</a>
-                        @else
-                            <span style="color:var(--ink4);">—</span>
-                        @endif
-                    </div>
-                </div>
-
-                @if($report->user_agent)
-                <div class="rp-row">
-                    <div class="rp-label">Perangkat Pelapor</div>
-                    <div class="rp-val" style="word-break:break-all;font-size:11.5px;color:var(--ink3);">{{ $report->user_agent }}</div>
-                </div>
-                @endif
-
-                <div class="rp-row">
-                    <div class="rp-label">Waktu Laporan</div>
-                    <div class="rp-val">
-                        {{ $report->created_at->format('d M Y, H:i:s') }}
-                        <span style="font-size:11px;color:var(--ink4);">({{ $report->created_at->diffForHumans() }})</span>
-                    </div>
-                </div>
-
-                @if($report->reviewer)
-                <div class="rp-row">
-                    <div class="rp-label">Ditinjau Oleh</div>
-                    <div class="rp-val">
-                        {{ $report->reviewer->name }}
-                        @if($report->reviewed_at)
-                            <span style="color:var(--ink4);font-size:11.5px;">— {{ $report->reviewed_at->format('d M Y, H:i') }}</span>
-                        @endif
-                    </div>
-                </div>
-                @endif
-
-                @if($report->moderator_note)
-                <div class="rp-row">
-                    <div class="rp-label">Catatan Moderator</div>
-                    <div class="rp-val" style="align-items:flex-start;padding-top:14px;padding-bottom:14px;">
-                        <div class="rp-note-box">"{{ $report->moderator_note }}"</div>
-                    </div>
-                </div>
-                @endif
+                <div class="card-title">Informasi Laporan</div>
+                <div class="card-sub" style="font-family:var(--mono);">{{ $report->ticket_code }}</div>
             </div>
+            <span class="badge {{ $statusColor }}">{{ $statusLabel }}</span>
         </div>
 
-        {{-- Bukti Pendukung --}}
-        <div class="card">
-            <div class="card-head">
-                <div>
-                    <div class="card-title">Bukti Pendukung</div>
-                    <div class="card-sub">
-                        @if($report->evidence_paths && count($report->evidence_paths) > 0)
-                            {{ count($report->evidence_paths) }} file dilampirkan oleh pelapor
-                        @else
-                            Tidak ada bukti yang dilampirkan
-                        @endif
-                    </div>
+        <div>
+            <div class="rp-row">
+                <div class="rp-label">Kategori</div>
+                <div class="rp-val">
+                    <span style="display:inline-block;padding:3px 10px;border-radius:6px;font-size:11px;font-weight:800;background:{{ $r['bg'] }};color:{{ $r['color'] }};">{{ $r['label'] }}</span>
                 </div>
-                @if($report->evidence_paths && count($report->evidence_paths) > 0)
-                <a href="{{ route('admin.reports.evidence', $report) }}" class="card-action">
-                    Unduh Semua
-                </a>
-                @endif
             </div>
 
-            <div style="padding:16px;">
-                @if($report->evidence_paths && count($report->evidence_paths) > 0)
-                <div class="ev-grid">
-                    @foreach($report->evidence_paths as $idx => $path)
-                    <div class="ev-item">
-                        <a href="{{ route('admin.reports.evidence.file', [$report, $idx]) }}" target="_blank" class="ev-thumb">
-                            <img src="{{ route('admin.reports.evidence.file', [$report, $idx]) }}"
-                                 alt="Bukti {{ $idx + 1 }}"
-                                 onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
-                            <div class="ev-fb">
-                                <svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                                File {{ $idx + 1 }}
-                            </div>
+            <div class="rp-row">
+                <div class="rp-label">Deskripsi Pelapor</div>
+                <div class="rp-val" style="align-items:flex-start;padding-top:14px;padding-bottom:14px;">
+                    @if($report->detail)
+                        <div class="rp-desc">{{ $report->detail }}</div>
+                    @else
+                        <span style="color:var(--ink4);font-style:italic;">Pelapor tidak mengisi deskripsi tambahan.</span>
+                    @endif
+                </div>
+            </div>
+
+            <div class="rp-row">
+                <div class="rp-label">URL Dilaporkan</div>
+                <div class="rp-val" style="flex-direction:column;align-items:flex-start;">
+                    @if($report->page_url)
+                        <a href="{{ $report->page_url }}" target="_blank" style="display:inline-flex;align-items:flex-start;gap:4px;">
+                            <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="flex-shrink:0;margin-top:1px"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                            {{ $report->page_url }}
                         </a>
-                        <div class="ev-hover">
-                            <a href="{{ route('admin.reports.evidence.file', [$report, $idx]) }}" target="_blank" class="ev-open">
-                                <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
-                            </a>
-                        </div>
-                        <div class="ev-label">Bukti {{ $idx + 1 }}</div>
-                    </div>
-                    @endforeach
+                    @else
+                        <span style="color:var(--ink4);">—</span>
+                    @endif
                 </div>
-                @else
-                <div style="text-align:center;padding:30px 0;">
-                    <svg width="36" height="36" fill="none" viewBox="0 0 24 24" stroke="var(--line)" stroke-width="1.5" style="margin:0 auto 10px;display:block;"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                    <div style="font-size:13px;font-weight:700;color:var(--ink4);">Tidak ada bukti dilampirkan</div>
-                    <div style="font-size:11.5px;color:var(--ink4);margin-top:4px;">Pelapor tidak menyertakan tangkapan layar.</div>
-                </div>
-                @endif
             </div>
-        </div>
 
+            <div class="rp-row">
+                <div class="rp-label">IP Pelapor</div>
+                <div class="rp-val">
+                    @if($ip)
+                        <code>{{ $ip }}</code>
+                        <a href="https://ipinfo.io/{{ $ip }}" target="_blank" style="font-size:11px;">Cek lokasi IP</a>
+                    @else
+                        <span style="color:var(--ink4);">—</span>
+                    @endif
+                </div>
+            </div>
+
+            @if($report->user_agent)
+            <div class="rp-row">
+                <div class="rp-label">Perangkat Pelapor</div>
+                <div class="rp-val" style="word-break:break-all;font-size:11.5px;color:var(--ink3);">{{ $report->user_agent }}</div>
+            </div>
+            @endif
+
+            <div class="rp-row">
+                <div class="rp-label">Waktu Laporan</div>
+                <div class="rp-val">
+                    {{ $report->created_at->format('d M Y, H:i:s') }}
+                    <span style="font-size:11px;color:var(--ink4);">({{ $report->created_at->diffForHumans() }})</span>
+                </div>
+            </div>
+
+            @if($report->reviewer)
+            <div class="rp-row">
+                <div class="rp-label">Ditinjau Oleh</div>
+                <div class="rp-val">
+                    {{ $report->reviewer->name }}
+                    @if($report->reviewed_at)
+                        <span style="color:var(--ink4);font-size:11.5px;">— {{ $report->reviewed_at->format('d M Y, H:i') }}</span>
+                    @endif
+                </div>
+            </div>
+            @endif
+
+            @if($report->moderator_note)
+            <div class="rp-row">
+                <div class="rp-label">Catatan Moderator</div>
+                <div class="rp-val" style="align-items:flex-start;padding-top:14px;padding-bottom:14px;">
+                    <div class="rp-note-box">"{{ $report->moderator_note }}"</div>
+                </div>
+            </div>
+            @endif
+        </div>
     </div>
 
-    {{-- KOLOM KANAN --}}
-    <div>
-
-        {{-- Tindakan Moderasi --}}
-        <div class="side-card">
-            <div class="side-head">Tindakan Moderasi</div>
-            <div class="side-body">
-
-                @if($report->status === 'pending')
-
-                    <form method="POST" action="{{ route('admin.reports.updateStatus', $report) }}" style="margin-bottom:8px;">
-                        @csrf @method('PATCH')
-                        <input type="hidden" name="status" value="reviewed">
-                        <button type="submit" class="act-btn act-green">
-                            <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
-                            Tandai Sudah Ditinjau
-                        </button>
-                    </form>
-
-                    <form method="POST" action="{{ route('admin.reports.updateStatus', $report) }}" style="margin-bottom:8px;">
-                        @csrf @method('PATCH')
-                        <input type="hidden" name="status" value="rejected">
-                        <button type="submit" class="act-btn act-red">
-                            <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
-                            Tolak — Laporan Tidak Valid
-                        </button>
-                    </form>
-
-                    <hr class="divider">
-
-                    <button onclick="toggleNote()" class="act-btn act-ghost" style="margin-bottom:0;">
-                        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-                        Tambah Catatan Internal
-                    </button>
-                    <div id="noteBox" style="display:none;margin-top:10px;">
-                        <textarea id="noteInput" class="note-area" rows="3" maxlength="500"
-                            placeholder="Catatan internal — tidak terlihat oleh pelapor atau akun yang dilaporkan...">{{ $report->moderator_note }}</textarea>
-                        <button type="button" onclick="saveNote()" class="act-btn act-blue" style="margin-bottom:0;">
-                            Simpan Catatan
-                        </button>
-                    </div>
-
-                @else
-
-                    <div class="status-done {{ $report->status === 'reviewed' ? 'sd-ok' : 'sd-off' }}">
-                        <div class="sd-ico {{ $report->status === 'reviewed' ? 'ico-ok' : 'ico-off' }}">
-                            @if($report->status === 'reviewed')
-                                <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
-                            @else
-                                <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
-                            @endif
-                        </div>
-                        <div>
-                            <div class="sd-title">{{ $report->status === 'reviewed' ? 'Laporan Sudah Ditinjau' : 'Laporan Ditolak' }}</div>
-                            <div class="sd-sub">{{ $report->reviewed_at?->format('d M Y, H:i') }}</div>
-                        </div>
-                    </div>
-
-                    @if($report->moderator_note)
-                    <div class="rp-note-box" style="margin-bottom:10px;">"{{ $report->moderator_note }}"</div>
+    {{-- Bukti Pendukung --}}
+    <div class="card">
+        <div class="card-head">
+            <div>
+                <div class="card-title">Bukti Pendukung</div>
+                <div class="card-sub">
+                    @if($evidenceCount > 0)
+                        {{ $evidenceCount }} file dilampirkan oleh pelapor
+                    @else
+                        Tidak ada bukti yang dilampirkan
                     @endif
-
-                    <button onclick="toggleNote()" class="act-btn act-ghost">
-                        {{ $report->moderator_note ? 'Edit Catatan' : 'Tambah Catatan' }}
-                    </button>
-                    <div id="noteBox" style="display:none;margin-top:10px;">
-                        <textarea id="noteInput" class="note-area" rows="3" maxlength="500"
-                            placeholder="Catatan internal...">{{ $report->moderator_note }}</textarea>
-                        <button type="button" onclick="saveNote()" class="act-btn act-blue" style="margin-bottom:8px;">
-                            Simpan Catatan
-                        </button>
-                    </div>
-
-                    <hr class="divider">
-
-                    <form method="POST" action="{{ route('admin.reports.updateStatus', $report) }}">
-                        @csrf @method('PATCH')
-                        <input type="hidden" name="status" value="pending">
-                        <button type="submit" class="act-btn act-dashed" style="margin-bottom:0;">
-                            Kembalikan ke Pending
-                        </button>
-                    </form>
-
-                @endif
+                </div>
             </div>
+            @if($evidenceCount > 0)
+            <a href="{{ route('admin.reports.evidence', $report) }}" class="card-action">
+                Unduh Semua
+            </a>
+            @endif
         </div>
 
-        {{-- Akun yang Dilaporkan --}}
-        <div class="side-card">
-            <div class="side-head">Akun Dilaporkan</div>
-            <div class="side-body">
-                <div class="u-row">
-                    <div class="u-av">
-                        @if($report->reportedUser?->avatar)
-                            <img src="{{ asset('storage/' . $report->reportedUser->avatar) }}" alt="">
+        <div style="padding:16px;">
+            @if($evidenceCount > 0)
+            <div class="ev-grid">
+                @foreach($evidencePaths as $idx => $path)
+                @php
+                    $ext      = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+                    $isImage  = in_array($ext, ['jpg','jpeg','png','webp','gif']);
+                    $fileUrl  = route('admin.reports.evidence.file', [$report, $idx]);
+                @endphp
+                <div class="ev-item">
+                    <a href="{{ $fileUrl }}" target="_blank" class="ev-thumb">
+                        @if($isImage)
+                            <img src="{{ $fileUrl }}"
+                                 alt="Bukti {{ $idx + 1 }}"
+                                 onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+                            <div class="ev-fb" style="display:none;">
+                                <svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                Buka File
+                            </div>
                         @else
-                            <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                            {{-- Non-gambar: PDF, video, dll --}}
+                            <div class="ev-fb">
+                                @if($ext === 'pdf')
+                                    <svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                                @elseif(in_array($ext, ['mp4','mov']))
+                                    <svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10l4.553-2.069A1 1 0 0121 8.87v6.26a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                                @else
+                                    <svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg>
+                                @endif
+                                <span>{{ strtoupper($ext) }}</span>
+                            </div>
+                        @endif
+                    </a>
+                    <div class="ev-hover">
+                        <a href="{{ $fileUrl }}" target="_blank" class="ev-open">
+                            <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                        </a>
+                    </div>
+                    <div class="ev-label">Bukti {{ $idx + 1 }} &middot; {{ strtoupper($ext) }}</div>
+                </div>
+                @endforeach
+            </div>
+            @else
+            <div style="text-align:center;padding:30px 0;">
+                <svg width="36" height="36" fill="none" viewBox="0 0 24 24" stroke="var(--line)" stroke-width="1.5" style="margin:0 auto 10px;display:block;"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                <div style="font-size:13px;font-weight:700;color:var(--ink4);">Tidak ada bukti dilampirkan</div>
+                <div style="font-size:11.5px;color:var(--ink4);margin-top:4px;">Pelapor tidak menyertakan tangkapan layar atau file pendukung.</div>
+            </div>
+            @endif
+        </div>
+    </div>
+
+</div>
+
+{{-- ═══════════════ KOLOM KANAN ═══════════════ --}}
+<div>
+
+    {{-- Tindakan Moderasi --}}
+    <div class="side-card">
+        <div class="side-head">Tindakan Moderasi</div>
+        <div class="side-body">
+
+            @if($report->status === 'pending')
+
+                <form method="POST" action="{{ route('admin.reports.updateStatus', $report) }}" style="margin-bottom:8px;">
+                    @csrf @method('PATCH')
+                    <input type="hidden" name="status" value="reviewed">
+                    <button type="submit" class="act-btn act-green">
+                        <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                        Tandai Sudah Ditinjau
+                    </button>
+                </form>
+
+                <form method="POST" action="{{ route('admin.reports.updateStatus', $report) }}" style="margin-bottom:8px;">
+                    @csrf @method('PATCH')
+                    <input type="hidden" name="status" value="rejected">
+                    <button type="submit" class="act-btn act-red">
+                        <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                        Tolak — Laporan Tidak Valid
+                    </button>
+                </form>
+
+                <hr class="divider">
+
+                <button onclick="toggleNote()" class="act-btn act-ghost" style="margin-bottom:0;">
+                    <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                    Tambah Catatan Internal
+                </button>
+                <div id="noteBox" style="display:none;margin-top:10px;">
+                    <textarea id="noteInput" class="note-area" rows="3" maxlength="500"
+                        placeholder="Catatan internal — tidak terlihat pelapor...">{{ $report->moderator_note }}</textarea>
+                    <button type="button" onclick="saveNote()" class="act-btn act-blue" style="margin-bottom:0;">
+                        Simpan Catatan
+                    </button>
+                </div>
+
+            @else
+
+                <div class="status-done {{ $report->status === 'reviewed' ? 'sd-ok' : 'sd-off' }}">
+                    <div class="sd-ico {{ $report->status === 'reviewed' ? 'ico-ok' : 'ico-off' }}">
+                        @if($report->status === 'reviewed')
+                            <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                        @else
+                            <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
                         @endif
                     </div>
                     <div>
-                        <div class="u-name">{{ $report->reportedUser?->name ?? '–' }}</div>
-                        <div class="u-slug">@{{ $report->reportedUser?->username ?? '–' }}</div>
+                        <div class="sd-title">{{ $report->status === 'reviewed' ? 'Laporan Sudah Ditinjau' : 'Laporan Ditolak' }}</div>
+                        <div class="sd-sub">{{ $report->reviewed_at?->format('d M Y, H:i') }}</div>
                     </div>
                 </div>
 
-                <div class="u-stat">
-                    <span class="u-stat-label">Email</span>
-                    <span class="u-stat-val" style="font-size:11.5px;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ $report->reportedUser?->email ?? '–' }}</span>
-                </div>
-                <div class="u-stat">
-                    <span class="u-stat-label">Total laporan diterima</span>
-                    <span class="u-stat-val {{ $reportedUserTotalReports >= 5 ? 'danger' : '' }}">{{ $reportedUserTotalReports }}x</span>
-                </div>
-                <div class="u-stat">
-                    <span class="u-stat-label">Bergabung sejak</span>
-                    <span class="u-stat-val">{{ $report->reportedUser?->created_at?->format('M Y') ?? '–' }}</span>
+                @if($report->moderator_note)
+                <div class="rp-note-box" style="margin-bottom:10px;">"{{ $report->moderator_note }}"</div>
+                @endif
+
+                <button onclick="toggleNote()" class="act-btn act-ghost">
+                    {{ $report->moderator_note ? 'Edit Catatan' : 'Tambah Catatan' }}
+                </button>
+                <div id="noteBox" style="display:none;margin-top:10px;">
+                    <textarea id="noteInput" class="note-area" rows="3" maxlength="500"
+                        placeholder="Catatan internal...">{{ $report->moderator_note }}</textarea>
+                    <button type="button" onclick="saveNote()" class="act-btn act-blue" style="margin-bottom:8px;">
+                        Simpan Catatan
+                    </button>
                 </div>
 
-                <div style="margin-top:14px;display:flex;flex-direction:column;gap:7px;">
-                    @if($report->reportedUser)
-                    <a href="{{ url('/' . $report->reportedUser->username) }}" target="_blank" class="act-btn btn btn-primary" style="margin-bottom:0;font-size:12px;padding:8px 12px;">
-                        <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
-                        Buka Profil Publik
-                    </a>
-                    @endif
-                    <a href="{{ route('admin.reports.index', ['reported_user' => $report->reported_user_id]) }}" class="act-btn act-ghost" style="margin-bottom:0;font-size:12px;padding:8px 12px;">
-                        Semua Laporan Akun Ini
-                    </a>
-                </div>
-            </div>
+                <hr class="divider">
+
+                <form method="POST" action="{{ route('admin.reports.updateStatus', $report) }}">
+                    @csrf @method('PATCH')
+                    <input type="hidden" name="status" value="pending">
+                    <button type="submit" class="act-btn act-dashed" style="margin-bottom:0;">
+                        Kembalikan ke Pending
+                    </button>
+                </form>
+
+            @endif
         </div>
-
-        {{-- Skor Risiko --}}
-        <div class="side-card">
-            <div class="side-head">Skor Risiko Akun</div>
-            <div class="side-body">
-                <div style="display:flex;align-items:center;justify-content:space-between;">
-                    <span class="risk-score" style="color:{{ $riskColor['text'] }};">{{ $score }}</span>
-                    <span style="padding:4px 10px;border-radius:7px;font-size:11px;font-weight:800;background:{{ $riskColor['bg'] }};color:{{ $riskColor['text'] }};">{{ $level }}</span>
-                </div>
-                <div class="risk-bar-wrap">
-                    <div class="risk-bar" style="width:{{ $pct }}%;background:{{ $riskColor['bar'] }};"></div>
-                </div>
-                <div class="risk-sub">Bobot kategori &times; jumlah laporan akun (maks. 40)</div>
-            </div>
-        </div>
-
     </div>
+
+    {{-- Akun yang Dilaporkan --}}
+    <div class="side-card">
+        <div class="side-head">Akun Dilaporkan</div>
+        <div class="side-body">
+            <div class="u-row">
+                <div class="u-av">
+                    @if($report->reportedUser?->avatar)
+                        <img src="{{ asset('storage/' . $report->reportedUser->avatar) }}" alt="">
+                    @else
+                        <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                    @endif
+                </div>
+                <div>
+                    <div class="u-name">{{ $report->reportedUser?->name ?? '–' }}</div>
+                    <div class="u-slug">@{{ $report->reportedUser?->username ?? '–' }}</div>
+                </div>
+            </div>
+
+            <div class="u-stat">
+                <span class="u-stat-label">Email</span>
+                <span class="u-stat-val" style="font-size:11.5px;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ $report->reportedUser?->email ?? '–' }}</span>
+            </div>
+            <div class="u-stat">
+                <span class="u-stat-label">Total laporan diterima</span>
+                <span class="u-stat-val {{ $reportedUserTotalReports >= 5 ? 'danger' : '' }}">{{ $reportedUserTotalReports }}x</span>
+            </div>
+            <div class="u-stat">
+                <span class="u-stat-label">Bergabung sejak</span>
+                <span class="u-stat-val">{{ $report->reportedUser?->created_at?->format('M Y') ?? '–' }}</span>
+            </div>
+
+            <div style="margin-top:14px;display:flex;flex-direction:column;gap:7px;">
+                @if($report->reportedUser)
+                <a href="{{ url('/' . $report->reportedUser->username) }}" target="_blank"
+                   class="act-btn act-ghost" style="margin-bottom:0;font-size:12px;padding:8px 12px;">
+                    <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                    Buka Profil Publik
+                </a>
+                @endif
+                <a href="{{ route('admin.reports.index', ['reported_user' => $report->reported_user_id]) }}"
+                   class="act-btn act-ghost" style="margin-bottom:0;font-size:12px;padding:8px 12px;">
+                    Semua Laporan Akun Ini
+                </a>
+            </div>
+
+            {{-- ── Suspend / Unsuspend ── --}}
+            @if($report->reportedUser)
+            <hr style="border:none;border-top:1.5px solid var(--line);margin:12px 0;">
+
+            @if($report->reportedUser->is_suspended)
+                <div style="background:#fef9c3;border:1.5px solid #fde68a;border-radius:10px;padding:10px 12px;margin-bottom:10px;font-size:12px;font-weight:700;color:#92400e;display:flex;align-items:center;gap:7px;">
+                    <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="#d97706" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                    Akun ini sedang ditangguhkan
+                </div>
+                <form method="POST" action="{{ route('admin.users.unsuspend', $report->reportedUser) }}">
+                    @csrf
+                    <input type="hidden" name="report_id"   value="{{ $report->id }}">
+                    <input type="hidden" name="redirect_to" value="report">
+                    <button type="submit" class="act-btn act-ghost" style="margin-bottom:0;color:#16a34a;border-color:#bbf7d0;">
+                        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M8 11V7a4 4 0 018 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z"/></svg>
+                        Cabut Penangguhan
+                    </button>
+                </form>
+            @else
+                <button onclick="toggleSuspendForm()" class="act-btn" style="background:#fee2e2;color:#b91c1c;border:1.5px solid #fecaca;margin-bottom:0;">
+                    <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                    Tangguhkan Akun Ini
+                </button>
+                <div id="suspendForm" style="display:none;margin-top:10px;">
+                    <div style="background:#fee2e2;border:1.5px solid #fecaca;border-radius:10px;padding:10px 12px;margin-bottom:10px;">
+                        <p style="font-size:11.5px;font-weight:800;color:#b91c1c;margin-bottom:4px;">Konfirmasi Penangguhan</p>
+                        <p style="font-size:11px;color:#ef4444;line-height:1.5;">Akun langsung tidak bisa diakses. Profil publik dan toko tersembunyi. Dapat dicabut kapan saja.</p>
+                    </div>
+                    <form method="POST" action="{{ route('admin.users.suspend', $report->reportedUser) }}">
+                        @csrf
+                        <input type="hidden" name="report_id"   value="{{ $report->id }}">
+                        <input type="hidden" name="redirect_to" value="report">
+                        <textarea name="reason" rows="2" required maxlength="500"
+                            placeholder="Alasan penangguhan (wajib)..."
+                            style="width:100%;border:1.5px solid #fecaca;border-radius:8px;padding:8px 10px;font-family:var(--font);font-size:12px;color:var(--ink);background:#fff;outline:none;resize:none;margin-bottom:8px;display:block;"></textarea>
+                        <button type="submit" class="act-btn" style="background:#b91c1c;color:white;margin-bottom:0;">
+                            Konfirmasi — Tangguhkan Sekarang
+                        </button>
+                    </form>
+                    <button onclick="toggleSuspendForm()" style="background:none;border:none;font-size:11.5px;color:var(--ink3);cursor:pointer;margin-top:8px;display:block;width:100%;text-align:center;">
+                        Batal
+                    </button>
+                </div>
+            @endif
+            @endif
+
+        </div>
+    </div>
+
+    {{-- Skor Risiko --}}
+    <div class="side-card">
+        <div class="side-head">Skor Risiko Akun</div>
+        <div class="side-body">
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+                <span class="risk-score" style="color:{{ $riskColor['text'] }};">{{ $score }}</span>
+                <span style="padding:4px 10px;border-radius:7px;font-size:11px;font-weight:800;background:{{ $riskColor['bg'] }};color:{{ $riskColor['text'] }};">{{ $level }}</span>
+            </div>
+            <div class="risk-bar-wrap">
+                <div class="risk-bar" style="width:{{ $pct }}%;background:{{ $riskColor['bar'] }};"></div>
+            </div>
+            <div class="risk-sub">Bobot kategori &times; jumlah laporan akun (maks. 40)</div>
+        </div>
+    </div>
+
+</div>
 </div>
 
 <script>
@@ -503,6 +578,10 @@ async function saveNote() {
         btn.disabled    = false;
         btn.textContent = 'Simpan Catatan';
     }
+}
+function toggleSuspendForm() {
+    const f = document.getElementById('suspendForm');
+    f.style.display = f.style.display === 'none' ? 'block' : 'none';
 }
 </script>
 
