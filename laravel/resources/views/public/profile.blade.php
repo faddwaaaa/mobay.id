@@ -596,8 +596,10 @@
                         </div>
                     @endif
                     <div class="profile-name">{{ $user->name }}</div>
-                    <div class="profile-username">@{{ $user->username }}</div>
-                    @if($user->bio)<div class="profile-bio">{{ $user->bio }}</div>@endif
+                    <div class="profile-username">{{ '@' . $user->username }}</div>
+                    @if($user->bio)
+                        <div class="profile-bio">{{ $user->bio }}</div>
+                    @endif
                 </div>
 
                 @if($userPage->blocks && $userPage->blocks->count() > 0)

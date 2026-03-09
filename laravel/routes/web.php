@@ -28,7 +28,8 @@ use App\Http\Controllers\{
     RajaOngkirController,
     Admin\ProfileReportController,
     PublicProfileController,
-    PublicProfileReportController
+    PublicProfileReportController,
+    DigitalOrderController
 };
 
 /*
@@ -66,7 +67,7 @@ Route::get('/suspended', function () {
 
 /*
 |--------------------------------------------------------------------------
-| CHECKOUT — HARUS DI LUAR AUTH & DI ATAS PUBLIC PROFILE
+| CHECKOUT & DIGITAL PRODUCT — HARUS DI LUAR AUTH & DI ATAS SEMUA WILDCARD
 |--------------------------------------------------------------------------
 */
 Route::get('/checkout/success', [CheckoutController::class, 'success'])->name('checkout.success');
@@ -77,7 +78,20 @@ Route::get('/checkout/{productId}', [CheckoutController::class, 'show'])->name('
 Route::post('/checkout/process', [CheckoutController::class, 'process'])->name('checkout.process');
 Route::post('/midtrans/webhook', [CheckoutController::class, 'webhook'])->name('midtrans.webhook');
 
+// ✅ FIX: Dipindah ke sini — harus di luar auth & di atas wildcard
+Route::get('/payment/success/{orderCode}', [DigitalOrderController::class, 'paymentSuccess'])
+    ->name('payment.show');
 
+// ✅ FIX: Dipindah ke sini — pembeli tidak perlu login untuk download
+Route::match(['get', 'post'], '/download/{token}', [DigitalOrderController::class, 'verifyDownload'])
+    ->name('download.verify');
+
+
+/*
+|--------------------------------------------------------------------------
+| PAYMENT ACCOUNT
+|--------------------------------------------------------------------------
+*/
 Route::middleware(['auth', 'verified'])->prefix('payment')->name('payment.')->group(function () {
     Route::get('/accounts', [PaymentAccountController::class, 'index'])->name('accounts.index');
     Route::post('/accounts', [PaymentAccountController::class, 'store'])->name('accounts.store');
@@ -163,6 +177,27 @@ Route::middleware(['auth'])->group(function () {
 Route::middleware('auth')->group(function () {
     Route::get('/pesanan', [OrderController::class, 'index'])->name('orders.index');
     Route::get('/pesanan/{id}', [OrderController::class, 'show'])->name('orders.show');
+});
+
+
+/*
+|--------------------------------------------------------------------------
+| ADMIN ROUTES
+|--------------------------------------------------------------------------
+*/
+Route::prefix('admin')->middleware(['auth'])->group(function () {
+
+    Route::get('/dashboard', [App\Http\Controllers\Admin\DashboardController::class, 'index'])
+        ->name('admin.dashboard');
+
+    Route::get   ('/reports',                           [ProfileReportController::class, 'index'])       ->name('admin.reports.index');
+    Route::get   ('/reports/export',                    [ProfileReportController::class, 'exportCsv'])   ->name('admin.reports.export');
+    Route::get   ('/reports/{report}',                  [ProfileReportController::class, 'show'])         ->name('admin.reports.show');
+    Route::patch ('/reports/{report}/status',           [ProfileReportController::class, 'updateStatus'])->name('admin.reports.updateStatus');
+    Route::patch ('/reports/{report}/note',             [ProfileReportController::class, 'saveNote'])    ->name('admin.reports.saveNote');
+    Route::get   ('/reports/{report}/evidence',         [ProfileReportController::class, 'viewEvidence'])->name('admin.reports.evidence');
+    Route::get   ('/reports/{report}/evidence/{index}', [ProfileReportController::class, 'evidenceFile'])->name('admin.reports.evidence.file');
+
 });
 
 

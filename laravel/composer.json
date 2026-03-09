@@ -14,6 +14,7 @@
         "laravel/tinker": "^2.10.1",
         "laravel/ui": "^4.6",
         "midtrans/midtrans-php": "^2.6",
+        "resend/resend-laravel": "^1.3",
         "simplesoftwareio/simple-qrcode": "^4.2"
     },
     "require-dev": {
