@@ -25,7 +25,10 @@ use App\Http\Controllers\{
     PaymentAccountController,
     SearchController,
     OrderController,
-    RajaOngkirController
+    RajaOngkirController,
+    Admin\ProfileReportController,
+    PublicProfileController,
+    PublicProfileReportController
 };
 
 /*
@@ -63,22 +66,12 @@ Route::post('/midtrans/webhook', [CheckoutController::class, 'webhook'])->name('
 
 
 Route::middleware(['auth', 'verified'])->prefix('payment')->name('payment.')->group(function () {
-
-    Route::get('/accounts', [PaymentAccountController::class, 'index'])
-        ->name('accounts.index');
-
-    Route::post('/accounts', [PaymentAccountController::class, 'store'])
-        ->name('accounts.store');
-
-    Route::patch('/accounts/{paymentAccount}/default', [PaymentAccountController::class, 'setDefault'])
-        ->name('accounts.default');
-
-    Route::delete('/accounts/{paymentAccount}', [PaymentAccountController::class, 'destroy'])
-        ->name('accounts.destroy');
-
-    Route::post('/accounts/verify', [PaymentAccountController::class, 'verifyAccount'])
-        ->name('accounts.verify');
-
+    Route::get('/accounts', [PaymentAccountController::class, 'index'])->name('accounts.index');
+    Route::post('/accounts', [PaymentAccountController::class, 'store'])->name('accounts.store');
+    Route::patch('/accounts/{paymentAccount}/default', [PaymentAccountController::class, 'setDefault'])->name('accounts.default');
+    Route::delete('/accounts/{paymentAccount}', [PaymentAccountController::class, 'destroy'])->name('accounts.destroy');
+    Route::post('/accounts/verify', [PaymentAccountController::class, 'verifyAccount'])->name('accounts.verify');
+    Route::post('/setup-pin', [PaymentAccountController::class, 'setupPin'])->name('accounts.setup-pin');
 });
 
 
@@ -93,8 +86,7 @@ Route::prefix('api')->group(function () {
     Route::post('/ongkir/cost', [RajaOngkirController::class, 'cost']);
 
     // Midtrans callback
-    Route::post('/callback/midtrans', [CallbackController::class, 'handleMidtransCallback'])
-        ->name('midtrans.callback');
+    Route::post('/callback/midtrans', [CallbackController::class, 'handleMidtransCallback'])->name('midtrans.callback');
 
     // Transaksi
     Route::post('/topup', [TransactionController::class, 'createTopUp']);
@@ -102,15 +94,16 @@ Route::prefix('api')->group(function () {
     Route::get('/transactions', [TransactionController::class, 'getTransactionHistory']);
     Route::get('/withdrawals', [TransactionController::class, 'getWithdrawalHistory']);
 
-    // Ambil data produk untuk render kartu
+    // Produk
     Route::get('/product/{id}/data', [ProductController::class, 'apiShow']);
     Route::get('/product/{id}', [ProductController::class, 'apiShow']);
-
-    // Catat klik produk
     Route::post('/product/{id}/view', [ProductController::class, 'trackView']);
 
+    // Batch produk (untuk render skeleton di profil publik)
+    Route::get('/products/batch', [ProductController::class, 'apiBatch']);
+
     // Catat kunjungan halaman profil publik
-    Route::post('/profile/{username}/view', [App\Http\Controllers\PublicProfileController::class, 'trackProfileView']);
+    Route::post('/profile/{username}/view', [PublicProfileController::class, 'trackProfileView']);
 
     // Cart
     Route::get('/cart',          [CartController::class, 'index']);
@@ -119,36 +112,19 @@ Route::prefix('api')->group(function () {
     Route::delete('/cart/clear', [CartController::class, 'clear']);
     Route::delete('/cart/{id}',  [CartController::class, 'remove']);
 
-    // ============================================
-    // BLOCKS API — untuk AJAX fetch saat pindah halaman
-    // ============================================
+    // Blocks (AJAX fetch saat pindah halaman)
     Route::get('/blocks', function (Request $request) {
         $pageId = $request->query('page_id');
-
         if (!$pageId) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Page ID required'
-            ], 400);
+            return response()->json(['success' => false, 'message' => 'Page ID required'], 400);
         }
-
         $page = \App\Models\Page::with('blocks')->find($pageId);
-
         if (!$page) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Page not found'
-            ], 404);
+            return response()->json(['success' => false, 'message' => 'Page not found'], 404);
         }
-
-        // Pastikan page milik user yang sedang login
         if ($page->user_id !== auth()->id()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Unauthorized'
-            ], 403);
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
         }
-
         $blocks = $page->blocks->sortBy('position')->map(function ($block) {
             return [
                 'id'         => $block->id,
@@ -158,15 +134,10 @@ Route::prefix('api')->group(function () {
                 'position'   => $block->position,
             ];
         })->values();
-
-        return response()->json([
-            'success'   => true,
-            'blocks'    => $blocks,
-            'pageTitle' => $page->title,
-        ]);
+        return response()->json(['success' => true, 'blocks' => $blocks, 'pageTitle' => $page->title]);
     })->middleware('auth')->name('api.blocks');
-
 });
+
 
 /*
 |--------------------------------------------------------------------------
@@ -179,35 +150,17 @@ Route::middleware('auth')->group(function () {
     Route::get('/riwayat/penarikan/{id}', [TransactionController::class, 'withdrawalDetail'])->name('transactions.withdrawal-detail');
 });
 
-Route::middleware(['auth', 'verified'])->prefix('payment')->name('payment.')->group(function () {
 
-    Route::get('/accounts', [PaymentAccountController::class, 'index'])
-        ->name('accounts.index');
-
-    Route::post('/accounts', [PaymentAccountController::class, 'store'])
-        ->name('accounts.store');
-
-    Route::patch('/accounts/{paymentAccount}/default', [PaymentAccountController::class, 'setDefault'])
-        ->name('accounts.default');
-
-    Route::delete('/accounts/{paymentAccount}', [PaymentAccountController::class, 'destroy'])
-        ->name('accounts.destroy');
-
-    Route::post('/accounts/verify', [PaymentAccountController::class, 'verifyAccount'])
-        ->name('accounts.verify');
-
-    Route::post('/setup-pin', [PaymentAccountController::class, 'setupPin'])
-        ->name('accounts.setup-pin');
-
-});
-
-
-use App\Http\Controllers\ShippingSettingsController;
-
+/*
+|--------------------------------------------------------------------------
+| SHIPPING SETTINGS
+|--------------------------------------------------------------------------
+*/
 Route::middleware(['auth'])->group(function () {
-    Route::get('/settings/shipping',  [ShippingSettingsController::class, 'index'])->name('settings.shipping');
-    Route::post('/settings/shipping', [ShippingSettingsController::class, 'save'])->name('settings.shipping.save');
+    Route::get('/settings/shipping', [App\Http\Controllers\ShippingSettingsController::class, 'index'])->name('settings.shipping');
+    Route::post('/settings/shipping', [App\Http\Controllers\ShippingSettingsController::class, 'save'])->name('settings.shipping.save');
 });
+
 
 /*
 |--------------------------------------------------------------------------
@@ -222,6 +175,29 @@ Route::middleware('auth')->group(function () {
 
 /*
 |--------------------------------------------------------------------------
+| ADMIN ROUTES
+|--------------------------------------------------------------------------
+*/
+Route::prefix('admin')->middleware(['auth'])->group(function () {
+
+    Route::get('/dashboard', [App\Http\Controllers\Admin\DashboardController::class, 'index'])
+        ->name('admin.dashboard');
+
+    // Urutan penting: /export dan /{report}/evidence/{index}
+    // harus di atas /{report} agar tidak tertangkap wildcard
+    Route::get   ('/reports',                           [ProfileReportController::class, 'index'])       ->name('admin.reports.index');
+    Route::get   ('/reports/export',                    [ProfileReportController::class, 'exportCsv'])   ->name('admin.reports.export');
+    Route::get   ('/reports/{report}',                  [ProfileReportController::class, 'show'])         ->name('admin.reports.show');
+    Route::patch ('/reports/{report}/status',           [ProfileReportController::class, 'updateStatus'])->name('admin.reports.updateStatus');
+    Route::patch ('/reports/{report}/note',             [ProfileReportController::class, 'saveNote'])    ->name('admin.reports.saveNote');
+    Route::get   ('/reports/{report}/evidence',         [ProfileReportController::class, 'viewEvidence'])->name('admin.reports.evidence');
+    Route::get   ('/reports/{report}/evidence/{index}', [ProfileReportController::class, 'evidenceFile'])->name('admin.reports.evidence.file');
+
+});
+
+
+/*
+|--------------------------------------------------------------------------
 | AUTHENTICATED ROUTES
 |--------------------------------------------------------------------------
 */
@@ -229,17 +205,15 @@ Route::middleware('auth')->group(function () {
 
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-    Route::get('/dashboard/chart-data', [DashboardController::class, 'chartData'])->middleware('auth');
+    Route::get('/dashboard/chart-data', [DashboardController::class, 'chartData']);
 
     // Analytics
     Route::prefix('analitik')->name('analitik.')->group(function () {
         Route::get('/', [AnalyticsController::class, 'index'])->name('index');
     });
 
-    // Premium (UI only)
-    Route::get('/premium', function () {
-        return view('premium.index');
-    })->name('premium.index');
+    // Premium
+    Route::get('/premium', fn () => view('premium.index'))->name('premium.index');
 
     // Profile
     Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
@@ -319,6 +293,16 @@ Route::middleware('auth')->group(function () {
 
 /*
 |--------------------------------------------------------------------------
+| LAPORAN PUBLIK
+|--------------------------------------------------------------------------
+*/
+Route::post('/{username}/report', [PublicProfileReportController::class, 'store'])
+    ->where('username', '[a-zA-Z0-9_]+')
+    ->name('public.profile.report');
+
+
+/*
+|--------------------------------------------------------------------------
 | PREVIEW (PUBLIC)
 |--------------------------------------------------------------------------
 */
@@ -326,9 +310,7 @@ Route::get('/preview/{username}', function ($username) {
     $user = User::where('username', $username)
         ->with(['pages' => fn ($q) => $q->with('blocks')])
         ->firstOrFail();
-
     $page = $user->pages->first();
-
     return view('preview', compact('user', 'page'));
 })->name('preview.profile');
 
@@ -338,13 +320,10 @@ Route::get('/preview/{username}', function ($username) {
 | LINK TRACKING /go/
 |--------------------------------------------------------------------------
 */
-Route::get('/go/{username}', [LinkRedirectController::class, 'redirect'])
-->name('link.redirect');
+Route::get('/go/{username}', [LinkRedirectController::class, 'redirect'])->name('link.redirect');
 
 Route::get('/search', [SearchController::class, 'search']);
-Route::post('/report/{username}', [App\Http\Controllers\PublicProfileReportController::class, 'store'])
-    ->where('username', '[a-zA-Z0-9_]+')
-    ->name('public.profile.report');
+
 
 /*
 |--------------------------------------------------------------------------
@@ -356,12 +335,9 @@ Route::get('/{short_code}', function ($short_code) {
         $user = \App\Models\User::where('username', $short_code)
             ->with(['pages' => fn ($q) => $q->where('is_active', 1)->with('blocks')])
             ->firstOrFail();
-
         $page = $user->pages->first();
-
         return view('public.profile', compact('user', 'page'));
     }
-
     return app(\App\Http\Controllers\LinkController::class)->redirect(request(), $short_code);
 })->where('short_code', '[a-zA-Z0-9]{6,8}')
   ->name('link.redirect.code');
@@ -376,9 +352,7 @@ Route::get('/{username}', function ($username) {
     $user = User::where('username', $username)
         ->with(['pages' => fn ($q) => $q->where('is_active', 1)->with('blocks')])
         ->firstOrFail();
-
     $page = $user->pages->first();
-
     return view('public.profile', compact('user', 'page'));
 })->where('username', '[a-zA-Z0-9_]+')
   ->name('public.profile');

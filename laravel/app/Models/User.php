@@ -104,6 +104,11 @@ public function paymentAccounts()
 {
     return $this->hasMany(PaymentAccount::class)->whereNull('deleted_at')->orderByDesc('is_default');
 }
+
+public function profileReports()
+{
+    return $this->hasMany(ProfileReport::class, 'reported_user_id');
+}
 }
 
 
