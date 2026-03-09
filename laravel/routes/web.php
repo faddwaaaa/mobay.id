@@ -131,6 +131,9 @@ Route::prefix('api')->group(function () {
     Route::delete('/cart/clear', [CartController::class, 'clear']);
     Route::delete('/cart/{id}',  [CartController::class, 'remove']);
 
+    Route::post('/report-digital-problem', [DigitalOrderController::class, 'reportProblem'])
+    ->name('digital.report');
+
     Route::get('/blocks', function (Request $request) {
         $pageId = $request->query('page_id');
         if (!$pageId) return response()->json(['success' => false, 'message' => 'Page ID required'], 400);

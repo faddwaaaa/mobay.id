@@ -14,7 +14,7 @@
     
     <nav>
         <div class="nav-container">
-            <a href="/" class="logo"><img src="../img/icon.png" alt="payou.id" srcset=""></a>
+            <a href="/" class="logo"><img src="../img/logo.png" alt="payou.id" srcset=""></a>
             <div class="nav-buttons" id="navButtons">
                 <a href="{{ route('service') }}" class="btn btn-secondary">Service</a>
                 <a href="{{ route('faq') }}" class="btn btn-secondary">FAQ</a>
@@ -278,7 +278,7 @@
     <footer class="footer">
         <div class="footer-wrapper">
             <a href="/" class="logo">
-                <img src="../img/icon.png" alt="payou.id">
+                <img src="../img/logo.png" alt="payou.id">
             </a>
             <div class="footer-links">
                 <a href="{{ route('about') }}">About Us</a>
