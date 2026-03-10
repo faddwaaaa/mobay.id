@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\Product;
 use App\Models\ProfileView;
 
+// FIX 1: <Admin>ProfileReportController dipisah jadi use sendiri (beda namespace)
 use App\Http\Controllers\{
     DashboardController,
     ProfileController,
@@ -26,8 +27,14 @@ use App\Http\Controllers\{
     SearchController,
     OrderController,
     RajaOngkirController,
-    AppearanceController
+    AppearanceController,
+    PublicProfileController,
+    PublicProfileReportController,
+    DigitalOrderController,
+    ShippingSettingsController
 };
+
+use App\Http\Controllers\Admin\ProfileReportController;
 
 Route::get('/', [LandingController::class, 'index'])->name('home');
 Route::get('/service', [LandingController::class, 'service'])->name('service');
@@ -37,6 +44,26 @@ Route::get('/contact', [LandingController::class, 'contact'])->name('contact');
 
 require __DIR__ . '/auth.php';
 
+
+
+/*
+|--------------------------------------------------------------------------
+| HALAMAN SUSPENDED — di luar auth agar bisa diakses user yang disuspend
+|--------------------------------------------------------------------------
+*/
+Route::get('/suspended', function () {
+    if (auth()->check() && !auth()->user()->is_suspended) {
+        return redirect()->route('dashboard');
+    }
+    return view('suspended');
+})->name('suspended');
+
+
+/*
+|--------------------------------------------------------------------------
+| CHECKOUT & DIGITAL PRODUCT — HARUS DI LUAR AUTH & DI ATAS SEMUA WILDCARD
+|--------------------------------------------------------------------------
+*/
 Route::get('/checkout/success', [CheckoutController::class, 'success'])->name('checkout.success');
 Route::get('/checkout/pending', [CheckoutController::class, 'pending'])->name('checkout.pending');
 Route::get('/checkout/checkpoint', [CheckoutController::class, 'checkpointShow'])->name('checkout.checkpoint.show');
@@ -45,18 +72,47 @@ Route::get('/checkout/{productId}', [CheckoutController::class, 'show'])->name('
 Route::post('/checkout/process', [CheckoutController::class, 'process'])->name('checkout.process');
 Route::post('/midtrans/webhook', [CheckoutController::class, 'webhook'])->name('midtrans.webhook');
 
+// ✅ FIX: Dipindah ke sini — harus di luar auth & di atas wildcard
+Route::get('/payment/success/{orderCode}', [DigitalOrderController::class, 'paymentSuccess'])
+    ->name('payment.show');
+
+// ✅ FIX: Dipindah ke sini — pembeli tidak perlu login untuk download
+Route::match(['get', 'post'], '/download/{token}', [DigitalOrderController::class, 'verifyDownload'])
+    ->name('download.verify');
+
+
+
+    // ================================================================
+// TAMBAHKAN KE routes/web.php
+// Di dalam group Route::middleware('auth')->group(...)
+// ================================================================
+
+// Banding — hanya user yang disuspend bisa POST
+Route::post('/appeal',        [\App\Http\Controllers\AppealController::class, 'store']) ->name('appeal.store');
+Route::get('/appeal/status',  [\App\Http\Controllers\AppealController::class, 'status'])->name('appeal.status');
+
+
+/*
+|--------------------------------------------------------------------------
+| PAYMENT ACCOUNT
+|--------------------------------------------------------------------------
+*/
 Route::middleware(['auth', 'verified'])->prefix('payment')->name('payment.')->group(function () {
     Route::get('/accounts', [PaymentAccountController::class, 'index'])->name('accounts.index');
     Route::post('/accounts', [PaymentAccountController::class, 'store'])->name('accounts.store');
     Route::patch('/accounts/{paymentAccount}/default', [PaymentAccountController::class, 'setDefault'])->name('accounts.default');
     Route::delete('/accounts/{paymentAccount}', [PaymentAccountController::class, 'destroy'])->name('accounts.destroy');
     Route::post('/accounts/verify', [PaymentAccountController::class, 'verifyAccount'])->name('accounts.verify');
+    Route::post('/setup-pin', [PaymentAccountController::class, 'setupPin'])->name('accounts.setup-pin');
 });
 
 Route::prefix('api')->group(function () {
     Route::get('/ongkir/cities', [RajaOngkirController::class, 'cities']);
     Route::post('/ongkir/cost', [RajaOngkirController::class, 'cost']);
     Route::post('/callback/midtrans', [CallbackController::class, 'handleMidtransCallback'])->name('midtrans.callback');
+
+    Route::post('/callback/midtrans', [CallbackController::class, 'handleMidtransCallback'])->name('midtrans.callback');
+
     Route::post('/topup', [TransactionController::class, 'createTopUp']);
     Route::post('/withdraw', [TransactionController::class, 'createWithdraw']);
     Route::get('/transactions', [TransactionController::class, 'getTransactionHistory']);
@@ -65,11 +121,23 @@ Route::prefix('api')->group(function () {
     Route::get('/product/{id}', [ProductController::class, 'apiShow']);
     Route::post('/product/{id}/view', [ProductController::class, 'trackView']);
     Route::post('/profile/{username}/view', [App\Http\Controllers\PublicProfileController::class, 'trackProfileView']);
+
+    Route::get('/product/{id}/data', [ProductController::class, 'apiShow']);
+    Route::get('/product/{id}', [ProductController::class, 'apiShow']);
+    Route::post('/product/{id}/view', [ProductController::class, 'trackView']);
+    Route::get('/products/batch', [ProductController::class, 'apiBatch']);
+
+    Route::post('/profile/{username}/view', [PublicProfileController::class, 'trackProfileView']);
+
+    // FIX 2: backslash nyasar di depan Route dihapus
     Route::get('/cart',          [CartController::class, 'index']);
     Route::post('/cart/add',     [CartController::class, 'add']);
     Route::patch('/cart/{id}',   [CartController::class, 'update']);
     Route::delete('/cart/clear', [CartController::class, 'clear']);
     Route::delete('/cart/{id}',  [CartController::class, 'remove']);
+
+    Route::post('/report-digital-problem', [DigitalOrderController::class, 'reportProblem'])
+    ->name('digital.report');
 
     Route::get('/blocks', function (Request $request) {
         $pageId = $request->query('page_id');
@@ -80,10 +148,27 @@ Route::prefix('api')->group(function () {
         $blocks = $page->blocks->sortBy('position')->map(function ($block) {
             return ['id' => $block->id, 'type' => $block->type, 'content' => $block->content, 'product_id' => $block->product_id ?? null, 'position' => $block->position];
         })->values();
+        $blocks = $page->blocks->sortBy('position')->map(fn ($b) => [
+            'id' => $b->id, 'type' => $b->type, 'content' => $b->content,
+            'product_id' => $b->product_id ?? null, 'position' => $b->position,
+        ])->values();
         return response()->json(['success' => true, 'blocks' => $blocks, 'pageTitle' => $page->title]);
     })->middleware('auth')->name('api.blocks');
+
+    // Polling updated_at untuk sync appearance di profil publik
+    Route::get('/profile/{username}/updated_at', function ($username) {
+        $user    = \App\Models\User::where('username', $username)->firstOrFail();
+        $profile = $user->userProfile;
+        return response()->json(['updated_at' => $profile?->updated_at]);
+    });
 });
 
+
+/*
+|--------------------------------------------------------------------------
+| HISTORY & DETAIL TRANSAKSI
+|--------------------------------------------------------------------------
+*/
 Route::middleware('auth')->group(function () {
     Route::get('/riwayat', [TransactionController::class, 'history'])->name('transactions.history');
     Route::get('/riwayat/pembayaran/{id}', [TransactionController::class, 'paymentDetail'])->name('transactions.payment-detail');
@@ -99,28 +184,71 @@ Route::middleware(['auth', 'verified'])->prefix('payment')->name('payment.')->gr
     Route::post('/setup-pin', [PaymentAccountController::class, 'setupPin'])->name('accounts.setup-pin');
 });
 
-use App\Http\Controllers\ShippingSettingsController;
-
+/*
+|--------------------------------------------------------------------------
+| SHIPPING SETTINGS
+|--------------------------------------------------------------------------
+*/
 Route::middleware(['auth'])->group(function () {
-    Route::get('/settings/shipping',  [ShippingSettingsController::class, 'index'])->name('settings.shipping');
-    Route::post('/settings/shipping', [ShippingSettingsController::class, 'save'])->name('settings.shipping.save');
+    Route::get('/settings/shipping', [App\Http\Controllers\ShippingSettingsController::class, 'index'])->name('settings.shipping');
+    Route::post('/settings/shipping', [App\Http\Controllers\ShippingSettingsController::class, 'save'])->name('settings.shipping.save');
 });
 
+
+/*
+|--------------------------------------------------------------------------
+| ORDER ROUTES
+|--------------------------------------------------------------------------
+*/
 Route::middleware('auth')->group(function () {
     Route::get('/pesanan', [OrderController::class, 'index'])->name('orders.index');
     Route::get('/pesanan/{id}', [OrderController::class, 'show'])->name('orders.show');
 });
 
+
+/*
+|--------------------------------------------------------------------------
+| ADMIN ROUTES
+|--------------------------------------------------------------------------
+*/
+Route::prefix('admin')->middleware(['auth'])->group(function () {
+
+    Route::get('/dashboard', [App\Http\Controllers\Admin\DashboardController::class, 'index'])
+        ->name('admin.dashboard');
+
+    Route::get   ('/reports',                           [ProfileReportController::class, 'index'])       ->name('admin.reports.index');
+    Route::get   ('/reports/export',                    [ProfileReportController::class, 'exportCsv'])   ->name('admin.reports.export');
+    Route::get   ('/reports/{report}',                  [ProfileReportController::class, 'show'])         ->name('admin.reports.show');
+    Route::patch ('/reports/{report}/status',           [ProfileReportController::class, 'updateStatus'])->name('admin.reports.updateStatus');
+    Route::patch ('/reports/{report}/note',             [ProfileReportController::class, 'saveNote'])    ->name('admin.reports.saveNote');
+    Route::get   ('/reports/{report}/evidence',         [ProfileReportController::class, 'viewEvidence'])->name('admin.reports.evidence');
+    Route::get   ('/reports/{report}/evidence/{index}', [ProfileReportController::class, 'evidenceFile'])->name('admin.reports.evidence.file');
+    Route::get   ('/appeals',                           [\App\Http\Controllers\Admin\AppealController::class, 'index'])        ->name('admin.appeals.index');
+    Route::get   ('/appeals/{appeal}',                  [\App\Http\Controllers\Admin\AppealController::class, 'show'])         ->name('admin.appeals.show');
+    Route::get   ('/appeals/{appeal}/evidence',         [\App\Http\Controllers\Admin\AppealController::class, 'viewEvidence']) ->name('admin.appeals.evidence');
+    Route::get   ('/appeals/{appeal}/evidence/{index}', [\App\Http\Controllers\Admin\AppealController::class, 'evidenceFile']) ->name('admin.appeals.evidence.file');
+    Route::patch ('/appeals/{appeal}/approve',          [\App\Http\Controllers\Admin\AppealController::class, 'approve'])      ->name('admin.appeals.approve');
+    Route::patch ('/appeals/{appeal}/reject',           [\App\Http\Controllers\Admin\AppealController::class, 'reject'])       ->name('admin.appeals.reject');
+
+});
+
+
+/*
+|--------------------------------------------------------------------------
+| AUTHENTICATED ROUTES
+|--------------------------------------------------------------------------
+*/
 Route::middleware('auth')->group(function () {
 
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-    Route::get('/dashboard/chart-data', [DashboardController::class, 'chartData'])->middleware('auth');
+    Route::get('/dashboard/chart-data', [DashboardController::class, 'chartData']);
 
     Route::prefix('analitik')->name('analitik.')->group(function () {
         Route::get('/', [AnalyticsController::class, 'index'])->name('index');
     });
 
     Route::get('/premium', function () { return view('premium.index'); })->name('premium.index');
+    Route::get('/premium', fn () => view('premium.index'))->name('premium.index');
 
     Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
     Route::get('/dashboard/profile', [ProfileController::class, 'profile'])->name('dashboard.profile');
@@ -166,53 +294,72 @@ Route::middleware('auth')->group(function () {
 
     // ─── Tampilan / Appearance ───
     Route::get('/appearance',                [AppearanceController::class, 'index'])->name('dashboard.appearance');
+    Route::get('/appearance/preview',        [AppearanceController::class, 'preview'])->name('dashboard.appearance.preview');
     Route::post('/appearance/save',          [AppearanceController::class, 'save'])->name('dashboard.appearance.save');
     Route::post('/appearance/upload-bg',     [AppearanceController::class, 'uploadBgImage'])->name('dashboard.appearance.uploadBg');
-    Route::post('/appearance/upload-banner', [AppearanceController::class, 'uploadBanner'])->name('dashboard.appearance.uploadBanner'); // <<< BARU
+    Route::post('/appearance/upload-banner', [AppearanceController::class, 'uploadBanner'])->name('dashboard.appearance.uploadBanner');
     Route::post('/appearance/reset',         [AppearanceController::class, 'reset'])->name('dashboard.appearance.reset');
+
+    Route::get('/debug-last-trx', function () {
+        $trx = App\Models\Transaction::latest()->first();
+        return ['order_id' => $trx->order_id ?? null, 'status' => $trx->status ?? null,
+                'amount' => $trx->amount ?? null,
+                'notes' => is_string($trx->notes ?? null) ? json_decode($trx->notes, true) : $trx->notes,
+                'created_at' => $trx->created_at ?? null];
+    });
+
+    Route::post('/logout', function () {
+        Auth::logout();
+        request()->session()->invalidate();
+        request()->session()->regenerateToken();
+        return redirect('/login');
+    })->name('logout');
 });
 
-Route::get('appearance/preview', [AppearanceController::class, 'preview'])
-     ->name('dashboard.appearance.preview');
 
-Route::get('/profile/{username}/updated_at', function($username) {
-    $user = \App\Models\User::where('username', $username)->firstOrFail();
-    $profile = $user->userProfile;
-    return response()->json([
-        'updated_at' => $profile?->updated_at
-    ]);
-});
+/*
+|--------------------------------------------------------------------------
+| LAPORAN PUBLIK
+|--------------------------------------------------------------------------
+*/
+Route::post('/{username}/report', [PublicProfileReportController::class, 'store'])
+    ->where('username', '[a-zA-Z0-9_]+')
+    ->name('public.profile.report');
 
-Route::get('/debug-last-trx', function () {
-    $trx = App\Models\Transaction::latest()->first();
-    return ['order_id' => $trx->order_id ?? null, 'status' => $trx->status ?? null, 'amount' => $trx->amount ?? null, 'notes' => is_string($trx->notes ?? null) ? json_decode($trx->notes, true) : $trx->notes, 'created_at' => $trx->created_at ?? null];
-});
 
-Route::post('/logout', function () {
-    Auth::logout();
-    request()->session()->invalidate();
-    request()->session()->regenerateToken();
-    return redirect('/login');
-})->name('logout');
-
+/*
+|--------------------------------------------------------------------------
+| PREVIEW (PUBLIC)
+|--------------------------------------------------------------------------
+*/
 Route::get('/preview/{username}', function ($username) {
-    $user = User::where('username', $username)->with(['pages' => fn ($q) => $q->with('blocks')])->firstOrFail();
+    $user = User::where('username', $username)
+        ->with(['pages' => fn ($q) => $q->with('blocks')])
+        ->firstOrFail();
     $page = $user->pages->first();
     return view('preview', compact('user', 'page'));
 })->name('preview.profile');
 
+
+/*
+|--------------------------------------------------------------------------
+| LINK TRACKING /go/
+|--------------------------------------------------------------------------
+*/
 Route::get('/go/{username}', [LinkRedirectController::class, 'redirect'])->name('link.redirect');
 
 Route::get('/search', [SearchController::class, 'search']);
-Route::post('/report/{username}', [App\Http\Controllers\PublicProfileReportController::class, 'store'])
-    ->where('username', '[a-zA-Z0-9_]+')
-    ->name('public.profile.report');
+
 
 Route::get('/{short_code}', function ($short_code) {
     if (\App\Models\User::where('username', $short_code)->exists()) {
         $user = \App\Models\User::where('username', $short_code)
             ->with(['profile', 'pages' => fn ($q) => $q->where('is_active', 1)->with('blocks')])
             ->firstOrFail();
+
+        // Blokir profil user yang disuspend
+        if ($user->is_suspended) abort(404);
+
         $page = $user->pages->first();
         return view('public.profile', compact('user', 'page'));
     }
@@ -223,6 +370,10 @@ Route::get('/{username}', function ($username) {
     $user = \App\Models\User::where('username', $username)
         ->with(['profile', 'pages' => fn ($q) => $q->where('is_active', 1)->with('blocks')])
         ->firstOrFail();
+
+    // Blokir profil user yang disuspend
+    if ($user->is_suspended) abort(404);
+
     $page = $user->pages->first();
     return view('public.profile', compact('user', 'page'));
 })->where('username', '[a-zA-Z0-9_]+')->name('public.profile');

@@ -488,7 +488,7 @@ body:not(.preload) .content-pad {
     </button>
     <div class="m-topbar-logo">
         <a href="{{ route('dashboard') }}">
-            <img src="{{ asset('img/icon.png') }}" alt="Payou.id">
+            <img src="{{ asset('img/logo.png') }}" alt="Payou.id">
         </a>
     </div>
     <button class="notif-bell-btn notif-bell-trigger" id="notifBellBtnMobile" aria-label="Notifikasi">
@@ -503,7 +503,7 @@ body:not(.preload) .content-pad {
     <!-- Logo -->
     <div class="s-logo">
         <a href="{{ route('dashboard') }}">
-            <img src="{{ asset('img/icon.png') }}" alt="Payou.id">
+            <img src="{{ asset('img/logo.png') }}" alt="Payou.id">
         </a>
     </div>
 

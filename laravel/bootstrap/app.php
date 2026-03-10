@@ -16,20 +16,25 @@ return Application::configure(basePath: dirname(__DIR__))
         $router->middleware('web')
             ->group(base_path('routes/console.php'));
 
-        // Route admin
+        // Route admin — middleware web + auth + is_admin sudah di sini
         $router->middleware(['web', 'auth', 'is_admin'])
             ->prefix('admin')
             ->name('admin.')
             ->group(base_path('routes/admin.php'));
     })
     ->withMiddleware(function (Middleware $middleware): void {
-        // Middleware lama kamu
+        // Track klik metadata
         $middleware->append(TrackClickMetadata::class);
 
-        // Tambahan middleware admin
+        // Alias middleware
         $middleware->alias([
-            'is_admin' => \App\Http\Middleware\IsAdmin::class,
+            'is_admin'  => \App\Http\Middleware\IsAdmin::class,
+            'suspended' => \App\Http\Middleware\CheckSuspended::class,
         ]);
+
+        // CheckSuspended otomatis berjalan di semua route web
+        // Sehingga user yang disuspend langsung diarahkan ke /suspended
+        $middleware->appendToGroup('web', \App\Http\Middleware\CheckSuspended::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

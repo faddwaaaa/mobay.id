@@ -7,6 +7,8 @@ use App\Models\Product;
 use App\Models\Transaction;
 use App\Models\ProductSale;
 use App\Models\User;
+use App\Models\DigitalOrder;
+use App\Services\DigitalOrderService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
@@ -94,7 +96,6 @@ class CheckoutController extends Controller
 
         session(['checkout_checkpoint' => $payload]);
 
-        // Notif intent checkout: pembeli sudah masuk halaman checkpoint/review pembayaran
         \App\Models\Notification::create([
             'user_id' => $product->user_id,
             'type'    => 'checkout',
@@ -134,18 +135,9 @@ class CheckoutController extends Controller
         $total = $baseTotal + $paymentFeeAmount;
 
         return view('checkout-checkpoint', compact(
-            'product',
-            'seller',
-            'payload',
-            'qty',
-            'unitPrice',
-            'subtotal',
-            'shippingCost',
-            'baseTotal',
-            'paymentFeePercent',
-            'paymentFeeAmount',
-            'total',
-            'shippingEnabled'
+            'product', 'seller', 'payload', 'qty', 'unitPrice',
+            'subtotal', 'shippingCost', 'baseTotal',
+            'paymentFeePercent', 'paymentFeeAmount', 'total', 'shippingEnabled'
         ));
     }
 
@@ -188,18 +180,17 @@ class CheckoutController extends Controller
             }
         }
 
-        $qty       = $product->product_type === 'digital' ? 1 : (int) $request->qty;
-        // FIX: Gunakan ?: bukan ?? supaya discount bernilai 0 tetap fallback ke price
-        $unitPrice = (int) ($product->discount ?: $product->price);
-        $subtotal  = $unitPrice * $qty;
+        $qty          = $product->product_type === 'digital' ? 1 : (int) $request->qty;
+        $unitPrice    = (int) ($product->discount ?: $product->price);
+        $subtotal     = $unitPrice * $qty;
         $shippingCost = ($product->product_type === 'fisik' && $shippingEnabled)
             ? max((int) ($request->selected_ongkir_cost ?? 0), 0)
             : 0;
-        $baseTotal = $subtotal + $shippingCost;
-        $paymentFeePercent = (float) config('payment.payment_fee_percent', 5);
-        $paymentFeeAmount = (int) ceil($baseTotal * ($paymentFeePercent / 100));
-        $amount = $baseTotal + $paymentFeeAmount;
-        $orderId   = 'PAYOU-' . strtoupper(Str::random(8)) . '-' . time();
+        $baseTotal          = $subtotal + $shippingCost;
+        $paymentFeePercent  = (float) config('payment.payment_fee_percent', 5);
+        $paymentFeeAmount   = (int) ceil($baseTotal * ($paymentFeePercent / 100));
+        $amount             = $baseTotal + $paymentFeeAmount;
+        $orderId            = 'PAYOU-' . strtoupper(Str::random(8)) . '-' . time();
 
         $transaction = Transaction::create([
             'user_id'        => $product->user_id,
@@ -208,27 +199,27 @@ class CheckoutController extends Controller
             'status'         => 'pending',
             'payment_method' => $request->payment_method,
             'notes'          => json_encode([
-                'buyer_name'    => $request->buyer_name,
-                'buyer_email'   => $request->buyer_email,
-                'buyer_phone'   => $request->buyer_phone,
-                'buyer_address' => $request->buyer_address ?? null,
-                'buyer_notes'   => $request->buyer_notes ?? null,
-                'product_id'    => $product->id,
-                'product_title' => $product->title,
-                'product_type'  => $product->product_type,
-                'qty'           => $qty,
-                'unit_price'    => $unitPrice,
-                'shipping_enabled' => $shippingEnabled,
-                'shipping_cost' => $shippingCost,
-                'subtotal'      => $subtotal,
-                'base_total'    => $baseTotal,
-                'payment_fee_percent' => $paymentFeePercent,
-                'payment_fee_amount' => $paymentFeeAmount,
-                'seller_amount' => $baseTotal,
+                'buyer_name'           => $request->buyer_name,
+                'buyer_email'          => $request->buyer_email,
+                'buyer_phone'          => $request->buyer_phone,
+                'buyer_address'        => $request->buyer_address ?? null,
+                'buyer_notes'          => $request->buyer_notes ?? null,
+                'product_id'           => $product->id,
+                'product_title'        => $product->title,
+                'product_type'         => $product->product_type,
+                'qty'                  => $qty,
+                'unit_price'           => $unitPrice,
+                'shipping_enabled'     => $shippingEnabled,
+                'shipping_cost'        => $shippingCost,
+                'subtotal'             => $subtotal,
+                'base_total'           => $baseTotal,
+                'payment_fee_percent'  => $paymentFeePercent,
+                'payment_fee_amount'   => $paymentFeeAmount,
+                'seller_amount'        => $baseTotal,
                 'destination_village_code' => $request->destination_village_code ?? null,
-                'destination_label' => $request->destination_label ?? null,
-                'selected_courier' => $shippingEnabled ? ($request->selected_courier ?: 'OTHER') : 'FREE',
-                'selected_service' => $shippingEnabled ? ($request->selected_service ?: 'Standard') : 'Tanpa Ongkir',
+                'destination_label'    => $request->destination_label ?? null,
+                'selected_courier'     => $shippingEnabled ? ($request->selected_courier ?: 'OTHER') : 'FREE',
+                'selected_service'     => $shippingEnabled ? ($request->selected_service ?: 'Standard') : 'Tanpa Ongkir',
             ]),
             'ip_address' => $request->ip(),
         ]);
@@ -252,12 +243,11 @@ class CheckoutController extends Controller
         ];
 
         if ($shippingCost > 0) {
-            $courierLabel = strtoupper((string) ($request->selected_courier ?: 'OTHER'));
             $snapParams['item_details'][] = [
                 'id'       => 'shipping',
                 'price'    => $shippingCost,
                 'quantity' => 1,
-                'name'     => 'Ongkir ' . $courierLabel,
+                'name'     => 'Ongkir ' . strtoupper((string) ($request->selected_courier ?: 'OTHER')),
             ];
         }
 
@@ -295,7 +285,6 @@ class CheckoutController extends Controller
         $transaction = Transaction::where('order_id', $notif->order_id)->first();
         if (!$transaction) return response('Not found', 404);
 
-        // Jangan proses ulang yang sudah settlement
         if ($transaction->status === 'settlement') return response('Already processed', 200);
 
         $finalStatus = match (true) {
@@ -322,7 +311,7 @@ class CheckoutController extends Controller
     }
 
     // =========================================================
-    // SUCCESS — fallback cek status Midtrans langsung
+    // SUCCESS
     // =========================================================
     public function success(Request $request)
     {
@@ -337,7 +326,6 @@ class CheckoutController extends Controller
             ? json_decode($transaction->notes, true)
             : ($transaction->notes ?? []);
 
-        // Jika masih pending, cek langsung ke Midtrans
         if ($transaction->status === 'pending') {
             try {
                 $status    = \Midtrans\Transaction::status($orderId);
@@ -392,31 +380,28 @@ class CheckoutController extends Controller
             ? json_decode($transaction->notes, true)
             : ($transaction->notes ?? []);
 
-        $productId = $notes['product_id'] ?? null;
-        $unitPrice = $notes['unit_price'] ?? 0;
-        $sellerAmount = (int) ($notes['seller_amount'] ?? $transaction->amount);
+        $productId        = $notes['product_id'] ?? null;
+        $unitPrice        = $notes['unit_price'] ?? 0;
+        $sellerAmount     = (int) ($notes['seller_amount'] ?? $transaction->amount);
         $paymentFeeAmount = (int) ($notes['payment_fee_amount'] ?? 0);
 
-        // ── DEBUG LOG ──
         Log::info('DEBUG handleSuccessfulPayment', [
-            'order_id'   => $transaction->order_id,
-            'notes'      => $notes,
-            'unit_price' => $unitPrice,
-            'productId'  => $productId,
-            'seller_amount' => $sellerAmount,
-            'payment_fee_amount' => $paymentFeeAmount,
+            'order_id'            => $transaction->order_id,
+            'notes'               => $notes,
+            'unit_price'          => $unitPrice,
+            'productId'           => $productId,
+            'seller_amount'       => $sellerAmount,
+            'payment_fee_amount'  => $paymentFeeAmount,
         ]);
 
-        // ── Guard double-processing ──
+        // Guard double-processing
         $alreadyProcessed = false;
-
         try {
             $alreadyProcessed = ProductSale::where('product_id', $productId)
                 ->whereRaw("JSON_UNQUOTE(JSON_EXTRACT(options, '$.order_id')) = ?", [$transaction->order_id])
                 ->exists();
         } catch (\Exception $e) {
-            Log::warning('Guard check gagal (kolom options belum ada?): ' . $e->getMessage());
-            $alreadyProcessed = false;
+            Log::warning('Guard check gagal: ' . $e->getMessage());
         }
 
         if ($alreadyProcessed) {
@@ -430,9 +415,8 @@ class CheckoutController extends Controller
             return;
         }
 
-        // 1. Catat product_sales — selalu sertakan price di semua kondisi
+        // 1. Catat product_sales
         try {
-            Log::info('DEBUG sebelum ProductSale::create', ['price' => $unitPrice]);
             ProductSale::create([
                 'product_id' => $product->id,
                 'qty'        => $notes['qty'] ?? 1,
@@ -445,7 +429,6 @@ class CheckoutController extends Controller
                     'buyer_notes'   => $notes['buyer_notes'] ?? null,
                 ]),
             ]);
-            Log::info('DEBUG ProductSale berhasil dibuat', ['price' => $unitPrice]);
         } catch (\Exception $e) {
             Log::warning('ProductSale create tanpa options: ' . $e->getMessage());
             ProductSale::create([
@@ -460,9 +443,9 @@ class CheckoutController extends Controller
             $product->decrement('stock', $notes['qty'] ?? 1);
         }
 
-        // 3. Kirim file digital
+        // 3. ✅ Kirim file digital via link download (token-based)
         if ($product->product_type === 'digital') {
-            $this->sendDigitalFile($product, $notes, $transaction);
+            $this->sendDigitalFileViaToken($product, $notes, $transaction);
         }
 
         // 4. Tambah saldo seller
@@ -471,7 +454,6 @@ class CheckoutController extends Controller
             $seller->increment('balance', $sellerAmount);
             Log::info("✅ Saldo {$seller->name} +Rp{$sellerAmount} dari order {$transaction->order_id}");
 
-            // ── Notifikasi pesanan masuk ──
             \App\Models\Notification::create([
                 'user_id' => $seller->id,
                 'type'    => 'order',
@@ -482,7 +464,6 @@ class CheckoutController extends Controller
                 'is_read' => false,
             ]);
 
-            // ── Notifikasi pembayaran diterima ──
             \App\Models\Notification::create([
                 'user_id' => $seller->id,
                 'type'    => 'payment',
@@ -492,7 +473,6 @@ class CheckoutController extends Controller
                 'link'    => '/riwayat',
                 'is_read' => false,
             ]);
-
         } else {
             Log::error("❌ Seller user_id={$transaction->user_id} tidak ditemukan.");
         }
@@ -501,9 +481,73 @@ class CheckoutController extends Controller
     }
 
     // =========================================================
-    // KIRIM FILE DIGITAL
+    // ✅ KIRIM FILE DIGITAL VIA TOKEN (BARU)
+    // Menggantikan sendDigitalFile() yang lama
     // =========================================================
-    private function sendDigitalFile(Product $product, array $notes, Transaction $transaction): void
+    private function sendDigitalFileViaToken(Product $product, array $notes, Transaction $transaction): void
+    {
+        $buyerEmail = $notes['buyer_email'] ?? null;
+        $buyerName  = $notes['buyer_name'] ?? 'Pembeli';
+
+        if (!$buyerEmail) {
+            Log::error("sendDigitalFileViaToken: buyer_email kosong untuk order {$transaction->order_id}");
+            return;
+        }
+
+        try {
+            // Cari atau buat DigitalProduct berdasarkan Product yang ada
+            $digitalProduct = \App\Models\DigitalProduct::where('product_id', $product->id)->first();
+
+            // Kalau belum ada di tabel digital_products, buat otomatis
+            if (!$digitalProduct) {
+                // Ambil file pertama dari product files
+                $productFile = $product->files->first();
+
+                if (!$productFile) {
+                    Log::error("sendDigitalFileViaToken: Tidak ada file untuk product id={$product->id}");
+                    // Fallback: kirim email tanpa link download
+                    $this->sendDigitalFileFallback($product, $notes, $transaction);
+                    return;
+                }
+
+                $digitalProduct = \App\Models\DigitalProduct::create([
+                    'product_id' => $product->id,
+                    'name'       => $product->title,
+                    'price'      => (int) ($product->discount ?: $product->price),
+                    'file_path'  => $productFile->file,
+                    'file_name'  => basename($productFile->file),
+                    'is_active'  => true,
+                ]);
+            }
+
+            // Buat DigitalOrder
+            $digitalOrder = \App\Models\DigitalOrder::create([
+                'digital_product_id' => $digitalProduct->id,
+                'buyer_email'        => $buyerEmail,
+                'buyer_name'         => $buyerName,
+                'amount'             => (int) $transaction->amount,
+                'status'             => 'paid',
+                'order_code'         => $transaction->order_id,
+            ]);
+
+            // Buat token & kirim email via DigitalOrderService
+            $service = app(DigitalOrderService::class);
+            $service->completeOrder($digitalOrder);
+
+            Log::info("✅ Email download digital dikirim ke {$buyerEmail} untuk order {$transaction->order_id}");
+
+        } catch (\Exception $e) {
+            Log::error("sendDigitalFileViaToken gagal untuk order {$transaction->order_id}: " . $e->getMessage());
+            // Fallback ke cara lama (attach file langsung)
+            $this->sendDigitalFileFallback($product, $notes, $transaction);
+        }
+    }
+
+    // =========================================================
+    // FALLBACK: kirim file langsung sebagai attachment
+    // Dipakai jika token system gagal
+    // =========================================================
+    private function sendDigitalFileFallback(Product $product, array $notes, Transaction $transaction): void
     {
         $buyerEmail = $notes['buyer_email'] ?? null;
         if (!$buyerEmail) return;
@@ -531,16 +575,16 @@ class CheckoutController extends Controller
                     }
                 }
             });
+
+            Log::info("✅ Fallback email attachment dikirim ke {$buyerEmail}");
         } catch (\Exception $e) {
-            Log::error('Gagal kirim email digital: ' . $e->getMessage());
+            Log::error('Fallback kirim email digital gagal: ' . $e->getMessage());
         }
     }
 
     private function creditAdminWalletFeePayment(int $feeAmount, Transaction $transaction): void
     {
-        if ($feeAmount <= 0) {
-            return;
-        }
+        if ($feeAmount <= 0) return;
 
         DB::transaction(function () use ($feeAmount, $transaction) {
             $lastBalance = (int) (AdminWalletLedger::query()
@@ -549,14 +593,14 @@ class CheckoutController extends Controller
                 ->value('balance_after') ?? 0);
 
             AdminWalletLedger::create([
-                'source' => 'fee_payment',
-                'direction' => 'credit',
-                'amount' => $feeAmount,
-                'balance_after' => $lastBalance + $feeAmount,
+                'source'         => 'fee_payment',
+                'direction'      => 'credit',
+                'amount'         => $feeAmount,
+                'balance_after'  => $lastBalance + $feeAmount,
                 'reference_type' => Transaction::class,
-                'reference_id' => $transaction->id,
-                'description' => 'Fee payment dari order ' . $transaction->order_id,
-                'created_by' => null,
+                'reference_id'   => $transaction->id,
+                'description'    => 'Fee payment dari order ' . $transaction->order_id,
+                'created_by'     => null,
             ]);
         });
     }
