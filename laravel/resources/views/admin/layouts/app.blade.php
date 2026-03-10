@@ -178,6 +178,14 @@ tbody tr:hover { background: #f7f9ff; }
     <svg class="nav-ico" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M7 8h10M7 12h6m-6 4h8M5 3h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2z"/></svg>
     Laporan Profil
   </a>
+  <a href="{{ route('admin.appeals.index') }}"
+    class="nav-item {{ request()->routeIs('admin.appeals*') ? 'active' : '' }}">
+    <svg class="nav-ico" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M8 10h8M8 14h5"/>
+      <path stroke-linecap="round" stroke-linejoin="round" d="M8 4h8a2 2 0 012 2v12l-4-2-4 2-4-2-4 2V6a2 2 0 012-2h8z"/>
+    </svg>
+    Pengajuan Banding
+  </a>
   
   </nav>
   <div class="sidebar-foot">

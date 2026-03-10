@@ -15,8 +15,15 @@ class CheckSuspended
     public function handle(Request $request, Closure $next)
     {
         if (Auth::check() && Auth::user()->is_suspended) {
-            // Jangan blokir route suspended itu sendiri agar tidak redirect loop
-            if (!$request->routeIs('suspended')) {
+            $allowedRoutes = [
+                'suspended',
+                'appeal.store',
+                'appeal.status',
+                'logout',
+            ];
+
+            // Jangan blokir route yang memang dibutuhkan user suspended
+            if (!$request->routeIs($allowedRoutes)) {
                 return redirect()->route('suspended');
             }
         }

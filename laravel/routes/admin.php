@@ -61,3 +61,15 @@ Route::patch ('/reports/{report}/status',           [ProfileReportController::cl
 Route::patch ('/reports/{report}/note',             [ProfileReportController::class, 'saveNote'])    ->name('reports.saveNote');
 Route::get   ('/reports/{report}/evidence',         [ProfileReportController::class, 'viewEvidence'])->name('reports.evidence');
 Route::get   ('/reports/{report}/evidence/{index}', [ProfileReportController::class, 'evidenceFile'])->name('reports.evidence.file');
+
+
+// ================================================================
+// TAMBAHKAN KE routes/admin.php
+// ================================================================
+
+Route::get   ('/appeals',              [\App\Http\Controllers\Admin\AppealController::class, 'index'])  ->name('appeals.index');
+Route::get   ('/appeals/{appeal}',     [\App\Http\Controllers\Admin\AppealController::class, 'show'])   ->name('appeals.show');
+Route::get   ('/appeals/{appeal}/evidence',         [\App\Http\Controllers\Admin\AppealController::class, 'viewEvidence'])->name('appeals.evidence');
+Route::get   ('/appeals/{appeal}/evidence/{index}', [\App\Http\Controllers\Admin\AppealController::class, 'evidenceFile'])->name('appeals.evidence.file');
+Route::patch ('/appeals/{appeal}/approve', [\App\Http\Controllers\Admin\AppealController::class, 'approve'])->name('appeals.approve');
+Route::patch ('/appeals/{appeal}/reject',  [\App\Http\Controllers\Admin\AppealController::class, 'reject']) ->name('appeals.reject');

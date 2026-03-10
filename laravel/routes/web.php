@@ -87,6 +87,17 @@ Route::match(['get', 'post'], '/download/{token}', [DigitalOrderController::clas
     ->name('download.verify');
 
 
+
+    // ================================================================
+// TAMBAHKAN KE routes/web.php
+// Di dalam group Route::middleware('auth')->group(...)
+// ================================================================
+
+// Banding — hanya user yang disuspend bisa POST
+Route::post('/appeal',        [\App\Http\Controllers\AppealController::class, 'store']) ->name('appeal.store');
+Route::get('/appeal/status',  [\App\Http\Controllers\AppealController::class, 'status'])->name('appeal.status');
+
+
 /*
 |--------------------------------------------------------------------------
 | PAYMENT ACCOUNT
@@ -200,6 +211,12 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
     Route::patch ('/reports/{report}/note',             [ProfileReportController::class, 'saveNote'])    ->name('admin.reports.saveNote');
     Route::get   ('/reports/{report}/evidence',         [ProfileReportController::class, 'viewEvidence'])->name('admin.reports.evidence');
     Route::get   ('/reports/{report}/evidence/{index}', [ProfileReportController::class, 'evidenceFile'])->name('admin.reports.evidence.file');
+    Route::get   ('/appeals',                           [\App\Http\Controllers\Admin\AppealController::class, 'index'])        ->name('admin.appeals.index');
+    Route::get   ('/appeals/{appeal}',                  [\App\Http\Controllers\Admin\AppealController::class, 'show'])         ->name('admin.appeals.show');
+    Route::get   ('/appeals/{appeal}/evidence',         [\App\Http\Controllers\Admin\AppealController::class, 'viewEvidence']) ->name('admin.appeals.evidence');
+    Route::get   ('/appeals/{appeal}/evidence/{index}', [\App\Http\Controllers\Admin\AppealController::class, 'evidenceFile']) ->name('admin.appeals.evidence.file');
+    Route::patch ('/appeals/{appeal}/approve',          [\App\Http\Controllers\Admin\AppealController::class, 'approve'])      ->name('admin.appeals.approve');
+    Route::patch ('/appeals/{appeal}/reject',           [\App\Http\Controllers\Admin\AppealController::class, 'reject'])       ->name('admin.appeals.reject');
 
 });
 
