@@ -107,6 +107,16 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
+        /* ── Iframe preview: fixed 375px, no scrollbar ── */
+        html, body {
+            width: 375px;
+            max-width: 375px;
+            overflow-x: hidden;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+        html::-webkit-scrollbar, body::-webkit-scrollbar { display: none; }
+
         body {
             font-family: '{{ $fontFamily }}', system-ui, -apple-system, sans-serif;
             background: {{ $bgCss }};
@@ -116,12 +126,51 @@
         }
 
         .page-wrapper {
-            max-width: 420px;
-            margin: 0 auto;
+            width: 375px;
+            max-width: 375px;
             background: transparent;
             min-height: 100vh;
             position: relative;
             overflow-x: hidden;
+            scrollbar-width: none;
+        }
+        .page-wrapper::-webkit-scrollbar { display: none; }
+
+        /* Fixed elements pakai 375px */
+        .product-detail-overlay,
+        .cart-overlay,
+        .fullmenu-overlay,
+        .search-results-overlay {
+            width: 375px !important;
+            left: 0 !important;
+            right: auto !important;
+            top: 0 !important;
+            bottom: 0 !important;
+            max-width: 375px !important;
+        }
+        .search-results-panel {
+            left: 0 !important; right: 0 !important;
+            width: 375px !important; max-width: 375px !important;
+        }
+        .cart-drawer {
+            left: 0 !important; right: auto !important;
+            top: 0 !important; bottom: 0 !important;
+            width: 375px !important; max-width: 375px !important;
+            transform: translateX(100%) !important;
+        }
+        .cart-drawer.active { transform: translateX(0) !important; }
+        .product-detail-overlay {
+            display: none;
+            justify-content: center !important;
+            align-items: center !important;
+            padding: 0 20px !important;
+            box-sizing: border-box !important;
+        }
+        .product-detail-box {
+            width: 100% !important; max-width: 100% !important;
+            margin: 0 !important; position: relative !important;
+            left: 0 !important; right: 0 !important;
+            transform: none !important;
         }
 
         .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px); background: #111827; color: #fff; padding: 10px 20px; border-radius: 50px; font-size: 13px; font-weight: 500; z-index: 9999; opacity: 0; transition: all 0.35s cubic-bezier(.34,1.56,.64,1); white-space: nowrap; pointer-events: none; }
@@ -179,26 +228,7 @@
         .search-state p { font-size: 13px; } .search-state strong { display: block; font-size: 15px; color: #374151; margin-bottom: 4px; }
         .search-section-label { font-size: 11px; font-weight: 700; color: #9ca3af; letter-spacing: 0.8px; text-transform: uppercase; padding: 10px 16px 4px; }
 
-        /* ── Report Modal ── */
-        .report-modal-overlay { position: fixed; inset: 0; background: rgba(15,23,42,0.55); backdrop-filter: blur(2px); display: none; align-items: center; justify-content: center; z-index: 10000; padding: 16px; }
-        .report-modal-overlay.show { display: flex; }
-        .report-modal { width: 100%; max-width: 420px; background: #fff; border: 1px solid #e5e7eb; border-radius: 16px; box-shadow: 0 24px 50px rgba(0,0,0,0.2); overflow: hidden; }
-        .report-head { padding: 14px 16px; border-bottom: 1px solid #eef2f7; display: flex; align-items: center; justify-content: space-between; }
-        .report-title { font-size: 15px; font-weight: 800; color: #0f172a; }
-        .report-close { width: 30px; height: 30px; border-radius: 8px; border: none; background: #f1f5f9; color: #475569; cursor: pointer; }
-        .report-body { padding: 14px 16px 16px; }
-        .report-sub { font-size: 12px; color: #64748b; margin-bottom: 10px; line-height: 1.45; }
-        .reason-list { display: grid; gap: 8px; margin-bottom: 10px; }
-        .reason-item { display: flex; align-items: center; gap: 9px; border: 1px solid #e2e8f0; border-radius: 10px; padding: 9px 10px; cursor: pointer; font-size: 13px; color: #1e293b; font-weight: 600; background: #fff; }
-        .reason-item:hover { border-color: #93c5fd; background: #eff6ff; }
-        .reason-item input { accent-color: #2563eb; }
-        .report-textarea { width: 100%; min-height: 92px; border: 1px solid #dbe2ea; border-radius: 10px; padding: 10px 12px; font-size: 13px; color: #0f172a; resize: vertical; outline: none; font-family: inherit; }
-        .report-textarea:focus { border-color: #2563eb; }
-        .report-actions { margin-top: 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        .report-btn { border: none; border-radius: 10px; padding: 10px 12px; font-size: 13px; font-weight: 700; cursor: pointer; }
-        .report-btn.cancel { background: #f1f5f9; color: #475569; }
-        .report-btn.submit { background: #dc2626; color: #fff; }
-        .report-btn.submit:disabled { opacity: .6; cursor: not-allowed; }
+        /* Report modal CSS tidak perlu di preview */
 
         /* ── Full Menu ── */
         .fullmenu-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(4px); z-index: 500; opacity: 0; visibility: hidden; transition: opacity 0.25s ease, visibility 0.25s ease; display: flex; flex-direction: column; align-items: center; }
@@ -233,6 +263,7 @@
             background-position: center;
             background-repeat: no-repeat;
             margin-bottom: 16px;
+             border-radius: 0 0 35px 35px;
         }
 
         /* ── Profile Card ── */
@@ -422,33 +453,7 @@
 <div class="search-results-overlay" id="searchResultsOverlay"></div>
 <div class="search-results-panel"  id="searchResultsPanel"></div>
 
-{{-- REPORT MODAL --}}
-<div class="report-modal-overlay" id="reportModalOverlay">
-    <div class="report-modal">
-        <div class="report-head">
-            <div class="report-title">Laporkan Profil</div>
-            <button type="button" class="report-close" id="reportCloseBtn">&#10005;</button>
-        </div>
-        <form id="reportForm" class="report-body">
-            <div class="report-sub">Pilih alasan laporan. Laporan akan ditinjau admin.</div>
-            <div class="reason-list">
-                <label class="reason-item"><input type="radio" name="reason" value="spam" required> Spam / Iklan Berlebihan</label>
-                <label class="reason-item"><input type="radio" name="reason" value="scam"> Penipuan / Scam</label>
-                <label class="reason-item"><input type="radio" name="reason" value="hate_speech"> Ujaran Kebencian</label>
-                <label class="reason-item"><input type="radio" name="reason" value="adult_content"> Konten Dewasa</label>
-                <label class="reason-item"><input type="radio" name="reason" value="violence"> Kekerasan / Ancaman</label>
-                <label class="reason-item"><input type="radio" name="reason" value="fake_account"> Akun Palsu</label>
-                <label class="reason-item"><input type="radio" name="reason" value="other"> Lainnya</label>
-            </div>
-            <textarea name="detail" class="report-textarea" maxlength="1000" placeholder="Detail tambahan (opsional)"></textarea>
-            <input type="hidden" name="page_url" value="{{ url()->current() }}">
-            <div class="report-actions">
-                <button type="button" class="report-btn cancel" id="reportCancelBtn">Batal</button>
-                <button type="submit" class="report-btn submit" id="reportSubmitBtn">Kirim Laporan</button>
-            </div>
-        </form>
-    </div>
-</div>
+{{-- Report modal tidak ditampilkan di preview --}}
 
 {{-- FULLSCREEN MENU --}}
 <div class="fullmenu-overlay" id="fullmenuOverlay">
@@ -842,30 +847,7 @@ async function handleCheckout() {
     } catch { showToast('Gagal memproses checkout.','error'); }
 }
 
-// ── Report ──
-const REPORT_ENDPOINT = '{{ route('public.profile.report', $user->username) }}';
-const reportBtn = document.getElementById('reportBtn');
-const reportModalOverlay = document.getElementById('reportModalOverlay');
-function openReportModal()  { reportModalOverlay.classList.add('show'); document.body.style.overflow='hidden'; }
-function closeReportModal() { reportModalOverlay.classList.remove('show'); document.body.style.overflow='auto'; }
-reportBtn?.addEventListener('click', openReportModal);
-document.getElementById('reportCloseBtn')?.addEventListener('click', closeReportModal);
-document.getElementById('reportCancelBtn')?.addEventListener('click', closeReportModal);
-reportModalOverlay?.addEventListener('click', e => { if(e.target===reportModalOverlay) closeReportModal(); });
-document.getElementById('reportForm')?.addEventListener('submit', async function(e) {
-    e.preventDefault();
-    const fd = new FormData(this);
-    if (!fd.get('reason')) { showToast('Pilih alasan laporan terlebih dahulu.','error'); return; }
-    const btn = document.getElementById('reportSubmitBtn');
-    btn.disabled=true; btn.textContent='Mengirim...';
-    try {
-        const res = await fetch(REPORT_ENDPOINT, { method:'POST', headers:{'X-CSRF-TOKEN':csrfToken,'Accept':'application/json'}, body:fd });
-        const json = await res.json();
-        if (!res.ok||!json.success) throw new Error(json.message||'Gagal mengirim laporan.');
-        this.reset(); closeReportModal(); showToast('Laporan berhasil dikirim.','success');
-    } catch(err) { showToast(err.message||'Terjadi kesalahan.','error'); }
-    finally { btn.disabled=false; btn.textContent='Kirim Laporan'; }
-});
+// Report JS tidak ada di preview
 
 // ── Search ──
 const USERNAME             = '{{ $user->username }}';
@@ -961,28 +943,94 @@ async function doSearch(query) {
     } catch(err) { renderState('error','Gagal mencari',err?.message||'Terjadi kesalahan'); }
 }
 
-// ═══════════════════════════════════════════════════════
-// LIVE APPEARANCE SYNC + RELOAD SETELAH SAVE
-// ═══════════════════════════════════════════════════════
-// localStorage (same window tabs)
-window.addEventListener('storage', function(e) {
-    if (e.key === 'payou_saved') window.location.reload();
-});
-// Polling fallback - cek DB setiap 4 detik, reload kalau ada perubahan
-(function() {
-    let lastCheck = Date.now();
-    setInterval(async function() {
-        try {
-            const res = await fetch('/api/profile/{{ $user->username }}/updated_at?t=' + Date.now());
-            const data = await res.json();
-            if (data.updated_at && new Date(data.updated_at).getTime() > lastCheck) {
-                lastCheck = Date.now();
-                window.location.reload();
+// ── Live preview via postMessage dari appearance editor ──
+(function () {
+    function applyAppearance(p) {
+        if (!p) return;
+
+        if (p.bgCss) {
+            document.body.style.background           = p.bgCss;
+            document.body.style.backgroundSize       = 'cover';
+            document.body.style.backgroundAttachment = 'fixed';
+            document.body.style.backgroundRepeat     = 'no-repeat';
+            if (p.bgColor) document.body.style.backgroundColor = p.bgColor;
+            if (p.bgSize)  document.body.style.backgroundSize  = p.bgSize;
+        }
+
+        if (p.fontFamily) {
+            document.body.style.fontFamily = `'${p.fontFamily}', system-ui, -apple-system, sans-serif`;
+            injectFont(p.fontFamily);
+        }
+
+        if (p.textColor) {
+            document.querySelectorAll('[data-profile-text]').forEach(el => {
+                el.style.color = p.textColor;
+            });
+            // Update warna icon social links juga
+            document.querySelectorAll('.social-link').forEach(el => {
+                el.style.color = p.textColor;
+            });
+        }
+
+        if (p.btnCss || p.btnRadius) {
+            document.querySelectorAll('.block-link a').forEach(btn => applyBtnStyle(btn, p));
+            if (p.btnCss) document.querySelectorAll('.btn-buy').forEach(btn => applyBtnStyle(btn, p));
+        }
+    }
+
+    function applyBtnStyle(btn, p) {
+        btn.style.background      = '';
+        btn.style.backgroundColor = '';
+        btn.style.color           = '';
+        btn.style.border          = '';
+        btn.style.borderBottom    = '';
+        btn.style.borderRadius    = '';
+        btn.style.boxShadow       = '';
+        btn.style.backdropFilter  = '';
+
+        if (p.btnRadius && p.btn_style !== 'minimal') {
+            btn.style.borderRadius = p.btnRadius;
+        }
+        if (!p.btnCss) return;
+
+        p.btnCss.split(';').filter(s => s.trim()).forEach(pair => {
+            const idx = pair.indexOf(':');
+            if (idx === -1) return;
+            const prop = pair.slice(0, idx).trim();
+            const val  = pair.slice(idx + 1).trim();
+            if (!prop || !val) return;
+            const camel = prop.replace(/-([a-z])/g, (_, c) => c.toUpperCase());
+            try { btn.style[camel] = val; } catch(e) {}
+        });
+
+        if (p.btn_text_color) btn.style.color = p.btn_text_color;
+    }
+
+    function injectFont(fontName) {
+        const id = 'gf-' + fontName.replace(/\s+/g, '-').toLowerCase();
+        if (document.getElementById(id)) return;
+        const link = document.createElement('link');
+        link.id = id; link.rel = 'stylesheet';
+        link.href = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(fontName)}:wght@400;500;600;700&display=swap`;
+        document.head.appendChild(link);
+    }
+
+    // postMessage dari appearance iframe preview
+    window.addEventListener('message', function (e) {
+        if (!e.data || e.data.type !== 'payou_appearance_update') return;
+        applyAppearance(e.data.payload);
+    });
+
+    // BroadcastChannel setelah save di tab lain
+    if (typeof BroadcastChannel !== 'undefined') {
+        const bc = new BroadcastChannel('payou_appearance');
+        bc.onmessage = function (e) {
+            if (e.data && e.data.type === 'payou_appearance_saved') {
+                applyAppearance(e.data.payload);
             }
-        } catch(e) {}
-    }, 4000);
+        };
+    }
 })();
-// Tampilan diupdate via reload setelah save
 </script>
 </div>
 </body>

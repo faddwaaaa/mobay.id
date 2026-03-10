@@ -53,6 +53,11 @@ class User extends Authenticatable
         return $this->hasOne(UserProfile::class);
     }
 
+    public function userProfile()
+    {
+        return $this->hasOne(UserProfile::class); // alias untuk controller appearance
+    }
+
     public function links()
     {
         return $this->hasMany(Link::class);

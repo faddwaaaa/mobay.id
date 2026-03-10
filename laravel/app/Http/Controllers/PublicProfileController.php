@@ -11,21 +11,47 @@ use Illuminate\Http\Request;
 class PublicProfileController extends Controller
 {
     public function profile($username)
-    {
-        $user = User::where('username', $username)
-            ->with([
-                'pages.blocks',
-                'products.images'
-            ])
-            ->firstOrFail();
+{
+    $user = User::where('username', $username)
+        ->with([
+            'pages.blocks',
+            'products.images',
+            'profile'           // ← tambah ini
+        ])
+        ->firstOrFail();
 
-        $page = $user->pages->first();
+    $page    = $user->pages->first();
+    $profile = $user->profile;
 
-        return view('public.profile', compact(
-            'user',
-            'page'
-        ));
+    // Parse social_links dari JSON kolom
+    $socialLinks = [];
+    if ($profile && $profile->social_links) {
+        $decoded = is_array($profile->social_links)
+            ? $profile->social_links
+            : json_decode($profile->social_links, true);
+        $socialLinks = is_array($decoded) ? $decoded : [];
     }
+
+    // Fallback: cek kolom individual (telegram, instagram, dll)
+    if (empty($socialLinks) && $profile) {
+        $platforms = ['telegram','website','email_social','discord','tiktok',
+                      'instagram','youtube','twitch','linkedin','twitter_x',
+                      'facebook','behance','dribbble','whatsapp','spotify','threads'];
+        foreach ($platforms as $p) {
+            if (!empty($profile->$p)) {
+                $key = $p === 'twitter_x' ? 'x' : ($p === 'email_social' ? 'email' : $p);
+                $socialLinks[$key] = $profile->$p;
+            }
+        }
+    }
+
+    return view('public.profile', compact(
+        'user',
+        'page',
+        'profile',
+        'socialLinks'
+    ));
+}
 
     /**
      * ✅ BARU: Catat kunjungan halaman profil publik

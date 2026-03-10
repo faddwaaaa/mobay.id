@@ -474,6 +474,7 @@ body:not(.preload) .content-pad {
     to   { opacity: 1; transform: translateY(0); }
 }
     </style>
+    @stack('styles')
 </head>
 <body class="preload">
 
@@ -545,6 +546,12 @@ body:not(.preload) .content-pad {
            class="s-nav-item {{ request()->routeIs('links.*') ? 'active' : '' }}">
             <span class="s-icon"><i class="fas fa-link"></i></span>
             Link Saya
+        </a>
+
+        <a href="{{ route('dashboard.appearance') }}"
+        class="s-nav-item {{ request()->routeIs('dashboard.appearance') ? 'active' : '' }}">
+            <span class="s-icon"><i class="fas fa-palette"></i></span>
+            Tampilan
         </a>
 
         <a href="{{ route('analitik.index') }}"
@@ -693,5 +700,6 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 </script>
+@stack('scripts')
 </body>
 </html>
