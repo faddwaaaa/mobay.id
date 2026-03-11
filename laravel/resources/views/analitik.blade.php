@@ -69,6 +69,11 @@
                                 </div>
                             </div>
                         </div>
+                        <div style="display: flex; background: #f3f4f6; border-radius: 8px; padding: 3px; gap: 2px;">
+                            <button onclick="filterSales(7, this)" class="filter-sales-btn" style="padding: 6px 14px; font-size: 13px; font-weight: 500; border: none; background: #10b981; color: white; border-radius: 6px; cursor: pointer;">7H</button>
+                            <button onclick="filterSales(30, this)" class="filter-sales-btn" style="padding: 6px 14px; font-size: 13px; font-weight: 500; border: none; background: transparent; color: #6b7280; border-radius: 6px; cursor: pointer;">30H</button>
+                            <button onclick="filterSales(90, this)" class="filter-sales-btn" style="padding: 6px 14px; font-size: 13px; font-weight: 500; border: none; background: transparent; color: #6b7280; border-radius: 6px; cursor: pointer;">Semua</button>
+                        </div>
                     </div>
                     <div style="height: 200px;">
                         <canvas id="salesChart"></canvas>
@@ -124,7 +129,6 @@
     </div>
 </div>
 
-{{-- Hanya tambah media query, semua inline style asli tidak diubah --}}
 <style>
     @media (max-width: 900px) {
         .analitik-grid { grid-template-columns: 1fr !important; }
@@ -140,11 +144,10 @@
 <script>
 document.addEventListener('DOMContentLoaded', function () {
 
-    // ── Data dari server ──────────────────────────────────────
-    const allDates    = @json(collect($clicksPerDay)->pluck('date')->toArray());
-    const allViews    = @json(collect($clicksPerDay)->pluck('views')->toArray());
-    const allClicks   = @json(collect($clicksPerDay)->pluck('clicks')->toArray());
-    const allSales    = @json(collect($clicksPerDay)->pluck('sales')->toArray());
+    const allDates  = @json(collect($clicksPerDay)->pluck('date')->toArray());
+    const allViews  = @json(collect($clicksPerDay)->pluck('views')->toArray());
+    const allClicks = @json(collect($clicksPerDay)->pluck('clicks')->toArray());
+    const allSales  = @json(collect($clicksPerDay)->pluck('sales')->toArray());
 
     // ── Views & Clicks BAR Chart ──────────────────────────────
     const vcCtx = document.getElementById('viewsClicksChart').getContext('2d');
@@ -177,47 +180,21 @@ document.addEventListener('DOMContentLoaded', function () {
             plugins: {
                 legend: { display: false },
                 tooltip: {
-                    backgroundColor: '#1e293b',
-                    titleColor: '#fff',
-                    bodyColor: '#e2e8f0',
-                    borderColor: '#334155',
-                    borderWidth: 1,
-                    cornerRadius: 8,
+                    backgroundColor: '#1e293b', titleColor: '#fff',
+                    bodyColor: '#e2e8f0', borderColor: '#334155',
+                    borderWidth: 1, cornerRadius: 8,
                 }
             },
             scales: {
-                y: {
-                    beginAtZero: true,
-                    grid: { color: '#f1f5f9' },
-                    ticks: { color: '#9ca3af', font: { size: 11 } }
-                },
-                x: {
-                    grid: { display: false },
-                    ticks: { color: '#9ca3af', font: { size: 11 } }
-                }
+                y: { beginAtZero: true, grid: { color: '#f1f5f9' }, ticks: { color: '#9ca3af', font: { size: 11 } } },
+                x: { grid: { display: false }, ticks: { color: '#9ca3af', font: { size: 11 } } }
             }
         }
     });
 
-    // ── Filter 7H / 30H / Semua ───────────────────────────────
-    window.filterChart = function (days, btn) {
-        document.querySelectorAll('.filter-btn').forEach(b => {
-            b.style.background = 'transparent';
-            b.style.color = '#6b7280';
-        });
-        btn.style.background = '#2563eb';
-        btn.style.color = 'white';
-
-        const slice = days === 90 ? allDates.length : days;
-        vcChart.data.labels = allDates.slice(-slice);
-        vcChart.data.datasets[0].data = allViews.slice(-slice);
-        vcChart.data.datasets[1].data = allClicks.slice(-slice);
-        vcChart.update();
-    };
-
     // ── Total Sales LINE Chart ────────────────────────────────
     const salesCtx = document.getElementById('salesChart').getContext('2d');
-    new Chart(salesCtx, {
+    let salesChart = new Chart(salesCtx, {
         type: 'line',
         data: {
             labels: allDates.slice(-7),
@@ -241,15 +218,10 @@ document.addEventListener('DOMContentLoaded', function () {
             plugins: {
                 legend: { display: false },
                 tooltip: {
-                    backgroundColor: '#1e293b',
-                    titleColor: '#fff',
-                    bodyColor: '#e2e8f0',
-                    borderColor: '#334155',
-                    borderWidth: 1,
-                    cornerRadius: 8,
-                    callbacks: {
-                        label: ctx => 'Rp ' + ctx.parsed.y.toLocaleString('id-ID')
-                    }
+                    backgroundColor: '#1e293b', titleColor: '#fff',
+                    bodyColor: '#e2e8f0', borderColor: '#334155',
+                    borderWidth: 1, cornerRadius: 8,
+                    callbacks: { label: ctx => 'Rp ' + ctx.parsed.y.toLocaleString('id-ID') }
                 }
             },
             scales: {
@@ -257,18 +229,45 @@ document.addEventListener('DOMContentLoaded', function () {
                     beginAtZero: true,
                     grid: { color: '#f1f5f9' },
                     ticks: {
-                        color: '#9ca3af',
-                        font: { size: 11 },
+                        color: '#9ca3af', font: { size: 11 },
                         callback: v => 'Rp ' + (v/1000 >= 1 ? (v/1000)+'rb' : v)
                     }
                 },
-                x: {
-                    grid: { display: false },
-                    ticks: { color: '#9ca3af', font: { size: 11 } }
-                }
+                x: { grid: { display: false }, ticks: { color: '#9ca3af', font: { size: 11 } } }
             }
         }
     });
+
+    // ── Filter Views & Clicks ─────────────────────────────────
+    window.filterChart = function (days, btn) {
+        document.querySelectorAll('.filter-btn').forEach(b => {
+            b.style.background = 'transparent';
+            b.style.color = '#6b7280';
+        });
+        btn.style.background = '#2563eb';
+        btn.style.color = 'white';
+
+        const slice = days === 90 ? allDates.length : days;
+        vcChart.data.labels = allDates.slice(-slice);
+        vcChart.data.datasets[0].data = allViews.slice(-slice);
+        vcChart.data.datasets[1].data = allClicks.slice(-slice);
+        vcChart.update();
+    };
+
+    // ── Filter Sales ──────────────────────────────────────────
+    window.filterSales = function (days, btn) {
+        document.querySelectorAll('.filter-sales-btn').forEach(b => {
+            b.style.background = 'transparent';
+            b.style.color = '#6b7280';
+        });
+        btn.style.background = '#10b981';
+        btn.style.color = 'white';
+
+        const slice = days === 90 ? allDates.length : days;
+        salesChart.data.labels = allDates.slice(-slice);
+        salesChart.data.datasets[0].data = allSales.slice(-slice);
+        salesChart.update();
+    };
 
 });
 </script>
