@@ -714,31 +714,42 @@
     {{-- ═══════════ PREVIEW ═══════════ --}}
     <div class="ap-preview">
         <div class="ap-preview-label">Preview Langsung</div>
-        <div class="phone-outer">
-            <div class="phone-wrap">
-                <div class="phone-inner">
-                    <div class="phone-status-bar">
-                        <div class="phone-notch"></div>
-                        <span class="phone-status-time">9:41</span>
-                        <div class="phone-status-icons">
-                            <svg width="15" height="11" viewBox="0 0 15 11" fill="#111"><rect x="0" y="3" width="3" height="8" rx="1"/><rect x="4" y="2" width="3" height="9" rx="1"/><rect x="8" y="0.5" width="3" height="10.5" rx="1"/><rect x="12" y="0" width="2.5" height="11" rx="1" opacity=".3"/></svg>
-                            <svg width="15" height="11" viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="2" stroke-linecap="round"><path d="M1.5 8.5C5.5 4.5 18.5 4.5 22.5 8.5M5 12C8 9 16 9 19 12M9 15.5c1.5-1.5 5.5-1.5 7 0M13 19h.01"/></svg>
-                            <svg width="25" height="12" viewBox="0 0 25 12" fill="none"><rect x="0.5" y="0.5" width="21" height="11" rx="3.5" stroke="#111" stroke-opacity="0.35"/><rect x="2" y="2" width="17" height="8" rx="2" fill="#111"/><path d="M23 4.5V7.5C23.8 7.2 24.5 6.4 24.5 6C24.5 5.6 23.8 4.8 23 4.5Z" fill="#111" fill-opacity="0.4"/></svg>
+        <div style="position:relative;width:290px;height:700px;border-radius:42px;background:linear-gradient(160deg,#dde0e4 0%,#c2c7cc 40%,#d4d8db 70%,#b0b5ba 100%);box-shadow:0 0 0 1px rgba(255,255,255,0.6),0 0 0 2.5px #909599,0 0 0 3.5px #636870,0 0 0 5px #bec3c8,0 20px 44px rgba(0,0,0,0.35),inset 0 1px 0 rgba(255,255,255,0.45);">
+            <div style="position:absolute;right:-3px;top:130px;width:3px;height:56px;background:linear-gradient(to right,#888d94,#b2b7bc);border-radius:0 3px 3px 0;"></div>
+            <div style="position:absolute;left:-3px;top:80px;width:3px;height:20px;background:linear-gradient(to left,#888d94,#b2b7bc);border-radius:3px 0 0 3px;"></div>
+            <div style="position:absolute;left:-3px;top:107px;width:3px;height:36px;background:linear-gradient(to left,#888d94,#b2b7bc);border-radius:3px 0 0 3px;"></div>
+            <div style="position:absolute;left:-3px;top:152px;width:3px;height:36px;background:linear-gradient(to left,#888d94,#b2b7bc);border-radius:3px 0 0 3px;"></div>
+            <div style="position:absolute;inset:5px;border-radius:38px;background:#080808;overflow:hidden;">
+                <div style="position:absolute;inset:0;border-radius:38px;background:#fff;overflow:hidden;">
+                    <div style="position:absolute;top:0;left:0;right:0;height:44px;z-index:30;display:flex;align-items:flex-end;justify-content:space-between;padding:0 18px 6px;background:#fff;pointer-events:none;">
+                        <span style="font-size:11px;font-weight:600;color:#111;">9:41</span>
+                        <div style="display:flex;align-items:center;gap:3px;">
+                            <svg width="13" height="10" viewBox="0 0 17 12" fill="#111"><rect x="0" y="7" width="3" height="5" rx="0.8"/><rect x="4.5" y="4.5" width="3" height="7.5" rx="0.8"/><rect x="9" y="2" width="3" height="10" rx="0.8"/><rect x="13.5" y="0" width="3" height="12" rx="0.8" opacity="0.3"/></svg>
+                            <svg width="12" height="10" viewBox="0 0 16 12" fill="#111"><circle cx="8" cy="10.5" r="1.5"/><path d="M3.5 6.5a6.5 6.5 0 019 0" stroke="#111" stroke-width="1.5" stroke-linecap="round" fill="none"/><path d="M1 4a10 10 0 0114 0" stroke="#111" stroke-width="1.5" stroke-linecap="round" fill="none" opacity="0.45"/></svg>
+                            <svg width="19" height="10" viewBox="0 0 25 12" fill="#111"><rect x="0.5" y="0.5" width="21" height="11" rx="2.5" stroke="#111" stroke-width="1" fill="none"/><rect x="22" y="3.5" width="2.5" height="5" rx="1" fill="#111" opacity="0.4"/><rect x="2" y="2" width="16" height="8" rx="1.5"/></svg>
                         </div>
                     </div>
-                    <div class="phone-screen">
-                        <iframe id="previewFrame" src="{{ route('dashboard.appearance.preview') }}" title="Preview profil"></iframe>
+                    <div style="position:absolute;top:10px;left:50%;transform:translateX(-50%);width:90px;height:25px;background:#080808;border-radius:14px;z-index:40;"></div>
+                    <div style="position:absolute;top:44px;left:0;right:0;bottom:0;border-radius:0 0 38px 38px;overflow:hidden;">
+                        <iframe
+                            id="previewFrame"
+                            src="{{ route('dashboard.appearance.preview') }}"
+                            title="Preview profil"
+                            style="position:absolute;top:0;left:0;width:375px;height:calc(100% / 0.7467 + 34px);transform:scale(0.7467);transform-origin:top left;border:none;background:#fff;display:block;">
+                        </iframe>
                     </div>
-                    <div class="phone-home-bar"></div>
+                    <div style="position:absolute;bottom:7px;left:50%;transform:translateX(-50%);width:90px;height:3px;background:rgba(0,0,0,0.22);border-radius:2px;z-index:30;pointer-events:none;"></div>
+                    <div style="position:absolute;inset:0;border-radius:38px;background:linear-gradient(130deg,rgba(255,255,255,0.16) 0%,rgba(255,255,255,0.05) 28%,transparent 55%);pointer-events:none;z-index:50;"></div>
                 </div>
             </div>
         </div>
-        <div class="ap-preview-url">
+        <!-- <div class="ap-preview-url">
             <svg width="11" height="11" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
             payou.id/<strong>{{ $user->username }}</strong>
-        </div>
+        </div> -->
+
         <button class="btn-refresh-preview" onclick="reloadPreview()">
-            <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+            <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24" margin="0 8px 0 0"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
             Refresh Preview
         </button>
     </div>
