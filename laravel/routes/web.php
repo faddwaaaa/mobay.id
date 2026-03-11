@@ -360,8 +360,9 @@ Route::get('/{short_code}', function ($short_code) {
         // Blokir profil user yang disuspend
         if ($user->is_suspended) abort(404);
 
-        $page = $user->pages->first();
-        return view('public.profile', compact('user', 'page'));
+        $profile     = $user->userProfile;
+        $socialLinks = collect($profile?->social_links ?? [])->filter()->toArray();
+        return view('public.profile', compact('user', 'profile', 'socialLinks'));
     }
     return app(\App\Http\Controllers\LinkController::class)->redirect(request(), $short_code);
 })->where('short_code', '[a-zA-Z0-9]{6,8}')->name('link.redirect.code');
@@ -374,6 +375,7 @@ Route::get('/{username}', function ($username) {
     // Blokir profil user yang disuspend
     if ($user->is_suspended) abort(404);
 
-    $page = $user->pages->first();
-    return view('public.profile', compact('user', 'page'));
+    $profile     = $user->userProfile;
+    $socialLinks = collect($profile?->social_links ?? [])->filter()->toArray();
+    return view('public.profile', compact('user', 'profile', 'socialLinks'));
 })->where('username', '[a-zA-Z0-9_]+')->name('public.profile');
