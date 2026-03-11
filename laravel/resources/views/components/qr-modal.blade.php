@@ -55,8 +55,8 @@
             <!-- QR Code Container -->
             <div style="background:linear-gradient(145deg,#ffffff 0%,#f8fbff 100%); border:2px solid #e6f0ff; border-radius:16px; padding:20px;
                         margin-bottom:16px; display:flex; justify-content:center; position:relative; box-shadow:0 8px 20px rgba(0,102,204,0.08);">
-                <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:64px; height:36px; background:#ffffff; border-radius:10px; display:flex; align-items:center; justify-content:center; box-shadow:0 3px 12px rgba(0,102,204,0.22); border:2px solid #e6f0ff; z-index:10; pointer-events:none;">
-                    <span style="color:#0066CC; font-weight:800; font-size:12px; letter-spacing:-0.3px; line-height:1;">payou<span style="color:#3b82f6;">.</span>id</span>
+                <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:50px; height:50px; background:#ffffff; border-radius:16px; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 8px rgba(0,102,204,0.12); border:6px solid #ffffff; z-index:10; pointer-events:none; overflow:hidden;">
+                    <img src="{{ asset('img/icon.png') }}" alt="Payou.id" style="width:100%; height:100%; object-fit:cover; display:block; border-radius:10px;" onerror="this.parentElement.style.display='none';">
                 </div>
                 <div id="qrcode" style="position:relative; filter:drop-shadow(0 4px 8px rgba(0,102,204,0.1));"></div>
             </div>
@@ -121,8 +121,8 @@
 
     <!-- QR Code Container dengan logo Payou di tengah -->
     <div style="display:flex; justify-content:center; align-items:center; margin-bottom:20px; background:linear-gradient(145deg,#ffffff,#f8fbff); padding:20px; border-radius:24px; box-shadow:0 15px 35px rgba(0,102,204,0.15); border:1px solid #e6f0ff; flex:1; position:relative;">
-        <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:72px; height:40px; background:#ffffff; border-radius:11px; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 14px rgba(0,102,204,0.22); border:2px solid #e6f0ff; z-index:10; pointer-events:none;">
-            <span style="color:#0066CC; font-weight:800; font-size:13px; letter-spacing:-0.3px; line-height:1;">payou<span style="color:#3b82f6;">.</span>id</span>
+        <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:60px; height:60px; background:#ffffff; border-radius:18px; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 10px rgba(0,102,204,0.14); border:7px solid #ffffff; z-index:10; pointer-events:none; overflow:hidden;">
+            <img src="{{ asset('img/icon.png') }}" alt="Payou.id" style="width:100%; height:100%; object-fit:cover; display:block; border-radius:11px;" onerror="this.parentElement.style.display='none';">
         </div>
         <div id="poster-qrcode" style="display:flex; justify-content:center; align-items:center;"></div>
     </div>
@@ -173,6 +173,7 @@
 let currentQRCode   = null;
 let currentUrl      = '';
 let currentUsername = '';
+const QR_DOWNLOAD_FILE = () => `payou-${currentUsername}.png`;
 
 function buildShareCaption() {
     return `Halo,\n\nSaya ingin berbagi kartu digital Payou.id saya.\n${currentUrl}\n\nScan QR pada gambar untuk membuka profil saya.`;
@@ -217,6 +218,21 @@ async function buildPosterImageUrl() {
             URL.revokeObjectURL(imageUrl);
         },
     };
+}
+
+async function buildPosterBlob() {
+    const posterAsset = await buildPosterImageUrl();
+
+    try {
+        const response = await fetch(posterAsset.imageUrl);
+        if (!response.ok) {
+            throw new Error('Gagal mengambil gambar poster QR.');
+        }
+
+        return await response.blob();
+    } finally {
+        posterAsset.revoke();
+    }
 }
 
 function getShareFallbackMessage() {
@@ -383,60 +399,24 @@ async function copyQRLink() {
     }
 }
 
-function downloadQRCode() {
+async function downloadQRCode() {
     const srcCanvas = document.querySelector('#qrcode canvas');
     if (!srcCanvas) return;
 
-    const QR_SIZE = 400;
-    const PAD     = 20;
-    const LABEL_H = 40;
-    const W = QR_SIZE + PAD * 2;
-    const H = QR_SIZE + PAD * 2 + LABEL_H;
-
-    const out = document.createElement('canvas');
-    out.width  = W;
-    out.height = H;
-    const ctx  = out.getContext('2d');
-
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(0, 0, W, H);
-    ctx.drawImage(srcCanvas, PAD, PAD, QR_SIZE, QR_SIZE);
-
-    // Logo "payou.id" — pill landscape di tengah
-    const BOX_W = 110; const BOX_H = 46;
-    const logoX = (W - BOX_W) / 2;
-    const logoY = PAD + (QR_SIZE - BOX_H) / 2;
-    ctx.shadowColor = 'rgba(0,102,204,0.22)'; ctx.shadowBlur = 16; ctx.shadowOffsetY = 3;
-    ctx.fillStyle = '#ffffff';
-    ctx.beginPath(); ctx.roundRect(logoX, logoY, BOX_W, BOX_H, 12); ctx.fill();
-    ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
-    // border tipis biru muda
-    ctx.strokeStyle = '#e6f0ff'; ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.roundRect(logoX, logoY, BOX_W, BOX_H, 12); ctx.stroke();
-    // teks "payou" biru tua
-    ctx.fillStyle = '#0066CC'; ctx.font = 'bold 18px Arial, sans-serif';
-    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText('payou', W / 2 - 12, logoY + BOX_H / 2);
-    // titik biru muda
-    ctx.fillStyle = '#3b82f6';
-    ctx.fillText('.', W / 2 + 20, logoY + BOX_H / 2);
-    // teks "id" biru tua
-    ctx.fillStyle = '#0066CC';
-    ctx.fillText('id', W / 2 + 32, logoY + BOX_H / 2);
-    ctx.textBaseline = 'alphabetic';
-
-    // @username sebagai watermark di download
-    ctx.fillStyle = '#0066CC';
-    ctx.font      = 'bold 15px Arial, sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText('@' + currentUsername, W / 2, PAD + QR_SIZE + 26);
-
-    const link    = document.createElement('a');
-    link.download = `payou-${currentUsername}.png`;
-    link.href     = out.toDataURL('image/png', 1.0);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    try {
+        const blob = await buildPosterBlob();
+        const fileUrl = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.download = QR_DOWNLOAD_FILE();
+        link.href = fileUrl;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        setTimeout(() => URL.revokeObjectURL(fileUrl), 1000);
+    } catch (error) {
+        console.error('Download QR gagal:', error);
+        alert('Gagal menyiapkan file QR. Coba lagi.');
+    }
 }
 
 async function legacyShareToWhatsApp() {
