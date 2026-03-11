@@ -32,8 +32,6 @@
 
         /* LOGO */
         .logo-bar { text-align: center; margin-bottom: 20px; }
-        .logo-bar span { font-size: 22px; font-weight: 900; color: var(--brand); letter-spacing: -.5px; }
-        .logo-bar span em { color: var(--ink); font-style: normal; }
 
         /* CARD */
         .card {
@@ -162,28 +160,16 @@
         .form-group textarea:focus { border-color: var(--danger); box-shadow: 0 0 0 3px rgba(220,38,38,.08); }
         .form-group textarea { min-height: 90px; }
 
-        /* BTN REPORT */
-        .btn-report {
-            width: 100%; background: var(--danger); color: #fff;
+        /* BTN WA */
+        .btn-wa {
+            width: 100%; background: #16a34a; color: #fff;
             border: none; border-radius: 12px; padding: 12px;
             font-size: 14px; font-weight: 900; font-family: 'Nunito', sans-serif;
             cursor: pointer; transition: background .2s;
             display: flex; align-items: center; justify-content: center; gap: 8px;
         }
-        .btn-report svg { width: 16px; height: 16px; }
-        .btn-report:hover { background: #b91c1c; }
-        .btn-report:disabled { background: #fca5a5; cursor: not-allowed; }
-
-        /* REPORT SUCCESS */
-        .report-success {
-            display: none;
-            background: var(--ok-light); border: 1.5px solid #bbf7d0;
-            border-radius: 12px; padding: 14px 16px;
-            font-size: 14px; font-weight: 700; color: var(--ok);
-            margin-top: 12px; align-items: center; justify-content: center; gap: 8px;
-        }
-        .report-success.show { display: flex; }
-        .report-success svg { width: 18px; height: 18px; flex-shrink: 0; }
+        .btn-wa svg { width: 18px; height: 18px; }
+        .btn-wa:hover { background: #15803d; }
 
         /* FOOTER */
         .footer { text-align: center; margin-top: 18px; font-size: 12px; color: var(--muted); }
@@ -285,19 +271,13 @@
                     <textarea id="reportDesc" placeholder="Ceritakan masalah yang kamu alami, misalnya: file tidak bisa dibuka, file kosong, link error, dll..."></textarea>
                 </div>
 
-                <button class="btn-report" id="btnReport" onclick="kirimLaporan()">
-                    <svg fill="none" stroke="#fff" stroke-width="2" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                <button class="btn-wa" id="btnReport" onclick="kirimLaporan()">
+                    <svg fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
+                        <path d="M12 0C5.373 0 0 5.373 0 12c0 2.123.554 4.117 1.528 5.845L.057 23.547a.75.75 0 00.921.921l5.702-1.471A11.95 11.95 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.907 0-3.7-.505-5.25-1.385l-.374-.217-3.884 1.002 1.002-3.884-.217-.374A9.953 9.953 0 012 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/>
                     </svg>
-                    Kirim Laporan ke CS
+                    Chat CS via WhatsApp
                 </button>
-
-                <div class="report-success" id="reportSuccess">
-                    <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
-                    </svg>
-                    Laporan berhasil dikirim! Tim CS akan menghubungi kamu segera.
-                </div>
             </div>
 
         </div>
@@ -320,52 +300,27 @@ function toggleMasalah() {
     }
 }
 
-async function kirimLaporan() {
+function kirimLaporan() {
     const name  = document.getElementById('reportName').value.trim();
     const email = document.getElementById('reportEmail').value.trim();
     const order = document.getElementById('reportOrder').value.trim();
     const desc  = document.getElementById('reportDesc').value.trim();
-    const btn     = document.getElementById('btnReport');
-    const success = document.getElementById('reportSuccess');
 
     if (!name || !email || !desc) {
         alert('Nama, email, dan deskripsi masalah wajib diisi!');
         return;
     }
 
-    btn.disabled = true;
-    btn.innerHTML = `<svg fill="none" stroke="#fff" stroke-width="2" viewBox="0 0 24 24" width="16" height="16" style="animation:spin .7s linear infinite"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg> Mengirim...`;
+    const text = encodeURIComponent(
+        'Halo CS Payou.id, saya ingin melaporkan masalah:\n\n' +
+        'Nama: ' + name + '\n' +
+        'Email: ' + email + '\n' +
+        'Order: ' + (order || '-') + '\n' +
+        'Produk: {{ $product }}' + '\n\n' +
+        'Masalah:\n' + desc
+    );
 
-    try {
-        const res = await fetch('/api/report-digital-problem', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-            },
-            body: JSON.stringify({
-                name, email,
-                order_id: order,
-                description: desc,
-                product: '{{ $product }}',
-                token: '{{ $token }}',
-            })
-        });
-
-        const data = await res.json();
-        if (data.success) {
-            success.classList.add('show');
-            btn.style.display = 'none';
-        } else {
-            throw new Error(data.message || 'Gagal');
-        }
-    } catch (e) {
-        const subject = encodeURIComponent('[Laporan Masalah] Produk: {{ $product }}');
-        const body = encodeURIComponent('Nama: ' + name + '\nEmail: ' + email + '\nOrder: ' + (order||'-') + '\nProduk: {{ $product }}\n\nMasalah:\n' + desc);
-        window.location.href = 'mailto:smeganemolab@gmail.com?subject=' + subject + '&body=' + body;
-        btn.disabled = false;
-        btn.innerHTML = `<svg fill="none" stroke="#fff" stroke-width="2" viewBox="0 0 24 24" width="16" height="16"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg> Kirim Laporan ke CS`;
-    }
+    window.open('https://wa.me/6285185025484?text=' + text, '_blank');
 }
 </script>
 </body>
