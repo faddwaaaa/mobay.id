@@ -1215,6 +1215,39 @@ function reloadPreview() {
     if (f) f.src = f.src;
 }
 
+function hidePreviewFrameScrollbar(frameId) {
+    const frame = document.getElementById(frameId);
+    if (!frame) return;
+
+    try {
+        const doc = frame.contentDocument || frame.contentWindow?.document;
+        if (!doc?.head || !doc.body) return;
+
+        let styleEl = doc.getElementById('payou-hide-preview-scrollbar');
+        if (!styleEl) {
+            styleEl = doc.createElement('style');
+            styleEl.id = 'payou-hide-preview-scrollbar';
+            styleEl.textContent = `
+                html, body {
+                    scrollbar-width: none !important;
+                    -ms-overflow-style: none !important;
+                }
+                html::-webkit-scrollbar,
+                body::-webkit-scrollbar,
+                *::-webkit-scrollbar {
+                    width: 0 !important;
+                    height: 0 !important;
+                    display: none !important;
+                    background: transparent !important;
+                }
+            `;
+            doc.head.appendChild(styleEl);
+        }
+    } catch (error) {
+        console.warn('Tidak bisa menyembunyikan scrollbar preview:', error);
+    }
+}
+
 // ═══════════════════════════════════════════
 // SAVE & RESET
 // ═══════════════════════════════════════════
@@ -1245,7 +1278,14 @@ async function saveAppearance() {
             isDirty = false;
             showToast('Tampilan berhasil disimpan! ✓', 'success');
             setTimeout(reloadPreview, 400);
-            // Kasih tau tab profil publik supaya reload
+            if (typeof BroadcastChannel !== 'undefined' && data.broadcast_payload) {
+                const bc = new BroadcastChannel('payou_appearance');
+                bc.postMessage({
+                    type: 'payou_appearance_saved',
+                    payload: data.broadcast_payload,
+                });
+                bc.close();
+            }
             localStorage.setItem('payou_saved', Date.now());
         } else {
             const errMsg = data.message
@@ -1287,7 +1327,10 @@ function showToast(msg, type = 'default') {
 }
 
 // ─── Init ───
-document.getElementById('previewFrame').addEventListener('load', () => setTimeout(updatePreview, 300));
+document.getElementById('previewFrame').addEventListener('load', () => {
+    hidePreviewFrameScrollbar('previewFrame');
+    setTimeout(updatePreview, 300);
+});
 // auto-save aktif — tidak perlu beforeunload warning
 </script>
 @endpush

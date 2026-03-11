@@ -334,10 +334,13 @@ Route::post('/{username}/report', [PublicProfileReportController::class, 'store'
 */
 Route::get('/preview/{username}', function ($username) {
     $user = User::where('username', $username)
-        ->with(['pages' => fn ($q) => $q->with('blocks')])
+        ->with(['profile', 'pages' => fn ($q) => $q->with('blocks')])
         ->firstOrFail();
-    $page = $user->pages->first();
-    return view('preview', compact('user', 'page'));
+
+    $profile = $user->userProfile;
+    $socialLinks = collect($profile?->social_links ?? [])->filter()->toArray();
+
+    return view('public.profile', compact('user', 'profile', 'socialLinks'));
 })->name('preview.profile');
 
 

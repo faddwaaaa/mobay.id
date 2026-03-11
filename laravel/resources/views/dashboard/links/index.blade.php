@@ -787,6 +787,39 @@ function showBuilderToast(msg, type) {
     }, 3000);
 }
 
+function hidePreviewFrameScrollbar(frameId) {
+    const frame = document.getElementById(frameId);
+    if (!frame) return;
+
+    try {
+        const doc = frame.contentDocument || frame.contentWindow?.document;
+        if (!doc?.head || !doc.body) return;
+
+        let styleEl = doc.getElementById('payou-hide-preview-scrollbar');
+        if (!styleEl) {
+            styleEl = doc.createElement('style');
+            styleEl.id = 'payou-hide-preview-scrollbar';
+            styleEl.textContent = `
+                html, body {
+                    scrollbar-width: none !important;
+                    -ms-overflow-style: none !important;
+                }
+                html::-webkit-scrollbar,
+                body::-webkit-scrollbar,
+                *::-webkit-scrollbar {
+                    width: 0 !important;
+                    height: 0 !important;
+                    display: none !important;
+                    background: transparent !important;
+                }
+            `;
+            doc.head.appendChild(styleEl);
+        }
+    } catch (error) {
+        console.warn('Tidak bisa menyembunyikan scrollbar preview:', error);
+    }
+}
+
 // ============================================
 // PAGE FUNCTIONS
 // ============================================
@@ -1139,6 +1172,11 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeAllModa
 
 document.addEventListener('DOMContentLoaded', function() {
     loadBlockProductInfos();
+
+    const previewFrame = document.getElementById('preview');
+    if (previewFrame) {
+        previewFrame.addEventListener('load', () => hidePreviewFrameScrollbar('preview'));
+    }
 
     // Sortable
     const blockList = document.getElementById('blockList');
