@@ -17,7 +17,7 @@
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
-<body class="font-sans antialiased min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 text-white">
+<body class="font-sans antialiased min-h-screen text-slate-900" style="background:linear-gradient(180deg,#eef4ff 0%,#f6f9ff 50%,#edf3ff 100%);">
         <div class="min-h-screen">
             @include('layouts.navigation')
 

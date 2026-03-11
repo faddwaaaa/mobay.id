@@ -40,7 +40,7 @@
     --sb-active:        #1d4ed8;
     --sb-active-text:   #ffffff;
     --sb-border:        #e5e7eb;
-    --page-bg:          #f1f5f9;
+    --page-bg:          linear-gradient(180deg, #eef4ff 0%, #f5f8ff 52%, #edf3ff 100%);
     --sidebar-w:        250px;
     --nav-font:         'Plus Jakarta Sans', sans-serif;
     --accent:           #1d4ed8;
