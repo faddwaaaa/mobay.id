@@ -20,6 +20,8 @@
 .ap-editor {
     padding: 32px 36px 120px;
     max-width: 780px;
+    min-width: 0;
+    width: 100%;
 }
 .ap-editor h1 { font-size: 22px; font-weight: 700; color: #111827; margin: 0 0 4px; }
 .ap-subtitle  { font-size: 13.5px; color: #9ca3af; margin: 0 0 28px; }
@@ -375,10 +377,59 @@
 .ap-divider { height: 1px; background: #f1f5f9; margin: 16px 0; }
 
 @media (max-width: 1080px) {
-    .ap-layout { grid-template-columns: 1fr; }
-    .ap-preview { display: none; }
-    .ap-save-bar { margin: 0 -16px; padding: 14px 20px; }
-    .ap-editor   { padding: 20px 16px 100px; }
+    body { overflow-x: hidden; }
+    .ap-layout { grid-template-columns: 1fr; overflow-x: hidden; }
+    .ap-editor { padding: 20px 16px 100px; max-width: none; overflow-x: hidden; }
+    .ap-preview {
+        position: static;
+        top: auto;
+        height: auto;
+        min-height: 0;
+        border-left: none;
+        border-top: 1px solid #e5e7eb;
+        padding: 28px 16px calc(32px + env(safe-area-inset-bottom, 0px));
+        background: #f8fafc;
+        display: flex;
+        order: 2;
+    }
+    .ap-save-bar {
+        margin: 0 -16px;
+        padding: 14px 20px;
+        flex-wrap: wrap;
+    }
+    .save-bar-actions {
+        width: 100%;
+    }
+    .btn-reset-def,
+    .btn-save-ap {
+        flex: 1;
+    }
+}
+
+@media (max-width: 768px) {
+    .ap-preview-phone {
+        transform: scale(0.94);
+        transform-origin: top center;
+        margin: -12px auto 0;
+    }
+    .font-grid,
+    .btn-style-grid,
+    .color-row-2 {
+        grid-template-columns: 1fr;
+    }
+    .wg-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    .dir-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 420px) {
+    .ap-preview-phone {
+        transform: scale(0.84);
+        margin: -36px auto -18px;
+    }
 }
 </style>
 @endpush
@@ -714,7 +765,7 @@
     {{-- ═══════════ PREVIEW ═══════════ --}}
     <div class="ap-preview">
         <div class="ap-preview-label">Preview Langsung</div>
-        <div style="position:relative;width:290px;height:700px;border-radius:42px;background:linear-gradient(160deg,#dde0e4 0%,#c2c7cc 40%,#d4d8db 70%,#b0b5ba 100%);box-shadow:0 0 0 1px rgba(255,255,255,0.6),0 0 0 2.5px #909599,0 0 0 3.5px #636870,0 0 0 5px #bec3c8,0 20px 44px rgba(0,0,0,0.35),inset 0 1px 0 rgba(255,255,255,0.45);">
+        <div class="ap-preview-phone" style="position:relative;width:290px;height:600px;border-radius:42px;background:linear-gradient(160deg,#dde0e4 0%,#c2c7cc 40%,#d4d8db 70%,#b0b5ba 100%);box-shadow:0 0 0 1px rgba(255,255,255,0.6),0 0 0 2.5px #909599,0 0 0 3.5px #636870,0 0 0 5px #bec3c8,0 20px 44px rgba(0,0,0,0.35),inset 0 1px 0 rgba(255,255,255,0.45);">
             <div style="position:absolute;right:-3px;top:130px;width:3px;height:56px;background:linear-gradient(to right,#888d94,#b2b7bc);border-radius:0 3px 3px 0;"></div>
             <div style="position:absolute;left:-3px;top:80px;width:3px;height:20px;background:linear-gradient(to left,#888d94,#b2b7bc);border-radius:3px 0 0 3px;"></div>
             <div style="position:absolute;left:-3px;top:107px;width:3px;height:36px;background:linear-gradient(to left,#888d94,#b2b7bc);border-radius:3px 0 0 3px;"></div>
