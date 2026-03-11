@@ -66,7 +66,7 @@
             width: min(100%, 420px);
             max-width: 420px;
             margin: 0 auto;
-            background: transparent; /* transparan biar bg body keliatan */
+            background: transparent;
             min-height: 100vh;
             position: relative;
             overflow-x: hidden;
@@ -249,31 +249,203 @@
             padding: 10px 16px 4px;
         }
 
-        /* Report Modal */
+        /* ════════════════════════════════════════
+           REPORT MODAL — NEW MULTI-STEP VERSION
+        ════════════════════════════════════════ */
         .report-modal-overlay {
             position: fixed; inset: 0;
-            background: rgba(15,23,42,0.55); backdrop-filter: blur(2px);
+            background: rgba(15,23,42,0.6);
+            backdrop-filter: blur(3px);
             display: none; align-items: center; justify-content: center;
             z-index: 10000; padding: 16px;
         }
         .report-modal-overlay.show { display: flex; }
-        .report-modal { width: 100%; max-width: 420px; background: #fff; border: 1px solid #e5e7eb; border-radius: 16px; box-shadow: 0 24px 50px rgba(0,0,0,0.2); overflow: hidden; }
-        .report-head { padding: 14px 16px; border-bottom: 1px solid #eef2f7; display: flex; align-items: center; justify-content: space-between; }
-        .report-title { font-size: 15px; font-weight: 800; color: #0f172a; }
-        .report-close { width: 30px; height: 30px; border-radius: 8px; border: none; background: #f1f5f9; color: #475569; cursor: pointer; }
-        .report-body { padding: 14px 16px 16px; }
-        .report-sub { font-size: 12px; color: #64748b; margin-bottom: 10px; line-height: 1.45; }
-        .reason-list { display: grid; gap: 8px; margin-bottom: 10px; }
-        .reason-item { display: flex; align-items: center; gap: 9px; border: 1px solid #e2e8f0; border-radius: 10px; padding: 9px 10px; cursor: pointer; font-size: 13px; color: #1e293b; font-weight: 600; background: #fff; }
-        .reason-item:hover { border-color: #93c5fd; background: #eff6ff; }
-        .reason-item input { accent-color: #2563eb; }
-        .report-textarea { width: 100%; min-height: 92px; border: 1px solid #dbe2ea; border-radius: 10px; padding: 10px 12px; font-size: 13px; color: #0f172a; resize: vertical; outline: none; font-family: inherit; }
-        .report-textarea:focus { border-color: #2563eb; }
-        .report-actions { margin-top: 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        .report-btn { border: none; border-radius: 10px; padding: 10px 12px; font-size: 13px; font-weight: 700; cursor: pointer; }
-        .report-btn.cancel { background: #f1f5f9; color: #475569; }
-        .report-btn.submit { background: #dc2626; color: #fff; }
-        .report-btn.submit:disabled { opacity: .6; cursor: not-allowed; }
+
+        .report-modal {
+            width: 100%; max-width: 440px;
+            background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+            border: 1px solid rgba(226,232,240,0.95);
+            border-radius: 24px;
+            box-shadow: 0 32px 64px rgba(15,23,42,0.18);
+            overflow: hidden; max-height: 92vh; display: flex; flex-direction: column;
+        }
+
+        /* Step indicator */
+        .report-steps {
+            display: flex; gap: 0;
+            background: #f8fafc; border-bottom: 1px solid #e5e7eb;
+            padding: 0;
+        }
+        .report-step {
+            flex: 1; padding: 10px 0; text-align: center;
+            font-size: 11px; font-weight: 700; color: #9ca3af;
+            letter-spacing: .4px; text-transform: uppercase;
+            border-bottom: 2px solid transparent; transition: all .2s;
+            display: flex; align-items: center; justify-content: center; gap: 5px;
+        }
+        .report-step.active { color: #2563eb; border-bottom-color: #2563eb; }
+        .report-step.done   { color: #16a34a; border-bottom-color: #16a34a; }
+        .report-step-num {
+            width: 18px; height: 18px; border-radius: 50%;
+            background: #e5e7eb; color: #6b7280;
+            font-size: 10px; font-weight: 800;
+            display: flex; align-items: center; justify-content: center;
+            transition: all .2s;
+        }
+        .report-step.active .report-step-num { background: #2563eb; color: #fff; }
+        .report-step.done   .report-step-num { background: #16a34a; color: #fff; }
+
+        .report-head {
+            padding: 18px 20px 14px;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex; align-items: flex-start; justify-content: space-between;
+            flex-shrink: 0;
+        }
+        .report-head-text {}
+        .report-title { font-size: 16px; font-weight: 800; color: #0f172a; }
+        .report-subtitle { font-size: 12px; color: #64748b; margin-top: 2px; }
+        .report-close {
+            width: 32px; height: 32px; border-radius: 8px;
+            border: none; background: #f1f5f9; color: #64748b;
+            cursor: pointer; font-size: 15px; flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .report-close:hover { background: #fee2e2; color: #dc2626; }
+
+        .report-body { padding: 16px 20px 20px; overflow-y: auto; flex: 1; }
+
+        /* Step panels */
+        .report-step-panel { display: none; }
+        .report-step-panel.active { display: block; }
+
+        /* Category grid */
+        .category-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; }
+        .category-card {
+            border: 1.5px solid #e2e8f0; border-radius: 14px; padding: 14px 12px;
+            cursor: pointer; text-align: left; transition: all .18s;
+            background: rgba(255,255,255,0.95);
+            min-height: 108px;
+        }
+        .category-card:hover { border-color: #93c5fd; background: #f8fbff; transform: translateY(-1px); }
+        .category-card.selected { border-color: #2563eb; background: #eff6ff; box-shadow: 0 0 0 3px rgba(37,99,235,.08); }
+        .category-card input[type="radio"] { display: none; }
+        .category-mark,
+        .category-icon {
+            width: 34px; height: 34px; border-radius: 10px;
+            display: inline-flex; align-items: center; justify-content: center;
+            margin-bottom: 10px; background: #e8f0ff; color: #1d4ed8;
+            font-size: 11px; font-weight: 800; letter-spacing: .08em;
+            text-transform: uppercase;
+        }
+        .category-label { font-size: 12px; font-weight: 700; color: #1e293b; }
+        .category-desc  { font-size: 10.5px; color: #64748b; margin-top: 2px; line-height: 1.35; }
+
+        /* Step 2 */
+        .form-label { font-size: 12px; font-weight: 700; color: #374151; margin-bottom: 5px; display: block; }
+        .form-label span { color: #dc2626; }
+        .report-textarea {
+            width: 100%; min-height: 90px;
+            border: 1.5px solid #e5e7eb; border-radius: 10px;
+            padding: 10px 12px; font-size: 13px; color: #0f172a;
+            resize: vertical; outline: none; font-family: inherit;
+            line-height: 1.5; background: #f9fafb;
+        }
+        .report-textarea:focus { border-color: #2563eb; background: #fff; box-shadow: 0 0 0 3px rgba(37,99,235,.08); }
+
+        .evidence-upload-area {
+            border: 1.5px dashed #d1d5db; border-radius: 10px;
+            padding: 16px; text-align: center; cursor: pointer;
+            background: #f9fafb; transition: all .2s; margin-top: 8px;
+        }
+        .evidence-upload-area:hover { border-color: #93c5fd; background: #eff6ff; }
+        .evidence-upload-icon {
+            width: 42px; height: 42px; border-radius: 12px;
+            margin: 0 auto 8px; display: flex; align-items: center; justify-content: center;
+            background: #e8f0ff; color: #1d4ed8;
+        }
+        .evidence-upload-area p { font-size: 12px; color: #9ca3af; margin-top: 4px; }
+        .evidence-upload-area strong { font-size: 13px; color: #374151; }
+        .evidence-preview { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+        .evidence-thumb {
+            width: 72px; height: 84px; border-radius: 10px; overflow: hidden;
+            position: relative; border: 1.5px solid #e5e7eb;
+            background: #fff;
+        }
+        .evidence-thumb img { width: 100%; height: 58px; object-fit: cover; display: block; }
+        .evidence-meta {
+            height: 26px; padding: 4px 6px 6px;
+            font-size: 9px; font-weight: 700; color: #64748b;
+            display: flex; align-items: center; justify-content: space-between;
+            background: #fff;
+        }
+        .evidence-thumb-del {
+            position: absolute; top: 2px; right: 2px;
+            width: 16px; height: 16px; border-radius: 50%;
+            background: rgba(0,0,0,0.6); color: #fff;
+            font-size: 9px; border: none; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        /* Step 3 konfirmasi */
+        .confirm-summary {
+            background: #f8fafc; border: 1.5px solid #e5e7eb;
+            border-radius: 12px; padding: 14px 16px; margin-bottom: 14px;
+        }
+        .confirm-row { display: flex; gap: 10px; margin-bottom: 8px; font-size: 13px; }
+        .confirm-row:last-child { margin-bottom: 0; }
+        .confirm-key   { color: #6b7280; font-weight: 600; min-width: 80px; flex-shrink: 0; }
+        .confirm-val   { color: #111827; font-weight: 700; }
+        .confirm-desc  { font-size: 12px; color: #374151; line-height: 1.5; }
+
+        .warning-box {
+            background: #fffbeb; border: 1.5px solid #fde68a; border-radius: 12px;
+            padding: 10px 12px; margin-bottom: 14px;
+            display: flex; gap: 8px; align-items: flex-start;
+            font-size: 12px; color: #92400e; line-height: 1.45;
+        }
+        .warning-box-icon {
+            width: 20px; height: 20px; border-radius: 50%;
+            flex-shrink: 0; margin-top: 1px;
+            display: flex; align-items: center; justify-content: center;
+            background: rgba(245,158,11,0.18); color: #b45309;
+            font-size: 11px; font-weight: 800;
+        }
+
+        /* Nav buttons */
+        .report-nav { display: flex; gap: 8px; margin-top: 16px; }
+        .report-nav-btn {
+            flex: 1; padding: 11px; border-radius: 10px;
+            font-size: 13px; font-weight: 700; border: none; cursor: pointer;
+            transition: all .18s;
+        }
+        .btn-back   { background: #f1f5f9; color: #475569; }
+        .btn-back:hover { background: #e5e7eb; }
+        .btn-next   { background: #2563eb; color: #fff; }
+        .btn-next:hover { background: #1d4ed8; }
+        .btn-submit { background: #dc2626; color: #fff; }
+        .btn-submit:hover { background: #b91c1c; }
+        .btn-submit:disabled { opacity: .55; cursor: not-allowed; }
+
+        .char-counter { font-size: 11px; color: #9ca3af; text-align: right; margin-top: 3px; }
+
+        /* Success state */
+        .report-success { padding: 32px 20px; text-align: center; display: none; }
+        .report-success.show { display: block; }
+        .success-icon {
+            width: 64px; height: 64px; border-radius: 50%;
+            background: #dcfce7; margin: 0 auto 14px;
+            display: flex; align-items: center; justify-content: center;
+            color: #15803d;
+        }
+        .report-success h3 { font-size: 17px; font-weight: 800; color: #111827; margin-bottom: 6px; }
+        .report-success p  { font-size: 13px; color: #6b7280; line-height: 1.5; }
+        .report-ticket {
+            display: inline-block; margin-top: 10px;
+            background: #f3f4f6; border-radius: 8px;
+            padding: 6px 14px; font-size: 12px; font-weight: 700;
+            color: #374151; font-family: monospace; letter-spacing: 1px;
+        }
+        /* ════════════════════ END REPORT MODAL ════════════════════ */
 
         .fullmenu-overlay {
             position: fixed; inset: 0;
@@ -311,38 +483,16 @@
         .profile-username { color: {{ $textColor }}; font-size: 13px; margin-bottom: 8px; opacity: .78; }
         .profile-bio      { font-size: 13px; color: {{ $textColor }}; line-height: 1.5; opacity: .92; }
 
-        .social-links {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 10px;
-            margin-top: 14px;
-        }
+        .social-links { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 14px; }
         .social-link {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: rgba(255,255,255,0.15);
-            backdrop-filter: blur(6px);
+            width: 40px; height: 40px; border-radius: 50%;
+            background: rgba(255,255,255,0.15); backdrop-filter: blur(6px);
             border: 1.5px solid rgba(255,255,255,0.3);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-decoration: none;
-            transition: all 0.18s;
-            color: {{ $textColor }};
-            flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center;
+            text-decoration: none; transition: all 0.18s; color: {{ $textColor }}; flex-shrink: 0;
         }
-        .social-link:hover {
-            background: rgba(255,255,255,0.3);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        }
-        .social-link svg {
-            width: 18px;
-            height: 18px;
-            flex-shrink: 0;
-        }
+        .social-link:hover { background: rgba(255,255,255,0.3); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+        .social-link svg { width: 18px; height: 18px; flex-shrink: 0; }
 
         .block { margin-bottom: 12px; }
         .block-text  { font-size: 14px; text-align: center; color: {{ $textColor }}; line-height: 1.6; }
@@ -438,48 +588,14 @@
         @keyframes fadeInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
         @media (max-width: 640px) {
-            body {
-                min-height: 100dvh;
-            }
-
-            .page-wrapper {
-                width: 100%;
-                max-width: none;
-                min-height: 100dvh;
-            }
-
-            .navbar,
-            .search-bar-wrap,
-            .search-results-panel {
-                width: 100%;
-            }
-
-            .navbar-container {
-                padding: calc(env(safe-area-inset-top, 0px) + 12px) 16px 12px;
-            }
-
-            .container {
-                padding: 24px 16px calc(28px + env(safe-area-inset-bottom, 0px));
-            }
-
-            .fullmenu-body {
-                padding: calc(env(safe-area-inset-top, 0px) + 60px) 16px calc(40px + env(safe-area-inset-bottom, 0px));
-            }
-
-            .fullmenu-close-wrap,
-            .fullmenu-section-label,
-            .fullmenu-item,
-            .fullmenu-divider {
-                width: 100%;
-                max-width: none;
-            }
-
-            .report-modal,
-            .product-detail-box,
-            .cart-drawer {
-                width: 100%;
-                max-width: none;
-            }
+            body { min-height: 100dvh; }
+            .page-wrapper { width: 100%; max-width: none; min-height: 100dvh; }
+            .navbar, .search-bar-wrap, .search-results-panel { width: 100%; }
+            .navbar-container { padding: calc(env(safe-area-inset-top, 0px) + 12px) 16px 12px; }
+            .container { padding: 24px 16px calc(28px + env(safe-area-inset-bottom, 0px)); }
+            .fullmenu-body { padding: calc(env(safe-area-inset-top, 0px) + 60px) 16px calc(40px + env(safe-area-inset-bottom, 0px)); }
+            .fullmenu-close-wrap, .fullmenu-section-label, .fullmenu-item, .fullmenu-divider { width: 100%; max-width: none; }
+            .report-modal, .product-detail-box, .cart-drawer { width: 100%; max-width: none; }
         }
     </style>
 </head>
@@ -542,33 +658,167 @@
 <div class="search-results-overlay" id="searchResultsOverlay"></div>
 <div class="search-results-panel" id="searchResultsPanel"></div>
 
-{{-- REPORT MODAL --}}
+{{-- ════════════════════════════════════════
+     REPORT MODAL — NEW MULTI-STEP VERSION
+     ════════════════════════════════════════ --}}
 <div class="report-modal-overlay" id="reportModalOverlay">
-    <div class="report-modal">
-        <div class="report-head">
-            <div class="report-title">Laporkan Profil</div>
-            <button type="button" class="report-close" id="reportCloseBtn">✕</button>
-        </div>
-        <form id="reportForm" class="report-body">
-            <div class="report-sub">Pilih alasan laporan. Laporan akan ditinjau admin.</div>
-            <div class="reason-list">
-                <label class="reason-item"><input type="radio" name="reason" value="spam" required> Spam / Iklan Berlebihan</label>
-                <label class="reason-item"><input type="radio" name="reason" value="scam"> Penipuan / Scam</label>
-                <label class="reason-item"><input type="radio" name="reason" value="hate_speech"> Ujaran Kebencian</label>
-                <label class="reason-item"><input type="radio" name="reason" value="adult_content"> Konten Dewasa</label>
-                <label class="reason-item"><input type="radio" name="reason" value="violence"> Kekerasan / Ancaman</label>
-                <label class="reason-item"><input type="radio" name="reason" value="fake_account"> Akun Palsu</label>
-                <label class="reason-item"><input type="radio" name="reason" value="other"> Lainnya</label>
-            </div>
-            <textarea name="detail" class="report-textarea" maxlength="1000" placeholder="Detail tambahan (opsional)"></textarea>
-            <input type="hidden" name="page_url" value="{{ url()->current() }}">
-            <div class="report-actions">
-                <button type="button" class="report-btn cancel" id="reportCancelBtn">Batal</button>
-                <button type="submit" class="report-btn submit" id="reportSubmitBtn">Kirim Laporan</button>
-            </div>
-        </form>
+  <div class="report-modal" role="dialog" aria-modal="true" aria-labelledby="reportModalTitle">
+
+    {{-- Step Bar --}}
+    <div class="report-steps" id="reportStepBar">
+      <div class="report-step active" id="rStep1">
+        <div class="report-step-num">1</div> Kategori
+      </div>
+      <div class="report-step" id="rStep2">
+        <div class="report-step-num">2</div> Bukti
+      </div>
+      <div class="report-step" id="rStep3">
+        <div class="report-step-num">3</div> Konfirmasi
+      </div>
     </div>
+
+    {{-- Header --}}
+    <div class="report-head">
+      <div class="report-head-text">
+        <div class="report-title" id="reportModalTitle">Laporkan Akun</div>
+        <div class="report-subtitle" id="reportStepLabel">Pilih kategori yang paling sesuai</div>
+      </div>
+      <button class="report-close" id="reportCloseBtn" aria-label="Tutup">✕</button>
+    </div>
+
+    {{-- Body --}}
+    <div class="report-body">
+
+      {{-- STEP 1: Kategori --}}
+      <div class="report-step-panel active" id="rPanel1">
+        <div class="category-grid" id="categoryGrid">
+          <label class="category-card" data-value="spam">
+            <input type="radio" name="report_reason" value="spam">
+            <div class="category-icon">📢</div>
+            <div class="category-label">Spam</div>
+            <div class="category-desc">Iklan berlebihan, konten berulang</div>
+          </label>
+          <label class="category-card" data-value="scam">
+            <input type="radio" name="report_reason" value="scam">
+            <div class="category-icon">💸</div>
+            <div class="category-label">Penipuan / Scam</div>
+            <div class="category-desc">Produk palsu, tidak dikirim, dll</div>
+          </label>
+          <label class="category-card" data-value="hate_speech">
+            <input type="radio" name="report_reason" value="hate_speech">
+            <div class="category-icon">⚠️</div>
+            <div class="category-label">Ujaran Kebencian</div>
+            <div class="category-desc">SARA, ancaman, pelecehan</div>
+          </label>
+          <label class="category-card" data-value="adult_content">
+            <input type="radio" name="report_reason" value="adult_content">
+            <div class="category-icon">🔞</div>
+            <div class="category-label">Konten Dewasa</div>
+            <div class="category-desc">Tanpa label yang sesuai</div>
+          </label>
+          <label class="category-card" data-value="violence">
+            <input type="radio" name="report_reason" value="violence">
+            <div class="category-icon">🚨</div>
+            <div class="category-label">Kekerasan</div>
+            <div class="category-desc">Ancaman fisik / konten brutal</div>
+          </label>
+          <label class="category-card" data-value="fake_account">
+            <input type="radio" name="report_reason" value="fake_account">
+            <div class="category-icon">🎭</div>
+            <div class="category-label">Akun Palsu</div>
+            <div class="category-desc">Menyamar sebagai orang lain</div>
+          </label>
+          <label class="category-card" data-value="copyright">
+            <input type="radio" name="report_reason" value="copyright">
+            <div class="category-icon">©️</div>
+            <div class="category-label">Hak Cipta</div>
+            <div class="category-desc">Konten tanpa izin pemilik</div>
+          </label>
+          <label class="category-card" data-value="other">
+            <input type="radio" name="report_reason" value="other">
+            <div class="category-icon">📋</div>
+            <div class="category-label">Lainnya</div>
+            <div class="category-desc">Tidak masuk kategori di atas</div>
+          </label>
+        </div>
+        <div class="report-nav">
+          <button class="report-nav-btn btn-back" id="rCancelBtn">Batal</button>
+          <button class="report-nav-btn btn-next" id="rNext1" disabled>Lanjut →</button>
+        </div>
+      </div>
+
+      {{-- STEP 2: Bukti & Detail --}}
+      <div class="report-step-panel" id="rPanel2">
+        <label class="form-label" for="reportDetail">Jelaskan masalah <span>*</span></label>
+        <textarea class="report-textarea" id="reportDetail" name="detail"
+          maxlength="1000" placeholder="Deskripsikan kejadian yang Anda alami atau lihat. Semakin detail semakin cepat diproses..."></textarea>
+        <div class="char-counter"><span id="charCount">0</span>/1000 karakter</div>
+
+        <label class="form-label" style="margin-top:12px;">Bukti (opsional)</label>
+        <div class="evidence-upload-area" id="uploadArea" onclick="document.getElementById('evidenceFileInput').click()">
+          <div style="font-size:22px;">📎</div>
+          <strong>Tap untuk lampirkan screenshot</strong>
+          <p>JPG, PNG, WebP — maks 3 file, 5MB per file</p>
+        </div>
+        <input type="file" id="evidenceFileInput" accept="image/*" multiple style="display:none" onchange="handleEvidenceFiles(event)">
+        <div class="evidence-preview" id="evidencePreview"></div>
+
+        <div class="warning-box" style="margin-top:14px;">
+          <div class="warning-box-icon">⚠️</div>
+          <div>Laporan palsu atau penyalahgunaan fitur ini dapat mengakibatkan <strong>akun Anda sendiri ditinjau</strong>. Gunakan dengan bertanggung jawab.</div>
+        </div>
+
+        <div class="report-nav">
+          <button class="report-nav-btn btn-back" id="rBack2">← Kembali</button>
+          <button class="report-nav-btn btn-next" id="rNext2" disabled>Lanjut →</button>
+        </div>
+      </div>
+
+      {{-- STEP 3: Konfirmasi --}}
+      <div class="report-step-panel" id="rPanel3">
+        <div class="confirm-summary" id="confirmSummary">
+          <div class="confirm-row">
+            <span class="confirm-key">Dilaporkan</span>
+            <span class="confirm-val" id="confirmTarget">–</span>
+          </div>
+          <div class="confirm-row">
+            <span class="confirm-key">Kategori</span>
+            <span class="confirm-val" id="confirmReason">–</span>
+          </div>
+          <div class="confirm-row" id="confirmDetailRow" style="display:none">
+            <span class="confirm-key">Deskripsi</span>
+            <span class="confirm-desc" id="confirmDetail">–</span>
+          </div>
+          <div class="confirm-row" id="confirmEvidRow" style="display:none">
+            <span class="confirm-key">Bukti</span>
+            <span class="confirm-val" id="confirmEvidCount">–</span>
+          </div>
+        </div>
+
+        <div class="warning-box">
+          <div class="warning-box-icon">🔒</div>
+          <div>Data laporan Anda diproses secara <strong>anonim</strong>. Identitas Anda tidak akan diungkapkan kepada pihak yang dilaporkan. Tim moderasi akan meninjau dalam 1–3 hari kerja.</div>
+        </div>
+
+        <div class="report-nav">
+          <button class="report-nav-btn btn-back" id="rBack3">← Kembali</button>
+          <button class="report-nav-btn btn-submit" id="rSubmitBtn">Kirim Laporan</button>
+        </div>
+      </div>
+
+      {{-- SUCCESS --}}
+      <div class="report-success" id="reportSuccess">
+        <div class="success-icon">✅</div>
+        <h3>Laporan Terkirim!</h3>
+        <p>Terima kasih. Tim moderasi kami akan meninjau laporan ini dalam <strong>1–3 hari kerja</strong>. Anda dapat melanjutkan aktivitas seperti biasa.</p>
+        <div class="report-ticket" id="ticketCode">–</div>
+        <br><br>
+        <button class="report-nav-btn btn-next" style="width:100%;max-width:200px;margin:0 auto;display:block;" onclick="closeReportModal()">Selesai</button>
+      </div>
+    </div>
+  </div>
 </div>
+{{-- ════════════════════ END REPORT MODAL ════════════════════ --}}
 
 {{-- FULLSCREEN MENU --}}
 <div class="fullmenu-overlay" id="fullmenuOverlay">
@@ -770,7 +1020,6 @@
 </div>
 
 <script>
-// ─── semua JS dari versi sebelumnya tetap sama ─── //
 const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
 function formatRupiah(n) { return 'Rp ' + new Intl.NumberFormat('id-ID').format(Math.round(n)); }
 let toastTimer;
@@ -803,7 +1052,7 @@ const PRODUCT_PLACEHOLDER_SVG = `<svg width="28" height="28" fill="none" stroke=
 const CART_PLACEHOLDER_SVG    = `<svg width="24" height="24" fill="none" stroke="#9ca3af" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>`;
 const CART_EMPTY_SVG          = `<svg width="40" height="40" fill="none" stroke="#d1d5db" stroke-width="1.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>`;
 
-// Menu
+// ── Menu ──
 const hamburger = document.getElementById('hamburger');
 const fullmenuOverlay = document.getElementById('fullmenuOverlay');
 const fullmenuClose   = document.getElementById('fullmenuClose');
@@ -963,32 +1212,381 @@ async function handleCheckout() {
     } catch { showToast('Gagal memproses checkout.','error'); }
 }
 
-// Report
+// ════════════════════════════════════════
+// REPORT MODAL — MULTI-STEP
+// ════════════════════════════════════════
 const REPORT_ENDPOINT = '{{ route('public.profile.report', $user->username) }}';
-const reportBtn = document.getElementById('reportBtn');
-const reportModalOverlay = document.getElementById('reportModalOverlay');
-function openReportModal() { reportModalOverlay.classList.add('show'); document.body.style.overflow='hidden'; }
-function closeReportModal() { reportModalOverlay.classList.remove('show'); document.body.style.overflow='auto'; }
-reportBtn?.addEventListener('click', openReportModal);
-document.getElementById('reportCloseBtn')?.addEventListener('click', closeReportModal);
-document.getElementById('reportCancelBtn')?.addEventListener('click', closeReportModal);
-reportModalOverlay?.addEventListener('click', e => { if(e.target===reportModalOverlay) closeReportModal(); });
-document.getElementById('reportForm')?.addEventListener('submit', async function(e) {
-    e.preventDefault();
-    const fd = new FormData(this);
-    if (!fd.get('reason')) { showToast('Pilih alasan laporan terlebih dahulu.','error'); return; }
-    const btn = document.getElementById('reportSubmitBtn');
-    btn.disabled=true; btn.textContent='Mengirim...';
-    try {
-        const res = await fetch(REPORT_ENDPOINT, { method:'POST', headers:{'X-CSRF-TOKEN':csrfToken,'Accept':'application/json'}, body:fd });
-        const json = await res.json();
-        if (!res.ok||!json.success) throw new Error(json.message||'Gagal mengirim laporan.');
-        this.reset(); closeReportModal(); showToast('Laporan berhasil dikirim.','success');
-    } catch(err) { showToast(err.message||'Terjadi kesalahan.','error'); }
-    finally { btn.disabled=false; btn.textContent='Kirim Laporan'; }
+const rModalOverlay = document.getElementById('reportModalOverlay');
+
+const reportState = {
+    step: 1,
+    reason: null,
+    detail: '',
+    evidenceFiles: [],
+};
+
+const REASON_LABELS = {
+    spam: 'Spam / Iklan Berlebihan',
+    scam: 'Penipuan / Scam',
+    hate_speech: 'Ujaran Kebencian',
+    adult_content: 'Konten Dewasa',
+    violence: 'Kekerasan / Ancaman',
+    fake_account: 'Akun Palsu',
+    copyright: 'Pelanggaran Hak Cipta',
+    other: 'Lainnya',
+};
+
+const STEP_LABELS = [
+    '',
+    'Pilih kategori yang paling sesuai',
+    'Tambahkan bukti dan deskripsi',
+    'Tinjau laporan sebelum dikirim',
+];
+
+const rCloseBtn    = document.getElementById('reportCloseBtn');
+const rCancelBtn   = document.getElementById('rCancelBtn');
+const rNext1       = document.getElementById('rNext1');
+const rNext2       = document.getElementById('rNext2');
+const rBack2       = document.getElementById('rBack2');
+const rBack3       = document.getElementById('rBack3');
+const rSubmitBtn   = document.getElementById('rSubmitBtn');
+const rDetailInput = document.getElementById('reportDetail');
+const rCharCount   = document.getElementById('charCount');
+
+function setupReportModalUI() {
+    const reportMarks = {
+        spam: 'SP',
+        scam: 'SC',
+        hate_speech: 'UK',
+        adult_content: 'KD',
+        violence: 'KR',
+        fake_account: 'AP',
+        copyright: 'HC',
+        other: 'LN',
+    };
+
+    document.querySelectorAll('.category-card').forEach(card => {
+        const icon = card.querySelector('.category-icon, .category-mark');
+        if (!icon) return;
+        icon.textContent = reportMarks[card.dataset.value] || 'RP';
+        icon.classList.add('category-mark');
+        icon.classList.remove('category-icon');
+    });
+
+    const uploadArea = document.getElementById('uploadArea');
+    const uploadLead = uploadArea?.querySelector('div');
+    if (uploadLead) {
+        uploadLead.className = 'evidence-upload-icon';
+        uploadLead.innerHTML = `
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M21.44 11.05l-8.49 8.49a5.5 5.5 0 01-7.78-7.78l9.2-9.19a3.5 3.5 0 114.95 4.95l-9.2 9.19a1.5 1.5 0 11-2.12-2.12l8.49-8.48"/>
+            </svg>
+        `;
+    }
+
+    const uploadHint = uploadArea?.querySelector('p');
+    if (uploadHint) {
+        uploadHint.textContent = 'JPG, PNG, WebP - maks 3 file, target kompres sekitar 80 KB per file';
+    }
+
+    document.querySelectorAll('.warning-box-icon').forEach(icon => {
+        icon.textContent = 'i';
+    });
+
+    if (rNext1) rNext1.textContent = 'Lanjut';
+    if (rNext2) rNext2.textContent = 'Lanjut';
+    if (rBack2) rBack2.textContent = 'Kembali';
+    if (rBack3) rBack3.textContent = 'Kembali';
+
+    const successIcon = document.querySelector('.success-icon');
+    if (successIcon) {
+        successIcon.innerHTML = `
+            <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+            </svg>
+        `;
+    }
+}
+
+function formatFileSize(bytes) {
+    if (bytes < 1024) return `${bytes} B`;
+    return `${Math.max(1, Math.round(bytes / 1024))} KB`;
+}
+
+function readFileAsDataUrl(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = () => reject(new Error('Gagal membaca file.'));
+        reader.readAsDataURL(file);
+    });
+}
+
+function compressEvidenceImage(file, targetKB = 80, maxWidth = 1280) {
+    return new Promise((resolve, reject) => {
+        if (!file.type.startsWith('image/')) {
+            resolve(file);
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = () => {
+            const img = new Image();
+            img.onload = () => {
+                let width = img.width;
+                let height = img.height;
+
+                if (width > maxWidth) {
+                    height = Math.round((height * maxWidth) / width);
+                    width = maxWidth;
+                }
+
+                const canvas = document.createElement('canvas');
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+
+                let quality = 0.82;
+                const minQuality = 0.32;
+                const targetBytes = targetKB * 1024;
+
+                const attempt = () => {
+                    canvas.toBlob(blob => {
+                        if (!blob) {
+                            reject(new Error('Kompresi gambar gagal.'));
+                            return;
+                        }
+
+                        if (blob.size > targetBytes && quality > minQuality) {
+                            quality -= 0.08;
+                            attempt();
+                            return;
+                        }
+
+                        resolve(new File(
+                            [blob],
+                            file.name.replace(/\.[^.]+$/, '.jpg'),
+                            { type: 'image/jpeg', lastModified: Date.now() }
+                        ));
+                    }, 'image/jpeg', quality);
+                };
+
+                attempt();
+            };
+            img.onerror = () => reject(new Error('Gagal memproses gambar.'));
+            img.src = reader.result;
+        };
+        reader.onerror = () => reject(new Error('Gagal membaca file.'));
+        reader.readAsDataURL(file);
+    });
+}
+
+function openReportModal() {
+    resetReport();
+    rModalOverlay.classList.add('show');
+    document.body.style.overflow = 'hidden';
+}
+function closeReportModal() {
+    rModalOverlay.classList.remove('show');
+    document.body.style.overflow = '';
+}
+
+function resetReport() {
+    reportState.step = 1;
+    reportState.reason = null;
+    reportState.detail = '';
+    reportState.evidenceFiles = [];
+    document.querySelectorAll('.category-card').forEach(c => c.classList.remove('selected'));
+    document.querySelectorAll('input[name="report_reason"]').forEach(r => r.checked = false);
+    rDetailInput.value = '';
+    rCharCount.textContent = '0';
+    document.getElementById('evidencePreview').innerHTML = '';
+    rNext1.disabled = true;
+    rNext2.disabled = true;
+    document.getElementById('reportSuccess').classList.remove('show');
+    document.getElementById('reportSuccess').style.display = 'none';
+    document.getElementById('reportStepBar').style.display = '';
+    document.querySelector('.report-head').style.display = '';
+    // reset panels visibility
+    document.querySelectorAll('.report-step-panel').forEach(p => { p.style.display = ''; });
+    goToStep(1);
+}
+
+function goToStep(n) {
+    reportState.step = n;
+    document.querySelectorAll('.report-step-panel').forEach((p, i) => {
+        p.classList.toggle('active', i + 1 === n);
+    });
+    ['rStep1','rStep2','rStep3'].forEach((id, i) => {
+        const el = document.getElementById(id);
+        el.classList.remove('active','done');
+        if (i + 1 === n) el.classList.add('active');
+        else if (i + 1 < n) el.classList.add('done');
+    });
+    document.getElementById('reportStepLabel').textContent = STEP_LABELS[n];
+    if (n === 3) fillConfirm();
+}
+
+// Category selection
+document.querySelectorAll('.category-card').forEach(card => {
+    card.addEventListener('click', () => {
+        document.querySelectorAll('.category-card').forEach(c => c.classList.remove('selected'));
+        card.classList.add('selected');
+        card.querySelector('input').checked = true;
+        reportState.reason = card.dataset.value;
+        rNext1.disabled = false;
+    });
 });
 
-// Search
+// Detail textarea
+rDetailInput.addEventListener('input', () => {
+    const len = rDetailInput.value.length;
+    rCharCount.textContent = len;
+    reportState.detail = rDetailInput.value;
+    rNext2.disabled = len < 10;
+});
+
+// Evidence upload
+function handleEvidenceFiles(e) {
+    const files = Array.from(e.target.files).slice(0, 3 - reportState.evidenceFiles.length);
+    files.forEach(file => {
+        if (file.size > 5 * 1024 * 1024) { showToast('File terlalu besar (maks 5MB)', 'error'); return; }
+        if (reportState.evidenceFiles.length >= 3) return;
+        reportState.evidenceFiles.push(file);
+        const reader = new FileReader();
+        reader.onload = ev => addThumb(ev.target.result, reportState.evidenceFiles.length - 1);
+        reader.readAsDataURL(file);
+    });
+    e.target.value = '';
+}
+function addThumb(src, idx) {
+    const prev = document.getElementById('evidencePreview');
+    const div = document.createElement('div');
+    div.className = 'evidence-thumb';
+    div.id = `evThumb-${idx}`;
+    div.innerHTML = `<img src="${src}" alt="bukti"><button class="evidence-thumb-del" onclick="removeEvidence(${idx})">✕</button>`;
+    prev.appendChild(div);
+}
+function removeEvidence(idx) {
+    reportState.evidenceFiles.splice(idx, 1);
+    document.getElementById('evidencePreview').innerHTML = '';
+    reportState.evidenceFiles.forEach((f, i) => {
+        const reader = new FileReader();
+        reader.onload = ev => addThumb(ev.target.result, i);
+        reader.readAsDataURL(f);
+    });
+}
+
+async function handleEvidenceFiles(e) {
+    const files = Array.from(e.target.files).slice(0, 3 - reportState.evidenceFiles.length);
+    for (const file of files) {
+        if (file.size > 5 * 1024 * 1024) { showToast('File terlalu besar (maks 5MB)', 'error'); continue; }
+        if (reportState.evidenceFiles.length >= 3) break;
+
+        try {
+            const compressedFile = await compressEvidenceImage(file, 80);
+            reportState.evidenceFiles.push(compressedFile);
+            const previewSrc = await readFileAsDataUrl(compressedFile);
+            addThumb(previewSrc, reportState.evidenceFiles.length - 1, compressedFile);
+        } catch (error) {
+            showToast(error.message || 'Gagal memproses gambar.', 'error');
+        }
+    }
+    e.target.value = '';
+}
+
+function addThumb(src, idx, file) {
+    const prev = document.getElementById('evidencePreview');
+    const div = document.createElement('div');
+    div.className = 'evidence-thumb';
+    div.id = `evThumb-${idx}`;
+    div.innerHTML = `<img src="${src}" alt="bukti"><button class="evidence-thumb-del" onclick="removeEvidence(${idx})" type="button">&times;</button><div class="evidence-meta"><span>${formatFileSize(file?.size ?? 0)}</span><span>${idx + 1}</span></div>`;
+    prev.appendChild(div);
+}
+
+function removeEvidence(idx) {
+    reportState.evidenceFiles.splice(idx, 1);
+    document.getElementById('evidencePreview').innerHTML = '';
+    reportState.evidenceFiles.forEach((f, i) => {
+        readFileAsDataUrl(f).then(src => addThumb(src, i, f)).catch(() => {});
+    });
+}
+
+function fillConfirm() {
+    const nameEl = document.querySelector('.navbar-title');
+    document.getElementById('confirmTarget').textContent = nameEl ? nameEl.textContent.trim() : '–';
+    document.getElementById('confirmReason').textContent = REASON_LABELS[reportState.reason] || reportState.reason;
+
+    const detRow = document.getElementById('confirmDetailRow');
+    if (reportState.detail) {
+        detRow.style.display = '';
+        document.getElementById('confirmDetail').textContent = reportState.detail.slice(0, 200) + (reportState.detail.length > 200 ? '…' : '');
+    } else {
+        detRow.style.display = 'none';
+    }
+
+    const evRow = document.getElementById('confirmEvidRow');
+    if (reportState.evidenceFiles.length > 0) {
+        evRow.style.display = '';
+        document.getElementById('confirmEvidCount').textContent = `${reportState.evidenceFiles.length} file terlampir`;
+    } else {
+        evRow.style.display = 'none';
+    }
+}
+
+// Navigation
+rNext1.addEventListener('click', () => { if (reportState.reason) goToStep(2); });
+rNext2.addEventListener('click', () => { if (reportState.detail.length >= 10) goToStep(3); });
+rBack2.addEventListener('click', () => goToStep(1));
+rBack3.addEventListener('click', () => goToStep(2));
+rCloseBtn.addEventListener('click', closeReportModal);
+rCancelBtn.addEventListener('click', closeReportModal);
+rModalOverlay.addEventListener('click', e => { if (e.target === rModalOverlay) closeReportModal(); });
+
+// Report button in navbar
+document.getElementById('reportBtn').addEventListener('click', openReportModal);
+setupReportModalUI();
+
+// Submit
+rSubmitBtn.addEventListener('click', async () => {
+    if (!reportState.reason) return;
+    rSubmitBtn.disabled = true;
+    rSubmitBtn.textContent = 'Mengirim...';
+
+    try {
+        const fd = new FormData();
+        fd.append('reason', reportState.reason);
+        fd.append('detail', reportState.detail);
+        fd.append('page_url', window.location.href);
+        reportState.evidenceFiles.forEach((f, i) => fd.append(`evidence[${i}]`, f));
+
+        const res = await fetch(REPORT_ENDPOINT, {
+            method: 'POST',
+            headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' },
+            body: fd,
+        });
+        const json = await res.json();
+        if (!res.ok || !json.success) throw new Error(json.message || 'Gagal mengirim laporan.');
+
+        // Success state
+        document.querySelectorAll('.report-step-panel').forEach(p => { p.classList.remove('active'); p.style.display = 'none'; });
+        document.getElementById('reportStepBar').style.display = 'none';
+        document.querySelector('.report-head').style.display = 'none';
+        const successEl = document.getElementById('reportSuccess');
+        successEl.style.display = 'block';
+        successEl.classList.add('show');
+        const ticket = json.ticket || ('RPT-' + Math.random().toString(36).substr(2,8).toUpperCase());
+        document.getElementById('ticketCode').textContent = ticket;
+
+    } catch (err) {
+        showToast(err.message || 'Terjadi kesalahan.', 'error');
+        rSubmitBtn.disabled = false;
+        rSubmitBtn.textContent = 'Kirim Laporan';
+    }
+});
+
+// ── Search ──
 const USERNAME             = '{{ $user->username }}';
 const searchBtn            = document.getElementById('searchBtn');
 const searchBarWrap        = document.getElementById('searchBarWrap');
@@ -1082,53 +1680,28 @@ async function doSearch(query) {
     } catch(err) { renderState('error','Gagal mencari',err?.message||'Terjadi kesalahan'); }
 }
 
-// ═══════════════════════════════════════════
-// LIVE PREVIEW — postMessage listener
-// Background langsung update tanpa reload
-// ═══════════════════════════════════════════
-window.addEventListener('message', function(e) {
-    if (!e.data || e.data.type !== 'payou_appearance_update') return;
-    const p = e.data.payload;
-
-    if (p.bgCss) {
-        document.body.style.background = p.bgCss;
-    }
-    if (p.fontFamily) {
-        document.body.style.fontFamily = `'${p.fontFamily}', system-ui, -apple-system, sans-serif`;
-    }
-});
+// ── Live Preview postMessage ──
 (function () {
-
-    // ── 1. postMessage dari iframe preview ──
     window.addEventListener('message', function (e) {
         if (!e.data || e.data.type !== 'payou_appearance_update') return;
         applyAppearance(e.data.payload);
     });
 
-    // ── 2. BroadcastChannel — update profil publik real-time ──
-    // Ketika user klik "Simpan Tampilan" di dashboard,
-    // controller mengirim broadcast agar tab profil publik ikut update.
     if (typeof BroadcastChannel !== 'undefined') {
         const bc = new BroadcastChannel('payou_appearance');
         bc.onmessage = function (e) {
             if (e.data && e.data.type === 'payou_appearance_saved') {
-                // Reload ringan: hanya update style tanpa full page reload
                 applyAppearance(e.data.payload);
             }
         };
     }
 
     window.addEventListener('storage', function (e) {
-        if (e.key === 'payou_saved' && e.newValue) {
-            window.location.reload();
-        }
+        if (e.key === 'payou_saved' && e.newValue) { window.location.reload(); }
     });
 
-    // ── 3. Fungsi utama apply perubahan ──
     function applyAppearance(p) {
         if (!p) return;
-
-        // Background
         const wrap = document.querySelector('.page-wrapper, .profile-wrapper, body');
         if (wrap && p.bgCss) {
             wrap.style.background = p.bgCss;
@@ -1137,35 +1710,22 @@ window.addEventListener('message', function(e) {
             if (p.bgColor) wrap.style.backgroundColor = p.bgColor;
             wrap.style.backgroundAttachment = 'fixed';
         }
-
-        // Font
         if (p.fontFamily) {
             wrap && (wrap.style.fontFamily = `'${p.fontFamily}', system-ui, sans-serif`);
-            // Inject Google Font jika belum ada
             injectFont(p.fontFamily);
         }
-
         if (p.textColor) {
-            document.querySelectorAll('[data-profile-text]').forEach(el => {
-                el.style.color = p.textColor;
-            });
-            document.querySelectorAll('.social-link, .block-text, .product-title').forEach(el => {
-                el.style.color = p.textColor;
-            });
+            document.querySelectorAll('[data-profile-text]').forEach(el => { el.style.color = p.textColor; });
+            document.querySelectorAll('.social-link, .block-text, .product-title').forEach(el => { el.style.color = p.textColor; });
         }
-
-        // Tombol — terapkan ke semua link/product button
         if (p.btnCss || p.btnRadius) {
             document.querySelectorAll('.block-link a, .btn-buy, .btn-checkout, .btn-cart').forEach(btn => {
                 if (p.btnRadius) btn.style.borderRadius = p.btnRadius;
                 if (p.btnCss)    btn.style.cssText += ';' + p.btnCss;
             });
         }
-
         if (p.btn_color) {
-            document.querySelectorAll('.product-current-price').forEach(el => {
-                el.style.color = p.btn_color;
-            });
+            document.querySelectorAll('.product-current-price').forEach(el => { el.style.color = p.btn_color; });
         }
     }
 
@@ -1178,7 +1738,6 @@ window.addEventListener('message', function(e) {
         link.href = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(fontName)}:wght@400;500;600;700&display=swap`;
         document.head.appendChild(link);
     }
-
 })();
 </script>
 </div>
