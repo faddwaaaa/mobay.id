@@ -7,32 +7,63 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     @php
-        $profile = $user->profile;
-        // Hitung background CSS dari DB
-        $bgCss = '#f9fafb';
-        if ($profile) {
-            if ($profile->bg_type === 'gradient' && $profile->bg_gradient_start && $profile->bg_gradient_end) {
-                $dir   = $profile->bg_gradient_direction ?? 'to bottom';
-                $bgCss = "linear-gradient({$dir}, {$profile->bg_gradient_start}, {$profile->bg_gradient_end})";
-            } elseif ($profile->bg_type === 'image' && $profile->bg_image) {
-                $bgCss = "url('" . asset('storage/' . $profile->bg_image) . "') center/cover no-repeat fixed";
-            } elseif ($profile->background_color) {
-                $bgCss = $profile->background_color;
-            }
+        $profile = $profile ?? $user->profile ?? $user->userProfile ?? null;
+        $requestedPageId = (int) request('page', 0);
+        $activePageId = $user->pages?->contains('id', $requestedPageId)
+            ? $requestedPageId
+            : ($user->pages?->first()?->id ?? null);
+        $bgCss        = $profile?->getBackgroundCss() ?? '#f9fafb';
+        $bgColorExtra = $profile?->getBackgroundColor();
+        $bgSizeExtra  = $profile?->getBackgroundSize();
+        $fontFamily   = $profile->font_family ?? 'system-ui';
+        $textColor    = $profile->text_color ?? '#111827';
+        $btnColor     = $profile->btn_color ?? '#3b82f6';
+        $btnTxtColor  = $profile->btn_text_color ?? '#ffffff';
+        $btnShape     = $profile->btn_shape ?? 'rounded';
+        $btnStyle     = $profile->btn_style ?? 'fill';
+        $shapeMap     = ['pill' => '50px', 'rounded' => '12px', 'square' => '4px'];
+        $btnRadius    = $shapeMap[$btnShape] ?? '12px';
+
+        switch ($btnStyle) {
+            case 'outline':
+                $btnCssDb = "background:transparent; color:{$btnColor}; border:2px solid {$btnColor};";
+                break;
+            case 'hard_shadow':
+                $btnCssDb = "background:{$btnColor}; color:{$btnTxtColor}; border:2px solid #111; box-shadow:3px 3px 0 #111;";
+                break;
+            case 'soft_shadow':
+                $btnCssDb = "background:{$btnColor}; color:{$btnTxtColor}; border:none; box-shadow:0 4px 16px rgba(0,0,0,0.15);";
+                break;
+            case 'ghost':
+                $btnCssDb = "background:rgba(255,255,255,0.15); color:{$btnTxtColor}; border:1.5px solid rgba(255,255,255,0.3); backdrop-filter:blur(8px);";
+                break;
+            case 'minimal':
+                $btnCssDb = "background:transparent; color:{$btnColor}; border:none; border-bottom:2px solid {$btnColor}; border-radius:0 !important;";
+                break;
+            default:
+                $btnCssDb = "background:{$btnColor}; color:{$btnTxtColor}; border:2px solid {$btnColor};";
         }
-        $fontFamily = $profile->font_family ?? 'system-ui';
     @endphp
+
+    @if($fontFamily !== 'system-ui')
+    <link href="https://fonts.googleapis.com/css2?family={{ urlencode($fontFamily) }}:wght@400;500;600;700&display=swap" rel="stylesheet">
+    @endif
 
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
+        button, input, textarea, select { font-family: inherit; }
 
         body {
             font-family: '{{ $fontFamily }}', system-ui, -apple-system, sans-serif;
             background: {{ $bgCss }};
+            @if($bgColorExtra) background-color: {{ $bgColorExtra }}; @endif
+            @if($bgSizeExtra) background-size: {{ $bgSizeExtra }}; @endif
             min-height: 100vh;
+            overflow-x: hidden;
         }
 
         .page-wrapper {
+            width: min(100%, 420px);
             max-width: 420px;
             margin: 0 auto;
             background: transparent; /* transparan biar bg body keliatan */
@@ -276,20 +307,52 @@
         .user-profile { text-align: center; margin-bottom: 24px; padding-bottom: 20px; border-bottom: 1px solid rgba(229,231,235,0.6); }
         .avatar { width: 80px; height: 80px; border-radius: 50%; background: #e5e7eb; margin: 0 auto 10px; display: block; object-fit: cover; border: 3px solid #fff; box-shadow: 0 0 0 2px #e5e7eb; }
         .avatar-placeholder { width: 80px; height: 80px; border-radius: 50%; background: rgba(255,255,255,0.3); backdrop-filter: blur(4px); margin: 0 auto 10px; display: flex; align-items: center; justify-content: center; color: #9ca3af; border: 3px solid #fff; box-shadow: 0 0 0 2px rgba(229,231,235,0.5); }
-        .profile-name     { font-size: 17px; font-weight: 700; color: #111827; margin-bottom: 2px; }
-        .profile-username { color: #6b7280; font-size: 13px; margin-bottom: 8px; }
-        .profile-bio      { font-size: 13px; color: #374151; line-height: 1.5; }
+        .profile-name     { font-size: 17px; font-weight: 700; color: {{ $textColor }}; margin-bottom: 2px; }
+        .profile-username { color: {{ $textColor }}; font-size: 13px; margin-bottom: 8px; opacity: .78; }
+        .profile-bio      { font-size: 13px; color: {{ $textColor }}; line-height: 1.5; opacity: .92; }
+
+        .social-links {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 14px;
+        }
+        .social-link {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(6px);
+            border: 1.5px solid rgba(255,255,255,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            transition: all 0.18s;
+            color: {{ $textColor }};
+            flex-shrink: 0;
+        }
+        .social-link:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .social-link svg {
+            width: 18px;
+            height: 18px;
+            flex-shrink: 0;
+        }
 
         .block { margin-bottom: 12px; }
-        .block-text  { font-size: 14px; text-align: center; color: #374151; line-height: 1.6; }
+        .block-text  { font-size: 14px; text-align: center; color: {{ $textColor }}; line-height: 1.6; }
         .block-link a {
-            display: block; padding: 14px; border-radius: 12px;
-            border: 1px solid rgba(229,231,235,0.8); text-align: center;
-            text-decoration: none; color: #111; font-weight: 500;
-            transition: all 0.2s; background: rgba(255,255,255,0.85);
-            backdrop-filter: blur(8px);
+            display: block; padding: 14px; border-radius: {{ $btnRadius }};
+            {{ $btnCssDb }}
+            text-align: center; text-decoration: none; font-weight: 500;
+            transition: all 0.2s; backdrop-filter: blur(8px);
         }
-        .block-link a:hover { border-color: #2563eb; background: rgba(239,246,255,0.95); }
+        .block-link a:hover { filter: brightness(0.93); transform: translateY(-1px); }
         .block-image img   { width: 100%; border-radius: 12px; }
         .block-video iframe { width: 100%; height: 200px; border-radius: 12px; border: none; }
 
@@ -308,9 +371,9 @@
         .product-image-placeholder { width: 56px; height: 56px; background: #eff6ff; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #2563eb; }
         .product-details { padding: 14px 16px 16px; }
         .product-badge { display: inline-flex; align-items: center; gap: 4px; background: #eff6ff; color: #2563eb; font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 6px; margin-bottom: 8px; letter-spacing: 0.3px; }
-        .product-title  { font-size: 15px; font-weight: 600; color: #111827; margin-bottom: 10px; line-height: 1.4; }
+        .product-title  { font-size: 15px; font-weight: 600; color: {{ $textColor }}; margin-bottom: 10px; line-height: 1.4; }
         .product-price-section { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
-        .product-current-price  { font-size: 18px; font-weight: 700; color: #2563eb; }
+        .product-current-price  { font-size: 18px; font-weight: 700; color: {{ $btnColor }}; }
         .product-original-price { font-size: 13px; color: #9ca3af; text-decoration: line-through; }
         .product-discount-badge { background: #fee2e2; color: #dc2626; font-size: 11px; font-weight: 600; padding: 2px 6px; border-radius: 4px; }
 
@@ -373,6 +436,51 @@
         @keyframes spin { to { transform: rotate(360deg); } }
         .spinner { width: 18px; height: 18px; border: 2px solid #e5e7eb; border-top-color: #2563eb; border-radius: 50%; animation: spin 0.6s linear infinite; }
         @keyframes fadeInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        @media (max-width: 640px) {
+            body {
+                min-height: 100dvh;
+            }
+
+            .page-wrapper {
+                width: 100%;
+                max-width: none;
+                min-height: 100dvh;
+            }
+
+            .navbar,
+            .search-bar-wrap,
+            .search-results-panel {
+                width: 100%;
+            }
+
+            .navbar-container {
+                padding: calc(env(safe-area-inset-top, 0px) + 12px) 16px 12px;
+            }
+
+            .container {
+                padding: 24px 16px calc(28px + env(safe-area-inset-bottom, 0px));
+            }
+
+            .fullmenu-body {
+                padding: calc(env(safe-area-inset-top, 0px) + 60px) 16px calc(40px + env(safe-area-inset-bottom, 0px));
+            }
+
+            .fullmenu-close-wrap,
+            .fullmenu-section-label,
+            .fullmenu-item,
+            .fullmenu-divider {
+                width: 100%;
+                max-width: none;
+            }
+
+            .report-modal,
+            .product-detail-box,
+            .cart-drawer {
+                width: 100%;
+                max-width: none;
+            }
+        }
     </style>
 </head>
 <body>
@@ -471,7 +579,7 @@
         @if($user->pages && $user->pages->count() > 0)
             <div class="fullmenu-section-label">Halaman</div>
             @foreach($user->pages as $userPage)
-                <div class="fullmenu-item {{ $loop->first ? 'active' : '' }}" data-tab="page-{{ $userPage->id }}">
+                <div class="fullmenu-item {{ $activePageId === $userPage->id ? 'active' : '' }}" data-tab="page-{{ $userPage->id }}">
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                     </svg>
@@ -494,7 +602,7 @@
 <div class="container">
     @if($user->pages && $user->pages->count() > 0)
         @foreach($user->pages as $userPage)
-            <div class="tab-content {{ $loop->first ? 'active' : '' }}" id="tab-page-{{ $userPage->id }}">
+            <div class="tab-content {{ $activePageId === $userPage->id ? 'active' : '' }}" id="tab-page-{{ $userPage->id }}">
                 <div class="user-profile">
                     @if($user->avatar)
                         <img src="{{ asset('storage/' . $user->avatar) }}" class="avatar" alt="{{ $user->name }}">
@@ -505,10 +613,48 @@
                             </svg>
                         </div>
                     @endif
-                    <div class="profile-name">{{ $user->name }}</div>
-                    <div class="profile-username">{{ '@' . $user->username }}</div>
-                    @if($user->bio)
-                        <div class="profile-bio">{{ $user->bio }}</div>
+                    <div class="profile-name" data-profile-text>{{ $user->name }}</div>
+                    <div class="profile-username" data-profile-text>{{ '@' . $user->username }}</div>
+                    @if($profile && $profile->about)
+                        <div class="profile-bio" data-profile-text>{{ $profile->about }}</div>
+                    @elseif($user->bio)
+                        <div class="profile-bio" data-profile-text>{{ $user->bio }}</div>
+                    @endif
+
+                    @if(!empty($socialLinks))
+                    @php
+                    $socialSvgMap = [
+                        'telegram'  => '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm4.93 6.686l-1.683 7.927c-.127.567-.46.707-.931.44l-2.57-1.894-1.24 1.193c-.137.137-.252.252-.517.252l.185-2.621 4.768-4.307c.207-.185-.045-.287-.322-.102L7.89 14.214l-2.522-.788c-.548-.171-.558-.548.115-.812l9.867-3.805c.456-.166.856.112.58.877z"/></svg>',
+                        'website'   => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>',
+                        'email'     => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>',
+                        'discord'   => '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/></svg>',
+                        'tiktok'    => '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.69a8.27 8.27 0 0 0 4.84 1.55V6.79a4.85 4.85 0 0 1-1.07-.1z"/></svg>',
+                        'instagram' => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>',
+                        'youtube'   => '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805 31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0 .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/></svg>',
+                        'twitch'    => '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714z"/></svg>',
+                        'linkedin'  => '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>',
+                        'x'         => '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.742l7.732-8.858L1.254 2.25H8.08l4.253 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>',
+                        'facebook'  => '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>',
+                        'behance'   => '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M22 7h-7V5h7v2zm1.726 10c-.442 1.297-2.029 3-5.101 3-3.074 0-5.564-1.729-5.564-5.675 0-3.91 2.325-5.92 5.466-5.92 3.082 0 4.964 1.782 5.375 4.426.078.506.109 1.188.095 2.14H15.97c.13 3.211 3.483 3.312 4.588 2.029H23.726zm-7.726-3h3.457c-.073-1.580-1.002-2.18-1.712-2.18-.747 0-1.633.572-1.745 2.18zM7.17 9.025c.395 0 2.353.105 2.353 1.734 0 .97-.771 1.463-1.55 1.546v.047c.99.078 1.968.609 1.968 1.873 0 2.006-2.006 2.072-2.637 2.072H1V9.025h6.17zm-3.07 5.52h2.167c.588 0 1.14-.228 1.14-.91 0-.773-.693-.9-1.244-.9H4.1v1.81zm0-3.31h1.937c.5 0 1.057-.162 1.057-.836 0-.73-.625-.836-1.14-.836H4.1v1.672z"/></svg>',
+                        'dribbble'  => '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 24C5.385 24 0 18.615 0 12S5.385 0 12 0s12 5.385 12 12-5.385 12-12 12zm10.12-10.358c-.35-.11-3.17-.953-6.384-.438 1.34 3.684 1.887 6.684 1.992 7.308 2.3-1.555 3.936-4.02 4.395-6.87zm-6.115 7.808c-.153-.9-.75-4.032-2.19-7.77l-.066.02c-5.79 2.015-7.86 6.017-8.04 6.39 1.73 1.35 3.92 2.166 6.29 2.166 1.42 0 2.77-.29 4.01-.806zm-9.86-3.28c.24-.38 3.28-5.21 8.536-6.89.016-.064.033-.128.05-.192-1.52-.547-4.73-1.07-8.52-1.07-.284 0-.568.004-.85.012-.04.166-.065.334-.065.504 0 3.126 1.19 5.99 3.14 8.13zm7.715-10.27c-.47-1.353-1.31-3.373-2.38-5.13-1.34.09-2.63.41-3.79.94 1.46 1.764 2.546 3.764 2.77 4.43.67-.12 1.39-.2 2.16-.2.42 0 .83.02 1.24.06zm.36-.09c.46.03.92.09 1.37.17.01-.04.01-.09.01-.13 0-1.72-.468-3.335-1.286-4.72-.29.75-.784 2.52-1.094 4.68zm3.327.55c-.34-.066-.69-.12-1.043-.157.16-1.766.566-3.457 1.05-4.656.66.39 1.25.87 1.78 1.404-.676.952-1.452 2.307-1.787 3.41z"/></svg>',
+                        'whatsapp'  => '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/></svg>',
+                        'spotify'   => '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>',
+                        'threads'   => '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12.186 24h-.007c-3.581-.024-6.334-1.205-8.184-3.509C2.35 18.44 1.5 15.586 1.472 12.01v-.017c.03-3.579.879-6.43 2.525-8.482C5.845 1.205 8.6.024 12.18 0h.014c2.746.02 5.043.725 6.826 2.098 1.677 1.29 2.858 3.13 3.509 5.467l-2.04.569c-1.104-3.96-3.898-5.984-8.304-6.015-2.91.022-5.11.936-6.54 2.717C4.307 6.504 3.616 8.914 3.589 12c.027 3.086.718 5.496 2.057 7.164 1.43 1.783 3.631 2.698 6.54 2.717 2.623-.02 4.358-.631 5.689-2.046 1.367-1.455 2.041-3.534 2.075-6.154H12.79v-2.113h9.23c.16 3.404-.499 6.094-1.97 8.009-1.855 2.364-4.797 3.6-8.868 3.623z"/></svg>',
+                    ];
+                    @endphp
+                    <div class="social-links">
+                        @foreach($socialLinks as $platform => $url)
+                            @if($url)
+                            <a href="{{ $url }}"
+                               target="{{ $platform === 'email' ? '_self' : '_blank' }}"
+                               rel="noopener noreferrer"
+                               class="social-link"
+                               title="{{ ucfirst($platform) }}">
+                                {!! $socialSvgMap[$platform] ?? '<span style="font-size:11px;font-weight:700;">'.strtoupper(substr($platform,0,2)).'</span>' !!}
+                            </a>
+                            @endif
+                        @endforeach
+                    </div>
                     @endif
                 </div>
 
@@ -972,6 +1118,12 @@ window.addEventListener('message', function(e) {
         };
     }
 
+    window.addEventListener('storage', function (e) {
+        if (e.key === 'payou_saved' && e.newValue) {
+            window.location.reload();
+        }
+    });
+
     // ── 3. Fungsi utama apply perubahan ──
     function applyAppearance(p) {
         if (!p) return;
@@ -980,7 +1132,9 @@ window.addEventListener('message', function(e) {
         const wrap = document.querySelector('.page-wrapper, .profile-wrapper, body');
         if (wrap && p.bgCss) {
             wrap.style.background = p.bgCss;
-            wrap.style.backgroundSize  = 'cover';
+            if (p.bgSize) wrap.style.backgroundSize = p.bgSize;
+            else wrap.style.backgroundSize = 'cover';
+            if (p.bgColor) wrap.style.backgroundColor = p.bgColor;
             wrap.style.backgroundAttachment = 'fixed';
         }
 
@@ -991,11 +1145,26 @@ window.addEventListener('message', function(e) {
             injectFont(p.fontFamily);
         }
 
+        if (p.textColor) {
+            document.querySelectorAll('[data-profile-text]').forEach(el => {
+                el.style.color = p.textColor;
+            });
+            document.querySelectorAll('.social-link, .block-text, .product-title').forEach(el => {
+                el.style.color = p.textColor;
+            });
+        }
+
         // Tombol — terapkan ke semua link/product button
         if (p.btnCss || p.btnRadius) {
-            document.querySelectorAll('.link-btn, .product-btn, .ap-link-item, .btn-link').forEach(btn => {
+            document.querySelectorAll('.block-link a, .btn-buy, .btn-checkout, .btn-cart').forEach(btn => {
                 if (p.btnRadius) btn.style.borderRadius = p.btnRadius;
                 if (p.btnCss)    btn.style.cssText += ';' + p.btnCss;
+            });
+        }
+
+        if (p.btn_color) {
+            document.querySelectorAll('.product-current-price').forEach(el => {
+                el.style.color = p.btn_color;
             });
         }
     }

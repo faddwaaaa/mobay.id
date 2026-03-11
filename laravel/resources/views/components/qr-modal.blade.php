@@ -72,7 +72,7 @@
 
             <!-- Action Buttons -->
             <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px;">
-                <button onclick="copyQRLink()" id="copy-link-btn"
+                <button type="button" onclick="copyQRLink()" id="copy-link-btn"
                         style="padding:10px 12px; background:#3b82f6; color:white; border:none; border-radius:8px;
                                font-size:12px; font-weight:500; cursor:pointer;
                                display:flex; align-items:center; justify-content:center; gap:6px; transition:all 0.2s;"
@@ -82,7 +82,7 @@
                     <span>Salin</span>
                 </button>
 
-                <button onclick="downloadQRCode()"
+                <button type="button" onclick="downloadQRCode()"
                         style="padding:10px 12px; background:#ffffff; color:#475569; border:1px solid #e2e8f0;
                                border-radius:8px; font-size:12px; font-weight:500; cursor:pointer;
                                display:flex; align-items:center; justify-content:center; gap:6px; transition:all 0.2s;"
@@ -92,14 +92,14 @@
                     <span>Download</span>
                 </button>
 
-                <button onclick="shareToWhatsApp()" id="whatsapp-share-btn"
+                <button type="button" onclick="shareToWhatsApp(event)" id="whatsapp-share-btn"
                         style="padding:10px 12px; background:#25D366; color:white; border:none; border-radius:8px;
                                font-size:12px; font-weight:500; cursor:pointer;
                                display:flex; align-items:center; justify-content:center; gap:6px; transition:all 0.2s;"
                         onmouseenter="this.style.background='#20BA5A'; this.style.boxShadow='0 2px 8px rgba(37,211,102,0.3)';"
                         onmouseleave="this.style.background='#25D366'; this.style.boxShadow='none';">
                     <i class="fab fa-whatsapp" style="font-size:11px;"></i>
-                    <span>WhatsApp</span>
+                    <span>WA Cepat</span>
                 </button>
             </div>
         </div>
@@ -173,6 +173,124 @@
 let currentQRCode   = null;
 let currentUrl      = '';
 let currentUsername = '';
+
+function buildShareCaption() {
+    return `Halo,\n\nSaya ingin berbagi kartu digital Payou.id saya.\n${currentUrl}\n\nScan QR pada gambar untuk membuka profil saya.`;
+}
+
+async function buildPosterImageUrl() {
+    const posterDesign = document.getElementById('qr-poster-design');
+    const posterQrContainer = document.getElementById('poster-qrcode');
+
+    posterQrContainer.innerHTML = '';
+    document.getElementById('poster-watermark').textContent = '@' + currentUsername;
+
+    new QRCode(posterQrContainer, {
+        text: currentUrl,
+        width: 220,
+        height: 220,
+        colorDark: '#0066CC',
+        colorLight: '#ffffff',
+        correctLevel: QRCode.CorrectLevel.H,
+    });
+
+    await new Promise(resolve => setTimeout(resolve, 450));
+
+    const canvas = await html2canvas(posterDesign, {
+        scale: 2,
+        backgroundColor: '#ffffff',
+        allowTaint: false,
+        useCORS: true,
+        logging: false,
+        windowWidth: 500,
+        windowHeight: 550,
+    });
+
+    const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png', 1.0));
+    if (!blob) throw new Error('Gagal membuat gambar share.');
+
+    const imageUrl = URL.createObjectURL(blob);
+
+    return {
+        imageUrl,
+        revoke() {
+            URL.revokeObjectURL(imageUrl);
+        },
+    };
+}
+
+function getShareFallbackMessage() {
+    if (['localhost', '127.0.0.1'].includes(window.location.hostname)) {
+        return 'Web Share API untuk file belum didukung di browser ini atau dibatasi karena aplikasi masih berjalan di localhost.';
+    }
+
+    return 'Browser ini belum mendukung berbagi gambar melalui Web Share API.';
+}
+
+async function fallbackShareText(captionText) {
+    try {
+        await navigator.clipboard.writeText(captionText);
+        alert(`${getShareFallbackMessage()}\n\nCaption sudah disalin. Anda bisa menempelkannya secara manual.`);
+    } catch {
+        alert(`${getShareFallbackMessage()}\n\nCaption:\n\n${captionText}`);
+    }
+}
+
+async function shareOrderQR(imageUrl, captionText) {
+    const response = await fetch(imageUrl);
+    if (!response.ok) {
+        throw new Error('Gagal mengambil gambar QR.');
+    }
+
+    const blob = await response.blob();
+    const file = new File([blob], `payou-${currentUsername}.png`, {
+        type: blob.type || 'image/png',
+    });
+
+    if (navigator.share && typeof navigator.canShare === 'function' && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+            title: `Payou.id - @${currentUsername}`,
+            text: captionText,
+            files: [file],
+        });
+        return true;
+    }
+
+    await fallbackShareText(captionText);
+    return false;
+}
+
+async function handleQRShare(buttonId = 'whatsapp-share-btn') {
+    const shareBtn = buttonId ? document.getElementById(buttonId) : null;
+
+    if (shareBtn) {
+        shareBtn.classList.add('share-loading');
+        shareBtn.dataset.originalHtml = shareBtn.innerHTML;
+        shareBtn.innerHTML = '<span>Menyiapkan...</span>';
+    }
+
+    let posterAsset = null;
+
+    try {
+        posterAsset = await buildPosterImageUrl();
+        await shareOrderQR(posterAsset.imageUrl, buildShareCaption());
+    } catch (error) {
+        console.error('Error:', error);
+        if (error.name !== 'AbortError' && !error.message?.includes('cancel')) {
+            await fallbackShareText(buildShareCaption());
+        }
+    } finally {
+        if (posterAsset) {
+            posterAsset.revoke();
+        }
+
+        if (shareBtn) {
+            shareBtn.classList.remove('share-loading');
+            shareBtn.innerHTML = shareBtn.dataset.originalHtml || shareBtn.innerHTML;
+            delete shareBtn.dataset.originalHtml;
+        }
+    }
+}
 
 function openQRModal(username) {
     const overlay    = document.getElementById('qrModalOverlay');
@@ -321,7 +439,7 @@ function downloadQRCode() {
     document.body.removeChild(link);
 }
 
-async function shareToWhatsApp() {
+async function legacyShareToWhatsApp() {
     const shareBtn          = document.getElementById('whatsapp-share-btn');
     const posterDesign      = document.getElementById('qr-poster-design');
     const posterQrContainer = document.getElementById('poster-qrcode');
@@ -387,6 +505,12 @@ async function shareToWhatsApp() {
         shareBtn.classList.remove('share-loading');
         shareBtn.innerHTML = '<i class="fab fa-whatsapp" style="font-size:11px;"></i><span>WhatsApp</span>';
     }
+}
+
+// Override share flow: HP pakai Web Share + file, desktop fallback cepat untuk WhatsApp Web
+async function shareToWhatsApp(event) {
+    event?.preventDefault();
+    await handleQRShare('whatsapp-share-btn');
 }
 
 document.addEventListener('keydown', e => {

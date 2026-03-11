@@ -53,34 +53,34 @@
 
                 {{-- Action Buttons Row 1 --}}
                 <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 10px;">
-                    <button onclick="copyLink()" id="copy-btn"
+                    <button type="button" onclick="copyLink()" id="copy-btn"
                         style="padding: 12px 16px; background: #3b82f6; color: white; border: none; border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;">
                         <i class="far fa-copy" style="font-size: 12px;"></i>
                         <span>Salin</span>
                     </button>
 
-                    <button onclick="downloadQR()"
+                    <button type="button" onclick="downloadQR()"
                         style="padding: 12px 16px; background: #ffffff; color: #475569; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;">
                         <i class="fas fa-download" style="font-size: 12px;"></i>
                         <span>Download</span>
                     </button>
 
-                    <button onclick="shareWhatsApp()" id="whatsapp-share-btn"
+                    <button type="button" onclick="shareWhatsApp(event)" id="whatsapp-share-btn"
                         style="padding: 12px 16px; background: #25D366; color: white; border: none; border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;">
                         <i class="fab fa-whatsapp" style="font-size: 12px;"></i>
-                        <span>WhatsApp</span>
+                        <span>WA Cepat</span>
                     </button>
                 </div>
 
                 {{-- Action Buttons Row 2 --}}
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                    <button onclick="printQR()"
+                    <button type="button" onclick="printQR()"
                         style="padding: 12px 16px; background: #f8fafc; color: #475569; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;">
                         <i class="fas fa-print" style="font-size: 12px;"></i>
                         <span>Print</span>
                     </button>
 
-                    <button onclick="shareQR()"
+                    <button type="button" onclick="shareQR(event)"
                         style="padding: 12px 16px; background: #f8fafc; color: #475569; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;">
                         <i class="fas fa-share-alt" style="font-size: 12px;"></i>
                         <span>Bagikan</span>
@@ -321,6 +321,119 @@ let currentUrl      = '{{ url("/" . ($userSlug ?? "username")) }}';
 let currentUsername = '{{ $userSlug ?? "username" }}';
 let currentColor    = '#0066CC';
 
+function buildShareCaption() {
+    return `Halo,\n\nSaya ingin berbagi kartu digital Payou.id saya.\n${currentUrl}\n\nScan QR pada gambar untuk membuka profil saya.`;
+}
+
+async function buildPosterImageUrl() {
+    const posterDesign = document.getElementById('qr-poster-design');
+    const posterQrContainer = document.getElementById('poster-qrcode');
+
+    posterQrContainer.innerHTML = '';
+    document.getElementById('poster-watermark').textContent = '@' + currentUsername;
+
+    new QRCode(posterQrContainer, {
+        text: currentUrl,
+        width: 220, height: 220,
+        colorDark: '#0066CC',
+        colorLight: '#ffffff',
+        correctLevel: QRCode.CorrectLevel.H,
+    });
+
+    await new Promise(resolve => setTimeout(resolve, 450));
+
+    const canvas = await html2canvas(posterDesign, {
+        scale: 2, backgroundColor: '#ffffff',
+        allowTaint: false, useCORS: true, logging: false,
+        windowWidth: 500, windowHeight: 550,
+    });
+
+    const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png', 1.0));
+    if (!blob) throw new Error('Gagal membuat gambar share.');
+
+    const imageUrl = URL.createObjectURL(blob);
+
+    return {
+        imageUrl,
+        revoke() {
+            URL.revokeObjectURL(imageUrl);
+        },
+    };
+}
+
+function getShareFallbackMessage() {
+    if (['localhost', '127.0.0.1'].includes(window.location.hostname)) {
+        return 'Web Share API untuk file belum didukung di browser ini atau dibatasi karena aplikasi masih berjalan di localhost.';
+    }
+
+    return 'Browser ini belum mendukung berbagi gambar melalui Web Share API.';
+}
+
+async function fallbackShareText(captionText) {
+    try {
+        await navigator.clipboard.writeText(captionText);
+        alert(`${getShareFallbackMessage()}\n\nCaption sudah disalin. Anda bisa menempelkannya secara manual.`);
+    } catch {
+        alert(`${getShareFallbackMessage()}\n\nCaption:\n\n${captionText}`);
+    }
+}
+
+async function shareOrderQR(imageUrl, captionText) {
+    const response = await fetch(imageUrl);
+    if (!response.ok) {
+        throw new Error('Gagal mengambil gambar QR.');
+    }
+
+    const blob = await response.blob();
+    const file = new File([blob], `payou-${currentUsername}.png`, {
+        type: blob.type || 'image/png',
+    });
+
+    if (navigator.share && typeof navigator.canShare === 'function' && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+            title: `Payou.id - @${currentUsername}`,
+            text: captionText,
+            files: [file],
+        });
+        return true;
+    }
+
+    await fallbackShareText(captionText);
+    return false;
+}
+
+async function handleQRShare(buttonId = null) {
+    const shareBtn = buttonId ? document.getElementById(buttonId) : null;
+
+    if (shareBtn) {
+        shareBtn.classList.add('share-loading');
+        shareBtn.dataset.originalHtml = shareBtn.innerHTML;
+        shareBtn.innerHTML = '<span>Menyiapkan...</span>';
+    }
+
+    let posterAsset = null;
+
+    try {
+        posterAsset = await buildPosterImageUrl();
+        await shareOrderQR(posterAsset.imageUrl, buildShareCaption());
+    } catch (error) {
+        console.error('Error:', error);
+        if (error.name !== 'AbortError' && !error.message?.includes('cancel')) {
+            await fallbackShareText(buildShareCaption());
+        }
+    } finally {
+        if (posterAsset) {
+            posterAsset.revoke();
+        }
+
+        if (shareBtn) {
+            shareBtn.classList.remove('share-loading');
+            shareBtn.innerHTML = shareBtn.dataset.originalHtml || shareBtn.innerHTML;
+            delete shareBtn.dataset.originalHtml;
+        }
+    }
+}
+
 const COLOR_NAMES = {
     '#0066CC': 'Biru Payou',
     '#111827': 'Hitam',
@@ -467,7 +580,7 @@ function printQR() {
     win.document.close();
 }
 
-async function shareWhatsApp() {
+async function legacyShareWhatsApp() {
     const shareBtn          = document.getElementById('whatsapp-share-btn');
     const posterDesign      = document.getElementById('qr-poster-design');
     const posterQrContainer = document.getElementById('poster-qrcode');
@@ -522,14 +635,14 @@ async function shareWhatsApp() {
     }
 }
 
-async function shareQR() {
-    if (navigator.share) {
-        try {
-            await navigator.share({ title: 'QR Code Payou.id', text: 'Scan QR Code ini untuk mengunjungi halaman saya', url: currentUrl });
-        } catch (err) { /* cancelled */ }
-    } else {
-        copyLink();
-    }
+async function shareQR(event) {
+    event?.preventDefault();
+    await handleQRShare();
+}
+
+async function shareWhatsApp(event) {
+    event?.preventDefault();
+    await handleQRShare('whatsapp-share-btn');
 }
 </script>
 
