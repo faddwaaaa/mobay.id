@@ -343,7 +343,7 @@ tbody tr:hover { background: #f1f5f9; }
 
     {{-- ================= TABLE LIFETIME SALES ================= --}}
     <div class="bg-white rounded-xl shadow p-6">
-        <h2 class="font-semibold mb-4">Product Lifetime Sales</h2>
+        <h2 class="font-semibold mb-4">Statistik Penjualan Produk</h2>
         <div class="overflow-x-auto">
             <table class="w-full text-sm">
                 <thead class="bg-gray-50 text-gray-500">
