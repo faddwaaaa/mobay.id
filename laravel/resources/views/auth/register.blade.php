@@ -252,7 +252,7 @@
     <!-- Logo Outside Card -->
     <div class="logo-wrapper">
         <div class="logo">
-            <img src="{{ asset('img/icon.png') }}" alt="Logo Payou">
+            <img src="{{ asset('img/logo.png') }}" alt="Logo Payou">
         </div>
         <p class="logo-subtitle">Buat akun baru Anda</p>
     </div>
