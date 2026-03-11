@@ -7,7 +7,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     @php
-        $profile = $user->profile;
+        $profile = $profile ?? $user->profile ?? $user->userProfile ?? null;
         // Hitung background CSS dari DB
         $bgCss = '#f9fafb';
         if ($profile) {
