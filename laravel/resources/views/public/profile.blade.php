@@ -7,35 +7,66 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     @php
-        $profile = $user->profile;
-        // Hitung background CSS dari DB
-        $bgCss = '#f9fafb';
-        if ($profile) {
-            if ($profile->bg_type === 'gradient' && $profile->bg_gradient_start && $profile->bg_gradient_end) {
-                $dir   = $profile->bg_gradient_direction ?? 'to bottom';
-                $bgCss = "linear-gradient({$dir}, {$profile->bg_gradient_start}, {$profile->bg_gradient_end})";
-            } elseif ($profile->bg_type === 'image' && $profile->bg_image) {
-                $bgCss = "url('" . asset('storage/' . $profile->bg_image) . "') center/cover no-repeat fixed";
-            } elseif ($profile->background_color) {
-                $bgCss = $profile->background_color;
-            }
+        $profile = $profile ?? $user->profile ?? $user->userProfile ?? null;
+        $requestedPageId = (int) request('page', 0);
+        $activePageId = $user->pages?->contains('id', $requestedPageId)
+            ? $requestedPageId
+            : ($user->pages?->first()?->id ?? null);
+        $bgCss        = $profile?->getBackgroundCss() ?? '#f9fafb';
+        $bgColorExtra = $profile?->getBackgroundColor();
+        $bgSizeExtra  = $profile?->getBackgroundSize();
+        $fontFamily   = $profile->font_family ?? 'system-ui';
+        $textColor    = $profile->text_color ?? '#111827';
+        $btnColor     = $profile->btn_color ?? '#3b82f6';
+        $btnTxtColor  = $profile->btn_text_color ?? '#ffffff';
+        $btnShape     = $profile->btn_shape ?? 'rounded';
+        $btnStyle     = $profile->btn_style ?? 'fill';
+        $shapeMap     = ['pill' => '50px', 'rounded' => '12px', 'square' => '4px'];
+        $btnRadius    = $shapeMap[$btnShape] ?? '12px';
+
+        switch ($btnStyle) {
+            case 'outline':
+                $btnCssDb = "background:transparent; color:{$btnColor}; border:2px solid {$btnColor};";
+                break;
+            case 'hard_shadow':
+                $btnCssDb = "background:{$btnColor}; color:{$btnTxtColor}; border:2px solid #111; box-shadow:3px 3px 0 #111;";
+                break;
+            case 'soft_shadow':
+                $btnCssDb = "background:{$btnColor}; color:{$btnTxtColor}; border:none; box-shadow:0 4px 16px rgba(0,0,0,0.15);";
+                break;
+            case 'ghost':
+                $btnCssDb = "background:rgba(255,255,255,0.15); color:{$btnTxtColor}; border:1.5px solid rgba(255,255,255,0.3); backdrop-filter:blur(8px);";
+                break;
+            case 'minimal':
+                $btnCssDb = "background:transparent; color:{$btnColor}; border:none; border-bottom:2px solid {$btnColor}; border-radius:0 !important;";
+                break;
+            default:
+                $btnCssDb = "background:{$btnColor}; color:{$btnTxtColor}; border:2px solid {$btnColor};";
         }
-        $fontFamily = $profile->font_family ?? 'system-ui';
     @endphp
+
+    @if($fontFamily !== 'system-ui')
+    <link href="https://fonts.googleapis.com/css2?family={{ urlencode($fontFamily) }}:wght@400;500;600;700&display=swap" rel="stylesheet">
+    @endif
 
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
+        button, input, textarea, select { font-family: inherit; }
 
         body {
             font-family: '{{ $fontFamily }}', system-ui, -apple-system, sans-serif;
             background: {{ $bgCss }};
+            @if($bgColorExtra) background-color: {{ $bgColorExtra }}; @endif
+            @if($bgSizeExtra) background-size: {{ $bgSizeExtra }}; @endif
             min-height: 100vh;
+            overflow-x: hidden;
         }
 
         .page-wrapper {
+            width: min(100%, 420px);
             max-width: 420px;
             margin: 0 auto;
-            background: transparent; /* transparan biar bg body keliatan */
+            background: transparent;
             min-height: 100vh;
             position: relative;
             overflow-x: hidden;
@@ -218,31 +249,203 @@
             padding: 10px 16px 4px;
         }
 
-        /* Report Modal */
+        /* ════════════════════════════════════════
+           REPORT MODAL — NEW MULTI-STEP VERSION
+        ════════════════════════════════════════ */
         .report-modal-overlay {
             position: fixed; inset: 0;
-            background: rgba(15,23,42,0.55); backdrop-filter: blur(2px);
+            background: rgba(15,23,42,0.6);
+            backdrop-filter: blur(3px);
             display: none; align-items: center; justify-content: center;
             z-index: 10000; padding: 16px;
         }
         .report-modal-overlay.show { display: flex; }
-        .report-modal { width: 100%; max-width: 420px; background: #fff; border: 1px solid #e5e7eb; border-radius: 16px; box-shadow: 0 24px 50px rgba(0,0,0,0.2); overflow: hidden; }
-        .report-head { padding: 14px 16px; border-bottom: 1px solid #eef2f7; display: flex; align-items: center; justify-content: space-between; }
-        .report-title { font-size: 15px; font-weight: 800; color: #0f172a; }
-        .report-close { width: 30px; height: 30px; border-radius: 8px; border: none; background: #f1f5f9; color: #475569; cursor: pointer; }
-        .report-body { padding: 14px 16px 16px; }
-        .report-sub { font-size: 12px; color: #64748b; margin-bottom: 10px; line-height: 1.45; }
-        .reason-list { display: grid; gap: 8px; margin-bottom: 10px; }
-        .reason-item { display: flex; align-items: center; gap: 9px; border: 1px solid #e2e8f0; border-radius: 10px; padding: 9px 10px; cursor: pointer; font-size: 13px; color: #1e293b; font-weight: 600; background: #fff; }
-        .reason-item:hover { border-color: #93c5fd; background: #eff6ff; }
-        .reason-item input { accent-color: #2563eb; }
-        .report-textarea { width: 100%; min-height: 92px; border: 1px solid #dbe2ea; border-radius: 10px; padding: 10px 12px; font-size: 13px; color: #0f172a; resize: vertical; outline: none; font-family: inherit; }
-        .report-textarea:focus { border-color: #2563eb; }
-        .report-actions { margin-top: 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        .report-btn { border: none; border-radius: 10px; padding: 10px 12px; font-size: 13px; font-weight: 700; cursor: pointer; }
-        .report-btn.cancel { background: #f1f5f9; color: #475569; }
-        .report-btn.submit { background: #dc2626; color: #fff; }
-        .report-btn.submit:disabled { opacity: .6; cursor: not-allowed; }
+
+        .report-modal {
+            width: 100%; max-width: 440px;
+            background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+            border: 1px solid rgba(226,232,240,0.95);
+            border-radius: 24px;
+            box-shadow: 0 32px 64px rgba(15,23,42,0.18);
+            overflow: hidden; max-height: 92vh; display: flex; flex-direction: column;
+        }
+
+        /* Step indicator */
+        .report-steps {
+            display: flex; gap: 0;
+            background: #f8fafc; border-bottom: 1px solid #e5e7eb;
+            padding: 0;
+        }
+        .report-step {
+            flex: 1; padding: 10px 0; text-align: center;
+            font-size: 11px; font-weight: 700; color: #9ca3af;
+            letter-spacing: .4px; text-transform: uppercase;
+            border-bottom: 2px solid transparent; transition: all .2s;
+            display: flex; align-items: center; justify-content: center; gap: 5px;
+        }
+        .report-step.active { color: #2563eb; border-bottom-color: #2563eb; }
+        .report-step.done   { color: #16a34a; border-bottom-color: #16a34a; }
+        .report-step-num {
+            width: 18px; height: 18px; border-radius: 50%;
+            background: #e5e7eb; color: #6b7280;
+            font-size: 10px; font-weight: 800;
+            display: flex; align-items: center; justify-content: center;
+            transition: all .2s;
+        }
+        .report-step.active .report-step-num { background: #2563eb; color: #fff; }
+        .report-step.done   .report-step-num { background: #16a34a; color: #fff; }
+
+        .report-head {
+            padding: 18px 20px 14px;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex; align-items: flex-start; justify-content: space-between;
+            flex-shrink: 0;
+        }
+        .report-head-text {}
+        .report-title { font-size: 16px; font-weight: 800; color: #0f172a; }
+        .report-subtitle { font-size: 12px; color: #64748b; margin-top: 2px; }
+        .report-close {
+            width: 32px; height: 32px; border-radius: 8px;
+            border: none; background: #f1f5f9; color: #64748b;
+            cursor: pointer; font-size: 15px; flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .report-close:hover { background: #fee2e2; color: #dc2626; }
+
+        .report-body { padding: 16px 20px 20px; overflow-y: auto; flex: 1; }
+
+        /* Step panels */
+        .report-step-panel { display: none; }
+        .report-step-panel.active { display: block; }
+
+        /* Category grid */
+        .category-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; }
+        .category-card {
+            border: 1.5px solid #e2e8f0; border-radius: 14px; padding: 14px 12px;
+            cursor: pointer; text-align: left; transition: all .18s;
+            background: rgba(255,255,255,0.95);
+            min-height: 108px;
+        }
+        .category-card:hover { border-color: #93c5fd; background: #f8fbff; transform: translateY(-1px); }
+        .category-card.selected { border-color: #2563eb; background: #eff6ff; box-shadow: 0 0 0 3px rgba(37,99,235,.08); }
+        .category-card input[type="radio"] { display: none; }
+        .category-mark,
+        .category-icon {
+            width: 34px; height: 34px; border-radius: 10px;
+            display: inline-flex; align-items: center; justify-content: center;
+            margin-bottom: 10px; background: #e8f0ff; color: #1d4ed8;
+            font-size: 11px; font-weight: 800; letter-spacing: .08em;
+            text-transform: uppercase;
+        }
+        .category-label { font-size: 12px; font-weight: 700; color: #1e293b; }
+        .category-desc  { font-size: 10.5px; color: #64748b; margin-top: 2px; line-height: 1.35; }
+
+        /* Step 2 */
+        .form-label { font-size: 12px; font-weight: 700; color: #374151; margin-bottom: 5px; display: block; }
+        .form-label span { color: #dc2626; }
+        .report-textarea {
+            width: 100%; min-height: 90px;
+            border: 1.5px solid #e5e7eb; border-radius: 10px;
+            padding: 10px 12px; font-size: 13px; color: #0f172a;
+            resize: vertical; outline: none; font-family: inherit;
+            line-height: 1.5; background: #f9fafb;
+        }
+        .report-textarea:focus { border-color: #2563eb; background: #fff; box-shadow: 0 0 0 3px rgba(37,99,235,.08); }
+
+        .evidence-upload-area {
+            border: 1.5px dashed #d1d5db; border-radius: 10px;
+            padding: 16px; text-align: center; cursor: pointer;
+            background: #f9fafb; transition: all .2s; margin-top: 8px;
+        }
+        .evidence-upload-area:hover { border-color: #93c5fd; background: #eff6ff; }
+        .evidence-upload-icon {
+            width: 42px; height: 42px; border-radius: 12px;
+            margin: 0 auto 8px; display: flex; align-items: center; justify-content: center;
+            background: #e8f0ff; color: #1d4ed8;
+        }
+        .evidence-upload-area p { font-size: 12px; color: #9ca3af; margin-top: 4px; }
+        .evidence-upload-area strong { font-size: 13px; color: #374151; }
+        .evidence-preview { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+        .evidence-thumb {
+            width: 72px; height: 84px; border-radius: 10px; overflow: hidden;
+            position: relative; border: 1.5px solid #e5e7eb;
+            background: #fff;
+        }
+        .evidence-thumb img { width: 100%; height: 58px; object-fit: cover; display: block; }
+        .evidence-meta {
+            height: 26px; padding: 4px 6px 6px;
+            font-size: 9px; font-weight: 700; color: #64748b;
+            display: flex; align-items: center; justify-content: space-between;
+            background: #fff;
+        }
+        .evidence-thumb-del {
+            position: absolute; top: 2px; right: 2px;
+            width: 16px; height: 16px; border-radius: 50%;
+            background: rgba(0,0,0,0.6); color: #fff;
+            font-size: 9px; border: none; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        /* Step 3 konfirmasi */
+        .confirm-summary {
+            background: #f8fafc; border: 1.5px solid #e5e7eb;
+            border-radius: 12px; padding: 14px 16px; margin-bottom: 14px;
+        }
+        .confirm-row { display: flex; gap: 10px; margin-bottom: 8px; font-size: 13px; }
+        .confirm-row:last-child { margin-bottom: 0; }
+        .confirm-key   { color: #6b7280; font-weight: 600; min-width: 80px; flex-shrink: 0; }
+        .confirm-val   { color: #111827; font-weight: 700; }
+        .confirm-desc  { font-size: 12px; color: #374151; line-height: 1.5; }
+
+        .warning-box {
+            background: #fffbeb; border: 1.5px solid #fde68a; border-radius: 12px;
+            padding: 10px 12px; margin-bottom: 14px;
+            display: flex; gap: 8px; align-items: flex-start;
+            font-size: 12px; color: #92400e; line-height: 1.45;
+        }
+        .warning-box-icon {
+            width: 20px; height: 20px; border-radius: 50%;
+            flex-shrink: 0; margin-top: 1px;
+            display: flex; align-items: center; justify-content: center;
+            background: rgba(245,158,11,0.18); color: #b45309;
+            font-size: 11px; font-weight: 800;
+        }
+
+        /* Nav buttons */
+        .report-nav { display: flex; gap: 8px; margin-top: 16px; }
+        .report-nav-btn {
+            flex: 1; padding: 11px; border-radius: 10px;
+            font-size: 13px; font-weight: 700; border: none; cursor: pointer;
+            transition: all .18s;
+        }
+        .btn-back   { background: #f1f5f9; color: #475569; }
+        .btn-back:hover { background: #e5e7eb; }
+        .btn-next   { background: #2563eb; color: #fff; }
+        .btn-next:hover { background: #1d4ed8; }
+        .btn-submit { background: #dc2626; color: #fff; }
+        .btn-submit:hover { background: #b91c1c; }
+        .btn-submit:disabled { opacity: .55; cursor: not-allowed; }
+
+        .char-counter { font-size: 11px; color: #9ca3af; text-align: right; margin-top: 3px; }
+
+        /* Success state */
+        .report-success { padding: 32px 20px; text-align: center; display: none; }
+        .report-success.show { display: block; }
+        .success-icon {
+            width: 64px; height: 64px; border-radius: 50%;
+            background: #dcfce7; margin: 0 auto 14px;
+            display: flex; align-items: center; justify-content: center;
+            color: #15803d;
+        }
+        .report-success h3 { font-size: 17px; font-weight: 800; color: #111827; margin-bottom: 6px; }
+        .report-success p  { font-size: 13px; color: #6b7280; line-height: 1.5; }
+        .report-ticket {
+            display: inline-block; margin-top: 10px;
+            background: #f3f4f6; border-radius: 8px;
+            padding: 6px 14px; font-size: 12px; font-weight: 700;
+            color: #374151; font-family: monospace; letter-spacing: 1px;
+        }
+        /* ════════════════════ END REPORT MODAL ════════════════════ */
 
         .fullmenu-overlay {
             position: fixed; inset: 0;
@@ -276,20 +479,30 @@
         .user-profile { text-align: center; margin-bottom: 24px; padding-bottom: 20px; border-bottom: 1px solid rgba(229,231,235,0.6); }
         .avatar { width: 80px; height: 80px; border-radius: 50%; background: #e5e7eb; margin: 0 auto 10px; display: block; object-fit: cover; border: 3px solid #fff; box-shadow: 0 0 0 2px #e5e7eb; }
         .avatar-placeholder { width: 80px; height: 80px; border-radius: 50%; background: rgba(255,255,255,0.3); backdrop-filter: blur(4px); margin: 0 auto 10px; display: flex; align-items: center; justify-content: center; color: #9ca3af; border: 3px solid #fff; box-shadow: 0 0 0 2px rgba(229,231,235,0.5); }
-        .profile-name     { font-size: 17px; font-weight: 700; color: #111827; margin-bottom: 2px; }
-        .profile-username { color: #6b7280; font-size: 13px; margin-bottom: 8px; }
-        .profile-bio      { font-size: 13px; color: #374151; line-height: 1.5; }
+        .profile-name     { font-size: 17px; font-weight: 700; color: {{ $textColor }}; margin-bottom: 2px; }
+        .profile-username { color: {{ $textColor }}; font-size: 13px; margin-bottom: 8px; opacity: .78; }
+        .profile-bio      { font-size: 13px; color: {{ $textColor }}; line-height: 1.5; opacity: .92; }
+
+        .social-links { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 14px; }
+        .social-link {
+            width: 40px; height: 40px; border-radius: 50%;
+            background: rgba(255,255,255,0.15); backdrop-filter: blur(6px);
+            border: 1.5px solid rgba(255,255,255,0.3);
+            display: flex; align-items: center; justify-content: center;
+            text-decoration: none; transition: all 0.18s; color: {{ $textColor }}; flex-shrink: 0;
+        }
+        .social-link:hover { background: rgba(255,255,255,0.3); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+        .social-link svg { width: 18px; height: 18px; flex-shrink: 0; }
 
         .block { margin-bottom: 12px; }
-        .block-text  { font-size: 14px; text-align: center; color: #374151; line-height: 1.6; }
+        .block-text  { font-size: 14px; text-align: center; color: {{ $textColor }}; line-height: 1.6; }
         .block-link a {
-            display: block; padding: 14px; border-radius: 12px;
-            border: 1px solid rgba(229,231,235,0.8); text-align: center;
-            text-decoration: none; color: #111; font-weight: 500;
-            transition: all 0.2s; background: rgba(255,255,255,0.85);
-            backdrop-filter: blur(8px);
+            display: block; padding: 14px; border-radius: {{ $btnRadius }};
+            {{ $btnCssDb }}
+            text-align: center; text-decoration: none; font-weight: 500;
+            transition: all 0.2s; backdrop-filter: blur(8px);
         }
-        .block-link a:hover { border-color: #2563eb; background: rgba(239,246,255,0.95); }
+        .block-link a:hover { filter: brightness(0.93); transform: translateY(-1px); }
         .block-image img   { width: 100%; border-radius: 12px; }
         .block-video iframe { width: 100%; height: 200px; border-radius: 12px; border: none; }
 
@@ -308,9 +521,9 @@
         .product-image-placeholder { width: 56px; height: 56px; background: #eff6ff; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #2563eb; }
         .product-details { padding: 14px 16px 16px; }
         .product-badge { display: inline-flex; align-items: center; gap: 4px; background: #eff6ff; color: #2563eb; font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 6px; margin-bottom: 8px; letter-spacing: 0.3px; }
-        .product-title  { font-size: 15px; font-weight: 600; color: #111827; margin-bottom: 10px; line-height: 1.4; }
+        .product-title  { font-size: 15px; font-weight: 600; color: {{ $textColor }}; margin-bottom: 10px; line-height: 1.4; }
         .product-price-section { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
-        .product-current-price  { font-size: 18px; font-weight: 700; color: #2563eb; }
+        .product-current-price  { font-size: 18px; font-weight: 700; color: {{ $btnColor }}; }
         .product-original-price { font-size: 13px; color: #9ca3af; text-decoration: line-through; }
         .product-discount-badge { background: #fee2e2; color: #dc2626; font-size: 11px; font-weight: 600; padding: 2px 6px; border-radius: 4px; }
 
@@ -373,6 +586,17 @@
         @keyframes spin { to { transform: rotate(360deg); } }
         .spinner { width: 18px; height: 18px; border: 2px solid #e5e7eb; border-top-color: #2563eb; border-radius: 50%; animation: spin 0.6s linear infinite; }
         @keyframes fadeInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        @media (max-width: 640px) {
+            body { min-height: 100dvh; }
+            .page-wrapper { width: 100%; max-width: none; min-height: 100dvh; }
+            .navbar, .search-bar-wrap, .search-results-panel { width: 100%; }
+            .navbar-container { padding: calc(env(safe-area-inset-top, 0px) + 12px) 16px 12px; }
+            .container { padding: 24px 16px calc(28px + env(safe-area-inset-bottom, 0px)); }
+            .fullmenu-body { padding: calc(env(safe-area-inset-top, 0px) + 60px) 16px calc(40px + env(safe-area-inset-bottom, 0px)); }
+            .fullmenu-close-wrap, .fullmenu-section-label, .fullmenu-item, .fullmenu-divider { width: 100%; max-width: none; }
+            .report-modal, .product-detail-box, .cart-drawer { width: 100%; max-width: none; }
+        }
     </style>
 </head>
 <body>
@@ -434,33 +658,167 @@
 <div class="search-results-overlay" id="searchResultsOverlay"></div>
 <div class="search-results-panel" id="searchResultsPanel"></div>
 
-{{-- REPORT MODAL --}}
+{{-- ════════════════════════════════════════
+     REPORT MODAL — NEW MULTI-STEP VERSION
+     ════════════════════════════════════════ --}}
 <div class="report-modal-overlay" id="reportModalOverlay">
-    <div class="report-modal">
-        <div class="report-head">
-            <div class="report-title">Laporkan Profil</div>
-            <button type="button" class="report-close" id="reportCloseBtn">✕</button>
-        </div>
-        <form id="reportForm" class="report-body">
-            <div class="report-sub">Pilih alasan laporan. Laporan akan ditinjau admin.</div>
-            <div class="reason-list">
-                <label class="reason-item"><input type="radio" name="reason" value="spam" required> Spam / Iklan Berlebihan</label>
-                <label class="reason-item"><input type="radio" name="reason" value="scam"> Penipuan / Scam</label>
-                <label class="reason-item"><input type="radio" name="reason" value="hate_speech"> Ujaran Kebencian</label>
-                <label class="reason-item"><input type="radio" name="reason" value="adult_content"> Konten Dewasa</label>
-                <label class="reason-item"><input type="radio" name="reason" value="violence"> Kekerasan / Ancaman</label>
-                <label class="reason-item"><input type="radio" name="reason" value="fake_account"> Akun Palsu</label>
-                <label class="reason-item"><input type="radio" name="reason" value="other"> Lainnya</label>
-            </div>
-            <textarea name="detail" class="report-textarea" maxlength="1000" placeholder="Detail tambahan (opsional)"></textarea>
-            <input type="hidden" name="page_url" value="{{ url()->current() }}">
-            <div class="report-actions">
-                <button type="button" class="report-btn cancel" id="reportCancelBtn">Batal</button>
-                <button type="submit" class="report-btn submit" id="reportSubmitBtn">Kirim Laporan</button>
-            </div>
-        </form>
+  <div class="report-modal" role="dialog" aria-modal="true" aria-labelledby="reportModalTitle">
+
+    {{-- Step Bar --}}
+    <div class="report-steps" id="reportStepBar">
+      <div class="report-step active" id="rStep1">
+        <div class="report-step-num">1</div> Kategori
+      </div>
+      <div class="report-step" id="rStep2">
+        <div class="report-step-num">2</div> Bukti
+      </div>
+      <div class="report-step" id="rStep3">
+        <div class="report-step-num">3</div> Konfirmasi
+      </div>
     </div>
+
+    {{-- Header --}}
+    <div class="report-head">
+      <div class="report-head-text">
+        <div class="report-title" id="reportModalTitle">Laporkan Akun</div>
+        <div class="report-subtitle" id="reportStepLabel">Pilih kategori yang paling sesuai</div>
+      </div>
+      <button class="report-close" id="reportCloseBtn" aria-label="Tutup">✕</button>
+    </div>
+
+    {{-- Body --}}
+    <div class="report-body">
+
+      {{-- STEP 1: Kategori --}}
+      <div class="report-step-panel active" id="rPanel1">
+        <div class="category-grid" id="categoryGrid">
+          <label class="category-card" data-value="spam">
+            <input type="radio" name="report_reason" value="spam">
+            <div class="category-icon">📢</div>
+            <div class="category-label">Spam</div>
+            <div class="category-desc">Iklan berlebihan, konten berulang</div>
+          </label>
+          <label class="category-card" data-value="scam">
+            <input type="radio" name="report_reason" value="scam">
+            <div class="category-icon">💸</div>
+            <div class="category-label">Penipuan / Scam</div>
+            <div class="category-desc">Produk palsu, tidak dikirim, dll</div>
+          </label>
+          <label class="category-card" data-value="hate_speech">
+            <input type="radio" name="report_reason" value="hate_speech">
+            <div class="category-icon">⚠️</div>
+            <div class="category-label">Ujaran Kebencian</div>
+            <div class="category-desc">SARA, ancaman, pelecehan</div>
+          </label>
+          <label class="category-card" data-value="adult_content">
+            <input type="radio" name="report_reason" value="adult_content">
+            <div class="category-icon">🔞</div>
+            <div class="category-label">Konten Dewasa</div>
+            <div class="category-desc">Tanpa label yang sesuai</div>
+          </label>
+          <label class="category-card" data-value="violence">
+            <input type="radio" name="report_reason" value="violence">
+            <div class="category-icon">🚨</div>
+            <div class="category-label">Kekerasan</div>
+            <div class="category-desc">Ancaman fisik / konten brutal</div>
+          </label>
+          <label class="category-card" data-value="fake_account">
+            <input type="radio" name="report_reason" value="fake_account">
+            <div class="category-icon">🎭</div>
+            <div class="category-label">Akun Palsu</div>
+            <div class="category-desc">Menyamar sebagai orang lain</div>
+          </label>
+          <label class="category-card" data-value="copyright">
+            <input type="radio" name="report_reason" value="copyright">
+            <div class="category-icon">©️</div>
+            <div class="category-label">Hak Cipta</div>
+            <div class="category-desc">Konten tanpa izin pemilik</div>
+          </label>
+          <label class="category-card" data-value="other">
+            <input type="radio" name="report_reason" value="other">
+            <div class="category-icon">📋</div>
+            <div class="category-label">Lainnya</div>
+            <div class="category-desc">Tidak masuk kategori di atas</div>
+          </label>
+        </div>
+        <div class="report-nav">
+          <button class="report-nav-btn btn-back" id="rCancelBtn">Batal</button>
+          <button class="report-nav-btn btn-next" id="rNext1" disabled>Lanjut →</button>
+        </div>
+      </div>
+
+      {{-- STEP 2: Bukti & Detail --}}
+      <div class="report-step-panel" id="rPanel2">
+        <label class="form-label" for="reportDetail">Jelaskan masalah <span>*</span></label>
+        <textarea class="report-textarea" id="reportDetail" name="detail"
+          maxlength="1000" placeholder="Deskripsikan kejadian yang Anda alami atau lihat. Semakin detail semakin cepat diproses..."></textarea>
+        <div class="char-counter"><span id="charCount">0</span>/1000 karakter</div>
+
+        <label class="form-label" style="margin-top:12px;">Bukti (opsional)</label>
+        <div class="evidence-upload-area" id="uploadArea" onclick="document.getElementById('evidenceFileInput').click()">
+          <div style="font-size:22px;">📎</div>
+          <strong>Tap untuk lampirkan screenshot</strong>
+          <p>JPG, PNG, WebP — maks 3 file, 5MB per file</p>
+        </div>
+        <input type="file" id="evidenceFileInput" accept="image/*" multiple style="display:none" onchange="handleEvidenceFiles(event)">
+        <div class="evidence-preview" id="evidencePreview"></div>
+
+        <div class="warning-box" style="margin-top:14px;">
+          <div class="warning-box-icon">⚠️</div>
+          <div>Laporan palsu atau penyalahgunaan fitur ini dapat mengakibatkan <strong>akun Anda sendiri ditinjau</strong>. Gunakan dengan bertanggung jawab.</div>
+        </div>
+
+        <div class="report-nav">
+          <button class="report-nav-btn btn-back" id="rBack2">← Kembali</button>
+          <button class="report-nav-btn btn-next" id="rNext2" disabled>Lanjut →</button>
+        </div>
+      </div>
+
+      {{-- STEP 3: Konfirmasi --}}
+      <div class="report-step-panel" id="rPanel3">
+        <div class="confirm-summary" id="confirmSummary">
+          <div class="confirm-row">
+            <span class="confirm-key">Dilaporkan</span>
+            <span class="confirm-val" id="confirmTarget">–</span>
+          </div>
+          <div class="confirm-row">
+            <span class="confirm-key">Kategori</span>
+            <span class="confirm-val" id="confirmReason">–</span>
+          </div>
+          <div class="confirm-row" id="confirmDetailRow" style="display:none">
+            <span class="confirm-key">Deskripsi</span>
+            <span class="confirm-desc" id="confirmDetail">–</span>
+          </div>
+          <div class="confirm-row" id="confirmEvidRow" style="display:none">
+            <span class="confirm-key">Bukti</span>
+            <span class="confirm-val" id="confirmEvidCount">–</span>
+          </div>
+        </div>
+
+        <div class="warning-box">
+          <div class="warning-box-icon">🔒</div>
+          <div>Data laporan Anda diproses secara <strong>anonim</strong>. Identitas Anda tidak akan diungkapkan kepada pihak yang dilaporkan. Tim moderasi akan meninjau dalam 1–3 hari kerja.</div>
+        </div>
+
+        <div class="report-nav">
+          <button class="report-nav-btn btn-back" id="rBack3">← Kembali</button>
+          <button class="report-nav-btn btn-submit" id="rSubmitBtn">Kirim Laporan</button>
+        </div>
+      </div>
+
+      {{-- SUCCESS --}}
+      <div class="report-success" id="reportSuccess">
+        <div class="success-icon">✅</div>
+        <h3>Laporan Terkirim!</h3>
+        <p>Terima kasih. Tim moderasi kami akan meninjau laporan ini dalam <strong>1–3 hari kerja</strong>. Anda dapat melanjutkan aktivitas seperti biasa.</p>
+        <div class="report-ticket" id="ticketCode">–</div>
+        <br><br>
+        <button class="report-nav-btn btn-next" style="width:100%;max-width:200px;margin:0 auto;display:block;" onclick="closeReportModal()">Selesai</button>
+      </div>
+    </div>
+  </div>
 </div>
+{{-- ════════════════════ END REPORT MODAL ════════════════════ --}}
 
 {{-- FULLSCREEN MENU --}}
 <div class="fullmenu-overlay" id="fullmenuOverlay">
@@ -471,7 +829,7 @@
         @if($user->pages && $user->pages->count() > 0)
             <div class="fullmenu-section-label">Halaman</div>
             @foreach($user->pages as $userPage)
-                <div class="fullmenu-item {{ $loop->first ? 'active' : '' }}" data-tab="page-{{ $userPage->id }}">
+                <div class="fullmenu-item {{ $activePageId === $userPage->id ? 'active' : '' }}" data-tab="page-{{ $userPage->id }}">
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                     </svg>
@@ -494,7 +852,7 @@
 <div class="container">
     @if($user->pages && $user->pages->count() > 0)
         @foreach($user->pages as $userPage)
-            <div class="tab-content {{ $loop->first ? 'active' : '' }}" id="tab-page-{{ $userPage->id }}">
+            <div class="tab-content {{ $activePageId === $userPage->id ? 'active' : '' }}" id="tab-page-{{ $userPage->id }}">
                 <div class="user-profile">
                     @if($user->avatar)
                         <img src="{{ asset('storage/' . $user->avatar) }}" class="avatar" alt="{{ $user->name }}">
@@ -505,10 +863,48 @@
                             </svg>
                         </div>
                     @endif
-                    <div class="profile-name">{{ $user->name }}</div>
-                    <div class="profile-username">{{ '@' . $user->username }}</div>
-                    @if($user->bio)
-                        <div class="profile-bio">{{ $user->bio }}</div>
+                    <div class="profile-name" data-profile-text>{{ $user->name }}</div>
+                    <div class="profile-username" data-profile-text>{{ '@' . $user->username }}</div>
+                    @if($profile && $profile->about)
+                        <div class="profile-bio" data-profile-text>{{ $profile->about }}</div>
+                    @elseif($user->bio)
+                        <div class="profile-bio" data-profile-text>{{ $user->bio }}</div>
+                    @endif
+
+                    @if(!empty($socialLinks))
+                    @php
+                    $socialSvgMap = [
+                        'telegram'  => '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm4.93 6.686l-1.683 7.927c-.127.567-.46.707-.931.44l-2.57-1.894-1.24 1.193c-.137.137-.252.252-.517.252l.185-2.621 4.768-4.307c.207-.185-.045-.287-.322-.102L7.89 14.214l-2.522-.788c-.548-.171-.558-.548.115-.812l9.867-3.805c.456-.166.856.112.58.877z"/></svg>',
+                        'website'   => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>',
+                        'email'     => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>',
+                        'discord'   => '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/></svg>',
+                        'tiktok'    => '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.69a8.27 8.27 0 0 0 4.84 1.55V6.79a4.85 4.85 0 0 1-1.07-.1z"/></svg>',
+                        'instagram' => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>',
+                        'youtube'   => '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805 31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0 .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/></svg>',
+                        'twitch'    => '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714z"/></svg>',
+                        'linkedin'  => '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>',
+                        'x'         => '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.742l7.732-8.858L1.254 2.25H8.08l4.253 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>',
+                        'facebook'  => '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>',
+                        'behance'   => '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M22 7h-7V5h7v2zm1.726 10c-.442 1.297-2.029 3-5.101 3-3.074 0-5.564-1.729-5.564-5.675 0-3.91 2.325-5.92 5.466-5.92 3.082 0 4.964 1.782 5.375 4.426.078.506.109 1.188.095 2.14H15.97c.13 3.211 3.483 3.312 4.588 2.029H23.726zm-7.726-3h3.457c-.073-1.580-1.002-2.18-1.712-2.18-.747 0-1.633.572-1.745 2.18zM7.17 9.025c.395 0 2.353.105 2.353 1.734 0 .97-.771 1.463-1.55 1.546v.047c.99.078 1.968.609 1.968 1.873 0 2.006-2.006 2.072-2.637 2.072H1V9.025h6.17zm-3.07 5.52h2.167c.588 0 1.14-.228 1.14-.91 0-.773-.693-.9-1.244-.9H4.1v1.81zm0-3.31h1.937c.5 0 1.057-.162 1.057-.836 0-.73-.625-.836-1.14-.836H4.1v1.672z"/></svg>',
+                        'dribbble'  => '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 24C5.385 24 0 18.615 0 12S5.385 0 12 0s12 5.385 12 12-5.385 12-12 12zm10.12-10.358c-.35-.11-3.17-.953-6.384-.438 1.34 3.684 1.887 6.684 1.992 7.308 2.3-1.555 3.936-4.02 4.395-6.87zm-6.115 7.808c-.153-.9-.75-4.032-2.19-7.77l-.066.02c-5.79 2.015-7.86 6.017-8.04 6.39 1.73 1.35 3.92 2.166 6.29 2.166 1.42 0 2.77-.29 4.01-.806zm-9.86-3.28c.24-.38 3.28-5.21 8.536-6.89.016-.064.033-.128.05-.192-1.52-.547-4.73-1.07-8.52-1.07-.284 0-.568.004-.85.012-.04.166-.065.334-.065.504 0 3.126 1.19 5.99 3.14 8.13zm7.715-10.27c-.47-1.353-1.31-3.373-2.38-5.13-1.34.09-2.63.41-3.79.94 1.46 1.764 2.546 3.764 2.77 4.43.67-.12 1.39-.2 2.16-.2.42 0 .83.02 1.24.06zm.36-.09c.46.03.92.09 1.37.17.01-.04.01-.09.01-.13 0-1.72-.468-3.335-1.286-4.72-.29.75-.784 2.52-1.094 4.68zm3.327.55c-.34-.066-.69-.12-1.043-.157.16-1.766.566-3.457 1.05-4.656.66.39 1.25.87 1.78 1.404-.676.952-1.452 2.307-1.787 3.41z"/></svg>',
+                        'whatsapp'  => '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/></svg>',
+                        'spotify'   => '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>',
+                        'threads'   => '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12.186 24h-.007c-3.581-.024-6.334-1.205-8.184-3.509C2.35 18.44 1.5 15.586 1.472 12.01v-.017c.03-3.579.879-6.43 2.525-8.482C5.845 1.205 8.6.024 12.18 0h.014c2.746.02 5.043.725 6.826 2.098 1.677 1.29 2.858 3.13 3.509 5.467l-2.04.569c-1.104-3.96-3.898-5.984-8.304-6.015-2.91.022-5.11.936-6.54 2.717C4.307 6.504 3.616 8.914 3.589 12c.027 3.086.718 5.496 2.057 7.164 1.43 1.783 3.631 2.698 6.54 2.717 2.623-.02 4.358-.631 5.689-2.046 1.367-1.455 2.041-3.534 2.075-6.154H12.79v-2.113h9.23c.16 3.404-.499 6.094-1.97 8.009-1.855 2.364-4.797 3.6-8.868 3.623z"/></svg>',
+                    ];
+                    @endphp
+                    <div class="social-links">
+                        @foreach($socialLinks as $platform => $url)
+                            @if($url)
+                            <a href="{{ $url }}"
+                               target="{{ $platform === 'email' ? '_self' : '_blank' }}"
+                               rel="noopener noreferrer"
+                               class="social-link"
+                               title="{{ ucfirst($platform) }}">
+                                {!! $socialSvgMap[$platform] ?? '<span style="font-size:11px;font-weight:700;">'.strtoupper(substr($platform,0,2)).'</span>' !!}
+                            </a>
+                            @endif
+                        @endforeach
+                    </div>
                     @endif
                 </div>
 
@@ -624,7 +1020,6 @@
 </div>
 
 <script>
-// ─── semua JS dari versi sebelumnya tetap sama ─── //
 const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
 function formatRupiah(n) { return 'Rp ' + new Intl.NumberFormat('id-ID').format(Math.round(n)); }
 let toastTimer;
@@ -657,7 +1052,7 @@ const PRODUCT_PLACEHOLDER_SVG = `<svg width="28" height="28" fill="none" stroke=
 const CART_PLACEHOLDER_SVG    = `<svg width="24" height="24" fill="none" stroke="#9ca3af" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>`;
 const CART_EMPTY_SVG          = `<svg width="40" height="40" fill="none" stroke="#d1d5db" stroke-width="1.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>`;
 
-// Menu
+// ── Menu ──
 const hamburger = document.getElementById('hamburger');
 const fullmenuOverlay = document.getElementById('fullmenuOverlay');
 const fullmenuClose   = document.getElementById('fullmenuClose');
@@ -817,32 +1212,381 @@ async function handleCheckout() {
     } catch { showToast('Gagal memproses checkout.','error'); }
 }
 
-// Report
+// ════════════════════════════════════════
+// REPORT MODAL — MULTI-STEP
+// ════════════════════════════════════════
 const REPORT_ENDPOINT = '{{ route('public.profile.report', $user->username) }}';
-const reportBtn = document.getElementById('reportBtn');
-const reportModalOverlay = document.getElementById('reportModalOverlay');
-function openReportModal() { reportModalOverlay.classList.add('show'); document.body.style.overflow='hidden'; }
-function closeReportModal() { reportModalOverlay.classList.remove('show'); document.body.style.overflow='auto'; }
-reportBtn?.addEventListener('click', openReportModal);
-document.getElementById('reportCloseBtn')?.addEventListener('click', closeReportModal);
-document.getElementById('reportCancelBtn')?.addEventListener('click', closeReportModal);
-reportModalOverlay?.addEventListener('click', e => { if(e.target===reportModalOverlay) closeReportModal(); });
-document.getElementById('reportForm')?.addEventListener('submit', async function(e) {
-    e.preventDefault();
-    const fd = new FormData(this);
-    if (!fd.get('reason')) { showToast('Pilih alasan laporan terlebih dahulu.','error'); return; }
-    const btn = document.getElementById('reportSubmitBtn');
-    btn.disabled=true; btn.textContent='Mengirim...';
-    try {
-        const res = await fetch(REPORT_ENDPOINT, { method:'POST', headers:{'X-CSRF-TOKEN':csrfToken,'Accept':'application/json'}, body:fd });
-        const json = await res.json();
-        if (!res.ok||!json.success) throw new Error(json.message||'Gagal mengirim laporan.');
-        this.reset(); closeReportModal(); showToast('Laporan berhasil dikirim.','success');
-    } catch(err) { showToast(err.message||'Terjadi kesalahan.','error'); }
-    finally { btn.disabled=false; btn.textContent='Kirim Laporan'; }
+const rModalOverlay = document.getElementById('reportModalOverlay');
+
+const reportState = {
+    step: 1,
+    reason: null,
+    detail: '',
+    evidenceFiles: [],
+};
+
+const REASON_LABELS = {
+    spam: 'Spam / Iklan Berlebihan',
+    scam: 'Penipuan / Scam',
+    hate_speech: 'Ujaran Kebencian',
+    adult_content: 'Konten Dewasa',
+    violence: 'Kekerasan / Ancaman',
+    fake_account: 'Akun Palsu',
+    copyright: 'Pelanggaran Hak Cipta',
+    other: 'Lainnya',
+};
+
+const STEP_LABELS = [
+    '',
+    'Pilih kategori yang paling sesuai',
+    'Tambahkan bukti dan deskripsi',
+    'Tinjau laporan sebelum dikirim',
+];
+
+const rCloseBtn    = document.getElementById('reportCloseBtn');
+const rCancelBtn   = document.getElementById('rCancelBtn');
+const rNext1       = document.getElementById('rNext1');
+const rNext2       = document.getElementById('rNext2');
+const rBack2       = document.getElementById('rBack2');
+const rBack3       = document.getElementById('rBack3');
+const rSubmitBtn   = document.getElementById('rSubmitBtn');
+const rDetailInput = document.getElementById('reportDetail');
+const rCharCount   = document.getElementById('charCount');
+
+function setupReportModalUI() {
+    const reportMarks = {
+        spam: 'SP',
+        scam: 'SC',
+        hate_speech: 'UK',
+        adult_content: 'KD',
+        violence: 'KR',
+        fake_account: 'AP',
+        copyright: 'HC',
+        other: 'LN',
+    };
+
+    document.querySelectorAll('.category-card').forEach(card => {
+        const icon = card.querySelector('.category-icon, .category-mark');
+        if (!icon) return;
+        icon.textContent = reportMarks[card.dataset.value] || 'RP';
+        icon.classList.add('category-mark');
+        icon.classList.remove('category-icon');
+    });
+
+    const uploadArea = document.getElementById('uploadArea');
+    const uploadLead = uploadArea?.querySelector('div');
+    if (uploadLead) {
+        uploadLead.className = 'evidence-upload-icon';
+        uploadLead.innerHTML = `
+            <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M21.44 11.05l-8.49 8.49a5.5 5.5 0 01-7.78-7.78l9.2-9.19a3.5 3.5 0 114.95 4.95l-9.2 9.19a1.5 1.5 0 11-2.12-2.12l8.49-8.48"/>
+            </svg>
+        `;
+    }
+
+    const uploadHint = uploadArea?.querySelector('p');
+    if (uploadHint) {
+        uploadHint.textContent = 'JPG, PNG, WebP - maks 3 file, target kompres sekitar 80 KB per file';
+    }
+
+    document.querySelectorAll('.warning-box-icon').forEach(icon => {
+        icon.textContent = 'i';
+    });
+
+    if (rNext1) rNext1.textContent = 'Lanjut';
+    if (rNext2) rNext2.textContent = 'Lanjut';
+    if (rBack2) rBack2.textContent = 'Kembali';
+    if (rBack3) rBack3.textContent = 'Kembali';
+
+    const successIcon = document.querySelector('.success-icon');
+    if (successIcon) {
+        successIcon.innerHTML = `
+            <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+            </svg>
+        `;
+    }
+}
+
+function formatFileSize(bytes) {
+    if (bytes < 1024) return `${bytes} B`;
+    return `${Math.max(1, Math.round(bytes / 1024))} KB`;
+}
+
+function readFileAsDataUrl(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = () => reject(new Error('Gagal membaca file.'));
+        reader.readAsDataURL(file);
+    });
+}
+
+function compressEvidenceImage(file, targetKB = 80, maxWidth = 1280) {
+    return new Promise((resolve, reject) => {
+        if (!file.type.startsWith('image/')) {
+            resolve(file);
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = () => {
+            const img = new Image();
+            img.onload = () => {
+                let width = img.width;
+                let height = img.height;
+
+                if (width > maxWidth) {
+                    height = Math.round((height * maxWidth) / width);
+                    width = maxWidth;
+                }
+
+                const canvas = document.createElement('canvas');
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+
+                let quality = 0.82;
+                const minQuality = 0.32;
+                const targetBytes = targetKB * 1024;
+
+                const attempt = () => {
+                    canvas.toBlob(blob => {
+                        if (!blob) {
+                            reject(new Error('Kompresi gambar gagal.'));
+                            return;
+                        }
+
+                        if (blob.size > targetBytes && quality > minQuality) {
+                            quality -= 0.08;
+                            attempt();
+                            return;
+                        }
+
+                        resolve(new File(
+                            [blob],
+                            file.name.replace(/\.[^.]+$/, '.jpg'),
+                            { type: 'image/jpeg', lastModified: Date.now() }
+                        ));
+                    }, 'image/jpeg', quality);
+                };
+
+                attempt();
+            };
+            img.onerror = () => reject(new Error('Gagal memproses gambar.'));
+            img.src = reader.result;
+        };
+        reader.onerror = () => reject(new Error('Gagal membaca file.'));
+        reader.readAsDataURL(file);
+    });
+}
+
+function openReportModal() {
+    resetReport();
+    rModalOverlay.classList.add('show');
+    document.body.style.overflow = 'hidden';
+}
+function closeReportModal() {
+    rModalOverlay.classList.remove('show');
+    document.body.style.overflow = '';
+}
+
+function resetReport() {
+    reportState.step = 1;
+    reportState.reason = null;
+    reportState.detail = '';
+    reportState.evidenceFiles = [];
+    document.querySelectorAll('.category-card').forEach(c => c.classList.remove('selected'));
+    document.querySelectorAll('input[name="report_reason"]').forEach(r => r.checked = false);
+    rDetailInput.value = '';
+    rCharCount.textContent = '0';
+    document.getElementById('evidencePreview').innerHTML = '';
+    rNext1.disabled = true;
+    rNext2.disabled = true;
+    document.getElementById('reportSuccess').classList.remove('show');
+    document.getElementById('reportSuccess').style.display = 'none';
+    document.getElementById('reportStepBar').style.display = '';
+    document.querySelector('.report-head').style.display = '';
+    // reset panels visibility
+    document.querySelectorAll('.report-step-panel').forEach(p => { p.style.display = ''; });
+    goToStep(1);
+}
+
+function goToStep(n) {
+    reportState.step = n;
+    document.querySelectorAll('.report-step-panel').forEach((p, i) => {
+        p.classList.toggle('active', i + 1 === n);
+    });
+    ['rStep1','rStep2','rStep3'].forEach((id, i) => {
+        const el = document.getElementById(id);
+        el.classList.remove('active','done');
+        if (i + 1 === n) el.classList.add('active');
+        else if (i + 1 < n) el.classList.add('done');
+    });
+    document.getElementById('reportStepLabel').textContent = STEP_LABELS[n];
+    if (n === 3) fillConfirm();
+}
+
+// Category selection
+document.querySelectorAll('.category-card').forEach(card => {
+    card.addEventListener('click', () => {
+        document.querySelectorAll('.category-card').forEach(c => c.classList.remove('selected'));
+        card.classList.add('selected');
+        card.querySelector('input').checked = true;
+        reportState.reason = card.dataset.value;
+        rNext1.disabled = false;
+    });
 });
 
-// Search
+// Detail textarea
+rDetailInput.addEventListener('input', () => {
+    const len = rDetailInput.value.length;
+    rCharCount.textContent = len;
+    reportState.detail = rDetailInput.value;
+    rNext2.disabled = len < 10;
+});
+
+// Evidence upload
+function handleEvidenceFiles(e) {
+    const files = Array.from(e.target.files).slice(0, 3 - reportState.evidenceFiles.length);
+    files.forEach(file => {
+        if (file.size > 5 * 1024 * 1024) { showToast('File terlalu besar (maks 5MB)', 'error'); return; }
+        if (reportState.evidenceFiles.length >= 3) return;
+        reportState.evidenceFiles.push(file);
+        const reader = new FileReader();
+        reader.onload = ev => addThumb(ev.target.result, reportState.evidenceFiles.length - 1);
+        reader.readAsDataURL(file);
+    });
+    e.target.value = '';
+}
+function addThumb(src, idx) {
+    const prev = document.getElementById('evidencePreview');
+    const div = document.createElement('div');
+    div.className = 'evidence-thumb';
+    div.id = `evThumb-${idx}`;
+    div.innerHTML = `<img src="${src}" alt="bukti"><button class="evidence-thumb-del" onclick="removeEvidence(${idx})">✕</button>`;
+    prev.appendChild(div);
+}
+function removeEvidence(idx) {
+    reportState.evidenceFiles.splice(idx, 1);
+    document.getElementById('evidencePreview').innerHTML = '';
+    reportState.evidenceFiles.forEach((f, i) => {
+        const reader = new FileReader();
+        reader.onload = ev => addThumb(ev.target.result, i);
+        reader.readAsDataURL(f);
+    });
+}
+
+async function handleEvidenceFiles(e) {
+    const files = Array.from(e.target.files).slice(0, 3 - reportState.evidenceFiles.length);
+    for (const file of files) {
+        if (file.size > 5 * 1024 * 1024) { showToast('File terlalu besar (maks 5MB)', 'error'); continue; }
+        if (reportState.evidenceFiles.length >= 3) break;
+
+        try {
+            const compressedFile = await compressEvidenceImage(file, 80);
+            reportState.evidenceFiles.push(compressedFile);
+            const previewSrc = await readFileAsDataUrl(compressedFile);
+            addThumb(previewSrc, reportState.evidenceFiles.length - 1, compressedFile);
+        } catch (error) {
+            showToast(error.message || 'Gagal memproses gambar.', 'error');
+        }
+    }
+    e.target.value = '';
+}
+
+function addThumb(src, idx, file) {
+    const prev = document.getElementById('evidencePreview');
+    const div = document.createElement('div');
+    div.className = 'evidence-thumb';
+    div.id = `evThumb-${idx}`;
+    div.innerHTML = `<img src="${src}" alt="bukti"><button class="evidence-thumb-del" onclick="removeEvidence(${idx})" type="button">&times;</button><div class="evidence-meta"><span>${formatFileSize(file?.size ?? 0)}</span><span>${idx + 1}</span></div>`;
+    prev.appendChild(div);
+}
+
+function removeEvidence(idx) {
+    reportState.evidenceFiles.splice(idx, 1);
+    document.getElementById('evidencePreview').innerHTML = '';
+    reportState.evidenceFiles.forEach((f, i) => {
+        readFileAsDataUrl(f).then(src => addThumb(src, i, f)).catch(() => {});
+    });
+}
+
+function fillConfirm() {
+    const nameEl = document.querySelector('.navbar-title');
+    document.getElementById('confirmTarget').textContent = nameEl ? nameEl.textContent.trim() : '–';
+    document.getElementById('confirmReason').textContent = REASON_LABELS[reportState.reason] || reportState.reason;
+
+    const detRow = document.getElementById('confirmDetailRow');
+    if (reportState.detail) {
+        detRow.style.display = '';
+        document.getElementById('confirmDetail').textContent = reportState.detail.slice(0, 200) + (reportState.detail.length > 200 ? '…' : '');
+    } else {
+        detRow.style.display = 'none';
+    }
+
+    const evRow = document.getElementById('confirmEvidRow');
+    if (reportState.evidenceFiles.length > 0) {
+        evRow.style.display = '';
+        document.getElementById('confirmEvidCount').textContent = `${reportState.evidenceFiles.length} file terlampir`;
+    } else {
+        evRow.style.display = 'none';
+    }
+}
+
+// Navigation
+rNext1.addEventListener('click', () => { if (reportState.reason) goToStep(2); });
+rNext2.addEventListener('click', () => { if (reportState.detail.length >= 10) goToStep(3); });
+rBack2.addEventListener('click', () => goToStep(1));
+rBack3.addEventListener('click', () => goToStep(2));
+rCloseBtn.addEventListener('click', closeReportModal);
+rCancelBtn.addEventListener('click', closeReportModal);
+rModalOverlay.addEventListener('click', e => { if (e.target === rModalOverlay) closeReportModal(); });
+
+// Report button in navbar
+document.getElementById('reportBtn').addEventListener('click', openReportModal);
+setupReportModalUI();
+
+// Submit
+rSubmitBtn.addEventListener('click', async () => {
+    if (!reportState.reason) return;
+    rSubmitBtn.disabled = true;
+    rSubmitBtn.textContent = 'Mengirim...';
+
+    try {
+        const fd = new FormData();
+        fd.append('reason', reportState.reason);
+        fd.append('detail', reportState.detail);
+        fd.append('page_url', window.location.href);
+        reportState.evidenceFiles.forEach((f, i) => fd.append(`evidence[${i}]`, f));
+
+        const res = await fetch(REPORT_ENDPOINT, {
+            method: 'POST',
+            headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json' },
+            body: fd,
+        });
+        const json = await res.json();
+        if (!res.ok || !json.success) throw new Error(json.message || 'Gagal mengirim laporan.');
+
+        // Success state
+        document.querySelectorAll('.report-step-panel').forEach(p => { p.classList.remove('active'); p.style.display = 'none'; });
+        document.getElementById('reportStepBar').style.display = 'none';
+        document.querySelector('.report-head').style.display = 'none';
+        const successEl = document.getElementById('reportSuccess');
+        successEl.style.display = 'block';
+        successEl.classList.add('show');
+        const ticket = json.ticket || ('RPT-' + Math.random().toString(36).substr(2,8).toUpperCase());
+        document.getElementById('ticketCode').textContent = ticket;
+
+    } catch (err) {
+        showToast(err.message || 'Terjadi kesalahan.', 'error');
+        rSubmitBtn.disabled = false;
+        rSubmitBtn.textContent = 'Kirim Laporan';
+    }
+});
+
+// ── Search ──
 const USERNAME             = '{{ $user->username }}';
 const searchBtn            = document.getElementById('searchBtn');
 const searchBarWrap        = document.getElementById('searchBarWrap');
@@ -936,67 +1680,52 @@ async function doSearch(query) {
     } catch(err) { renderState('error','Gagal mencari',err?.message||'Terjadi kesalahan'); }
 }
 
-// ═══════════════════════════════════════════
-// LIVE PREVIEW — postMessage listener
-// Background langsung update tanpa reload
-// ═══════════════════════════════════════════
-window.addEventListener('message', function(e) {
-    if (!e.data || e.data.type !== 'payou_appearance_update') return;
-    const p = e.data.payload;
-
-    if (p.bgCss) {
-        document.body.style.background = p.bgCss;
-    }
-    if (p.fontFamily) {
-        document.body.style.fontFamily = `'${p.fontFamily}', system-ui, -apple-system, sans-serif`;
-    }
-});
+// ── Live Preview postMessage ──
 (function () {
-
-    // ── 1. postMessage dari iframe preview ──
     window.addEventListener('message', function (e) {
         if (!e.data || e.data.type !== 'payou_appearance_update') return;
         applyAppearance(e.data.payload);
     });
 
-    // ── 2. BroadcastChannel — update profil publik real-time ──
-    // Ketika user klik "Simpan Tampilan" di dashboard,
-    // controller mengirim broadcast agar tab profil publik ikut update.
     if (typeof BroadcastChannel !== 'undefined') {
         const bc = new BroadcastChannel('payou_appearance');
         bc.onmessage = function (e) {
             if (e.data && e.data.type === 'payou_appearance_saved') {
-                // Reload ringan: hanya update style tanpa full page reload
                 applyAppearance(e.data.payload);
             }
         };
     }
 
-    // ── 3. Fungsi utama apply perubahan ──
+    window.addEventListener('storage', function (e) {
+        if (e.key === 'payou_saved' && e.newValue) { window.location.reload(); }
+    });
+
     function applyAppearance(p) {
         if (!p) return;
-
-        // Background
         const wrap = document.querySelector('.page-wrapper, .profile-wrapper, body');
         if (wrap && p.bgCss) {
             wrap.style.background = p.bgCss;
-            wrap.style.backgroundSize  = 'cover';
+            if (p.bgSize) wrap.style.backgroundSize = p.bgSize;
+            else wrap.style.backgroundSize = 'cover';
+            if (p.bgColor) wrap.style.backgroundColor = p.bgColor;
             wrap.style.backgroundAttachment = 'fixed';
         }
-
-        // Font
         if (p.fontFamily) {
             wrap && (wrap.style.fontFamily = `'${p.fontFamily}', system-ui, sans-serif`);
-            // Inject Google Font jika belum ada
             injectFont(p.fontFamily);
         }
-
-        // Tombol — terapkan ke semua link/product button
+        if (p.textColor) {
+            document.querySelectorAll('[data-profile-text]').forEach(el => { el.style.color = p.textColor; });
+            document.querySelectorAll('.social-link, .block-text, .product-title').forEach(el => { el.style.color = p.textColor; });
+        }
         if (p.btnCss || p.btnRadius) {
-            document.querySelectorAll('.link-btn, .product-btn, .ap-link-item, .btn-link').forEach(btn => {
+            document.querySelectorAll('.block-link a, .btn-buy, .btn-checkout, .btn-cart').forEach(btn => {
                 if (p.btnRadius) btn.style.borderRadius = p.btnRadius;
                 if (p.btnCss)    btn.style.cssText += ';' + p.btnCss;
             });
+        }
+        if (p.btn_color) {
+            document.querySelectorAll('.product-current-price').forEach(el => { el.style.color = p.btn_color; });
         }
     }
 
@@ -1009,7 +1738,6 @@ window.addEventListener('message', function(e) {
         link.href = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(fontName)}:wght@400;500;600;700&display=swap`;
         document.head.appendChild(link);
     }
-
 })();
 </script>
 </div>

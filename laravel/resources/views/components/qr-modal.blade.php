@@ -55,8 +55,8 @@
             <!-- QR Code Container -->
             <div style="background:linear-gradient(145deg,#ffffff 0%,#f8fbff 100%); border:2px solid #e6f0ff; border-radius:16px; padding:20px;
                         margin-bottom:16px; display:flex; justify-content:center; position:relative; box-shadow:0 8px 20px rgba(0,102,204,0.08);">
-                <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:64px; height:36px; background:#ffffff; border-radius:10px; display:flex; align-items:center; justify-content:center; box-shadow:0 3px 12px rgba(0,102,204,0.22); border:2px solid #e6f0ff; z-index:10; pointer-events:none;">
-                    <span style="color:#0066CC; font-weight:800; font-size:12px; letter-spacing:-0.3px; line-height:1;">payou<span style="color:#3b82f6;">.</span>id</span>
+                <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:50px; height:50px; background:#ffffff; border-radius:16px; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 8px rgba(0,102,204,0.12); border:6px solid #ffffff; z-index:10; pointer-events:none; overflow:hidden;">
+                    <img src="{{ asset('img/icon.png') }}" alt="Payou.id" style="width:100%; height:100%; object-fit:cover; display:block; border-radius:10px;" onerror="this.parentElement.style.display='none';">
                 </div>
                 <div id="qrcode" style="position:relative; filter:drop-shadow(0 4px 8px rgba(0,102,204,0.1));"></div>
             </div>
@@ -72,7 +72,7 @@
 
             <!-- Action Buttons -->
             <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px;">
-                <button onclick="copyQRLink()" id="copy-link-btn"
+                <button type="button" onclick="copyQRLink()" id="copy-link-btn"
                         style="padding:10px 12px; background:#3b82f6; color:white; border:none; border-radius:8px;
                                font-size:12px; font-weight:500; cursor:pointer;
                                display:flex; align-items:center; justify-content:center; gap:6px; transition:all 0.2s;"
@@ -82,7 +82,7 @@
                     <span>Salin</span>
                 </button>
 
-                <button onclick="downloadQRCode()"
+                <button type="button" onclick="downloadQRCode()"
                         style="padding:10px 12px; background:#ffffff; color:#475569; border:1px solid #e2e8f0;
                                border-radius:8px; font-size:12px; font-weight:500; cursor:pointer;
                                display:flex; align-items:center; justify-content:center; gap:6px; transition:all 0.2s;"
@@ -92,14 +92,14 @@
                     <span>Download</span>
                 </button>
 
-                <button onclick="shareToWhatsApp()" id="whatsapp-share-btn"
+                <button type="button" onclick="shareToWhatsApp(event)" id="whatsapp-share-btn"
                         style="padding:10px 12px; background:#25D366; color:white; border:none; border-radius:8px;
                                font-size:12px; font-weight:500; cursor:pointer;
                                display:flex; align-items:center; justify-content:center; gap:6px; transition:all 0.2s;"
                         onmouseenter="this.style.background='#20BA5A'; this.style.boxShadow='0 2px 8px rgba(37,211,102,0.3)';"
                         onmouseleave="this.style.background='#25D366'; this.style.boxShadow='none';">
                     <i class="fab fa-whatsapp" style="font-size:11px;"></i>
-                    <span>WhatsApp</span>
+                    <span>WA Cepat</span>
                 </button>
             </div>
         </div>
@@ -121,8 +121,8 @@
 
     <!-- QR Code Container dengan logo Payou di tengah -->
     <div style="display:flex; justify-content:center; align-items:center; margin-bottom:20px; background:linear-gradient(145deg,#ffffff,#f8fbff); padding:20px; border-radius:24px; box-shadow:0 15px 35px rgba(0,102,204,0.15); border:1px solid #e6f0ff; flex:1; position:relative;">
-        <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:72px; height:40px; background:#ffffff; border-radius:11px; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 14px rgba(0,102,204,0.22); border:2px solid #e6f0ff; z-index:10; pointer-events:none;">
-            <span style="color:#0066CC; font-weight:800; font-size:13px; letter-spacing:-0.3px; line-height:1;">payou<span style="color:#3b82f6;">.</span>id</span>
+        <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:60px; height:60px; background:#ffffff; border-radius:18px; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 10px rgba(0,102,204,0.14); border:7px solid #ffffff; z-index:10; pointer-events:none; overflow:hidden;">
+            <img src="{{ asset('img/icon.png') }}" alt="Payou.id" style="width:100%; height:100%; object-fit:cover; display:block; border-radius:11px;" onerror="this.parentElement.style.display='none';">
         </div>
         <div id="poster-qrcode" style="display:flex; justify-content:center; align-items:center;"></div>
     </div>
@@ -173,6 +173,140 @@
 let currentQRCode   = null;
 let currentUrl      = '';
 let currentUsername = '';
+const QR_DOWNLOAD_FILE = () => `payou-${currentUsername}.png`;
+
+function buildShareCaption() {
+    return `Halo,\n\nSaya ingin berbagi kartu digital Payou.id saya.\n${currentUrl}\n\nScan QR pada gambar untuk membuka profil saya.`;
+}
+
+async function buildPosterImageUrl() {
+    const posterDesign = document.getElementById('qr-poster-design');
+    const posterQrContainer = document.getElementById('poster-qrcode');
+
+    posterQrContainer.innerHTML = '';
+    document.getElementById('poster-watermark').textContent = '@' + currentUsername;
+
+    new QRCode(posterQrContainer, {
+        text: currentUrl,
+        width: 220,
+        height: 220,
+        colorDark: '#0066CC',
+        colorLight: '#ffffff',
+        correctLevel: QRCode.CorrectLevel.H,
+    });
+
+    await new Promise(resolve => setTimeout(resolve, 450));
+
+    const canvas = await html2canvas(posterDesign, {
+        scale: 2,
+        backgroundColor: '#ffffff',
+        allowTaint: false,
+        useCORS: true,
+        logging: false,
+        windowWidth: 500,
+        windowHeight: 550,
+    });
+
+    const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png', 1.0));
+    if (!blob) throw new Error('Gagal membuat gambar share.');
+
+    const imageUrl = URL.createObjectURL(blob);
+
+    return {
+        imageUrl,
+        revoke() {
+            URL.revokeObjectURL(imageUrl);
+        },
+    };
+}
+
+async function buildPosterBlob() {
+    const posterAsset = await buildPosterImageUrl();
+
+    try {
+        const response = await fetch(posterAsset.imageUrl);
+        if (!response.ok) {
+            throw new Error('Gagal mengambil gambar poster QR.');
+        }
+
+        return await response.blob();
+    } finally {
+        posterAsset.revoke();
+    }
+}
+
+function getShareFallbackMessage() {
+    if (['localhost', '127.0.0.1'].includes(window.location.hostname)) {
+        return 'Web Share API untuk file belum didukung di browser ini atau dibatasi karena aplikasi masih berjalan di localhost.';
+    }
+
+    return 'Browser ini belum mendukung berbagi gambar melalui Web Share API.';
+}
+
+async function fallbackShareText(captionText) {
+    try {
+        await navigator.clipboard.writeText(captionText);
+        alert(`${getShareFallbackMessage()}\n\nCaption sudah disalin. Anda bisa menempelkannya secara manual.`);
+    } catch {
+        alert(`${getShareFallbackMessage()}\n\nCaption:\n\n${captionText}`);
+    }
+}
+
+async function shareOrderQR(imageUrl, captionText) {
+    const response = await fetch(imageUrl);
+    if (!response.ok) {
+        throw new Error('Gagal mengambil gambar QR.');
+    }
+
+    const blob = await response.blob();
+    const file = new File([blob], `payou-${currentUsername}.png`, {
+        type: blob.type || 'image/png',
+    });
+
+    if (navigator.share && typeof navigator.canShare === 'function' && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+            title: `Payou.id - @${currentUsername}`,
+            text: captionText,
+            files: [file],
+        });
+        return true;
+    }
+
+    await fallbackShareText(captionText);
+    return false;
+}
+
+async function handleQRShare(buttonId = 'whatsapp-share-btn') {
+    const shareBtn = buttonId ? document.getElementById(buttonId) : null;
+
+    if (shareBtn) {
+        shareBtn.classList.add('share-loading');
+        shareBtn.dataset.originalHtml = shareBtn.innerHTML;
+        shareBtn.innerHTML = '<span>Menyiapkan...</span>';
+    }
+
+    let posterAsset = null;
+
+    try {
+        posterAsset = await buildPosterImageUrl();
+        await shareOrderQR(posterAsset.imageUrl, buildShareCaption());
+    } catch (error) {
+        console.error('Error:', error);
+        if (error.name !== 'AbortError' && !error.message?.includes('cancel')) {
+            await fallbackShareText(buildShareCaption());
+        }
+    } finally {
+        if (posterAsset) {
+            posterAsset.revoke();
+        }
+
+        if (shareBtn) {
+            shareBtn.classList.remove('share-loading');
+            shareBtn.innerHTML = shareBtn.dataset.originalHtml || shareBtn.innerHTML;
+            delete shareBtn.dataset.originalHtml;
+        }
+    }
+}
 
 function openQRModal(username) {
     const overlay    = document.getElementById('qrModalOverlay');
@@ -265,63 +399,27 @@ async function copyQRLink() {
     }
 }
 
-function downloadQRCode() {
+async function downloadQRCode() {
     const srcCanvas = document.querySelector('#qrcode canvas');
     if (!srcCanvas) return;
 
-    const QR_SIZE = 400;
-    const PAD     = 20;
-    const LABEL_H = 40;
-    const W = QR_SIZE + PAD * 2;
-    const H = QR_SIZE + PAD * 2 + LABEL_H;
-
-    const out = document.createElement('canvas');
-    out.width  = W;
-    out.height = H;
-    const ctx  = out.getContext('2d');
-
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(0, 0, W, H);
-    ctx.drawImage(srcCanvas, PAD, PAD, QR_SIZE, QR_SIZE);
-
-    // Logo "payou.id" — pill landscape di tengah
-    const BOX_W = 110; const BOX_H = 46;
-    const logoX = (W - BOX_W) / 2;
-    const logoY = PAD + (QR_SIZE - BOX_H) / 2;
-    ctx.shadowColor = 'rgba(0,102,204,0.22)'; ctx.shadowBlur = 16; ctx.shadowOffsetY = 3;
-    ctx.fillStyle = '#ffffff';
-    ctx.beginPath(); ctx.roundRect(logoX, logoY, BOX_W, BOX_H, 12); ctx.fill();
-    ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
-    // border tipis biru muda
-    ctx.strokeStyle = '#e6f0ff'; ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.roundRect(logoX, logoY, BOX_W, BOX_H, 12); ctx.stroke();
-    // teks "payou" biru tua
-    ctx.fillStyle = '#0066CC'; ctx.font = 'bold 18px Arial, sans-serif';
-    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText('payou', W / 2 - 12, logoY + BOX_H / 2);
-    // titik biru muda
-    ctx.fillStyle = '#3b82f6';
-    ctx.fillText('.', W / 2 + 20, logoY + BOX_H / 2);
-    // teks "id" biru tua
-    ctx.fillStyle = '#0066CC';
-    ctx.fillText('id', W / 2 + 32, logoY + BOX_H / 2);
-    ctx.textBaseline = 'alphabetic';
-
-    // @username sebagai watermark di download
-    ctx.fillStyle = '#0066CC';
-    ctx.font      = 'bold 15px Arial, sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText('@' + currentUsername, W / 2, PAD + QR_SIZE + 26);
-
-    const link    = document.createElement('a');
-    link.download = `payou-${currentUsername}.png`;
-    link.href     = out.toDataURL('image/png', 1.0);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    try {
+        const blob = await buildPosterBlob();
+        const fileUrl = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.download = QR_DOWNLOAD_FILE();
+        link.href = fileUrl;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        setTimeout(() => URL.revokeObjectURL(fileUrl), 1000);
+    } catch (error) {
+        console.error('Download QR gagal:', error);
+        alert('Gagal menyiapkan file QR. Coba lagi.');
+    }
 }
 
-async function shareToWhatsApp() {
+async function legacyShareToWhatsApp() {
     const shareBtn          = document.getElementById('whatsapp-share-btn');
     const posterDesign      = document.getElementById('qr-poster-design');
     const posterQrContainer = document.getElementById('poster-qrcode');
@@ -387,6 +485,12 @@ async function shareToWhatsApp() {
         shareBtn.classList.remove('share-loading');
         shareBtn.innerHTML = '<i class="fab fa-whatsapp" style="font-size:11px;"></i><span>WhatsApp</span>';
     }
+}
+
+// Override share flow: HP pakai Web Share + file, desktop fallback cepat untuk WhatsApp Web
+async function shareToWhatsApp(event) {
+    event?.preventDefault();
+    await handleQRShare('whatsapp-share-btn');
 }
 
 document.addEventListener('keydown', e => {

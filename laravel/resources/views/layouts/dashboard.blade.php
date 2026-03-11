@@ -40,7 +40,7 @@
     --sb-active:        #1d4ed8;
     --sb-active-text:   #ffffff;
     --sb-border:        #e5e7eb;
-    --page-bg:          #f1f5f9;
+    --page-bg:          linear-gradient(180deg, #eef4ff 0%, #f5f8ff 52%, #edf3ff 100%);
     --sidebar-w:        250px;
     --nav-font:         'Plus Jakarta Sans', sans-serif;
     --accent:           #1d4ed8;
@@ -391,31 +391,31 @@ html, body { margin: 0; padding: 0; min-height: 100vh; }
     display: none;
     position: fixed;
     top: 0; left: 0; right: 0;
-    height: 50px;
+    height: 62px;                          /* ↑ was 50px */
     background: rgba(255,255,255,0.97);
     backdrop-filter: blur(14px);
     -webkit-backdrop-filter: blur(14px);
     border-bottom: 1px solid var(--sb-border);
     z-index: 300;
     align-items: center;
-    padding: 0 13px;
-    gap: 10px;
+    padding: 0 16px;                       /* ↑ was 13px */
+    gap: 12px;                             /* ↑ was 10px */
     font-family: var(--nav-font);
 }
 
 .m-topbar-logo { margin-right: auto; }
-.m-topbar-logo img { height: 34px; }
+.m-topbar-logo img { height: 42px; }      /* ↑ was 34px */
 
 .m-hamburger {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 32px; height: 32px;
-    border-radius: 7px;
+    width: 42px; height: 42px;             /* ↑ was 32x32 */
+    border-radius: 10px;                   /* ↑ was 7px */
     border: none;
     background: transparent;
     color: var(--sb-text);
-    font-size: 15px;
+    font-size: 19px;                       /* ↑ was 15px */
     cursor: pointer;
     flex-shrink: 0;
     transition: background var(--ease);
@@ -456,8 +456,43 @@ html, body { margin: 0; padding: 0; min-height: 100vh; }
     }
     .s-sidebar.active { transform: translateX(0); }
     .s-overlay { z-index: 40; }
-    .main-wrap { margin-left: 0; margin-top: 50px; }
+    .main-wrap { margin-left: 0; margin-top: 62px; } /* ↑ sesuai tinggi topbar baru */
     .content-pad { padding: 16px 15px; }
+
+    /* ── SIDEBAR MOBILE: lebih besar & mudah disentuh ── */
+    .s-nav-item {
+        font-size: 15px;                   /* ↑ was 13px */
+        padding: 12px 12px;                /* ↑ was 8px 10px */
+        gap: 11px;
+    }
+
+    .s-icon {
+        width: 34px; height: 34px;         /* ↑ was 28x28 */
+        font-size: 14px;                   /* ↑ was 12px */
+        border-radius: 9px;
+    }
+
+    .s-avatar {
+        width: 38px; height: 38px;         /* ↑ was 32x32 */
+    }
+
+    .s-profile-name { font-size: 14px; }   /* ↑ was 12.5px */
+    .s-profile-uname { font-size: 12px; }  /* ↑ was 11px */
+
+    .s-label {
+        font-size: 11px;                   /* ↑ was 10px */
+        padding: 14px 10px 5px;
+    }
+
+    .s-theme-toggle {
+        font-size: 15px;                   /* ↑ was 13px */
+        padding: 12px 12px;                /* ↑ was 8px 10px */
+    }
+
+    .s-logout {
+        font-size: 15px;                   /* ↑ was 13px */
+        padding: 12px 12px;                /* ↑ was 8px 10px */
+    }
 }
 
 @media (max-width: 480px) {

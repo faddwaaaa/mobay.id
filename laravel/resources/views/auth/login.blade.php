@@ -270,7 +270,7 @@
     <!-- Logo Outside Card -->
     <div class="logo-wrapper">
         <div class="logo">
-            <img src="{{ asset('img/icon.png') }}" alt="Logo Payou">
+            <img src="{{ asset('img/logo.png') }}" alt="Logo Payou">
         </div>
         <p class="logo-subtitle">Masuk ke akun Anda</p>
     </div>
@@ -280,9 +280,7 @@
 
         @if ($errors->any())
             <div class="alert alert-danger">
-                @foreach ($errors->all() as $error)
-                    <div>{{ $error }}</div>
-                @endforeach
+                Email atau password Anda salah.
             </div>
         @endif
 

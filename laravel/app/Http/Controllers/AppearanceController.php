@@ -41,7 +41,6 @@ class AppearanceController extends Controller
 
     public function save(Request $request)
     {
-        dd($request->all());
         [$user, $profile] = $this->getOrCreateProfile();
 
         $validated = $request->validate([

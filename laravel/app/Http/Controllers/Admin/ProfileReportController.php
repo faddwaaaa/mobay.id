@@ -147,6 +147,14 @@ class ProfileReportController extends Controller
     {
         $paths = $report->evidence_paths ?? [];
 
+        if (is_string($paths) && !empty($paths)) {
+            $paths = json_decode($paths, true) ?? [];
+        }
+
+        if (!is_array($paths)) {
+            $paths = [];
+        }
+
         if (!isset($paths[$index])) {
             abort(404, 'Bukti tidak ditemukan.');
         }
@@ -157,11 +165,24 @@ class ProfileReportController extends Controller
             abort(404, 'File tidak ada di storage.');
         }
 
-        return response(
-            Storage::disk('private')->get($path),
-            200,
-            ['Content-Type' => Storage::disk('private')->mimeType($path)]
-        );
+        $absolutePath = Storage::disk('private')->path($path);
+        $extension = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+        $mimeType = Storage::disk('private')->mimeType($path) ?: match ($extension) {
+            'jpg', 'jpeg' => 'image/jpeg',
+            'png' => 'image/png',
+            'webp' => 'image/webp',
+            'gif' => 'image/gif',
+            'pdf' => 'application/pdf',
+            'mp4' => 'video/mp4',
+            'mov' => 'video/quicktime',
+            default => 'application/octet-stream',
+        };
+
+        return response()->file($absolutePath, [
+            'Content-Type' => $mimeType,
+            'Content-Disposition' => 'inline; filename="' . basename($path) . '"',
+            'Cache-Control' => 'private, max-age=3600',
+        ]);
     }
 
     /**
@@ -170,6 +191,14 @@ class ProfileReportController extends Controller
     public function viewEvidence(ProfileReport $report)
     {
         $paths = $report->evidence_paths ?? [];
+
+        if (is_string($paths) && !empty($paths)) {
+            $paths = json_decode($paths, true) ?? [];
+        }
+
+        if (!is_array($paths)) {
+            $paths = [];
+        }
 
         if (empty($paths)) {
             abort(404, 'Tidak ada bukti untuk laporan ini.');
