@@ -14,13 +14,11 @@ class ProductController extends Controller
 {
     public function index(Request $request)
     {
-        $products = Product::where('user_id', Auth::id())
+        $baseQuery = Product::where('user_id', Auth::id())
             ->with('images')
             ->withCount('views')
             ->withCount('sales as sold')
-            ->withSum('sales as total_qty', 'qty')
-            ->latest()
-            ->get();
+            ->withSum('sales as total_qty', 'qty');
 
         $showForm        = false;
         $productTypeForm = null;
@@ -39,7 +37,25 @@ class ProductController extends Controller
             $productTypeForm = $product->product_type;
         }
 
-        return view('products.manage', compact('products', 'showForm', 'product', 'productTypeForm'));
+        // Paginasi 8 per halaman untuk tab Produk
+        // withQueryString() agar ?tab=produk ikut terbawa di link pagination
+        $products = (clone $baseQuery)
+            ->latest()
+            ->paginate(8)
+            ->withQueryString();
+
+        // Semua produk (tanpa paginasi) untuk tab Statistik
+        $allProducts = (clone $baseQuery)
+            ->latest()
+            ->get();
+
+        return view('products.manage', compact(
+            'products',
+            'allProducts',
+            'showForm',
+            'product',
+            'productTypeForm'
+        ));
     }
 
     public function apiShow($id)
@@ -55,8 +71,10 @@ class ProductController extends Controller
             'description'  => $product->description,
             'price'        => $product->price,
             'discount'     => $product->discount,
+            'final_price'  => ($product->discount && $product->discount > 0) ? $product->discount : $product->price,
             'stock'        => $product->stock,
             'weight'       => $product->weight,
+            'product_type' => $product->product_type,
             'image_url'    => $imageUrl,
         ]);
     }
@@ -101,16 +119,16 @@ class ProductController extends Controller
         $request->validate($rules);
 
         $product = Product::create([
-            'user_id'        => Auth::id(),
-            'product_type'   => $request->product_type,
-            'title'          => $request->title,
-            'description'    => $request->description,
-            'price'          => $request->price,
-            'discount'       => $request->discount,
-            'weight'         => $request->product_type === 'fisik' ? ($request->weight ?? 1000) : 0,
+            'user_id'          => Auth::id(),
+            'product_type'     => $request->product_type,
+            'title'            => $request->title,
+            'description'      => $request->description,
+            'price'            => $request->price,
+            'discount'         => $request->discount,
+            'weight'           => $request->product_type === 'fisik' ? ($request->weight ?? 1000) : 0,
             'shipping_enabled' => $request->product_type === 'fisik' ? $request->has('shipping_toggle') : false,
-            'stock'          => $request->has('stock_toggle') ? $request->stock : null,
-            'purchase_limit' => $request->has('limit_toggle') ? $request->purchase_limit : null,
+            'stock'            => $request->has('stock_toggle') ? $request->stock : null,
+            'purchase_limit'   => $request->has('limit_toggle') ? $request->purchase_limit : null,
         ]);
 
         if ($request->hasFile('images')) {
@@ -138,10 +156,13 @@ class ProductController extends Controller
     {
         abort_if($produk->user_id !== Auth::id(), 403);
 
-        foreach ($produk->images as $img) Storage::delete('public/' . $img->image);
+        foreach ($produk->images as $img) {
+            Storage::delete('public/' . $img->image);
+        }
         foreach ($produk->files as $file) {
-            if (($file->platform ?? 'upload') === 'upload' && $file->file)
+            if (($file->platform ?? 'upload') === 'upload' && $file->file) {
                 Storage::delete('public/' . $file->file);
+            }
         }
 
         $produk->images()->delete();
@@ -163,47 +184,58 @@ class ProductController extends Controller
         $platform = $request->input('file_platform', 'upload');
 
         $rules = [
-            'product_type'   => 'required|in:fisik,digital',
-            'title'          => 'required|string|max:255',
-            'description'    => 'nullable|string',
-            'price'          => 'required|numeric|min:0',
-            'discount'       => 'nullable|numeric|min:0|lt:price',
-            'stock'          => 'nullable|integer|min:1',
-            'purchase_limit' => 'nullable|integer|min:1',
-            'weight'         => 'nullable|integer|min:1',
-            'images.*'       => 'nullable|image|max:5120',
-            'delete_images.*'=> 'nullable|integer',
-            'delete_files.*' => 'nullable|integer',
+            'product_type'    => 'required|in:fisik,digital',
+            'title'           => 'required|string|max:255',
+            'description'     => 'nullable|string',
+            'price'           => 'required|numeric|min:0',
+            'discount'        => 'nullable|numeric|min:0|lt:price',
+            'stock'           => 'nullable|integer|min:1',
+            'purchase_limit'  => 'nullable|integer|min:1',
+            'weight'          => 'nullable|integer|min:1',
+            'images.*'        => 'nullable|image|max:5120',
+            'delete_images.*' => 'nullable|integer',
+            'delete_files.*'  => 'nullable|integer',
         ];
 
         if ($request->product_type === 'digital') {
             $rules['files.*'] = 'nullable|file|max:10240';
-            if ($platform !== 'upload') $rules['file_url'] = 'nullable|url';
+            if ($platform !== 'upload') {
+                $rules['file_url'] = 'nullable|url';
+            }
         }
 
         $request->validate($rules);
 
         $product->update([
-            'product_type'   => $request->product_type,
-            'title'          => $request->title,
-            'description'    => $request->description,
-            'price'          => $request->price,
-            'discount'       => $request->discount,
-            'weight'         => $request->product_type === 'fisik' ? ($request->weight ?? $product->weight ?? 1000) : 0,
+            'product_type'     => $request->product_type,
+            'title'            => $request->title,
+            'description'      => $request->description,
+            'price'            => $request->price,
+            'discount'         => $request->discount,
+            'weight'           => $request->product_type === 'fisik' ? ($request->weight ?? $product->weight ?? 1000) : 0,
             'shipping_enabled' => $request->product_type === 'fisik' ? $request->has('shipping_toggle') : false,
-            'stock'          => $request->has('stock_toggle') ? $request->stock : null,
-            'purchase_limit' => $request->has('limit_toggle') ? $request->purchase_limit : null,
+            'stock'            => $request->has('stock_toggle') ? $request->stock : null,
+            'purchase_limit'   => $request->has('limit_toggle') ? $request->purchase_limit : null,
         ]);
 
         if ($request->has('delete_images') && is_array($request->delete_images)) {
-            $imgs = ProductImage::whereIn('id', $request->delete_images)->where('product_id', $product->id)->get();
-            foreach ($imgs as $img) { Storage::delete('public/' . $img->image); $img->delete(); }
+            $imgs = ProductImage::whereIn('id', $request->delete_images)
+                ->where('product_id', $product->id)
+                ->get();
+            foreach ($imgs as $img) {
+                Storage::delete('public/' . $img->image);
+                $img->delete();
+            }
         }
 
         if ($request->has('delete_files') && is_array($request->delete_files)) {
-            $files = ProductFile::whereIn('id', $request->delete_files)->where('product_id', $product->id)->get();
+            $files = ProductFile::whereIn('id', $request->delete_files)
+                ->where('product_id', $product->id)
+                ->get();
             foreach ($files as $file) {
-                if (($file->platform ?? 'upload') === 'upload' && $file->file) Storage::delete('public/' . $file->file);
+                if (($file->platform ?? 'upload') === 'upload' && $file->file) {
+                    Storage::delete('public/' . $file->file);
+                }
                 $file->delete();
             }
         }
@@ -219,7 +251,8 @@ class ProductController extends Controller
             $this->saveDigitalFiles($request, $product, $platform);
         }
 
-        return redirect()->route('products.manage')->with('success', 'Produk berhasil diupdate');
+        return redirect()->route('products.manage')
+            ->with('success', 'Produk berhasil diupdate');
     }
 
     public function edit($id)
@@ -241,12 +274,20 @@ class ProductController extends Controller
             foreach ($request->file('files') as $file) {
                 if (!$file->isValid()) continue;
                 $path = $file->store('products/files', 'public');
-                $product->files()->create(['file' => $path, 'platform' => 'upload', 'file_url' => null]);
+                $product->files()->create([
+                    'file'     => $path,
+                    'platform' => 'upload',
+                    'file_url' => null,
+                ]);
             }
         } else {
             $url = $request->input('file_url');
             if (!$url) return;
-            $product->files()->create(['file' => null, 'platform' => $platform, 'file_url' => $url]);
+            $product->files()->create([
+                'file'     => null,
+                'platform' => $platform,
+                'file_url' => $url,
+            ]);
         }
     }
 }
