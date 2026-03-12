@@ -32,12 +32,12 @@ class AppearanceController extends Controller
     }
 
     public function preview()
-{
-    $user    = auth()->user();
-    $profile = $user->userProfile;
-    $socialLinks = collect($profile?->social_links ?? [])->filter()->toArray();
-    return view('dashboard.appearance.preview', compact('user', 'profile', 'socialLinks'));
-}
+    {
+        $user    = auth()->user();
+        $profile = $user->userProfile;
+        $socialLinks = collect($profile?->social_links ?? [])->filter()->toArray();
+        return view('dashboard.appearance.preview', compact('user', 'profile', 'socialLinks'));
+    }
 
     public function save(Request $request)
     {
@@ -131,6 +131,20 @@ class AppearanceController extends Controller
             'url'     => asset('storage/' . $path),
             'path'    => $path,
         ]);
+    }
+
+    public function deleteBanner()
+    {
+        [$user, $profile] = $this->getOrCreateProfile();
+
+        if (!$profile->banner_image) {
+            return response()->json(['success' => false, 'message' => 'Tidak ada banner untuk dihapus.']);
+        }
+
+        Storage::disk('public')->delete($profile->banner_image);
+        $profile->update(['banner_image' => null]);
+
+        return response()->json(['success' => true, 'message' => 'Banner berhasil dihapus.']);
     }
 
     public function reset()

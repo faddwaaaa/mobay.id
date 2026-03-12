@@ -473,6 +473,15 @@
         .fullmenu-divider { height: 1px; background: rgba(255,255,255,0.08); width: 100%; max-width: 320px; margin: 12px 0; }
 
         .container { padding: 24px 16px; }
+        .profile-banner {
+            width: 100%;
+            height: 180px;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            margin-bottom: 16px;
+            border-radius: 0 0 35px 35px;
+        }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
 
@@ -847,6 +856,13 @@
         </div>
     </div>
 </div>
+
+{{-- BANNER --}}
+@if($profile && $profile->banner_image)
+<div class="profile-banner"
+     style="background-image: url('{{ asset('storage/' . $profile->banner_image) }}')">
+</div>
+@endif
 
 {{-- KONTEN --}}
 <div class="container">

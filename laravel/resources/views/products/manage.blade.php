@@ -380,6 +380,7 @@ tbody tr:hover { background: #f1f5f9; }
     </p>
     @endif
 
+<<<<<<< HEAD
 </div>{{-- /panel-produk --}}
 
 {{-- ══════════════════════════════
@@ -421,7 +422,7 @@ tbody tr:hover { background: #f1f5f9; }
     {{-- Tabel lifetime sales (sama persis dari versi asli, cuma dipindah ke sini) --}}
     <div class="stat-table-wrap">
         <div class="stat-table-head">
-            <span style="font-size:15px; font-weight:700; color:#111827;">Product Lifetime Sales</span>
+            <span style="font-size:15px; font-weight:700; color:#111827;">Statistik Penjualan Produk</span>
             <span style="font-size:12px; color:#9ca3af;">{{ $totalProducts }} produk</span>
         </div>
         <div style="overflow-x:auto;">
