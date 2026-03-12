@@ -55,12 +55,20 @@
 
         body {
             font-family: '{{ $fontFamily }}', system-ui, -apple-system, sans-serif;
-            background: {{ $bgCss }};
-            @if($bgColorExtra) background-color: {{ $bgColorExtra }}; @endif
-            @if($bgSizeExtra) background-size: {{ $bgSizeExtra }}; @endif
+            @if($profile?->bg_type === 'image' && $profile?->bg_image && !str_starts_with($profile->bg_image, 'wg_'))
+                background-image: url('{{ asset('storage/' . $profile->bg_image) }}');
+                background-size: cover;
+                background-position: center;
+                background-repeat: no-repeat;
+                background-attachment: scroll;
+            @else
+                background: {{ $bgCss }};
+                @if($bgColorExtra) background-color: {{ $bgColorExtra }}; @endif
+                @if($bgSizeExtra) background-size: {{ $bgSizeExtra }}; @endif
+            @endif
             min-height: 100vh;
             overflow-x: hidden;
-        }
+        }   
 
         .page-wrapper {
             width: min(100%, 420px);
@@ -1718,30 +1726,72 @@ async function doSearch(query) {
 
     function applyAppearance(p) {
         if (!p) return;
-        const wrap = document.querySelector('.page-wrapper, .profile-wrapper, body');
-        if (wrap && p.bgCss) {
-            wrap.style.background = p.bgCss;
-            if (p.bgSize) wrap.style.backgroundSize = p.bgSize;
-            else wrap.style.backgroundSize = 'cover';
-            if (p.bgColor) wrap.style.backgroundColor = p.bgColor;
-            wrap.style.backgroundAttachment = 'fixed';
+
+        const body = document.body;
+
+        // ── Background ──
+        if (p.bgImage) {
+            // Gambar upload user
+            body.style.backgroundImage    = `url('${p.bgImage}')`;
+            body.style.backgroundSize     = 'cover';
+            body.style.backgroundPosition = 'center';
+            body.style.backgroundRepeat   = 'no-repeat';
+            body.style.backgroundColor    = '';
+            body.style.backgroundAttachment = 'scroll';
+        } else if (p.bgCss) {
+            const isSolid = /^#[0-9a-fA-F]{3,8}$|^rgb/.test(p.bgCss.trim());
+            if (isSolid) {
+                body.style.backgroundImage = 'none';
+                body.style.backgroundColor = p.bgCss;
+            } else {
+                body.style.backgroundImage = p.bgCss;
+                body.style.backgroundColor = p.bgColor ?? '';
+                body.style.backgroundSize  = p.bgSize  ?? 'cover';
+            }
+            body.style.backgroundPosition   = 'center';
+            body.style.backgroundRepeat     = 'repeat';
+            body.style.backgroundAttachment = 'scroll';
         }
+
+        // ── Font ──
         if (p.fontFamily) {
-            wrap && (wrap.style.fontFamily = `'${p.fontFamily}', system-ui, sans-serif`);
+            body.style.fontFamily = `'${p.fontFamily}', system-ui, sans-serif`;
             injectFont(p.fontFamily);
         }
+
+        // ── Warna teks ──
         if (p.textColor) {
-            document.querySelectorAll('[data-profile-text]').forEach(el => { el.style.color = p.textColor; });
-            document.querySelectorAll('.social-link, .block-text, .product-title').forEach(el => { el.style.color = p.textColor; });
-        }
-        if (p.btnCss || p.btnRadius) {
-            document.querySelectorAll('.block-link a, .btn-buy, .btn-checkout, .btn-cart').forEach(btn => {
-                if (p.btnRadius) btn.style.borderRadius = p.btnRadius;
-                if (p.btnCss)    btn.style.cssText += ';' + p.btnCss;
+            document.querySelectorAll('[data-profile-text]').forEach(el => {
+                el.style.color = p.textColor;
+            });
+            document.querySelectorAll('.social-link, .block-text').forEach(el => {
+                el.style.color = p.textColor;
             });
         }
+
+        // ── Tombol ──
+        if (p.btnCss || p.btnRadius) {
+            document.querySelectorAll('.block-link a').forEach(btn => {
+                if (p.btnRadius) btn.style.borderRadius = p.btnRadius;
+                if (p.btnCss) {
+                    p.btnCss.split(';').filter(s => s.trim()).forEach(pair => {
+                        const idx  = pair.indexOf(':');
+                        if (idx === -1) return;
+                        const prop  = pair.slice(0, idx).trim();
+                        const val   = pair.slice(idx + 1).trim();
+                        if (!prop || !val) return;
+                        const camel = prop.replace(/-([a-z])/g, (_, c) => c.toUpperCase());
+                        try { btn.style[camel] = val; } catch(e) {}
+                    });
+                }
+            });
+        }
+
+        // ── Warna harga produk ──
         if (p.btn_color) {
-            document.querySelectorAll('.product-current-price').forEach(el => { el.style.color = p.btn_color; });
+            document.querySelectorAll('.product-current-price').forEach(el => {
+                el.style.color = p.btn_color;
+            });
         }
     }
 

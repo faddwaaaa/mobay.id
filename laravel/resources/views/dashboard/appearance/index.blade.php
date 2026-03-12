@@ -1,6 +1,6 @@
 @extends('layouts.dashboard')
 
-@section('title', 'Tampilan')
+@section('title', 'Tampilan | Payou.id')
 
 @push('styles')
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -173,15 +173,21 @@
 .pc-banner-wrap.has-img .pc-banner-hint { display: none; }
 .pc-banner-wrap.has-img:hover .pc-banner-overlay { display: flex; }
 .pc-banner-size { font-size: 11px; color: #9ca3af; margin-top: 6px; display: block; text-align: center; }
+
 .pc-banner-del {
     position: absolute; top: 8px; right: 8px;
     width: 28px; height: 28px; border-radius: 7px;
     background: rgba(220,38,38,0.85); color: #fff;
     border: none; cursor: pointer; z-index: 3;
     display: none; align-items: center; justify-content: center;
-    transition: background 0.15s; padding: 0;
+    transition: background 0.18s, transform 0.18s, box-shadow 0.18s; padding: 0;
 }
-.pc-banner-del:hover { background: #b91c1c; }
+
+.btn-del-img:hover { background: #b91c1c; }
+.pc-banner-del:active {
+    transform: scale(0.95);
+    box-shadow: none;
+}
 .pc-banner-wrap.has-img .pc-banner-del { display: flex; }
 
 .pc-about-wrap { position: relative; }
@@ -253,6 +259,21 @@
 .bg-tab.active { background: #fff; color: #111827; box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
 .bg-panel        { display: none; }
 .bg-panel.active { display: block; }
+
+.btn-del-img {
+    position: absolute; top: 8px; right: 8px;
+    width: 26px; height: 26px; border-radius: 6px;
+    background: rgba(220,38,38,0.85); color: #fff;
+    border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; padding: 0;
+    transition: background 0.18s;
+    z-index: 5;
+}
+.btn-del-img:hover { background: #b91c1c; }
+.btn-del-img:active {
+    transform: scale(0.95);
+    box-shadow: none;
+}
 
 .color-row { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
 .color-row label { font-size: 13px; font-weight: 600; color: #374151; min-width: 68px; }
@@ -442,8 +463,17 @@
 
     {{-- ═══════════ EDITOR ═══════════ --}}
     <div class="ap-editor">
-        <h1>Tampilan</h1>
-        <p class="ap-subtitle">Kustomisasi tampilan halaman profil publik kamu</p>
+        <div style="margin-bottom:24px;">
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
+                <a href="{{ route('dashboard') }}" style="width:36px;height:36px;background:#ffffff;border:1px solid #e2e8f0;border-radius:8px;display:flex;align-items:center;justify-content:center;text-decoration:none;transition:all .2s;">
+                    <i class="fas fa-arrow-left" style="font-size:14px;color:#475569;"></i>
+                </a>
+                <div>
+                    <h1 style="margin:0;font-size:24px;font-weight:600;color:#000000;">Tampilan</h1>
+                    <p style="margin:0;font-size:14px;color:#797979;">Kustomisasi tampilan halaman profil publik kamu</p>
+                </div>
+            </div>
+        </div>
 
         {{-- ══════════ 1. KARTU PROFIL ══════════ --}}
         <div class="sec-card">
@@ -622,9 +652,34 @@
                     <input type="file" id="bgImgInput" accept="image/*" style="display:none" onchange="handleBgImg(this)">
                 </div>
                 @if($profile->bg_image && !str_starts_with($profile->bg_image ?? '', 'wg_'))
-                <img src="{{ asset('storage/'.$profile->bg_image) }}" id="bgImgPreview" class="bg-upload-preview" style="display:block">
+                <div style="position:relative; width:100%; border-radius:10px; overflow:hidden; display:block;">
+                    <img src="{{ asset('storage/'.$profile->bg_image) }}" 
+                        id="bgImgPreview" 
+                        class="bg-upload-preview" 
+                        style="display:block; margin:0;">
+                    <button id="bgImgDelBtn"
+                            onclick="deleteBgImage()"
+                            class="btn-del-img">
+                        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
                 @else
-                <img src="" id="bgImgPreview" class="bg-upload-preview">
+                <div style="position:relative; width:100%; border-radius:10px; overflow:hidden; display:block;">
+                    <img src="" 
+                        id="bgImgPreview" 
+                        class="bg-upload-preview" 
+                        style="display:none; margin:0;">
+                    <button id="bgImgDelBtn"
+                            onclick="deleteBgImage()"
+                            class="btn-del-img"
+                            style="display:none;">
+                        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
                 @endif
 
                 <div class="wg-divider">
@@ -1190,7 +1245,9 @@ async function handleBgImg(input) {
     const reader = new FileReader();
     reader.onload = e => {
         const img = document.getElementById('bgImgPreview');
-        img.src = e.target.result; img.style.display = 'block';
+        img.src = e.target.result;
+        img.style.display = 'block';
+        document.getElementById('bgImgDelBtn').style.display = 'flex';
     };
     reader.readAsDataURL(file);
     document.querySelectorAll('.wg-item').forEach(el => el.classList.remove('active'));
@@ -1262,23 +1319,43 @@ function buildBtnCss() {
 function updatePreview() {
     const frame = document.getElementById('previewFrame');
     if (!frame?.contentWindow) return;
-    let bgCss, bgColor = null, bgSize = null;
-    if (st.bg_type === 'image' && st.bg_image && st.bg_image.startsWith('wg_')) {
-        const wg = WALLPAPERS.find(w => w.id === st.bg_image);
-        if (wg) { bgCss = wg.cssValue; bgColor = wg.bgColor ?? null; bgSize = wg.bgSize ?? null; }
-        else { bgCss = st.background_color; }
+
+    let bgCss   = null;
+    let bgImage = null;
+    let bgColor = null;
+    let bgSize  = null;
+
+    if (st.bg_type === 'image' && st.bg_image) {
+        if (st.bg_image.startsWith('wg_')) {
+            // Wallpaper galeri
+            const wg = WALLPAPERS.find(w => w.id === st.bg_image);
+            if (wg) {
+                bgCss   = wg.cssValue;
+                bgColor = wg.bgColor ?? null;
+                bgSize  = wg.bgSize  ?? null;
+            } else {
+                bgCss = st.background_color;
+            }
+        } else {
+            // Gambar upload user — kirim URL terpisah
+            bgImage = `/storage/${st.bg_image}`;
+        }
     } else if (st.bg_type === 'gradient') {
         bgCss = `linear-gradient(${st.bg_gradient_direction}, ${st.bg_gradient_start}, ${st.bg_gradient_end})`;
-    } else if (st.bg_type === 'image' && st.bg_image) {
-        bgCss = `url('/storage/${st.bg_image}') center/cover no-repeat`;
     } else {
         bgCss = st.background_color;
     }
-    const shapeMap = { pill:'50px', rounded:'12px', square:'4px' };
+
+    const shapeMap = { pill: '50px', rounded: '12px', square: '4px' };
+
     frame.contentWindow.postMessage({
         type: 'payou_appearance_update',
         payload: {
-            bgCss, bgColor, bgSize,
+            bgCss,
+            bgImage,
+            bgColor,
+            bgSize,
+            bgType:         st.bg_type,
             fontFamily:     st.font_family,
             textColor:      st.text_color,
             btnCss:         buildBtnCss(),
@@ -1290,6 +1367,7 @@ function updatePreview() {
         }
     }, '*');
 }
+
 function reloadPreview() {
     const f = document.getElementById('previewFrame');
     if (f) f.src = f.src;
@@ -1393,6 +1471,46 @@ async function resetAppearance() {
             showToast(data.message ?? 'Gagal mereset tampilan.', 'error');
         }
     } catch(e) { showToast('Gagal mereset tampilan.', 'error'); }
+}
+
+async function deleteBgImage() {
+    if (!confirm('Hapus gambar background? Tampilan akan kembali ke warna default.')) return;
+
+    try {
+        const res  = await fetch('{{ route("dashboard.appearance.deleteBg") }}', {
+            method:  'POST',
+            headers: { 'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json' },
+        });
+        const data = await res.json();
+
+        if (data.success) {
+            // Reset UI
+            const img    = document.getElementById('bgImgPreview');
+            const delBtn = document.getElementById('bgImgDelBtn');
+            img.src              = '';
+            img.style.display    = 'none';
+            delBtn.style.display = 'none';
+
+            // Reset wallpaper aktif
+            document.querySelectorAll('.wg-item').forEach(el => el.classList.remove('active'));
+            activeWgId = null;
+
+            // Reset state ke warna default
+            st.bg_image = null;
+            st.bg_type  = 'color';
+
+            // Switch tab ke warna
+            const colorTab = document.querySelector('.bg-tab[data-bg="color"]');
+            if (colorTab) switchBgTab(colorTab, 'color');
+
+            markDirty();
+            showToast('Background berhasil dihapus.', 'success');
+        } else {
+            showToast(data.message ?? 'Gagal menghapus background.', 'error');
+        }
+    } catch(e) {
+        showToast('Gagal menghapus background.', 'error');
+    }
 }
 
 // ─── Notifikasi ───

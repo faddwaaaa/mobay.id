@@ -147,6 +147,35 @@ class AppearanceController extends Controller
         return response()->json(['success' => true, 'message' => 'Banner berhasil dihapus.']);
     }
 
+    public function deleteBg(Request $request)
+    {
+        try {
+            $profile = auth()->user()->userProfile ?? auth()->user()->profile;
+
+            if (!$profile) {
+                return response()->json(['success' => false, 'message' => 'Profil tidak ditemukan.'], 404);
+            }
+
+            // Hapus file fisik jika ada dan bukan wallpaper galeri
+            if ($profile->bg_image && !str_starts_with($profile->bg_image, 'wg_')) {
+                $filePath = storage_path('app/public/' . $profile->bg_image);
+                if (file_exists($filePath)) {
+                    unlink($filePath);
+                }
+            }
+
+            // Reset di DB
+            $profile->bg_image = null;
+            $profile->bg_type  = 'color';
+            $profile->save();
+
+            return response()->json(['success' => true]);
+
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+        }
+    }
+
     public function reset()
     {
         [$user, $profile] = $this->getOrCreateProfile();

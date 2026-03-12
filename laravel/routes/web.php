@@ -300,6 +300,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/appearance/upload-banner', [AppearanceController::class, 'uploadBanner'])->name('dashboard.appearance.uploadBanner');
     Route::post('/appearance/reset',         [AppearanceController::class, 'reset'])->name('dashboard.appearance.reset');
     Route::post('/appearance/delete-banner', [AppearanceController::class, 'deleteBanner'])->name('dashboard.appearance.deleteBanner');
+    Route::post('appearance/delete-bg', [AppearanceController::class, 'deleteBg'])->name('dashboard.appearance.deleteBg');
 
     Route::get('/debug-last-trx', function () {
         $trx = App\Models\Transaction::latest()->first();

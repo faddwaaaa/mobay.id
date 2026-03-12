@@ -948,33 +948,50 @@ async function doSearch(query) {
     function applyAppearance(p) {
         if (!p) return;
 
-        if (p.bgCss) {
-            document.body.style.background           = p.bgCss;
-            document.body.style.backgroundSize       = 'cover';
-            document.body.style.backgroundAttachment = 'fixed';
-            document.body.style.backgroundRepeat     = 'no-repeat';
-            if (p.bgColor) document.body.style.backgroundColor = p.bgColor;
-            if (p.bgSize)  document.body.style.backgroundSize  = p.bgSize;
+        // ── Background ──
+        if (p.bgImage) {
+            // Gambar upload user
+            document.body.style.backgroundImage    = `url('${p.bgImage}')`;
+            document.body.style.backgroundSize     = 'cover';
+            document.body.style.backgroundPosition = 'center';
+            document.body.style.backgroundRepeat   = 'no-repeat';
+            document.body.style.backgroundColor   = '';
+            document.body.style.backgroundAttachment = 'scroll';
+        } else if (p.bgCss) {
+            // Solid color atau gradient atau wallpaper galeri
+            const isSolid = /^#[0-9a-fA-F]{3,8}$|^rgb/.test(p.bgCss.trim());
+            if (isSolid) {
+                document.body.style.backgroundImage = 'none';
+                document.body.style.backgroundColor = p.bgCss;
+            } else {
+                document.body.style.backgroundImage = p.bgCss;
+                document.body.style.backgroundColor = p.bgColor ?? '';
+                document.body.style.backgroundSize  = p.bgSize  ?? 'cover';
+            }
+            document.body.style.backgroundPosition   = 'center';
+            document.body.style.backgroundRepeat     = 'repeat';
+            document.body.style.backgroundAttachment = 'scroll';
         }
 
+        // ── Font ──
         if (p.fontFamily) {
             document.body.style.fontFamily = `'${p.fontFamily}', system-ui, -apple-system, sans-serif`;
             injectFont(p.fontFamily);
         }
 
+        // ── Warna teks ──
         if (p.textColor) {
             document.querySelectorAll('[data-profile-text]').forEach(el => {
                 el.style.color = p.textColor;
             });
-            // Update warna icon social links juga
             document.querySelectorAll('.social-link').forEach(el => {
                 el.style.color = p.textColor;
             });
         }
 
+        // ── Tombol ──
         if (p.btnCss || p.btnRadius) {
             document.querySelectorAll('.block-link a').forEach(btn => applyBtnStyle(btn, p));
-            if (p.btnCss) document.querySelectorAll('.btn-buy').forEach(btn => applyBtnStyle(btn, p));
         }
     }
 

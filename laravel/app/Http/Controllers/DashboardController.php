@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\Link;
 use App\Models\Click;
 use App\Models\Product;
+use App\Models\DigitalOrder;
 use Carbon\Carbon;
 
 class DashboardController extends Controller
@@ -61,8 +62,6 @@ class DashboardController extends Controller
             $maxClick     = max($maxClick, end($data), end($clicksData));
         }
 
-
-
         // Payment
         $balance            = $user->balance ?? 0;
         $totalEarned        = $this->paymentService->getTotalEarned($user);
@@ -77,7 +76,12 @@ class DashboardController extends Controller
             ->withSum('sales as total_qty', 'qty')
             ->get();
 
-
+        // ✅ Total Produk & Total Pesanan
+        $totalProducts = Product::where('user_id', $user->id)->count();
+        $totalOrders   = DigitalOrder::whereIn(
+            'digital_product_id',
+            Product::where('user_id', $user->id)->pluck('id')
+        )->count();
 
         return view('dashboard.index', compact(
             'user',
@@ -93,6 +97,8 @@ class DashboardController extends Controller
             'recentTransactions',
             'recentWithdrawals',
             'products',
+            'totalProducts',
+            'totalOrders',
         ));
     }
 

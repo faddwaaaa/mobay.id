@@ -161,13 +161,15 @@
                 </a>
             </div>
             <div style="display:grid;grid-template-columns:repeat(3, 1fr);gap:8px;">
+                {{-- ✅ DIUBAH: Total Link → Total Pesanan --}}
                 <div style="padding:10px;border-radius:12px;background:#f8fafc;border:1px solid #eef2f7;">
-                    <div style="font-size:11px;color:#6b7280;font-weight:700;">Total Link</div>
-                    <div style="font-size:13px;font-weight:800;color:#0f172a;margin-top:2px;">{{ $totalLinks ?? 0 }}</div>
+                    <div style="font-size:11px;color:#6b7280;font-weight:700;">Total Pesanan</div>
+                    <div style="font-size:13px;font-weight:800;color:#0f172a;margin-top:2px;">{{ $totalOrders ?? 0 }}</div>
                 </div>
+                {{-- ✅ DIUBAH: Link Aktif → Total Produk --}}
                 <div style="padding:10px;border-radius:12px;background:#f8fafc;border:1px solid #eef2f7;">
-                    <div style="font-size:11px;color:#6b7280;font-weight:700;">Link Aktif</div>
-                    <div style="font-size:13px;font-weight:800;color:#0f172a;margin-top:2px;">{{ $activeLinks ?? 0 }}/{{ $totalLinks ?? 0 }}</div>
+                    <div style="font-size:11px;color:#6b7280;font-weight:700;">Total Produk</div>
+                    <div style="font-size:13px;font-weight:800;color:#0f172a;margin-top:2px;">{{ $totalProducts ?? 0 }}</div>
                 </div>
                 <div style="padding:10px;border-radius:12px;background:#f8fafc;border:1px solid #eef2f7;">
                     <div style="font-size:11px;color:#6b7280;font-weight:700;">Rekening</div>

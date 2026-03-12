@@ -240,8 +240,48 @@
             @endforelse
         </div>
         @if($payments->hasPages())
-        <div class="riwayat-pagination">
-            {{ $payments->appends(['tab' => 'payments', 'wpage' => request('wpage')])->links() }}
+        <div style="margin-top:20px;display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap;">
+            @if($payments->onFirstPage())
+                <span style="padding:8px 16px;border-radius:8px;border:1px solid #e5e7eb;background:#f9fafb;color:#cbd5e0;font-size:13px;font-weight:600;cursor:not-allowed;">
+                    <i class="fas fa-chevron-left" style="margin-right:5px;"></i> Sebelumnya
+                </span>
+            @else
+                <a href="{{ $payments->appends(['tab' => 'payments', 'wpage' => request('wpage')])->previousPageUrl() }}"
+                style="padding:8px 16px;border-radius:8px;border:1px solid #e5e7eb;background:#fff;color:#374151;font-size:13px;font-weight:600;text-decoration:none;transition:all .15s;"
+                onmouseenter="this.style.borderColor='#2563eb';this.style.color='#2563eb'"
+                onmouseleave="this.style.borderColor='#e5e7eb';this.style.color='#374151'">
+                    <i class="fas fa-chevron-left" style="margin-right:5px;"></i> Sebelumnya
+                </a>
+            @endif
+            @foreach($payments->appends(['tab' => 'payments', 'wpage' => request('wpage')])->getUrlRange(1, $payments->lastPage()) as $page => $url)
+                @if($page == $payments->currentPage())
+                    <span style="padding:8px 14px;border-radius:8px;border:1px solid #2563eb;background:#2563eb;color:#fff;font-size:13px;font-weight:700;min-width:38px;text-align:center;">
+                        {{ $page }}
+                    </span>
+                @else
+                    <a href="{{ $url }}"
+                    style="padding:8px 14px;border-radius:8px;border:1px solid #e5e7eb;background:#fff;color:#374151;font-size:13px;font-weight:600;text-decoration:none;min-width:38px;text-align:center;transition:all .15s;"
+                    onmouseenter="this.style.borderColor='#2563eb';this.style.color='#2563eb'"
+                    onmouseleave="this.style.borderColor='#e5e7eb';this.style.color='#374151'">
+                        {{ $page }}
+                    </a>
+                @endif
+            @endforeach
+            @if($payments->hasMorePages())
+                <a href="{{ $payments->appends(['tab' => 'payments', 'wpage' => request('wpage')])->nextPageUrl() }}"
+                style="padding:8px 16px;border-radius:8px;border:1px solid #e5e7eb;background:#fff;color:#374151;font-size:13px;font-weight:600;text-decoration:none;transition:all .15s;"
+                onmouseenter="this.style.borderColor='#2563eb';this.style.color='#2563eb'"
+                onmouseleave="this.style.borderColor='#e5e7eb';this.style.color='#374151'">
+                    Berikutnya <i class="fas fa-chevron-right" style="margin-left:5px;"></i>
+                </a>
+            @else
+                <span style="padding:8px 16px;border-radius:8px;border:1px solid #e5e7eb;background:#f9fafb;color:#cbd5e0;font-size:13px;font-weight:600;cursor:not-allowed;">
+                    Berikutnya <i class="fas fa-chevron-right" style="margin-left:5px;"></i>
+                </span>
+            @endif
+        </div>
+        <div style="text-align:center;margin-top:10px;font-size:12px;color:#9ca3af;">
+            Menampilkan {{ $payments->firstItem() }}–{{ $payments->lastItem() }} dari {{ $payments->total() }} transaksi
         </div>
         @endif
     </div>
@@ -271,8 +311,48 @@
             @endforelse
         </div>
         @if($withdrawals->hasPages())
-        <div class="riwayat-pagination">
-            {{ $withdrawals->appends(['tab' => 'withdrawals', 'page' => request('page')])->links() }}
+        <div style="margin-top:20px;display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap;">
+            @if($withdrawals->onFirstPage())
+                <span style="padding:8px 16px;border-radius:8px;border:1px solid #e5e7eb;background:#f9fafb;color:#cbd5e0;font-size:13px;font-weight:600;cursor:not-allowed;">
+                    <i class="fas fa-chevron-left" style="margin-right:5px;"></i> Sebelumnya
+                </span>
+            @else
+                <a href="{{ $withdrawals->appends(['tab' => 'withdrawals', 'page' => request('page')])->previousPageUrl() }}"
+                style="padding:8px 16px;border-radius:8px;border:1px solid #e5e7eb;background:#fff;color:#374151;font-size:13px;font-weight:600;text-decoration:none;transition:all .15s;"
+                onmouseenter="this.style.borderColor='#2563eb';this.style.color='#2563eb'"
+                onmouseleave="this.style.borderColor='#e5e7eb';this.style.color='#374151'">
+                    <i class="fas fa-chevron-left" style="margin-right:5px;"></i> Sebelumnya
+                </a>
+            @endif
+            @foreach($withdrawals->appends(['tab' => 'withdrawals', 'page' => request('page')])->getUrlRange(1, $withdrawals->lastPage()) as $page => $url)
+                @if($page == $withdrawals->currentPage())
+                    <span style="padding:8px 14px;border-radius:8px;border:1px solid #2563eb;background:#2563eb;color:#fff;font-size:13px;font-weight:700;min-width:38px;text-align:center;">
+                        {{ $page }}
+                    </span>
+                @else
+                    <a href="{{ $url }}"
+                    style="padding:8px 14px;border-radius:8px;border:1px solid #e5e7eb;background:#fff;color:#374151;font-size:13px;font-weight:600;text-decoration:none;min-width:38px;text-align:center;transition:all .15s;"
+                    onmouseenter="this.style.borderColor='#2563eb';this.style.color='#2563eb'"
+                    onmouseleave="this.style.borderColor='#e5e7eb';this.style.color='#374151'">
+                        {{ $page }}
+                    </a>
+                @endif
+            @endforeach
+            @if($withdrawals->hasMorePages())
+                <a href="{{ $withdrawals->appends(['tab' => 'withdrawals', 'page' => request('page')])->nextPageUrl() }}"
+                style="padding:8px 16px;border-radius:8px;border:1px solid #e5e7eb;background:#fff;color:#374151;font-size:13px;font-weight:600;text-decoration:none;transition:all .15s;"
+                onmouseenter="this.style.borderColor='#2563eb';this.style.color='#2563eb'"
+                onmouseleave="this.style.borderColor='#e5e7eb';this.style.color='#374151'">
+                    Berikutnya <i class="fas fa-chevron-right" style="margin-left:5px;"></i>
+                </a>
+            @else
+                <span style="padding:8px 16px;border-radius:8px;border:1px solid #e5e7eb;background:#f9fafb;color:#cbd5e0;font-size:13px;font-weight:600;cursor:not-allowed;">
+                    Berikutnya <i class="fas fa-chevron-right" style="margin-left:5px;"></i>
+                </span>
+            @endif
+        </div>
+        <div style="text-align:center;margin-top:10px;font-size:12px;color:#9ca3af;">
+            Menampilkan {{ $withdrawals->firstItem() }}–{{ $withdrawals->lastItem() }} dari {{ $withdrawals->total() }} penarikan
         </div>
         @endif
     </div>

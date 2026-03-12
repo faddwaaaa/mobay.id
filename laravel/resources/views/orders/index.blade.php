@@ -153,9 +153,17 @@
 </style>
 
 <div class="riwayat-container">
-    <div class="riwayat-header">
-        <h1>Pesanan Masuk</h1>
-        <p>Lihat daftar pesanan dari pembeli berdasarkan kategori produk.</p>
+        {{-- HEADER --}}
+    <div style="margin-bottom:24px;">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
+            <a href="{{ route('dashboard') }}" style="width:36px;height:36px;background:#ffffff;border:1px solid #e2e8f0;border-radius:8px;display:flex;align-items:center;justify-content:center;text-decoration:none;transition:all .2s;">
+                <i class="fas fa-arrow-left" style="font-size:14px;color:#475569;"></i>
+            </a>
+            <div>
+                <h1 style="margin:0;font-size:24px;font-weight:600;color:#000000;">Pesanan Masuk</h1>
+                <p style="margin:0;font-size:14px;color:#797979;">Lihat daftar pesanan dari pembeli berdasarkan kategori produk.</p>
+            </div>
+        </div>
     </div>
 
     <div class="riwayat-tabs">
@@ -195,9 +203,56 @@
         @endif
     </div>
 
-    @if($orders->count() > 0)
-    <div style="margin-top:16px;">
-        {{ $orders->appends(['type' => $type])->links() }}
+    @if($orders->hasPages())
+    <div style="margin-top:20px;display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap;">
+        {{-- Tombol Sebelumnya --}}
+        @if($orders->onFirstPage())
+            <span style="padding:8px 16px;border-radius:8px;border:1px solid #e5e7eb;background:#f9fafb;color:#cbd5e0;font-size:13px;font-weight:600;cursor:not-allowed;">
+                <i class="fas fa-chevron-left" style="margin-right:5px;"></i> Sebelumnya
+            </span>
+        @else
+            <a href="{{ $orders->appends(['type' => $type])->previousPageUrl() }}"
+            style="padding:8px 16px;border-radius:8px;border:1px solid #e5e7eb;background:#fff;color:#374151;font-size:13px;font-weight:600;text-decoration:none;transition:all .15s;"
+            onmouseenter="this.style.borderColor='#2563eb';this.style.color='#2563eb'"
+            onmouseleave="this.style.borderColor='#e5e7eb';this.style.color='#374151'">
+                <i class="fas fa-chevron-left" style="margin-right:5px;"></i> Sebelumnya
+            </a>
+        @endif
+
+        {{-- Nomor Halaman --}}
+        @foreach($orders->appends(['type' => $type])->getUrlRange(1, $orders->lastPage()) as $page => $url)
+            @if($page == $orders->currentPage())
+                <span style="padding:8px 14px;border-radius:8px;border:1px solid #2563eb;background:#2563eb;color:#fff;font-size:13px;font-weight:700;min-width:38px;text-align:center;">
+                    {{ $page }}
+                </span>
+            @else
+                <a href="{{ $url }}"
+                style="padding:8px 14px;border-radius:8px;border:1px solid #e5e7eb;background:#fff;color:#374151;font-size:13px;font-weight:600;text-decoration:none;min-width:38px;text-align:center;transition:all .15s;"
+                onmouseenter="this.style.borderColor='#2563eb';this.style.color='#2563eb'"
+                onmouseleave="this.style.borderColor='#e5e7eb';this.style.color='#374151'">
+                    {{ $page }}
+                </a>
+            @endif
+        @endforeach
+
+        {{-- Tombol Berikutnya --}}
+        @if($orders->hasMorePages())
+            <a href="{{ $orders->appends(['type' => $type])->nextPageUrl() }}"
+            style="padding:8px 16px;border-radius:8px;border:1px solid #e5e7eb;background:#fff;color:#374151;font-size:13px;font-weight:600;text-decoration:none;transition:all .15s;"
+            onmouseenter="this.style.borderColor='#2563eb';this.style.color='#2563eb'"
+            onmouseleave="this.style.borderColor='#e5e7eb';this.style.color='#374151'">
+                Berikutnya <i class="fas fa-chevron-right" style="margin-left:5px;"></i>
+            </a>
+        @else
+            <span style="padding:8px 16px;border-radius:8px;border:1px solid #e5e7eb;background:#f9fafb;color:#cbd5e0;font-size:13px;font-weight:600;cursor:not-allowed;">
+                Berikutnya <i class="fas fa-chevron-right" style="margin-left:5px;"></i>
+            </span>
+        @endif
+    </div>
+
+    {{-- Info halaman --}}
+    <div style="text-align:center;margin-top:10px;font-size:12px;color:#9ca3af;">
+        Menampilkan {{ $orders->firstItem() }}–{{ $orders->lastItem() }} dari {{ $orders->total() }} pesanan
     </div>
     @endif
 </div>
