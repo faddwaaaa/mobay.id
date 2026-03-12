@@ -135,12 +135,6 @@
     border-radius: 20px; padding: 6px 14px; display: flex; align-items: center; gap: 5px;
 }
 .ap-preview-url strong { color: #374151; font-weight: 600; }
-.btn-refresh-preview {
-    font-size: 11.5px; color: #9ca3af; background: none; border: none; cursor: pointer;
-    display: flex; align-items: center; gap: 4px; padding: 5px 10px; border-radius: 6px;
-    transition: all 0.15s; font-family: 'Plus Jakarta Sans', sans-serif;
-}
-.btn-refresh-preview:hover { background: #f1f5f9; color: #475569; }
 
 /* ═══════════════════════════════════════════
    KARTU SEKSI
@@ -331,6 +325,53 @@
 }
 .wg-thumb { width: 100%; height: 100%; display: block; pointer-events: none; }
 .wg-label { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.45); color: #fff; font-size: 9px; font-weight: 700; text-align: center; padding: 3px 2px; }
+
+/* ═══════════════════════════════════════════
+   GALERI COLLAPSIBLE
+═══════════════════════════════════════════ */
+.wg-collapse-wrap {
+    overflow: hidden;
+    transition: max-height 0.35s ease;
+    max-height: 0;
+}
+.wg-collapse-wrap.open {
+    max-height: 2000px;
+}
+.btn-wg-toggle {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 9px 14px;
+    margin-top: 10px;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 10px;
+    background: #f9fafb;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: #6b7280;
+    cursor: pointer;
+    transition: all 0.18s;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+}
+.btn-wg-toggle:hover {
+    border-color: #93c5fd;
+    background: #eff6ff;
+    color: #3b82f6;
+}
+.btn-wg-toggle.open {
+    border-color: #bfdbfe;
+    color: #3b82f6;
+    background: #eff6ff;
+}
+.btn-wg-toggle .wg-chevron {
+    transition: transform 0.3s ease;
+    flex-shrink: 0;
+}
+.btn-wg-toggle.open .wg-chevron {
+    transform: rotate(180deg);
+}
 
 /* ═══════════════════════════════════════════
    SEKSI TOMBOL
@@ -682,21 +723,33 @@
                 </div>
                 @endif
 
-                <div class="wg-divider">
-                    <div class="wg-divider-line"></div>
-                    <span class="wg-divider-label">✦ Galeri Wallpaper Payou</span>
-                    <div class="wg-divider-line"></div>
-                </div>
+                <button class="btn-wg-toggle" id="btnWgToggle" onclick="toggleWgGallery()">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4-4 4 4 4-8"/>
+                    </svg>
+                    <span id="btnWgLabel">✦ Lihat Galeri Wallpaper Payou</span>
+                    <svg class="wg-chevron" width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/>
+                    </svg>
+                </button>
 
-                <div class="wg-cats" id="wgCats">
-                    <button class="wg-cat active" onclick="filterWg(this,'all')">Semua</button>
-                    <button class="wg-cat" onclick="filterWg(this,'gradient')">Gradien</button>
-                    <button class="wg-cat" onclick="filterWg(this,'pattern')">Motif</button>
-                    <button class="wg-cat" onclick="filterWg(this,'minimal')">Minimalis</button>
-                    <button class="wg-cat" onclick="filterWg(this,'dark')">Gelap</button>
-                </div>
+                <div class="wg-collapse-wrap" id="wgCollapseWrap">
+                    <div class="wg-divider" style="margin-top:12px;">
+                        <div class="wg-divider-line"></div>
+                        <span class="wg-divider-label">✦ Galeri Wallpaper Payou</span>
+                        <div class="wg-divider-line"></div>
+                    </div>
 
-                <div class="wg-grid" id="wgGrid"></div>
+                    <div class="wg-cats" id="wgCats">
+                        <button class="wg-cat active" onclick="filterWg(this,'all')">Semua</button>
+                        <button class="wg-cat" onclick="filterWg(this,'gradient')">Gradien</button>
+                        <button class="wg-cat" onclick="filterWg(this,'pattern')">Motif</button>
+                        <button class="wg-cat" onclick="filterWg(this,'minimal')">Minimalis</button>
+                        <button class="wg-cat" onclick="filterWg(this,'dark')">Gelap</button>
+                    </div>
+
+                    <div class="wg-grid" id="wgGrid"></div>
+                </div>
             </div>
         </div>
 
@@ -859,11 +912,6 @@
                 </div>
             </div>
         </div>
-
-        <button class="btn-refresh-preview" onclick="reloadPreview()">
-            <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-            Refresh Preview
-        </button>
     </div>
 
 </div>
@@ -1265,6 +1313,32 @@ async function handleBgImg(input) {
             showToast(data.message ?? 'Gagal mengunggah gambar.', 'error');
         }
     } catch(e) { showToast('Gagal mengunggah gambar.', 'error'); }
+}
+
+// ═══════════════════════════════════════════
+// TOGGLE GALERI WALLPAPER
+// ═══════════════════════════════════════════
+function toggleWgGallery() {
+    const wrap  = document.getElementById('wgCollapseWrap');
+    const btn   = document.getElementById('btnWgToggle');
+    const label = document.getElementById('btnWgLabel');
+    const isOpen = wrap.classList.contains('open');
+
+    wrap.classList.toggle('open', !isOpen);
+    btn.classList.toggle('open', !isOpen);
+    label.textContent = isOpen
+        ? '✦ Lihat Galeri Wallpaper Payou'
+        : '✦ Sembunyikan Galeri';
+}
+
+// Buka otomatis jika wallpaper galeri sedang aktif
+if (activeWgId) {
+    const wrap  = document.getElementById('wgCollapseWrap');
+    const btn   = document.getElementById('btnWgToggle');
+    const label = document.getElementById('btnWgLabel');
+    wrap.classList.add('open');
+    btn.classList.add('open');
+    label.textContent = '✦ Sembunyikan Galeri';
 }
 
 // ═══════════════════════════════════════════
