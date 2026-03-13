@@ -13,7 +13,7 @@ class AppearanceController extends Controller
     private function getOrCreateProfile()
     {
         $user    = Auth::user();
-        $profile = $user->userProfile; // ← pakai relasi userProfile()
+        $profile = $user->userProfile;
 
         if (!$profile) {
             $profile = UserProfile::create([
@@ -63,12 +63,13 @@ class AppearanceController extends Controller
             'btn_text_color'        => 'nullable|string|max:20',
             // Font
             'font_family'           => 'nullable|string|max:50',
+            // Block Layout ← TAMBAH INI
+            'block_layout'          => 'nullable|in:default,grid,large_image,compact',
         ]);
 
         $profile->update($validated);
         $fresh = $profile->fresh();
 
-        // Build broadcast_payload untuk live sync ke tab lain
         $shapeMap  = ['pill' => '50px', 'rounded' => '12px', 'square' => '4px'];
         $btnRadius = $shapeMap[$fresh->btn_shape ?? 'rounded'] ?? '12px';
         $btnColor    = $fresh->btn_color      ?? '#3b82f6';
@@ -88,6 +89,7 @@ class AppearanceController extends Controller
                 'btn_style'      => $fresh->btn_style,
                 'btn_color'      => $btnColor,
                 'btn_text_color' => $btnTxtColor,
+                'block_layout'   => $fresh->block_layout ?? 'default', // ← TAMBAH INI
             ],
         ]);
     }
@@ -98,7 +100,6 @@ class AppearanceController extends Controller
 
         [$user, $profile] = $this->getOrCreateProfile();
 
-        // Hapus file lama kalau bukan wallpaper galeri
         if ($profile->bg_image && !str_starts_with($profile->bg_image, 'wg_')) {
             Storage::disk('public')->delete($profile->bg_image);
         }
@@ -156,7 +157,6 @@ class AppearanceController extends Controller
                 return response()->json(['success' => false, 'message' => 'Profil tidak ditemukan.'], 404);
             }
 
-            // Hapus file fisik jika ada dan bukan wallpaper galeri
             if ($profile->bg_image && !str_starts_with($profile->bg_image, 'wg_')) {
                 $filePath = storage_path('app/public/' . $profile->bg_image);
                 if (file_exists($filePath)) {
@@ -164,7 +164,6 @@ class AppearanceController extends Controller
                 }
             }
 
-            // Reset di DB
             $profile->bg_image = null;
             $profile->bg_type  = 'color';
             $profile->save();
@@ -180,7 +179,6 @@ class AppearanceController extends Controller
     {
         [$user, $profile] = $this->getOrCreateProfile();
 
-        // Hapus file bg_image lama kalau bukan wallpaper galeri
         if ($profile->bg_image && !str_starts_with($profile->bg_image, 'wg_')) {
             Storage::disk('public')->delete($profile->bg_image);
         }
@@ -200,6 +198,7 @@ class AppearanceController extends Controller
             'btn_color'             => '#3b82f6',
             'btn_text_color'        => '#ffffff',
             'font_family'           => 'Plus Jakarta Sans',
+            'block_layout'          => 'default', // ← TAMBAH INI
         ]);
 
         return response()->json(['success' => true, 'message' => 'Tampilan direset ke default.']);

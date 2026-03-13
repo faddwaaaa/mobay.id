@@ -55,20 +55,12 @@
 
         body {
             font-family: '{{ $fontFamily }}', system-ui, -apple-system, sans-serif;
-            @if($profile?->bg_type === 'image' && $profile?->bg_image && !str_starts_with($profile->bg_image, 'wg_'))
-                background-image: url('{{ asset('storage/' . $profile->bg_image) }}');
-                background-size: cover;
-                background-position: center;
-                background-repeat: no-repeat;
-                background-attachment: scroll;
-            @else
-                background: {{ $bgCss }};
-                @if($bgColorExtra) background-color: {{ $bgColorExtra }}; @endif
-                @if($bgSizeExtra) background-size: {{ $bgSizeExtra }}; @endif
-            @endif
+            background: {{ $bgCss }};
+            @if($bgColorExtra) background-color: {{ $bgColorExtra }}; @endif
+            @if($bgSizeExtra) background-size: {{ $bgSizeExtra }}; @endif
             min-height: 100vh;
             overflow-x: hidden;
-        }   
+        }
 
         .page-wrapper {
             width: min(100%, 420px);
@@ -533,6 +525,96 @@
 
         .block-product { background: rgba(255,255,255,0.9); backdrop-filter: blur(8px); border: 1px solid rgba(229,231,235,0.7); border-radius: 12px; overflow: hidden; transition: box-shadow 0.2s, transform 0.2s, border-color 0.2s; cursor: pointer; }
         .block-product:hover { box-shadow: 0 4px 16px rgba(37,99,235,0.1); transform: translateY(-2px); border-color: #bfdbfe; }
+
+        /* ── GRID ── */
+        .blocks-container.layout-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+            width: 100%;
+        }
+
+        /* blok non produk full */
+        .blocks-container.layout-grid .block-text,
+        .blocks-container.layout-grid .block-link,
+        .blocks-container.layout-grid .block-image,
+        .blocks-container.layout-grid .block-video {
+            grid-column: 1 / -1;
+        }
+
+        /* CARD PRODUCT */
+        .blocks-container.layout-grid .block-product {
+            width: 100%;
+            border-radius: 14px;
+            overflow: hidden;
+            background: #fff;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* IMAGE */
+        .blocks-container.layout-grid .block-product .product-image-wrapper {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            overflow: hidden;
+        }
+
+        .blocks-container.layout-grid .block-product .product-image-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        /* DETAIL */
+        .blocks-container.layout-grid .block-product .product-details {
+            padding: 8px;
+        }
+
+        /* BADGE DISKON ATAS */
+        .blocks-container.layout-grid .block-product .product-discount-top {
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            margin-bottom: 4px;
+        }
+
+        /* TITLE */
+        .blocks-container.layout-grid .block-product .product-title {
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 4px;
+            line-height: 1.2;
+        }
+
+        /* PRICE AREA */
+        .blocks-container.layout-grid .block-product .product-price {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: nowrap; /* jangan turun ke bawah */
+        }
+
+        /* CURRENT PRICE */
+        .blocks-container.layout-grid .block-product .product-current-price {
+            font-size: 14px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        /* ORIGINAL PRICE */
+        .blocks-container.layout-grid .block-product .product-original-price {
+            font-size: 11px;
+            white-space: nowrap;
+        }
+
+        /* DISCOUNT BADGE */
+        .blocks-container.layout-grid .block-product .product-discount-badge {
+            font-size: 10px;
+            padding: 2px 6px;
+            white-space: nowrap;
+        }
+
         .product-image-wrapper { width: 100%; height: 200px; background: #f3f4f6; display: flex; align-items: center; justify-content: center; overflow: hidden; }
         .product-image-wrapper img { width: 100%; height: 100%; object-fit: cover; }
         .product-image-placeholder { width: 56px; height: 56px; background: #eff6ff; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #2563eb; }
@@ -540,7 +622,7 @@
         .product-badge { display: inline-flex; align-items: center; gap: 4px; background: #eff6ff; color: #2563eb; font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 6px; margin-bottom: 8px; letter-spacing: 0.3px; }
         .product-title  { font-size: 15px; font-weight: 600; color: {{ $textColor }}; margin-bottom: 10px; line-height: 1.4; }
         .product-price-section { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
-        .product-current-price  { font-size: 18px; font-weight: 700; color: {{ $btnColor }}; }
+        .product-current-price  { font-size: 18px; font-weight: 700; color: #2563eb; }
         .product-original-price { font-size: 13px; color: #9ca3af; text-decoration: line-through; }
         .product-discount-badge { background: #fee2e2; color: #dc2626; font-size: 11px; font-weight: 600; padding: 2px 6px; border-radius: 4px; }
 
@@ -932,7 +1014,10 @@
                     @endif
                 </div>
 
+                {{-- Blocks --}}
+                @php $blockLayout = $profile->block_layout ?? 'default'; @endphp
                 @if($userPage->blocks && $userPage->blocks->count() > 0)
+                    <div class="blocks-container layout-{{ $blockLayout }}" id="blocksContainer">
                     @foreach($userPage->blocks->sortBy('position') as $block)
                         @if($block->type === 'text')
                             <div class="block block-text" id="block-{{ $block->id }}">{{ $block->content['text'] ?? '' }}</div>
@@ -971,12 +1056,11 @@
                             </div>
                         @endif
                     @endforeach
+                    </div>
                 @else
                     <div class="empty-state">
                         <div class="empty-icon">
-                            <svg width="28" height="28" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                            </svg>
+                            <svg width="28" height="28" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                         </div>
                         Halaman ini belum memiliki konten.
                     </div>
@@ -986,9 +1070,7 @@
     @else
         <div class="empty-state">
             <div class="empty-icon">
-                <svg width="28" height="28" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
-                </svg>
+                <svg width="28" height="28" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
             </div>
             Belum ada halaman.
         </div>
@@ -1726,71 +1808,26 @@ async function doSearch(query) {
 
     function applyAppearance(p) {
         if (!p) return;
-
-        const body = document.body;
-
-        // ── Background ──
-        if (p.bgImage) {
-            // Gambar upload user
-            body.style.backgroundImage    = `url('${p.bgImage}')`;
-            body.style.backgroundSize     = 'cover';
-            body.style.backgroundPosition = 'center';
-            body.style.backgroundRepeat   = 'no-repeat';
-            body.style.backgroundColor    = '';
-            body.style.backgroundAttachment = 'scroll';
-        } else if (p.bgCss) {
-            const isSolid = /^#[0-9a-fA-F]{3,8}$|^rgb/.test(p.bgCss.trim());
-            if (isSolid) {
-                body.style.backgroundImage = 'none';
-                body.style.backgroundColor = p.bgCss;
-            } else {
-                body.style.backgroundImage = p.bgCss;
-                body.style.backgroundColor = p.bgColor ?? '';
-                body.style.backgroundSize  = p.bgSize  ?? 'cover';
-            }
-            body.style.backgroundPosition   = 'center';
-            body.style.backgroundRepeat     = 'repeat';
-            body.style.backgroundAttachment = 'scroll';
+        const wrap = document.querySelector('.page-wrapper, .profile-wrapper, body');
+        if (wrap && p.bgCss) {
+            wrap.style.background = p.bgCss;
+            if (p.bgSize) wrap.style.backgroundSize = p.bgSize;
+            else wrap.style.backgroundSize = 'cover';
+            if (p.bgColor) wrap.style.backgroundColor = p.bgColor;
+            wrap.style.backgroundAttachment = 'fixed';
         }
-
-        // ── Font ──
         if (p.fontFamily) {
-            body.style.fontFamily = `'${p.fontFamily}', system-ui, sans-serif`;
+            wrap && (wrap.style.fontFamily = `'${p.fontFamily}', system-ui, sans-serif`);
             injectFont(p.fontFamily);
         }
-
-        // ── Warna teks ──
         if (p.textColor) {
-            document.querySelectorAll('[data-profile-text]').forEach(el => {
-                el.style.color = p.textColor;
-            });
-            document.querySelectorAll('.social-link, .block-text').forEach(el => {
-                el.style.color = p.textColor;
-            });
+            document.querySelectorAll('[data-profile-text]').forEach(el => { el.style.color = p.textColor; });
+            document.querySelectorAll('.social-link, .block-text, .product-title').forEach(el => { el.style.color = p.textColor; });
         }
-
-        // ── Tombol ──
         if (p.btnCss || p.btnRadius) {
-            document.querySelectorAll('.block-link a').forEach(btn => {
+            document.querySelectorAll('.block-link a, .btn-buy, .btn-checkout, .btn-cart').forEach(btn => {
                 if (p.btnRadius) btn.style.borderRadius = p.btnRadius;
-                if (p.btnCss) {
-                    p.btnCss.split(';').filter(s => s.trim()).forEach(pair => {
-                        const idx  = pair.indexOf(':');
-                        if (idx === -1) return;
-                        const prop  = pair.slice(0, idx).trim();
-                        const val   = pair.slice(idx + 1).trim();
-                        if (!prop || !val) return;
-                        const camel = prop.replace(/-([a-z])/g, (_, c) => c.toUpperCase());
-                        try { btn.style[camel] = val; } catch(e) {}
-                    });
-                }
-            });
-        }
-
-        // ── Warna harga produk ──
-        if (p.btn_color) {
-            document.querySelectorAll('.product-current-price').forEach(el => {
-                el.style.color = p.btn_color;
+                if (p.btnCss)    btn.style.cssText += ';' + p.btnCss;
             });
         }
     }

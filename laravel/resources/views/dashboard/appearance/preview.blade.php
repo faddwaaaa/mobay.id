@@ -334,6 +334,102 @@
         /* ── Product Block ── */
         .block-product { background: rgba(255,255,255,0.9); backdrop-filter: blur(8px); border: 1px solid rgba(229,231,235,0.7); border-radius: 12px; overflow: hidden; transition: box-shadow 0.2s, transform 0.2s, border-color 0.2s; cursor: pointer; }
         .block-product:hover { box-shadow: 0 4px 16px rgba(37,99,235,0.1); transform: translateY(-2px); border-color: #bfdbfe; }
+
+        .blocks-container { display: flex; flex-direction: column; gap: 12px; }
+ 
+        /* ── GRID ── */
+        .blocks-container.layout-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+            width: 100%;
+        }
+
+        /* blok non produk full */
+        .blocks-container.layout-grid .block-text,
+        .blocks-container.layout-grid .block-link,
+        .blocks-container.layout-grid .block-image,
+        .blocks-container.layout-grid .block-video {
+            grid-column: 1 / -1;
+        }
+
+        /* CARD PRODUCT */
+        .blocks-container.layout-grid .block-product {
+            width: 100%;
+            border-radius: 14px;
+            overflow: hidden;
+            background: #fff;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* IMAGE */
+        .blocks-container.layout-grid .block-product .product-image-wrapper {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            overflow: hidden;
+        }
+
+        .blocks-container.layout-grid .block-product .product-image-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        /* DETAIL */
+        .blocks-container.layout-grid .block-product .product-details {
+            padding: 8px;
+        }
+
+        /* BADGE DISKON ATAS */
+        .blocks-container.layout-grid .block-product .product-discount-top {
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            margin-bottom: 4px;
+        }
+
+        /* TITLE */
+        .blocks-container.layout-grid .block-product .product-title {
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 4px;
+            line-height: 1.2;
+        }
+
+        /* PRICE AREA */
+        .blocks-container.layout-grid .block-product .product-price {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            flex-wrap: nowrap;
+            overflow: hidden;
+        }
+
+        /* CURRENT PRICE */
+        .blocks-container.layout-grid .block-product .product-current-price {
+            font-size: 13px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        /* ORIGINAL PRICE */
+        .blocks-container.layout-grid .block-product .product-original-price {
+            font-size: 10px;
+            white-space: nowrap;
+            opacity: 0.7;
+        }
+
+        /* DISCOUNT BADGE */
+        .blocks-container.layout-grid .block-product .product-discount-badge {
+            font-size: 9px;
+            padding: 1px 5px;
+            border-radius: 6px;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        
         .product-image-wrapper { width: 100%; height: 200px; background: #f3f4f6; display: flex; align-items: center; justify-content: center; overflow: hidden; }
         .product-image-wrapper img { width: 100%; height: 100%; object-fit: cover; }
         .product-image-placeholder { width: 56px; height: 56px; background: #eff6ff; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #2563eb; }
@@ -550,7 +646,9 @@
                 </div>
 
                 {{-- Blocks --}}
+                @php $blockLayout = $profile->block_layout ?? 'default'; @endphp
                 @if($userPage->blocks && $userPage->blocks->count() > 0)
+                    <div class="blocks-container layout-{{ $blockLayout }}" id="blocksContainer">
                     @foreach($userPage->blocks->sortBy('position') as $block)
                         @if($block->type === 'text')
                             <div class="block block-text" id="block-{{ $block->id }}">{{ $block->content['text'] ?? '' }}</div>
@@ -589,6 +687,7 @@
                             </div>
                         @endif
                     @endforeach
+                    </div>
                 @else
                     <div class="empty-state">
                         <div class="empty-icon">
@@ -992,6 +1091,15 @@ async function doSearch(query) {
         // ── Tombol ──
         if (p.btnCss || p.btnRadius) {
             document.querySelectorAll('.block-link a').forEach(btn => applyBtnStyle(btn, p));
+        }
+
+         // ── Block Layout ──
+        if (p.block_layout) {
+            const container = document.getElementById('blocksContainer');
+            if (container) {
+                container.className = container.className.replace(/\blayout-\S+/g, '').trim();
+                container.classList.add('layout-' + p.block_layout);
+            }
         }
     }
 

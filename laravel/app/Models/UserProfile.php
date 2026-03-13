@@ -33,6 +33,7 @@ class UserProfile extends Model
         'btn_color',
         'btn_text_color',
         'font_family',
+        'block_layout', // ← TAMBAH INI
         'template',
     ];
 
@@ -93,37 +94,27 @@ class UserProfile extends Model
     // HELPER METHODS — dipanggil AppearanceController
     // ═══════════════════════════════════════════
 
-    /**
-     * CSS value untuk background body (inline style / broadcast payload)
-     */
     public function getBackgroundCss(): string
     {
         $bgType = $this->bg_type ?? 'color';
 
-        // Wallpaper galeri
         if ($bgType === 'image' && $this->bg_image && str_starts_with($this->bg_image, 'wg_')) {
             $wg = self::$wallpaperMap[$this->bg_image] ?? null;
             return $wg ? $wg['cssValue'] : ($this->background_color ?? '#ffffff');
         }
 
-        // Gambar upload sendiri
         if ($bgType === 'image' && $this->bg_image) {
             return "url('" . asset('storage/' . $this->bg_image) . "') center/cover no-repeat fixed";
         }
 
-        // Gradien
         if ($bgType === 'gradient' && $this->bg_gradient_start && $this->bg_gradient_end) {
             $dir = $this->bg_gradient_direction ?? 'to bottom';
             return "linear-gradient({$dir}, {$this->bg_gradient_start}, {$this->bg_gradient_end})";
         }
 
-        // Warna solid
         return $this->background_color ?? '#ffffff';
     }
 
-    /**
-     * background-color tambahan untuk pattern wallpaper (CSS property terpisah)
-     */
     public function getBackgroundColor(): ?string
     {
         if (($this->bg_type ?? '') === 'image' && $this->bg_image && str_starts_with($this->bg_image, 'wg_')) {
@@ -132,9 +123,6 @@ class UserProfile extends Model
         return null;
     }
 
-    /**
-     * background-size tambahan untuk pattern wallpaper (CSS property terpisah)
-     */
     public function getBackgroundSize(): ?string
     {
         if (($this->bg_type ?? '') === 'image' && $this->bg_image && str_starts_with($this->bg_image, 'wg_')) {
@@ -143,9 +131,6 @@ class UserProfile extends Model
         return null;
     }
 
-    /**
-     * CSS class untuk button shape (legacy, tetap dipertahankan)
-     */
     public function getButtonShapeClass(): string
     {
         return match ($this->btn_shape) {

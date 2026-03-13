@@ -409,6 +409,20 @@
 .font-name   { font-size: 11px; font-weight: 600; color: #9ca3af; }
 
 /* ═══════════════════════════════════════════
+   TAMPILAN BLOK
+═══════════════════════════════════════════ */
+.bl-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+.bl-item { border: 2px solid #e5e7eb; border-radius: 12px; padding: 14px 12px 11px; cursor: pointer; transition: all 0.18s; background: #fafafa; text-align: center; }
+.bl-item:hover  { border-color: #c4b5fd; background: #faf5ff; }
+.bl-item.active { border-color: #7c3aed; background: #f5f3ff; }
+.bl-preview { height: 52px; display: flex; align-items: center; justify-content: center; margin-bottom: 8px; color: #7c3aed; }
+.bl-preview svg { width: 44px; height: 44px; }
+.bl-item:not(.active) .bl-preview { color: #9ca3af; }
+.bl-name { font-size: 12px; font-weight: 700; color: #374151; margin-bottom: 2px; }
+.bl-desc { font-size: 10.5px; color: #9ca3af; line-height: 1.3; }
+.bl-item.active .bl-name { color: #7c3aed; }
+
+/* ═══════════════════════════════════════════
    BILAH SIMPAN
 ═══════════════════════════════════════════ */
 .ap-save-bar {
@@ -868,6 +882,64 @@
             </div>
         </div>
 
+        {{-- ══════════ 5. TAMPILAN BLOK ══════════ --}}
+        <div class="sec-card">
+            <div class="sec-header">
+                <div class="sec-icon" style="background:#f5f3ff; color:#7c3aed;">
+                    <svg width="17" height="17" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5" stroke-width="2"/><rect x="14" y="3" width="7" height="7" rx="1.5" stroke-width="2"/><rect x="3" y="14" width="7" height="7" rx="1.5" stroke-width="2"/><rect x="14" y="14" width="7" height="7" rx="1.5" stroke-width="2"/></svg>
+                </div>
+                <div>
+                    <p class="sec-title">Tampilan Blok</p>
+                    <p class="sec-desc">Pilih cara produk dan konten ditampilkan di profilmu</p>
+                </div>
+            </div>
+ 
+            <div class="bl-grid">
+                @php
+                $currentLayout = $profile->block_layout ?? 'default';
+                $layouts = [
+                    [
+                        'id'   => 'default',
+                        'name' => 'Default',
+                        'desc' => 'Daftar vertikal penuh',
+                        'svg'  => '<rect x="4" y="4" width="16" height="5" rx="1.5" fill="currentColor" opacity=".25"/><rect x="4" y="11" width="16" height="5" rx="1.5" fill="currentColor" opacity=".25"/><rect x="4" y="18" width="16" height="5" rx="1.5" fill="currentColor" opacity=".18"/>',
+                    ],
+                    [
+                        'id'   => 'grid',
+                        'name' => 'Grid',
+                        'desc' => '2 kolom berdampingan',
+                        'svg'  => '<rect x="3" y="4" width="8" height="8" rx="1.5" fill="currentColor" opacity=".25"/><rect x="13" y="4" width="8" height="8" rx="1.5" fill="currentColor" opacity=".25"/><rect x="3" y="14" width="8" height="8" rx="1.5" fill="currentColor" opacity=".18"/><rect x="13" y="14" width="8" height="8" rx="1.5" fill="currentColor" opacity=".18"/>',
+                    ],
+                    [
+                        'id'   => 'large_image',
+                        'name' => 'Gambar Besar',
+                        'desc' => 'Satu kolom, gambar besar',
+                        'svg'  => '<rect x="4" y="3" width="16" height="11" rx="1.5" fill="currentColor" opacity=".28"/><rect x="4" y="16" width="10" height="2" rx="1" fill="currentColor" opacity=".35"/><rect x="4" y="20" width="7" height="1.5" rx=".75" fill="currentColor" opacity=".2"/>',
+                    ],
+                    [
+                        'id'   => 'compact',
+                        'name' => 'Kompak',
+                        'desc' => 'Ringkas dengan CTA di samping',
+                        'svg'  => '<rect x="3" y="4" width="6" height="6" rx="1" fill="currentColor" opacity=".3"/><rect x="11" y="4" width="10" height="2" rx="1" fill="currentColor" opacity=".35"/><rect x="11" y="8" width="7" height="1.5" rx=".75" fill="currentColor" opacity=".2"/><rect x="3" y="12" width="6" height="6" rx="1" fill="currentColor" opacity=".25"/><rect x="11" y="12" width="10" height="2" rx="1" fill="currentColor" opacity=".3"/><rect x="11" y="16" width="7" height="1.5" rx=".75" fill="currentColor" opacity=".18"/>',
+                    ],
+                ];
+                @endphp
+                @foreach($layouts as $l)
+                <div class="bl-item {{ $currentLayout === $l['id'] ? 'active' : '' }}"
+                     data-layout="{{ $l['id'] }}"
+                     onclick="selectBlockLayout(this, '{{ $l['id'] }}')">
+                    <div class="bl-preview">
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            {!! $l['svg'] !!}
+                        </svg>
+                    </div>
+                    <div class="bl-name">{{ $l['name'] }}</div>
+                    <div class="bl-desc">{{ $l['desc'] }}</div>
+                </div>
+                @endforeach
+            </div>
+        </div>
+
         {{-- ══════════ BILAH SIMPAN ══════════ --}}
         <div class="ap-save-bar">
             <div class="save-bar-actions" style="display:flex;gap:9px;">
@@ -947,6 +1019,7 @@ let st = {
     btn_color:             profileData.btn_color             ?? '#3b82f6',
     btn_text_color:        profileData.btn_text_color        ?? '#ffffff',
     font_family:           profileData.font_family           ?? 'Plus Jakarta Sans',
+    block_layout:          profileData.block_layout           ?? 'default',
 };
 
 let isDirty = false;
@@ -1373,6 +1446,16 @@ function selectFont(el, fontId) {
 }
 
 // ═══════════════════════════════════════════
+// TAMPILAN BLOK
+// ═══════════════════════════════════════════
+function selectBlockLayout(el, layoutId) {
+    document.querySelectorAll('.bl-item').forEach(i => i.classList.remove('active'));
+    el.classList.add('active');
+    st.block_layout = layoutId;
+    markDirty();
+}
+
+// ═══════════════════════════════════════════
 // BANGUN CSS TOMBOL
 // ═══════════════════════════════════════════
 function buildBtnCss() {
@@ -1438,11 +1521,12 @@ function updatePreview() {
             btn_shape:      st.btn_shape,
             btn_color:      st.btn_color,
             btn_text_color: st.btn_text_color,
+            block_layout:   st.block_layout,
         }
     }, '*');
 }
 
-function reloadPreview() {
+function reloadPreview() {  
     const f = document.getElementById('previewFrame');
     if (f) f.src = f.src;
 }
