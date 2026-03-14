@@ -63,15 +63,15 @@ class AppearanceController extends Controller
             'btn_text_color'        => 'nullable|string|max:20',
             // Font
             'font_family'           => 'nullable|string|max:50',
-            // Block Layout ← TAMBAH INI
-            'block_layout'          => 'nullable|in:default,grid,large_image,compact',
+            // Block Layout — highlight sudah ditambahkan
+            'block_layout'          => 'nullable|in:default,grid,compact,highlight',
         ]);
 
         $profile->update($validated);
         $fresh = $profile->fresh();
 
-        $shapeMap  = ['pill' => '50px', 'rounded' => '12px', 'square' => '4px'];
-        $btnRadius = $shapeMap[$fresh->btn_shape ?? 'rounded'] ?? '12px';
+        $shapeMap    = ['pill' => '50px', 'rounded' => '12px', 'square' => '4px'];
+        $btnRadius   = $shapeMap[$fresh->btn_shape ?? 'rounded'] ?? '12px';
         $btnColor    = $fresh->btn_color      ?? '#3b82f6';
         $btnTxtColor = $fresh->btn_text_color ?? '#ffffff';
 
@@ -89,7 +89,7 @@ class AppearanceController extends Controller
                 'btn_style'      => $fresh->btn_style,
                 'btn_color'      => $btnColor,
                 'btn_text_color' => $btnTxtColor,
-                'block_layout'   => $fresh->block_layout ?? 'default', // ← TAMBAH INI
+                'block_layout'   => $fresh->block_layout ?? 'default',
             ],
         ]);
     }
@@ -198,7 +198,7 @@ class AppearanceController extends Controller
             'btn_color'             => '#3b82f6',
             'btn_text_color'        => '#ffffff',
             'font_family'           => 'Plus Jakarta Sans',
-            'block_layout'          => 'default', // ← TAMBAH INI
+            'block_layout'          => 'default',
         ]);
 
         return response()->json(['success' => true, 'message' => 'Tampilan direset ke default.']);
