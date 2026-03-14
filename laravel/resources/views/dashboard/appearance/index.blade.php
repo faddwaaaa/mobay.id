@@ -666,7 +666,7 @@
                     ],
                     [
                         'id'   => 'compact',
-                        'name' => 'Kompak',
+                        'name' => 'Compact',
                         'desc' => 'Foto kecil kiri, nama & harga kanan',
                         'svg'  => '<rect x="3" y="4" width="6" height="6" rx="1" fill="currentColor" opacity=".3"/><rect x="11" y="5" width="8" height="2" rx="1" fill="currentColor" opacity=".35"/><rect x="17" y="4" width="4" height="6" rx="1" fill="currentColor" opacity=".2"/><rect x="3" y="12" width="6" height="6" rx="1" fill="currentColor" opacity=".25"/><rect x="11" y="13" width="8" height="2" rx="1" fill="currentColor" opacity=".3"/><rect x="17" y="12" width="4" height="6" rx="1" fill="currentColor" opacity=".18"/>',
                     ],
