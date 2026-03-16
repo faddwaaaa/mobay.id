@@ -1,208 +1,463 @@
 @extends('layouts.dashboard')
-@section('title', 'Premium | Payou.id')
+@section('title', 'Upgrade to Pro Package | Payou.id')
 
 @section('content')
-<div class="premium-page">
-    <section class="premium-hero">
-        <div class="hero-badge">Payou Pro Seller</div>
-        <h1>Jualan lebih meyakinkan, cepat closing, dan terlihat jauh lebih profesional.</h1>
-        <p>
-            Upgrade ke Premium untuk tampilan toko yang lebih kuat, fitur promosi lebih lengkap,
-            dan alat penjualan yang membantu seller naik kelas.
-        </p>
-        <div class="hero-prices">
-            <div class="price-card">
-                <div class="plan">Bulanan</div>
-                <div class="price">Rp50.000<span>/bulan</span></div>
-                <button type="button" class="btn-buy" disabled>Segera Hadir</button>
-            </div>
-            <div class="price-card highlight">
-                <div class="save-tag">Hemat 2 Bulan</div>
-                <div class="plan">Tahunan</div>
-                <div class="price">Rp550.000<span>/tahun</span></div>
-                <button type="button" class="btn-buy" disabled>Segera Hadir</button>
-            </div>
+@php
+    $features = [
+        ['label' => 'Unlimited Link', 'free' => 'check', 'pro' => 'check'],
+        ['label' => 'Digital Store', 'free' => 'check', 'pro' => 'check'],
+        ['label' => 'Statistic / Traffic', 'free' => 'check', 'pro' => 'check'],
+        ['label' => 'Templates', 'free' => 'check', 'pro' => 'check'],
+        ['label' => 'Custom Fonts & Button', 'free' => 'check', 'pro' => 'check'],
+        ['label' => 'Custom Background', 'free' => 'check', 'pro' => 'check'],
+        ['label' => 'Transaction Fee', 'free' => '10% -> 5%', 'pro' => '10% -> 3%'],
+        ['label' => 'Withdrawal Fee', 'free' => 'Rp 5k', 'pro' => 'FREE'],
+        ['label' => 'About me', 'free' => 'check', 'pro' => 'check'],
+        ['label' => 'Email Notification', 'free' => 'check', 'pro' => 'check'],
+        ['label' => 'Export data to csv', 'free' => 'check', 'pro' => 'check'],
+        ['label' => 'FB Pixels', 'free' => 'cross', 'pro' => 'check'],
+        ['label' => 'Google Analytics', 'free' => 'cross', 'pro' => 'check'],
+        ['label' => 'UTM Parameters', 'free' => 'cross', 'pro' => 'check'],
+        ['label' => 'Custom Meta Text (SEO)', 'free' => 'cross', 'pro' => 'check'],
+        ['label' => 'Request Payout anytime', 'free' => 'check', 'pro' => 'check'],
+        ['label' => 'Remove lynk.id logo', 'free' => 'cross', 'pro' => 'check'],
+        ['label' => 'Maximum file size', 'free' => '100 mb', 'pro' => '5 GB'],
+        ['label' => 'Product Appearance', 'free' => 'cross', 'pro' => 'check'],
+        ['label' => 'E-course Video', 'free' => '10 Mins', 'pro' => '480 Mins'],
+        ['label' => 'Questionnaire', 'free' => 'cross', 'pro' => '20 GB'],
+    ];
+
+    $renderValue = function ($value) {
+        if ($value === 'check') {
+            return '<span class="cmp-icon is-check"><i class="fas fa-check"></i></span>';
+        }
+
+        if ($value === 'cross') {
+            return '<span class="cmp-icon is-cross"><i class="fas fa-xmark"></i></span>';
+        }
+
+        return '<span class="cmp-text">' . e($value) . '</span>';
+    };
+@endphp
+
+<div class="pro-page">
+    <section class="pro-hero">
+        <div class="hero-copy">
+            <div class="hero-kicker">Pro upgrade</div>
+            <h1>Upgrade to Pro Package</h1>
+            <p class="hero-subtitle">Unlock advanced tools and grow your digital store faster.</p>
         </div>
-        <div class="demo-note">Fitur pembayaran paket masih tahap tampilan (belum aktif).</div>
+
+        <div class="hero-pricing-card">
+            <div class="offer-pill">
+                <i class="fas fa-bolt"></i>
+                Limited offer
+            </div>
+            <div class="hero-price-list">
+                <div class="hero-price-item">
+                    <span class="hero-price-label">Monthly</span>
+                    <strong>IDR 49.900/month</strong>
+                </div>
+                <div class="hero-price-item">
+                    <span class="hero-price-label">Yearly</span>
+                    <strong>IDR 500.000/year</strong>
+                </div>
+            </div>
+            <p class="hero-note">Soft green pricing highlight inspired by modern creator SaaS layouts.</p>
+        </div>
     </section>
 
-    <section class="premium-compare">
+    <section class="pro-section">
         <div class="section-head">
-            <h2>Perbandingan Free vs Premium</h2>
-            <p>Gaya presentasi dibuat agar pembeli lebih percaya dan seller lebih mudah closing.</p>
+            <div>
+                <span class="section-tag">Comparison</span>
+                <h2>Feature Comparison</h2>
+            </div>
+            <p>Compare what you get on Free and Pro in one clear table.</p>
         </div>
 
-        <div class="compare-wrap">
+        <div class="compare-shell">
             <table class="compare-table">
                 <thead>
                     <tr>
-                        <th>Fitur</th>
+                        <th>Feature</th>
                         <th>Free</th>
-                        <th>Premium</th>
+                        <th>Pro</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td>Kustomisasi tampilan halaman</td>
-                        <td><span class="badge no">Terbatas</span></td>
-                        <td><span class="badge yes">Penuh</span></td>
-                    </tr>
-                    <tr>
-                        <td>Prioritas tampilan produk unggulan</td>
-                        <td><span class="badge no">Tidak</span></td>
-                        <td><span class="badge yes">Ya</span></td>
-                    </tr>
-                    <tr>
-                        <td>Komponen promosi (banner, CTA premium)</td>
-                        <td><span class="badge no">Tidak</span></td>
-                        <td><span class="badge yes">Lengkap</span></td>
-                    </tr>
-                    <tr>
-                        <td>Analitik penjualan lebih detail</td>
-                        <td><span class="badge no">Dasar</span></td>
-                        <td><span class="badge yes">Lanjutan</span></td>
-                    </tr>
-                    <tr>
-                        <td>Badge toko profesional</td>
-                        <td><span class="badge no">Tidak</span></td>
-                        <td><span class="badge yes">Ya</span></td>
-                    </tr>
-                    <tr>
-                        <td>Dukungan prioritas</td>
-                        <td><span class="badge no">Normal</span></td>
-                        <td><span class="badge yes">Prioritas</span></td>
-                    </tr>
+                    @foreach($features as $feature)
+                        <tr>
+                            <td class="feature-name">{{ $feature['label'] }}</td>
+                            <td>{!! $renderValue($feature['free']) !!}</td>
+                            <td>{!! $renderValue($feature['pro']) !!}</td>
+                        </tr>
+                    @endforeach
                 </tbody>
             </table>
         </div>
     </section>
 
-    <section class="premium-proof">
-        <div class="proof-card">
-            <h3>Kenapa seller butuh Premium?</h3>
-            <ul>
-                <li>Landing jualan terlihat lebih eksklusif dan meyakinkan.</li>
-                <li>Highlight produk utama lebih jelas, cocok untuk dorong konversi.</li>
-                <li>Brand personal seller terasa lebih profesional dibanding toko biasa.</li>
-            </ul>
+    <section class="pro-section">
+        <div class="section-head">
+            <div>
+                <span class="section-tag">Pricing</span>
+                <h2>Choose your plan</h2>
+            </div>
+            <p>Pick the billing cycle that fits your store growth plan.</p>
         </div>
-        <div class="proof-card dark">
-            <h3>Target hasil setelah upgrade</h3>
-            <ul>
-                <li>Nilai order rata-rata naik lewat tampilan yang lebih premium.</li>
-                <li>Pengunjung lebih cepat paham produk dan lebih cepat checkout.</li>
-                <li>Toko lebih siap dipakai untuk scale campaign dan traffic besar.</li>
-            </ul>
+
+        <div class="plan-grid">
+            <article class="plan-card">
+                <div class="plan-card-top">
+                    <span class="plan-chip">Monthly plan</span>
+                    <h3>IDR 49.900/month</h3>
+                    <p>Pay monthly</p>
+                </div>
+                <button type="button" class="upgrade-btn">Upgrade Now</button>
+            </article>
+
+            <article class="plan-card plan-card-highlight">
+                <div class="plan-card-top">
+                    <span class="plan-chip plan-chip-highlight">Recommended</span>
+                    <h3>IDR 500.000/yr</h3>
+                    <p>Pay annually (Save 2 months)</p>
+                </div>
+                <button type="button" class="upgrade-btn">Upgrade Now</button>
+            </article>
         </div>
     </section>
 </div>
 
 <style>
-    .premium-page { max-width: 1120px; margin: 0 auto; display: grid; gap: 18px; }
-    .premium-hero {
-        border-radius: 26px;
-        padding: 28px;
-        background:
-            radial-gradient(circle at 12% 20%, rgba(255,255,255,.22), transparent 38%),
-            linear-gradient(130deg, #0f172a 0%, #1e3a8a 46%, #2563eb 100%);
-        color: #fff;
-        box-shadow: 0 20px 42px rgba(30, 58, 138, .28);
-    }
-    .hero-badge {
-        display: inline-flex;
-        background: rgba(255,255,255,.15);
-        border: 1px solid rgba(255,255,255,.28);
-        border-radius: 999px;
-        padding: 6px 12px;
-        font-size: 12px;
-        font-weight: 700;
-        letter-spacing: .06em;
-        text-transform: uppercase;
-    }
-    .premium-hero h1 { margin: 14px 0 8px; font-size: 34px; line-height: 1.18; font-weight: 800; max-width: 850px; }
-    .premium-hero p { margin: 0; font-size: 16px; opacity: .95; max-width: 760px; }
-    .hero-prices { margin-top: 22px; display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 12px; }
-    .price-card {
-        background: rgba(255,255,255,.1);
-        border: 1px solid rgba(255,255,255,.24);
-        border-radius: 18px;
-        padding: 16px;
-        backdrop-filter: blur(6px);
-    }
-    .price-card.highlight { background: linear-gradient(160deg, rgba(254,240,138,.26), rgba(255,255,255,.12)); border-color: rgba(254,240,138,.72); }
-    .save-tag {
-        display: inline-flex;
-        background: #facc15;
-        color: #713f12;
-        border-radius: 999px;
-        font-weight: 800;
-        font-size: 11px;
-        padding: 4px 8px;
-        margin-bottom: 8px;
-    }
-    .plan { font-size: 13px; font-weight: 700; opacity: .9; }
-    .price { margin-top: 6px; font-size: 32px; font-weight: 800; letter-spacing: -.02em; }
-    .price span { font-size: 14px; font-weight: 600; opacity: .9; margin-left: 4px; }
-    .btn-buy {
-        margin-top: 12px;
-        border: none;
-        border-radius: 11px;
-        background: #fff;
-        color: #1e40af;
-        font-weight: 800;
-        font-size: 13px;
-        padding: 10px 14px;
-        width: 100%;
-        opacity: .8;
-        cursor: not-allowed;
-    }
-    .demo-note { margin-top: 12px; font-size: 12px; opacity: .9; }
+.pro-page {
+    max-width: 1120px;
+    margin: 0 auto;
+    display: grid;
+    gap: 20px;
+    color: #163022;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+}
 
-    .premium-compare, .proof-card {
+.pro-hero,
+.pro-section {
+    background: rgba(255, 255, 255, 0.94);
+    border: 1px solid #dfece4;
+    border-radius: 28px;
+    box-shadow: 0 16px 36px rgba(22, 48, 34, 0.06);
+}
+
+.pro-hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1.3fr) minmax(320px, .9fr);
+    gap: 18px;
+    padding: 28px;
+    background:
+        radial-gradient(circle at top left, rgba(134, 239, 172, 0.18), transparent 28%),
+        linear-gradient(180deg, rgba(255,255,255,0.98), rgba(246, 253, 248, 0.98));
+}
+
+.hero-kicker,
+.section-tag {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 30px;
+    padding: 0 12px;
+    border-radius: 999px;
+    background: #effaf1;
+    border: 1px solid #cdeed5;
+    color: #15803d;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+}
+
+.pro-hero h1,
+.pro-section h2 {
+    margin: 14px 0 0;
+    color: #163022;
+    letter-spacing: -0.03em;
+    font-weight: 800;
+}
+
+.pro-hero h1 {
+    font-size: 40px;
+    line-height: 1.08;
+    max-width: 560px;
+}
+
+.hero-subtitle {
+    margin: 14px 0 0;
+    font-size: 16px;
+    line-height: 1.7;
+    color: #5d7567;
+    max-width: 560px;
+}
+
+.hero-pricing-card {
+    padding: 22px;
+    border-radius: 24px;
+    background: linear-gradient(180deg, #f2fbf4, #ebf8ee);
+    border: 1px solid #cfead6;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.85);
+}
+
+.offer-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border-radius: 999px;
+    background: #dff7e5;
+    color: #15803d;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.hero-price-list {
+    display: grid;
+    gap: 14px;
+    margin-top: 20px;
+}
+
+.hero-price-item {
+    padding: 16px 18px;
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.82);
+    border: 1px solid #d6ebdb;
+}
+
+.hero-price-label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #6b7f73;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+}
+
+.hero-price-item strong {
+    font-size: 28px;
+    line-height: 1.1;
+    color: #163022;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+}
+
+.hero-note {
+    margin: 16px 0 0;
+    font-size: 13px;
+    line-height: 1.7;
+    color: #6b7f73;
+}
+
+.pro-section {
+    padding: 24px;
+}
+
+.section-head {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 18px;
+}
+
+.pro-section h2 {
+    font-size: 30px;
+    line-height: 1.15;
+}
+
+.section-head p {
+    max-width: 360px;
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.7;
+    color: #5d7567;
+}
+
+.compare-shell {
+    overflow: auto;
+    border: 1px solid #e3efe7;
+    border-radius: 24px;
+}
+
+.compare-table {
+    width: 100%;
+    min-width: 720px;
+    border-collapse: collapse;
+    background: #ffffff;
+}
+
+.compare-table th,
+.compare-table td {
+    padding: 16px 18px;
+    border-bottom: 1px solid #edf4ef;
+    text-align: left;
+    vertical-align: middle;
+}
+
+.compare-table thead th {
+    background: #f7fcf8;
+    color: #6b7f73;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+}
+
+.compare-table tbody tr:nth-child(even) {
+    background: #fbfefb;
+}
+
+.feature-name {
+    font-size: 14px;
+    font-weight: 700;
+    color: #163022;
+}
+
+.cmp-icon,
+.cmp-text {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 36px;
+    min-height: 36px;
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 800;
+}
+
+.cmp-icon.is-check {
+    background: #ecfdf3;
+    color: #16a34a;
+}
+
+.cmp-icon.is-cross {
+    background: #fef2f2;
+    color: #dc2626;
+}
+
+.cmp-text {
+    justify-content: flex-start;
+    min-width: auto;
+    min-height: auto;
+    border-radius: 0;
+    color: #163022;
+}
+
+.plan-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.plan-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 18px;
+    padding: 22px;
+    border-radius: 24px;
+    border: 1px solid #dcebe0;
+    background: linear-gradient(180deg, #ffffff, #f7fcf8);
+    box-shadow: 0 12px 24px rgba(22, 48, 34, 0.04);
+}
+
+.plan-card-highlight {
+    border-color: #bce8c8;
+    background: linear-gradient(180deg, #f5fff7, #edf9f0);
+}
+
+.plan-card-top h3 {
+    margin: 14px 0 8px;
+    font-size: 30px;
+    line-height: 1.1;
+    font-weight: 800;
+    color: #163022;
+    letter-spacing: -0.03em;
+}
+
+.plan-card-top p {
+    margin: 0;
+    font-size: 14px;
+    color: #5d7567;
+}
+
+.plan-chip {
+    display: inline-flex;
+    align-items: center;
+    min-height: 30px;
+    padding: 0 12px;
+    border-radius: 999px;
+    background: #f2f8f3;
+    border: 1px solid #deece1;
+    color: #3d5a48;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.plan-chip-highlight {
+    background: #ddf8e4;
+    border-color: #b7ebc4;
+    color: #15803d;
+}
+
+.upgrade-btn {
+    width: 100%;
+    border: none;
+    border-radius: 18px;
+    min-height: 52px;
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+    color: #ffffff;
+    font-size: 15px;
+    font-weight: 800;
+    cursor: pointer;
+    box-shadow: 0 16px 28px rgba(34, 197, 94, 0.22);
+    transition: transform .18s ease, box-shadow .18s ease, filter .18s ease;
+}
+
+.upgrade-btn:hover {
+    transform: translateY(-1px);
+    filter: brightness(1.02);
+    box-shadow: 0 18px 30px rgba(34, 197, 94, 0.28);
+}
+
+@media (max-width: 900px) {
+    .pro-hero,
+    .plan-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .section-head {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+}
+
+@media (max-width: 640px) {
+    .pro-page {
+        gap: 14px;
+    }
+
+    .pro-hero,
+    .pro-section {
+        padding: 18px;
         border-radius: 22px;
-        background: #fff;
-        border: 1px solid #e5e7eb;
-        box-shadow: 0 10px 26px rgba(15, 23, 42, .05);
-    }
-    .premium-compare { padding: 18px; }
-    .section-head h2 { margin: 0; font-size: 24px; font-weight: 800; color: #0f172a; }
-    .section-head p { margin: 4px 0 0; color: #64748b; font-size: 14px; }
-    .compare-wrap { margin-top: 14px; overflow: auto; }
-    .compare-table { width: 100%; border-collapse: collapse; min-width: 680px; }
-    .compare-table th, .compare-table td { padding: 14px 12px; border-bottom: 1px solid #eef2f7; text-align: left; }
-    .compare-table th { font-size: 12px; color: #64748b; text-transform: uppercase; letter-spacing: .06em; }
-    .compare-table td { font-size: 14px; color: #0f172a; }
-    .badge { border-radius: 999px; padding: 5px 10px; font-size: 12px; font-weight: 700; }
-    .badge.yes { background: #dcfce7; color: #166534; }
-    .badge.no { background: #f1f5f9; color: #475569; }
-
-    .premium-proof { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 12px; }
-    .proof-card { padding: 18px; }
-    .proof-card.dark { background: linear-gradient(135deg, #0f172a 0%, #1f2937 100%); color: #e2e8f0; border-color: #334155; }
-    .proof-card h3 { margin: 0 0 10px; font-size: 18px; font-weight: 800; color: inherit; }
-    .proof-card ul { margin: 0; padding-left: 18px; display: grid; gap: 8px; color: #475569; }
-    .proof-card.dark ul { color: #cbd5e1; }
-
-    @media (max-width: 900px) {
-        .premium-hero h1 { font-size: 28px; }
-        .hero-prices, .premium-proof { grid-template-columns: 1fr; }
-    }
-    @media (max-width: 640px) {
-        .premium-page { gap: 12px; }
-        .premium-hero { padding: 18px; border-radius: 20px; }
-        .premium-hero h1 { font-size: 24px; }
-        .section-head h2 { font-size: 20px; }
     }
 
-    .dark .premium-compare, .dark .proof-card {
-        background: #111827;
-        border-color: #334155;
-        box-shadow: 0 14px 30px rgba(0, 0, 0, .35);
+    .pro-hero h1,
+    .pro-section h2 {
+        font-size: 24px;
     }
-    .dark .section-head h2, .dark .compare-table td { color: #f8fafc; }
-    .dark .section-head p, .dark .compare-table th { color: #94a3b8; }
-    .dark .compare-table th, .dark .compare-table td { border-bottom-color: #273449; }
-    .dark .badge.no { background: #1e293b; color: #cbd5e1; }
-    .dark .proof-card ul { color: #cbd5e1; }
+
+    .hero-price-item strong,
+    .plan-card-top h3 {
+        font-size: 24px;
+    }
+}
 </style>
 @endsection

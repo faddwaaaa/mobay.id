@@ -240,7 +240,7 @@
     <div style="display:flex; justify-content:center; align-items:center; margin-bottom:20px; background:linear-gradient(145deg,#ffffff,#f8fbff); padding:20px; border-radius:24px; box-shadow:0 15px 35px rgba(0,102,204,0.15); border:1px solid #e6f0ff; flex:1; position:relative;">
         {{-- Icon Payou di tengah QR poster --}}
         <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:60px; height:60px; background:#ffffff; border-radius:18px; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 10px rgba(0,102,204,0.14); border:7px solid #ffffff; z-index:10; pointer-events:none; overflow:hidden;">
-            <img src="{{ asset('img/icon.png') }}" alt="Payou.id" style="width:100%; height:100%; object-fit:cover; display:block; border-radius:11px;" onerror="this.parentElement.style.display='none';">
+            <img id="poster-center-icon" src="{{ asset('img/icon.png') }}" alt="Payou.id" style="width:100%; height:100%; object-fit:cover; display:block; border-radius:11px;" onerror="this.parentElement.style.display='none';">
         </div>
         <div id="poster-qrcode" style="display:flex; justify-content:center; align-items:center;"></div>
     </div>
@@ -329,6 +329,7 @@ function buildShareCaption() {
 async function buildPosterImageUrl() {
     const posterDesign = document.getElementById('qr-poster-design');
     const posterQrContainer = document.getElementById('poster-qrcode');
+    const posterCenterIcon = document.getElementById('poster-center-icon');
 
     posterQrContainer.innerHTML = '';
     document.getElementById('poster-watermark').textContent = '@' + currentUsername;
@@ -342,6 +343,7 @@ async function buildPosterImageUrl() {
     });
 
     await new Promise(resolve => setTimeout(resolve, 450));
+    await ensurePosterIconReady(posterCenterIcon);
 
     const canvas = await html2canvas(posterDesign, {
         scale: 2, backgroundColor: '#ffffff',
@@ -360,6 +362,27 @@ async function buildPosterImageUrl() {
             URL.revokeObjectURL(imageUrl);
         },
     };
+}
+
+async function ensurePosterIconReady(img) {
+    if (!img || !img.getAttribute('src')) {
+        return;
+    }
+
+    if (img.complete && img.naturalWidth > 0) {
+        return;
+    }
+
+    await new Promise((resolve) => {
+        const done = () => {
+            img.removeEventListener('load', done);
+            img.removeEventListener('error', done);
+            resolve();
+        };
+
+        img.addEventListener('load', done, { once: true });
+        img.addEventListener('error', done, { once: true });
+    });
 }
 
 function getShareFallbackMessage() {
