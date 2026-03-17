@@ -226,6 +226,17 @@
             background: #f0fdf4; border: 1.5px solid #bbf7d0;
             border-radius: 8px; font-size: 14px; color: #15803d; font-weight: 700;
         }
+        .address-wrap { position: relative; }
+        .address-helper {
+            margin-top: 8px;
+            padding: 10px 12px;
+            border-radius: 10px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            font-size: 13px;
+            color: #64748b;
+            line-height: 1.5;
+        }
 
         /* ====== ONGKIR ====== */
         .ongkir-section { margin-top: 18px; }
@@ -488,9 +499,16 @@
 
             <div class="form-group">
                 <label>Alamat Lengkap <span class="req">*</span></label>
-                <textarea name="buyer_address"
-                          placeholder="Nama jalan, nomor rumah, RT/RW, desa/kelurahan..."
-                          required></textarea>
+                <div class="address-wrap">
+                    <textarea name="buyer_address"
+                              id="buyerAddress"
+                              placeholder="Nama jalan, nomor rumah, RT/RW, lalu ketik kelurahan/kecamatan di bagian akhir untuk melihat rekomendasi..."
+                              required></textarea>
+                    <div class="city-dd" id="addressDropdown"></div>
+                </div>
+                <div class="address-helper">
+                    Ketik detail alamat dulu, lalu isi nama kelurahan atau kecamatan di bagian akhir untuk memilih rekomendasi area.
+                </div>
             </div>
 
             <div class="form-group">
@@ -717,7 +735,10 @@ const cityBadge     = document.getElementById('cityBadge');
 const cityBadgeText = document.getElementById('cityBadgeText');
 const destVillageCodeEl = document.getElementById('destVillageCode');
 const destLabelEl       = document.getElementById('destLabel');
+const buyerAddressEl    = document.getElementById('buyerAddress');
+const addressDropdown   = document.getElementById('addressDropdown');
 let cityTimer = null;
+let addressTimer = null;
 
 if (citySearch) {
     citySearch.addEventListener('input', function () {
@@ -737,6 +758,26 @@ if (citySearch) {
     document.addEventListener('click', (e) => {
         if (!citySearch.contains(e.target) && !cityDropdown.contains(e.target))
             cityDropdown.classList.remove('show');
+    });
+}
+
+if (buyerAddressEl && addressDropdown) {
+    buyerAddressEl.addEventListener('input', function () {
+        const q = extractAddressSearchTerm(this.value);
+        clearTimeout(addressTimer);
+        if (q.length < 2) {
+            addressDropdown.classList.remove('show');
+            return;
+        }
+        addressDropdown.innerHTML = '<div class="city-item" style="color:#9ca3af">Mencari rekomendasi area...</div>';
+        addressDropdown.classList.add('show');
+        addressTimer = setTimeout(() => searchAddressSuggestion(q), 300);
+    });
+
+    document.addEventListener('click', (e) => {
+        if (!buyerAddressEl.contains(e.target) && !addressDropdown.contains(e.target)) {
+            addressDropdown.classList.remove('show');
+        }
     });
 }
 
@@ -763,7 +804,7 @@ async function searchCity(q) {
 }
 
 function selectCity(v) {
-    const label = `${v.village_name||''}, ${v.district_name||''}, ${v.city_name||}`.replace(/\s+,/g,',').replace(/^,\s*/,'');
+    const label = `${v.village_name || ''}, ${v.district_name || ''}, ${v.city_name || ''}`.replace(/\s+,/g,',').replace(/^,\s*/,'');
     citySearch.value = label;
     destinationArea  = v;
     if (destVillageCodeEl) destVillageCodeEl.value = v.village_code || '';
@@ -774,6 +815,66 @@ function selectCity(v) {
     if (!SHIPPING_ENABLED) return;
     if (!ORIGIN_AREA_ID) { showOngkirError('Penjual belum mengatur area asal pengiriman.'); return; }
     loadOngkir(ORIGIN_AREA_ID, v.village_code, WEIGHT_GRAM * currentQty);
+}
+
+function extractAddressSearchTerm(value) {
+    return String(value || '')
+        .split(/\n|,/)
+        .map(part => part.trim())
+        .filter(Boolean)
+        .pop() || '';
+}
+
+async function searchAddressSuggestion(q) {
+    try {
+        const res = await fetch('/api/ongkir/cities?q=' + encodeURIComponent(q));
+        const data = await res.json();
+        addressDropdown.innerHTML = '';
+        if (!Array.isArray(data) || !data.length) {
+            addressDropdown.innerHTML = '<div class="city-item" style="color:#9ca3af">Rekomendasi area tidak ditemukan</div>';
+            return;
+        }
+        data.forEach((v) => {
+            const el = document.createElement('div');
+            el.className = 'city-item';
+            el.innerHTML = `<div class="city-main">${v.village_name || '-'}</div>
+                            <div class="city-sub">${v.district_name || ''}, ${v.city_name || ''}, ${v.province || ''}</div>`;
+            el.addEventListener('click', () => applyAddressSuggestion(v));
+            addressDropdown.appendChild(el);
+        });
+    } catch (e) {
+        addressDropdown.innerHTML = '<div class="city-item" style="color:#dc2626">Gagal memuat rekomendasi area</div>';
+    }
+}
+
+function applyAddressSuggestion(v) {
+    if (!buyerAddressEl) return;
+    const areaLabel = `${v.village_name || ''}, ${v.district_name || ''}, ${v.city_name || ''}`
+        .replace(/\s+,/g, ',')
+        .replace(/^,\s*/, '')
+        .trim();
+    const current = buyerAddressEl.value.replace(/\s+$/g, '');
+    const lastSeparator = Math.max(current.lastIndexOf(','), current.lastIndexOf('\n'));
+    let nextValue = areaLabel;
+
+    if (current) {
+        if (current.includes(areaLabel)) {
+            nextValue = current;
+        } else if (lastSeparator >= 0) {
+            const prefix = current.slice(0, lastSeparator).trim().replace(/[,\s]+$/g, '');
+            nextValue = prefix ? `${prefix}, ${areaLabel}` : areaLabel;
+        } else {
+            nextValue = `${current}, ${areaLabel}`;
+        }
+    }
+
+    buyerAddressEl.value = nextValue;
+    addressDropdown.classList.remove('show');
+    if (SHIPPING_ENABLED && citySearch && typeof selectCity === 'function') {
+        selectCity(v);
+    }
+    buyerAddressEl.focus();
+    buyerAddressEl.setSelectionRange(nextValue.length, nextValue.length);
 }
 
 async function loadOngkir(originAreaId, destinationAreaId, weightGram) {

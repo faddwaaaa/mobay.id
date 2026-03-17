@@ -38,6 +38,19 @@ class PageController extends Controller
             'position' => (Page::where('user_id', Auth::id())->max('position') ?? 0) + 1,
         ]);
 
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Halaman berhasil dibuat!',
+                'page' => [
+                    'id' => $page->id,
+                    'title' => $page->title,
+                    'slug' => $page->slug,
+                ],
+                'redirect_url' => route('links.index', ['page' => $page->id]),
+            ]);
+        }
+
         return redirect()->route('links.index', [
             'page' => $page->id
         ])->with('success', 'Halaman berhasil dibuat!');
@@ -101,6 +114,13 @@ class PageController extends Controller
         }
 
         $page->delete();
+
+        if (request()->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Halaman berhasil dihapus!',
+            ]);
+        }
 
         return redirect()->route('links.index')->with('success', 'Halaman berhasil dihapus!');
     }

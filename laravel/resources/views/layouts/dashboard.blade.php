@@ -127,7 +127,7 @@ html, body { margin: 0; padding: 0; min-height: 100vh; }
 }
 
 .s-premium-wrap {
-    margin-top: 12px;
+    margin-top: 10px;
 }
 
 .s-premium-btn,
@@ -146,16 +146,26 @@ html, body { margin: 0; padding: 0; min-height: 100vh; }
 }
 
 .s-premium-btn {
-    border: 1px solid #86efac;
-    background: #f0fdf4;
+    gap: 5px;
+    min-height: 24px;
+    border-radius: 0;
+    font-size: 11px;
+    font-weight: 700;
+    border: none;
+    background: transparent;
     color: #15803d;
-    box-shadow: inset 0 1px 0 rgba(255,255,255,.85);
+    box-shadow: none;
 }
 
 .s-premium-btn:hover {
-    border-color: #4ade80;
-    background: #dcfce7;
+    border-color: transparent;
+    background: transparent;
     color: #166534;
+    transform: translateY(-1px);
+}
+
+.s-premium-btn i {
+    font-size: 10px;
 }
 
 .s-premium-badge {
