@@ -83,4 +83,32 @@ class NotificationController extends Controller
 
         return response()->json(['success' => true]);
     }
+
+    public function page(Request $request)
+{
+    $userId = Auth::id();
+    $perPage = 15;
+ 
+    $query = Notification::forUser($userId)
+        ->orderByDesc('created_at');
+ 
+    // Search
+    if ($q = $request->input('q')) {
+        $query->where(function ($sub) use ($q) {
+            $sub->where('title', 'like', "%{$q}%")
+                ->orWhere('message', 'like', "%{$q}%");
+        });
+    }
+ 
+    // Filter tipe
+    if ($type = $request->input('type')) {
+        $query->where('type', $type);
+    }
+ 
+    $notifications = $query->paginate($perPage)->withQueryString();
+    $unreadCount   = Notification::forUser($userId)->unread()->count();
+ 
+    return view('notifications.index', compact('notifications', 'unreadCount'));
+}
+
 }

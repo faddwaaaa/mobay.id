@@ -20,6 +20,14 @@
             <p>Ups, belum ada notifikasi</p>
         </div>
     </div>
+
+    {{-- Footer: Lihat Semua --}}
+    <div class="notif-panel-footer">
+        <a href="{{ route('notifications.index') }}" class="notif-view-all-btn">
+            <i class="fas fa-list"></i> Lihat Semua Notifikasi
+        </a>
+    </div>
+
 </div>
 <div class="notif-backdrop" id="notifBackdrop"></div>
 
@@ -195,6 +203,39 @@
     font-family: var(--nav-font, 'Plus Jakarta Sans', sans-serif);
     font-size: 13.5px; margin: 0; color: #a0aec0;
 }
+
+
+/* ---------- Panel Footer ---------- */
+.notif-panel-footer {
+    padding: 10px 14px;
+    border-top: 1px solid #eff2f7;
+    flex-shrink: 0;
+}
+
+.notif-view-all-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    width: 100%;
+    padding: 9px;
+    border-radius: 9px;
+    background: #f0f5ff;
+    color: var(--accent, #2356e8);
+    font-family: var(--nav-font, 'Plus Jakarta Sans', sans-serif);
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background .15s;
+}
+
+.notif-view-all-btn:hover {
+    background: #e1ebff;
+}
+
+body.dark .notif-panel-footer { border-color: #2d3748; }
+body.dark .notif-view-all-btn { background: #1a2540; color: #7ea4f4; }
+body.dark .notif-view-all-btn:hover { background: #1e2d50; }
 
 /* ---------- Notif Item ---------- */
 .notif-item {

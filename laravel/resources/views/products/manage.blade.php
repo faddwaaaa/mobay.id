@@ -379,9 +379,7 @@ tbody tr:hover { background: #f1f5f9; }
         Menampilkan {{ $products->firstItem() }}–{{ $products->lastItem() }} dari {{ $products->total() }} produk
     </p>
     @endif
-
-<<<<<<< HEAD
-</div>{{-- /panel-produk --}}
+</div>
 
 {{-- ══════════════════════════════
      PANEL: STATISTIK

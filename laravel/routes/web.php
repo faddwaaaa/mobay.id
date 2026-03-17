@@ -273,7 +273,9 @@ Route::middleware('auth')->group(function () {
         return view('qr-code', ['userSlug' => $user->username, 'totalScans' => 0, 'todayScans' => 0]);
     })->name('qrcode.show');
 
-    Route::get('/notifications', [App\Http\Controllers\NotificationController::class, 'index'])->name('notifications.index');
+
+    Route::get('/notifications/all',[App\Http\Controllers\NotificationController::class, 'page'])->name('notifications.index');
+    Route::get('/notifications', [App\Http\Controllers\NotificationController::class, 'index']);
     Route::get('/notifications/unread-count', [App\Http\Controllers\NotificationController::class, 'unreadCount'])->name('notifications.unread');
     Route::post('/notifications/mark-all', [App\Http\Controllers\NotificationController::class, 'markAllRead'])->name('notifications.markAll');
     Route::post('/notifications/{notification}/read', [App\Http\Controllers\NotificationController::class, 'markRead'])->name('notifications.read');
