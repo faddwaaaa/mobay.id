@@ -1,15 +1,12 @@
 @extends('layouts.dashboard')
 
-@section('title', 'Tampilan')
+@section('title', 'Tampilan | Payou.id')
 
 @push('styles')
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 * { box-sizing: border-box; }
 
-/* ═══════════════════════════════════════════
-   LAYOUT UTAMA
-═══════════════════════════════════════════ */
 .ap-layout {
     display: grid;
     grid-template-columns: 1fr 360px;
@@ -26,7 +23,6 @@
 .ap-editor h1 { font-size: 22px; font-weight: 700; color: #111827; margin: 0 0 4px; }
 .ap-subtitle  { font-size: 13.5px; color: #9ca3af; margin: 0 0 28px; }
 
-/* ─── Panel Pratinjau ─── */
 .ap-preview {
     position: sticky; top: 0; height: 100vh;
     background: #f8fafc; border-left: 1px solid #e5e7eb;
@@ -34,126 +30,13 @@
     justify-content: center; padding: 24px 16px; gap: 14px;
 }
 .ap-preview-label { font-size: 11px; font-weight: 700; color: #94a3b8; letter-spacing: 1px; text-transform: uppercase; }
-.phone-outer {
-    position: relative;
-    flex-shrink: 0;
-    width: 285px;
-}
-.phone-outer::after {
-    content: '';
-    position: absolute;
-    right: -5px;
-    top: 100px;
-    width: 4px;
-    height: 60px;
-    background: #d1d5db;
-    border-radius: 0 3px 3px 0;
-    box-shadow: 0 -44px 0 0 #d1d5db, 0 70px 0 0 #d1d5db;
-}
-.phone-outer::before {
-    content: '';
-    position: absolute;
-    left: -5px;
-    top: 120px;
-    width: 4px;
-    height: 40px;
-    background: #d1d5db;
-    border-radius: 3px 0 0 3px;
-    box-shadow: 0 -52px 0 0 #d1d5db, 0 52px 0 0 #d1d5db;
-}
-.phone-wrap {
-    width: 285px;
-    background: #1a1a1a;
-    border-radius: 44px;
-    padding: 10px;
-    box-shadow:
-        0 0 0 1px #111,
-        inset 0 0 0 1px #333,
-        0 30px 80px rgba(0,0,0,0.4);
-    position: relative;
-    overflow: hidden;
-}
-.phone-inner {
-    background: #fff;
-    border-radius: 36px;
-    overflow: hidden;
-    position: relative;
-}
-.phone-status-bar {
-    position: relative;
-    height: 44px;
-    background: #fff;
-    display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
-    padding: 0 22px 8px;
-    z-index: 10;
-    border-radius: 36px 36px 0 0;
-}
-.phone-notch {
-    position: absolute;
-    top: 10px; left: 50%; transform: translateX(-50%);
-    width: 100px; height: 26px;
-    background: #111;
-    border-radius: 20px;
-    z-index: 11;
-}
-.phone-status-time {
-    font-size: 12px; font-weight: 700; color: #111; letter-spacing: -0.3px;
-}
-.phone-status-icons {
-    display: flex; align-items: center; gap: 4px;
-}
-.phone-screen {
-    width: 100%;
-    height: 540px;
-    overflow: hidden;
-    background: #fff;
-    position: relative;
-}
-.phone-screen iframe {
-    width: 375px; height: 700px; border: none;
-    transform: scale(0.76); transform-origin: top left;
-    pointer-events: auto;
-}
-.phone-home-bar {
-    height: 28px;
-    background: #fff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 0 0 36px 36px;
-}
-.phone-home-bar::after {
-    content: '';
-    width: 110px; height: 5px;
-    background: #111;
-    border-radius: 3px;
-}
-.ap-preview-url {
-    font-size: 12px; color: #9ca3af; background: #fff; border: 1px solid #e5e7eb;
-    border-radius: 20px; padding: 6px 14px; display: flex; align-items: center; gap: 5px;
-}
-.ap-preview-url strong { color: #374151; font-weight: 600; }
-.btn-refresh-preview {
-    font-size: 11.5px; color: #9ca3af; background: none; border: none; cursor: pointer;
-    display: flex; align-items: center; gap: 4px; padding: 5px 10px; border-radius: 6px;
-    transition: all 0.15s; font-family: 'Plus Jakarta Sans', sans-serif;
-}
-.btn-refresh-preview:hover { background: #f1f5f9; color: #475569; }
 
-/* ═══════════════════════════════════════════
-   KARTU SEKSI
-═══════════════════════════════════════════ */
 .sec-card { background: #fff; border: 1px solid #e5e7eb; border-radius: 16px; padding: 22px 24px; margin-bottom: 16px; }
 .sec-header { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; }
 .sec-icon { width: 34px; height: 34px; background: #eff6ff; border-radius: 9px; display: flex; align-items: center; justify-content: center; color: #3b82f6; flex-shrink: 0; }
 .sec-title { font-size: 14px; font-weight: 700; color: #111827; margin: 0; }
 .sec-desc  { font-size: 12px; color: #9ca3af; margin: 1px 0 0; }
 
-/* ═══════════════════════════════════════════
-   KARTU PROFIL
-═══════════════════════════════════════════ */
 .pc-banner-wrap {
     position: relative; width: 100%; height: 130px;
     background: #f3f4f6; border-radius: 12px; overflow: hidden;
@@ -173,15 +56,17 @@
 .pc-banner-wrap.has-img .pc-banner-hint { display: none; }
 .pc-banner-wrap.has-img:hover .pc-banner-overlay { display: flex; }
 .pc-banner-size { font-size: 11px; color: #9ca3af; margin-top: 6px; display: block; text-align: center; }
+
 .pc-banner-del {
     position: absolute; top: 8px; right: 8px;
     width: 28px; height: 28px; border-radius: 7px;
     background: rgba(220,38,38,0.85); color: #fff;
     border: none; cursor: pointer; z-index: 3;
     display: none; align-items: center; justify-content: center;
-    transition: background 0.15s; padding: 0;
+    transition: background 0.18s, transform 0.18s, box-shadow 0.18s; padding: 0;
 }
-.pc-banner-del:hover { background: #b91c1c; }
+.btn-del-img:hover { background: #b91c1c; }
+.pc-banner-del:active { transform: scale(0.95); box-shadow: none; }
 .pc-banner-wrap.has-img .pc-banner-del { display: flex; }
 
 .pc-about-wrap { position: relative; }
@@ -193,12 +78,6 @@
     transition: border-color 0.15s;
 }
 .pc-about-wrap textarea:focus { border-color: #3b82f6; }
-.pc-emoji-btn {
-    position: absolute; right: 9px; top: 9px;
-    background: none; border: none; font-size: 20px; cursor: pointer; padding: 2px;
-    border-radius: 6px; transition: background 0.15s;
-}
-.pc-emoji-btn:hover { background: #f3f4f6; }
 
 .pc-color-row { display: flex; align-items: center; gap: 12px; margin-top: 2px; }
 .pc-color-row label { font-size: 13px; font-weight: 600; color: #374151; white-space: nowrap; }
@@ -225,7 +104,6 @@
 }
 .sl-chip:hover  { border-color: #10b981; color: #10b981; }
 .sl-chip.active { border-color: #10b981; background: #10b981; color: #fff; }
-.sl-chip .sl-icon { font-size: 13px; }
 
 .sl-inputs { display: flex; flex-direction: column; gap: 8px; }
 .sl-input-row {
@@ -240,9 +118,6 @@
 .sl-input-remove { background: none; border: none; color: #d1d5db; cursor: pointer; padding: 2px; border-radius: 4px; transition: color 0.15s; font-size: 14px; display: flex; }
 .sl-input-remove:hover { color: #ef4444; }
 
-/* ═══════════════════════════════════════════
-   TAB LATAR BELAKANG
-═══════════════════════════════════════════ */
 .bg-tabs { display: flex; background: #f3f4f6; border-radius: 10px; padding: 3px; gap: 2px; margin-bottom: 18px; }
 .bg-tab {
     flex: 1; padding: 8px 10px; background: none; border: none; border-radius: 8px;
@@ -253,6 +128,17 @@
 .bg-tab.active { background: #fff; color: #111827; box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
 .bg-panel        { display: none; }
 .bg-panel.active { display: block; }
+
+.btn-del-img {
+    position: absolute; top: 8px; right: 8px;
+    width: 26px; height: 26px; border-radius: 6px;
+    background: rgba(220,38,38,0.85); color: #fff;
+    border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; padding: 0;
+    transition: background 0.18s; z-index: 5;
+}
+.btn-del-img:hover { background: #b91c1c; }
+.btn-del-img:active { transform: scale(0.95); box-shadow: none; }
 
 .color-row { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
 .color-row label { font-size: 13px; font-weight: 600; color: #374151; min-width: 68px; }
@@ -278,9 +164,6 @@
 .bg-upload span { font-size: 11.5px; color: #9ca3af; }
 .bg-upload-preview { width: 100%; height: 90px; border-radius: 10px; object-fit: cover; margin-top: 10px; border: 1.5px solid #e5e7eb; display: none; }
 
-/* ═══════════════════════════════════════════
-   GALERI WALLPAPER
-═══════════════════════════════════════════ */
 .wg-divider { display: flex; align-items: center; gap: 10px; margin: 16px 0 12px; }
 .wg-divider-line  { flex: 1; height: 1px; background: #e5e7eb; }
 .wg-divider-label { font-size: 11px; font-weight: 700; color: #9ca3af; letter-spacing: 0.6px; text-transform: uppercase; white-space: nowrap; }
@@ -311,9 +194,19 @@
 .wg-thumb { width: 100%; height: 100%; display: block; pointer-events: none; }
 .wg-label { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.45); color: #fff; font-size: 9px; font-weight: 700; text-align: center; padding: 3px 2px; }
 
-/* ═══════════════════════════════════════════
-   SEKSI TOMBOL
-═══════════════════════════════════════════ */
+.wg-collapse-wrap { overflow: hidden; transition: max-height 0.35s ease; max-height: 0; }
+.wg-collapse-wrap.open { max-height: 2000px; }
+.btn-wg-toggle {
+    width: 100%; display: flex; align-items: center; justify-content: center; gap: 6px;
+    padding: 9px 14px; margin-top: 10px; border: 1.5px solid #e5e7eb; border-radius: 10px;
+    background: #f9fafb; font-size: 12.5px; font-weight: 600; color: #6b7280;
+    cursor: pointer; transition: all 0.18s; font-family: 'Plus Jakarta Sans', sans-serif;
+}
+.btn-wg-toggle:hover { border-color: #93c5fd; background: #eff6ff; color: #3b82f6; }
+.btn-wg-toggle.open { border-color: #bfdbfe; color: #3b82f6; background: #eff6ff; }
+.btn-wg-toggle .wg-chevron { transition: transform 0.3s ease; flex-shrink: 0; }
+.btn-wg-toggle.open .wg-chevron { transform: rotate(180deg); }
+
 .btn-style-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 18px; }
 .btn-style-item { border: 2px solid #e5e7eb; border-radius: 10px; padding: 14px 10px; cursor: pointer; transition: all 0.18s; text-align: center; background: #fafafa; }
 .btn-style-item:hover  { border-color: #93c5fd; background: #f0f9ff; }
@@ -336,9 +229,6 @@
 .color-dot input[type="color"] { position: absolute; inset: -5px; width: calc(100% + 10px); height: calc(100% + 10px); border: none; padding: 0; cursor: pointer; opacity: 0; }
 .color-field-input { flex: 1; border: none; outline: none; font-size: 12px; font-family: 'Courier New', monospace; color: #374151; background: transparent; }
 
-/* ═══════════════════════════════════════════
-   FONT
-═══════════════════════════════════════════ */
 .font-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
 .font-item  { border: 2px solid #e5e7eb; border-radius: 11px; padding: 14px 14px 12px; cursor: pointer; transition: all 0.18s; background: #fafafa; }
 .font-item:hover  { border-color: #93c5fd; background: #f0f9ff; }
@@ -346,9 +236,17 @@
 .font-sample { font-size: 22px; font-weight: 700; color: #111827; margin-bottom: 4px; line-height: 1.2; }
 .font-name   { font-size: 11px; font-weight: 600; color: #9ca3af; }
 
-/* ═══════════════════════════════════════════
-   BILAH SIMPAN
-═══════════════════════════════════════════ */
+.bl-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+.bl-item { border: 2px solid #e5e7eb; border-radius: 12px; padding: 14px 12px 11px; cursor: pointer; transition: all 0.18s; background: #fafafa; text-align: center; }
+.bl-item:hover  { border-color: #c4b5fd; background: #faf5ff; }
+.bl-item.active { border-color: #7c3aed; background: #f5f3ff; }
+.bl-preview { height: 52px; display: flex; align-items: center; justify-content: center; margin-bottom: 8px; color: #7c3aed; }
+.bl-preview svg { width: 44px; height: 44px; }
+.bl-item:not(.active) .bl-preview { color: #9ca3af; }
+.bl-name { font-size: 12px; font-weight: 700; color: #374151; margin-bottom: 2px; }
+.bl-desc { font-size: 10.5px; color: #9ca3af; line-height: 1.3; }
+.bl-item.active .bl-name { color: #7c3aed; }
+
 .ap-save-bar {
     position: sticky; bottom: 0;
     background: rgba(255,255,255,0.96); backdrop-filter: blur(14px);
@@ -356,8 +254,6 @@
     display: flex; align-items: center; justify-content: space-between; gap: 12px;
     z-index: 50; margin: 0 -36px;
 }
-.save-bar-hint .dot { color: #f59e0b; font-weight: 700; }
-
 .save-bar-actions   { display: flex; gap: 9px; }
 .btn-reset-def { padding: 9px 18px; border: 1.5px solid #e5e7eb; border-radius: 9px; background: #fff; font-size: 13px; font-weight: 600; color: #6b7280; cursor: pointer; transition: all 0.18s; font-family: 'Plus Jakarta Sans', sans-serif; }
 .btn-reset-def:hover { border-color: #ef4444; color: #ef4444; }
@@ -369,7 +265,6 @@
 .btn-save-ap.loading .save-lbl{ display: none; }
 @keyframes sp { to { transform: rotate(360deg); } }
 
-/* Notifikasi */
 .ap-toast { position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%) translateY(16px); background: #18181b; color: #fff; padding: 10px 20px; border-radius: 50px; font-size: 13px; font-weight: 500; z-index: 9999; opacity: 0; transition: all 0.28s; white-space: nowrap; pointer-events: none; font-family: 'Plus Jakarta Sans', sans-serif; }
 .ap-toast.show    { opacity: 1; transform: translateX(-50%) translateY(0); }
 .ap-toast.success { background: #16a34a; }
@@ -381,56 +276,19 @@
     body { overflow-x: hidden; }
     .ap-layout { grid-template-columns: 1fr; overflow-x: hidden; }
     .ap-editor { padding: 20px 16px 100px; max-width: none; overflow-x: hidden; }
-    .ap-preview {
-        position: static;
-        top: auto;
-        height: auto;
-        min-height: 0;
-        border-left: none;
-        border-top: 1px solid #e5e7eb;
-        padding: 28px 16px calc(32px + env(safe-area-inset-bottom, 0px));
-        background: #f8fafc;
-        display: flex;
-        order: 2;
-    }
-    .ap-save-bar {
-        margin: 0 -16px;
-        padding: 14px 20px;
-        flex-wrap: wrap;
-    }
-    .save-bar-actions {
-        width: 100%;
-    }
-    .btn-reset-def,
-    .btn-save-ap {
-        flex: 1;
-    }
+    .ap-preview { position: static; top: auto; height: auto; min-height: 0; border-left: none; border-top: 1px solid #e5e7eb; padding: 28px 16px calc(32px + env(safe-area-inset-bottom, 0px)); background: #f8fafc; display: flex; order: 2; }
+    .ap-save-bar { margin: 0 -16px; padding: 14px 20px; flex-wrap: wrap; }
+    .save-bar-actions { width: 100%; }
+    .btn-reset-def, .btn-save-ap { flex: 1; }
 }
-
 @media (max-width: 768px) {
-    .ap-preview-phone {
-        transform: scale(0.94);
-        transform-origin: top center;
-        margin: -12px auto 0;
-    }
-    .font-grid,
-    .btn-style-grid,
-    .color-row-2 {
-        grid-template-columns: 1fr;
-    }
-    .wg-grid {
-        grid-template-columns: repeat(3, 1fr);
-    }
-    .dir-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
+    .ap-preview-phone { transform: scale(0.94); transform-origin: top center; margin: -12px auto 0; }
+    .font-grid, .btn-style-grid, .color-row-2 { grid-template-columns: 1fr; }
+    .wg-grid { grid-template-columns: repeat(3, 1fr); }
+    .dir-grid { grid-template-columns: repeat(2, 1fr); }
 }
-
 @media (max-width: 420px) {
-    .ap-preview-phone {
-        transform: scale(0.84);
-        margin: -36px auto -18px;
-    }
+    .ap-preview-phone { transform: scale(0.84); margin: -36px auto -18px; }
 }
 </style>
 @endpush
@@ -442,8 +300,17 @@
 
     {{-- ═══════════ EDITOR ═══════════ --}}
     <div class="ap-editor">
-        <h1>Tampilan</h1>
-        <p class="ap-subtitle">Kustomisasi tampilan halaman profil publik kamu</p>
+        <div style="margin-bottom:24px;">
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
+                <a href="{{ route('dashboard') }}" style="width:36px;height:36px;background:#ffffff;border:1px solid #e2e8f0;border-radius:8px;display:flex;align-items:center;justify-content:center;text-decoration:none;transition:all .2s;">
+                    <i class="fas fa-arrow-left" style="font-size:14px;color:#475569;"></i>
+                </a>
+                <div>
+                    <h1 style="margin:0;font-size:24px;font-weight:600;color:#000000;">Tampilan</h1>
+                    <p style="margin:0;font-size:14px;color:#797979;">Kustomisasi tampilan halaman profil publik kamu</p>
+                </div>
+            </div>
+        </div>
 
         {{-- ══════════ 1. KARTU PROFIL ══════════ --}}
         <div class="sec-card">
@@ -457,39 +324,34 @@
                 </div>
             </div>
 
-            {{-- Banner --}}
             <p style="font-size:12.5px;font-weight:700;color:#374151;margin-bottom:8px;">Banner</p>
-           <div class="pc-banner-wrap {{ $profile->banner_image ? 'has-img' : '' }}"
-                    id="pcBannerWrap"
-                    onclick="document.getElementById('pcBannerInput').click()">
-                    <img id="pcBannerImg" class="pc-banner-img"
-                        src="{{ $profile->banner_image ? asset('storage/'.$profile->banner_image) : '' }}"
-                        style="{{ $profile->banner_image ? 'display:block' : '' }}">
-                    <div class="pc-banner-overlay">
-                        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><circle cx="12" cy="13" r="3" stroke-width="2"/></svg>
-                        Ganti Banner
-                    </div>
-                    <div class="pc-banner-hint">
-                        <svg width="28" height="28" fill="none" stroke="#9ca3af" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                        Klik untuk mengunggah banner baru
-                    </div>
-
-                    {{-- ← TAMBAHAN: Tombol hapus banner --}}
-                    <button class="pc-banner-del" id="pcBannerDel"
-                            onclick="event.stopPropagation(); deleteBanner()"
-                            title="Hapus banner">
-                        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
-                        </svg>
-                    </button>
-
-                    <input type="file" id="pcBannerInput" accept="image/*" style="display:none" onchange="handleBannerUpload(this)">
+            <div class="pc-banner-wrap {{ $profile->banner_image ? 'has-img' : '' }}"
+                 id="pcBannerWrap"
+                 onclick="document.getElementById('pcBannerInput').click()">
+                <img id="pcBannerImg" class="pc-banner-img"
+                    src="{{ $profile->banner_image ? asset('storage/'.$profile->banner_image) : '' }}"
+                    style="{{ $profile->banner_image ? 'display:block' : '' }}">
+                <div class="pc-banner-overlay">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><circle cx="12" cy="13" r="3" stroke-width="2"/></svg>
+                    Ganti Banner
                 </div>
+                <div class="pc-banner-hint">
+                    <svg width="28" height="28" fill="none" stroke="#9ca3af" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                    Klik untuk mengunggah banner baru
+                </div>
+                <button class="pc-banner-del" id="pcBannerDel"
+                        onclick="event.stopPropagation(); deleteBanner()"
+                        title="Hapus banner">
+                    <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+                <input type="file" id="pcBannerInput" accept="image/*" style="display:none" onchange="handleBannerUpload(this)">
+            </div>
             <span class="pc-banner-size">PNG, JPG, WEBP — maks 3MB</span>
 
             <div class="ap-divider"></div>
 
-            {{-- Tentang --}}
             <p style="font-size:12.5px;font-weight:700;color:#374151;margin-bottom:8px;">Tentang Kamu</p>
             <div class="pc-about-wrap">
                 <textarea id="pcAbout"
@@ -500,7 +362,6 @@
 
             <div class="ap-divider"></div>
 
-            {{-- Warna Teks --}}
             <p style="font-size:12.5px;font-weight:700;color:#374151;margin-bottom:10px;">Warna Teks Profil</p>
             <div class="pc-color-row">
                 <label>Warna</label>
@@ -528,7 +389,6 @@
 
             <div class="ap-divider"></div>
 
-            {{-- Tautan Media Sosial --}}
             <p style="font-size:12.5px;font-weight:700;color:#374151;margin-bottom:10px;">Tautan Media Sosial</p>
             <div class="sl-chips" id="slChips"></div>
             <div class="sl-inputs" id="slInputs"></div>
@@ -622,26 +482,42 @@
                     <input type="file" id="bgImgInput" accept="image/*" style="display:none" onchange="handleBgImg(this)">
                 </div>
                 @if($profile->bg_image && !str_starts_with($profile->bg_image ?? '', 'wg_'))
-                <img src="{{ asset('storage/'.$profile->bg_image) }}" id="bgImgPreview" class="bg-upload-preview" style="display:block">
+                <div style="position:relative; width:100%; border-radius:10px; overflow:hidden; display:block;">
+                    <img src="{{ asset('storage/'.$profile->bg_image) }}" id="bgImgPreview" class="bg-upload-preview" style="display:block; margin:0;">
+                    <button id="bgImgDelBtn" onclick="deleteBgImage()" class="btn-del-img">
+                        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                </div>
                 @else
-                <img src="" id="bgImgPreview" class="bg-upload-preview">
+                <div style="position:relative; width:100%; border-radius:10px; overflow:hidden; display:block;">
+                    <img src="" id="bgImgPreview" class="bg-upload-preview" style="display:none; margin:0;">
+                    <button id="bgImgDelBtn" onclick="deleteBgImage()" class="btn-del-img" style="display:none;">
+                        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                </div>
                 @endif
 
-                <div class="wg-divider">
-                    <div class="wg-divider-line"></div>
-                    <span class="wg-divider-label">✦ Galeri Wallpaper Payou</span>
-                    <div class="wg-divider-line"></div>
-                </div>
+                <button class="btn-wg-toggle" id="btnWgToggle" onclick="toggleWgGallery()">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4-4 4 4 4-8"/></svg>
+                    <span id="btnWgLabel">✦ Lihat Galeri Wallpaper Payou</span>
+                    <svg class="wg-chevron" width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
+                </button>
 
-                <div class="wg-cats" id="wgCats">
-                    <button class="wg-cat active" onclick="filterWg(this,'all')">Semua</button>
-                    <button class="wg-cat" onclick="filterWg(this,'gradient')">Gradien</button>
-                    <button class="wg-cat" onclick="filterWg(this,'pattern')">Motif</button>
-                    <button class="wg-cat" onclick="filterWg(this,'minimal')">Minimalis</button>
-                    <button class="wg-cat" onclick="filterWg(this,'dark')">Gelap</button>
+                <div class="wg-collapse-wrap" id="wgCollapseWrap">
+                    <div class="wg-divider" style="margin-top:12px;">
+                        <div class="wg-divider-line"></div>
+                        <span class="wg-divider-label">✦ Galeri Wallpaper Payou</span>
+                        <div class="wg-divider-line"></div>
+                    </div>
+                    <div class="wg-cats" id="wgCats">
+                        <button class="wg-cat active" onclick="filterWg(this,'all')">Semua</button>
+                        <button class="wg-cat" onclick="filterWg(this,'gradient')">Gradien</button>
+                        <button class="wg-cat" onclick="filterWg(this,'pattern')">Motif</button>
+                        <button class="wg-cat" onclick="filterWg(this,'minimal')">Minimalis</button>
+                        <button class="wg-cat" onclick="filterWg(this,'dark')">Gelap</button>
+                    </div>
+                    <div class="wg-grid" id="wgGrid"></div>
                 </div>
-
-                <div class="wg-grid" id="wgGrid"></div>
             </div>
         </div>
 
@@ -760,6 +636,64 @@
             </div>
         </div>
 
+        {{-- ══════════ 5. TAMPILAN BLOK ══════════ --}}
+        <div class="sec-card">
+            <div class="sec-header">
+                <div class="sec-icon" style="background:#f5f3ff; color:#7c3aed;">
+                    <svg width="17" height="17" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5" stroke-width="2"/><rect x="14" y="3" width="7" height="7" rx="1.5" stroke-width="2"/><rect x="3" y="14" width="7" height="7" rx="1.5" stroke-width="2"/><rect x="14" y="14" width="7" height="7" rx="1.5" stroke-width="2"/></svg>
+                </div>
+                <div>
+                    <p class="sec-title">Tampilan Blok</p>
+                    <p class="sec-desc">Pilih cara produk dan konten ditampilkan di profilmu</p>
+                </div>
+            </div>
+
+            <div class="bl-grid">
+                @php
+                $currentLayout = $profile->block_layout ?? 'default';
+                $layouts = [
+                    [
+                        'id'   => 'default',
+                        'name' => 'Default',
+                        'desc' => 'Satu kolom, foto besar di atas',
+                        'svg'  => '<rect x="4" y="3" width="16" height="11" rx="1.5" fill="currentColor" opacity=".28"/><rect x="4" y="16" width="10" height="2" rx="1" fill="currentColor" opacity=".35"/><rect x="4" y="20" width="7" height="1.5" rx=".75" fill="currentColor" opacity=".2"/>',
+                    ],
+                    [
+                        'id'   => 'grid',
+                        'name' => 'Grid',
+                        'desc' => '2 kolom berdampingan',
+                        'svg'  => '<rect x="3" y="4" width="8" height="8" rx="1.5" fill="currentColor" opacity=".25"/><rect x="13" y="4" width="8" height="8" rx="1.5" fill="currentColor" opacity=".25"/><rect x="3" y="14" width="8" height="8" rx="1.5" fill="currentColor" opacity=".18"/><rect x="13" y="14" width="8" height="8" rx="1.5" fill="currentColor" opacity=".18"/>',
+                    ],
+                    [
+                        'id'   => 'compact',
+                        'name' => 'Compact',
+                        'desc' => 'Foto kecil kiri, nama & harga kanan',
+                        'svg'  => '<rect x="3" y="4" width="6" height="6" rx="1" fill="currentColor" opacity=".3"/><rect x="11" y="5" width="8" height="2" rx="1" fill="currentColor" opacity=".35"/><rect x="17" y="4" width="4" height="6" rx="1" fill="currentColor" opacity=".2"/><rect x="3" y="12" width="6" height="6" rx="1" fill="currentColor" opacity=".25"/><rect x="11" y="13" width="8" height="2" rx="1" fill="currentColor" opacity=".3"/><rect x="17" y="12" width="4" height="6" rx="1" fill="currentColor" opacity=".18"/>',
+                    ],
+                    [
+                        'id'   => 'highlight',
+                        'name' => 'Highlight',
+                        'desc' => 'Kartu dengan aksen warna & bayangan',
+                        'svg'  => '<rect x="3" y="3" width="18" height="8" rx="2" fill="currentColor" opacity=".22"/><rect x="3" y="3" width="4" height="8" rx="1.5" fill="currentColor" opacity=".4"/><rect x="9" y="4.5" width="9" height="2" rx="1" fill="currentColor" opacity=".38"/><rect x="9" y="8" width="6" height="1.5" rx=".75" fill="currentColor" opacity=".22"/><rect x="3" y="13" width="18" height="8" rx="2" fill="currentColor" opacity=".18"/><rect x="3" y="13" width="4" height="8" rx="1.5" fill="currentColor" opacity=".32"/><rect x="9" y="14.5" width="9" height="2" rx="1" fill="currentColor" opacity=".3"/><rect x="9" y="18" width="6" height="1.5" rx=".75" fill="currentColor" opacity=".18"/>',
+                    ],
+                ];
+                @endphp
+                @foreach($layouts as $l)
+                <div class="bl-item {{ $currentLayout === $l['id'] ? 'active' : '' }}"
+                     data-layout="{{ $l['id'] }}"
+                     onclick="selectBlockLayout(this, '{{ $l['id'] }}')">
+                    <div class="bl-preview">
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            {!! $l['svg'] !!}
+                        </svg>
+                    </div>
+                    <div class="bl-name">{{ $l['name'] }}</div>
+                    <div class="bl-desc">{{ $l['desc'] }}</div>
+                </div>
+                @endforeach
+            </div>
+        </div>
+
         {{-- ══════════ BILAH SIMPAN ══════════ --}}
         <div class="ap-save-bar">
             <div class="save-bar-actions" style="display:flex;gap:9px;">
@@ -804,11 +738,6 @@
                 </div>
             </div>
         </div>
-
-        <button class="btn-refresh-preview" onclick="reloadPreview()">
-            <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-            Refresh Preview
-        </button>
     </div>
 
 </div>
@@ -821,7 +750,6 @@
 const CSRF = document.querySelector('meta[name="csrf-token"]')?.content;
 const profileData = @json($profile);
 
-// ─── DATA AWAL ───
 let st = {
     banner_image:          profileData.banner_image          ?? null,
     about:                 profileData.about                 ?? '',
@@ -844,28 +772,14 @@ let st = {
     btn_color:             profileData.btn_color             ?? '#3b82f6',
     btn_text_color:        profileData.btn_text_color        ?? '#ffffff',
     font_family:           profileData.font_family           ?? 'Plus Jakarta Sans',
+    block_layout:          profileData.block_layout          ?? 'default',
 };
 
 let isDirty = false;
 let toastTmr;
 
-function markDirty() {
-    isDirty = true;
-    updatePreview();
-}
+function markDirty() { isDirty = true; updatePreview(); }
 
-function showSaveStatus(state) {
-    const el = document.getElementById('saveStatus');
-    if (!el) return;
-    if (state === 'mengetik')       el.innerHTML = '<span style="color:#f59e0b">● Belum tersimpan</span>';
-    else if (state === 'menyimpan') el.innerHTML = '<span style="color:#6b7280">⏳ Menyimpan...</span>';
-    else if (state === 'tersimpan') el.innerHTML = '<span style="color:#10b981">✓ Tersimpan</span>';
-    else                            el.innerHTML = '';
-}
-
-// ═══════════════════════════════════════════
-// GALERI WALLPAPER
-// ═══════════════════════════════════════════
 const WALLPAPERS = [
     { id:'wg_aurora',    cat:'gradient', label:'Aurora',        cssValue:'linear-gradient(135deg,#667eea 0%,#764ba2 50%,#f093fb 100%)' },
     { id:'wg_peach',     cat:'gradient', label:'Persik',        cssValue:'linear-gradient(135deg,#f6d365,#fda085)' },
@@ -948,9 +862,6 @@ function selectWallpaper(wgId) {
 }
 renderWgGrid('all');
 
-// ═══════════════════════════════════════════
-// KARTU PROFIL
-// ═══════════════════════════════════════════
 async function handleBannerUpload(input) {
     const file = input.files[0];
     if (!file) return;
@@ -969,41 +880,26 @@ async function handleBannerUpload(input) {
     try {
         const res  = await fetch('{{ route("dashboard.appearance.uploadBanner") }}', { method:'POST', body:fd });
         const data = await res.json();
-        if (data.success) {
-            st.banner_image = data.path;
-            markDirty();
-            showToast('Banner berhasil diunggah! 🖼️', 'success');
-        } else {
-            showToast(data.message ?? 'Gagal mengunggah banner.', 'error');
-        }
+        if (data.success) { st.banner_image = data.path; markDirty(); showToast('Banner berhasil diunggah! 🖼️', 'success'); }
+        else showToast(data.message ?? 'Gagal mengunggah banner.', 'error');
     } catch(e) { showToast('Gagal mengunggah banner.', 'error'); }
 }
 
 async function deleteBanner() {
     if (!confirm('Hapus banner? Tindakan ini tidak bisa dibatalkan.')) return;
     try {
-        const res  = await fetch('{{ route("dashboard.appearance.deleteBanner") }}', {
-            method:  'POST',
-            headers: { 'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json' },
-        });
+        const res  = await fetch('{{ route("dashboard.appearance.deleteBanner") }}', { method:'POST', headers: { 'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json' } });
         const data = await res.json();
         if (data.success) {
-            // Reset UI
             const img  = document.getElementById('pcBannerImg');
             const wrap = document.getElementById('pcBannerWrap');
-            img.src = '';
-            img.style.display = 'none';
+            img.src = ''; img.style.display = 'none';
             wrap.classList.remove('has-img');
-            // Reset state
             st.banner_image = null;
             markDirty();
             showToast('Banner berhasil dihapus.', 'success');
-        } else {
-            showToast(data.message ?? 'Gagal menghapus banner.', 'error');
-        }
-    } catch(e) {
-        showToast('Gagal menghapus banner.', 'error');
-    }
+        } else showToast(data.message ?? 'Gagal menghapus banner.', 'error');
+    } catch(e) { showToast('Gagal menghapus banner.', 'error'); }
 }
 
 function onAboutIn(v) { st.about = v; markDirty(); }
@@ -1033,43 +929,25 @@ function selectTxtColorPreset(c, el) {
     markDirty();
 }
 
-// ═══════════════════════════════════════════
-// TAUTAN MEDIA SOSIAL
-// ═══════════════════════════════════════════
 const SL_LIST = [
-    { id:'telegram',   label:'Telegram',   placeholder:'username',           prefix:'https://t.me/',
-      icon:`<svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm4.93 6.686l-1.683 7.927c-.127.567-.46.707-.931.44l-2.57-1.894-1.24 1.193c-.137.137-.252.252-.517.252l.185-2.621 4.768-4.307c.207-.185-.045-.287-.322-.102L7.89 14.214l-2.522-.788c-.548-.171-.558-.548.115-.812l9.867-3.805c.456-.166.856.112.58.877z"/></svg>` },
-    { id:'website',    label:'Website',    placeholder:'namaweb.com',        prefix:'https://',
-      icon:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>` },
-    { id:'email',      label:'Email',      placeholder:'kamu@email.com',     prefix:'mailto:',
-      icon:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>` },
-    { id:'discord',    label:'Discord',    placeholder:'kode undangan',      prefix:'https://discord.gg/',
-      icon:`<svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/></svg>` },
-    { id:'tiktok',     label:'TikTok',     placeholder:'username',           prefix:'https://tiktok.com/@',
-      icon:`<svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.69a8.27 8.27 0 0 0 4.84 1.55V6.79a4.85 4.85 0 0 1-1.07-.1z"/></svg>` },
-    { id:'instagram',  label:'Instagram',  placeholder:'username',           prefix:'https://instagram.com/',
-      icon:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>` },
-    { id:'youtube',    label:'Youtube',    placeholder:'nama channel',       prefix:'https://youtube.com/@',
-      icon:`<svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805 31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0 .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/></svg>` },
-    { id:'twitch',     label:'Twitch',     placeholder:'username',           prefix:'https://twitch.tv/',
-      icon:`<svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714z"/></svg>` },
-    { id:'linkedin',   label:'LinkedIn',   placeholder:'username',           prefix:'https://linkedin.com/in/',
-      icon:`<svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>` },
-    { id:'x',          label:'X',          placeholder:'username',           prefix:'https://x.com/',
-      icon:`<svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.742l7.732-8.858L1.254 2.25H8.08l4.253 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>` },
-    { id:'facebook',   label:'Facebook',   placeholder:'username',           prefix:'https://facebook.com/',
-      icon:`<svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>` },
-    { id:'behance',    label:'Behance',    placeholder:'username',           prefix:'https://behance.net/',
-      icon:`<svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M22 7h-7V5h7v2zm1.726 10c-.442 1.297-2.029 3-5.101 3-3.074 0-5.564-1.729-5.564-5.675 0-3.91 2.325-5.92 5.466-5.92 3.082 0 4.964 1.782 5.375 4.426.078.506.109 1.188.095 2.14H15.97c.13 3.211 3.483 3.312 4.588 2.029H23.726zm-7.726-3h3.457c-.073-1.580-1.002-2.18-1.712-2.18-.747 0-1.633.572-1.745 2.18zM7.17 9.025c.395 0 2.353.105 2.353 1.734 0 .97-.771 1.463-1.55 1.546v.047c.99.078 1.968.609 1.968 1.873 0 2.006-2.006 2.072-2.637 2.072H1V9.025h6.17zm-3.07 5.52h2.167c.588 0 1.14-.228 1.14-.91 0-.773-.693-.9-1.244-.9H4.1v1.81zm0-3.31h1.937c.5 0 1.057-.162 1.057-.836 0-.73-.625-.836-1.14-.836H4.1v1.672z"/></svg>` },
-    { id:'dribbble',   label:'Dribbble',   placeholder:'username',           prefix:'https://dribbble.com/',
-      icon:`<svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M12 24C5.385 24 0 18.615 0 12S5.385 0 12 0s12 5.385 12 12-5.385 12-12 12zm10.12-10.358c-.35-.11-3.17-.953-6.384-.438 1.34 3.684 1.887 6.684 1.992 7.308 2.3-1.555 3.936-4.02 4.395-6.87zm-6.115 7.808c-.153-.9-.75-4.032-2.19-7.77l-.066.02c-5.79 2.015-7.86 6.017-8.04 6.39 1.73 1.35 3.92 2.166 6.29 2.166 1.42 0 2.77-.29 4.01-.806zm-9.86-3.28c.24-.38 3.28-5.21 8.536-6.89.016-.064.033-.128.05-.192-1.52-.547-4.73-1.07-8.52-1.07-.284 0-.568.004-.85.012-.04.166-.065.334-.065.504 0 3.126 1.19 5.99 3.14 8.13zm7.715-10.27c-.47-1.353-1.31-3.373-2.38-5.13-1.34.09-2.63.41-3.79.94 1.46 1.764 2.546 3.764 2.77 4.43.67-.12 1.39-.2 2.16-.2.42 0 .83.02 1.24.06zm.36-.09c.46.03.92.09 1.37.17.01-.04.01-.09.01-.13 0-1.72-.468-3.335-1.286-4.72-.29.75-.784 2.52-1.094 4.68zm3.327.55c-.34-.066-.69-.12-1.043-.157.16-1.766.566-3.457 1.05-4.656.66.39 1.25.87 1.78 1.404-.676.952-1.452 2.307-1.787 3.41z"/></svg>` },
-    { id:'whatsapp',   label:'WhatsApp',   placeholder:'628xxx (no. HP)',    prefix:'https://wa.me/',
-      icon:`<svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/></svg>` },
-    { id:'spotify',    label:'Spotify',    placeholder:'username',           prefix:'https://open.spotify.com/user/',
-      icon:`<svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>` },
-    { id:'threads',    label:'Threads',    placeholder:'username',           prefix:'https://threads.net/@',
-      icon:`<svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M12.186 24h-.007c-3.581-.024-6.334-1.205-8.184-3.509C2.35 18.44 1.5 15.586 1.472 12.01v-.017c.03-3.579.879-6.43 2.525-8.482C5.845 1.205 8.6.024 12.18 0h.014c2.746.02 5.043.725 6.826 2.098 1.677 1.29 2.858 3.13 3.509 5.467l-2.04.569c-1.104-3.96-3.898-5.984-8.304-6.015-2.91.022-5.11.936-6.54 2.717C4.307 6.504 3.616 8.914 3.589 12c.027 3.086.718 5.496 2.057 7.164 1.43 1.783 3.631 2.698 6.54 2.717 2.623-.02 4.358-.631 5.689-2.046 1.367-1.455 2.041-3.534 2.075-6.154H12.79v-2.113h9.23c.16 3.404-.499 6.094-1.97 8.009-1.855 2.364-4.797 3.6-8.868 3.623z"/></svg>` },
+    { id:'telegram',   label:'Telegram',   placeholder:'username',        prefix:'https://t.me/',                    icon:`<svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm4.93 6.686l-1.683 7.927c-.127.567-.46.707-.931.44l-2.57-1.894-1.24 1.193c-.137.137-.252.252-.517.252l.185-2.621 4.768-4.307c.207-.185-.045-.287-.322-.102L7.89 14.214l-2.522-.788c-.548-.171-.558-.548.115-.812l9.867-3.805c.456-.166.856.112.58.877z"/></svg>` },
+    { id:'website',    label:'Website',    placeholder:'namaweb.com',     prefix:'https://',                         icon:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>` },
+    { id:'email',      label:'Email',      placeholder:'kamu@email.com',  prefix:'mailto:',                          icon:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>` },
+    { id:'whatsapp',   label:'WhatsApp',   placeholder:'628xxx (no. HP)', prefix:'https://wa.me/',                   icon:`<svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/></svg>` },
+    { id:'instagram',  label:'Instagram',  placeholder:'username',        prefix:'https://instagram.com/',           icon:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>` },
+    { id:'tiktok',     label:'TikTok',     placeholder:'username',        prefix:'https://tiktok.com/@',             icon:`<svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.69a8.27 8.27 0 0 0 4.84 1.55V6.79a4.85 4.85 0 0 1-1.07-.1z"/></svg>` },
+    { id:'youtube',    label:'Youtube',    placeholder:'nama channel',    prefix:'https://youtube.com/@',            icon:`<svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M23.495 6.205a3.007 3.007 0 0 0-2.088-2.088c-1.87-.501-9.396-.501-9.396-.501s-7.507-.01-9.396.501A3.007 3.007 0 0 0 .527 6.205a31.247 31.247 0 0 0-.522 5.805 31.247 31.247 0 0 0 .522 5.783 3.007 3.007 0 0 0 2.088 2.088c1.868.502 9.396.502 9.396.502s7.506 0 9.396-.502a3.007 3.007 0 0 0 2.088-2.088 31.247 31.247 0 0 0 .5-5.783 31.247 31.247 0 0 0-.5-5.805zM9.609 15.601V8.408l6.264 3.602z"/></svg>` },
+    { id:'x',          label:'X',          placeholder:'username',        prefix:'https://x.com/',                   icon:`<svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.742l7.732-8.858L1.254 2.25H8.08l4.253 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>` },
+    { id:'facebook',   label:'Facebook',   placeholder:'username',        prefix:'https://facebook.com/',            icon:`<svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>` },
+    { id:'discord',    label:'Discord',    placeholder:'kode undangan',   prefix:'https://discord.gg/',              icon:`<svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/></svg>` },
+    { id:'twitch',     label:'Twitch',     placeholder:'username',        prefix:'https://twitch.tv/',               icon:`<svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714z"/></svg>` },
+    { id:'linkedin',   label:'LinkedIn',   placeholder:'username',        prefix:'https://linkedin.com/in/',         icon:`<svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>` },
+    { id:'spotify',    label:'Spotify',    placeholder:'username',        prefix:'https://open.spotify.com/user/',   icon:`<svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>` },
+    { id:'threads',    label:'Threads',    placeholder:'username',        prefix:'https://threads.net/@',            icon:`<svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M12.186 24h-.007c-3.581-.024-6.334-1.205-8.184-3.509C2.35 18.44 1.5 15.586 1.472 12.01v-.017c.03-3.579.879-6.43 2.525-8.482C5.845 1.205 8.6.024 12.18 0h.014c2.746.02 5.043.725 6.826 2.098 1.677 1.29 2.858 3.13 3.509 5.467l-2.04.569c-1.104-3.96-3.898-5.984-8.304-6.015-2.91.022-5.11.936-6.54 2.717C4.307 6.504 3.616 8.914 3.589 12c.027 3.086.718 5.496 2.057 7.164 1.43 1.783 3.631 2.698 6.54 2.717 2.623-.02 4.358-.631 5.689-2.046 1.367-1.455 2.041-3.534 2.075-6.154H12.79v-2.113h9.23c.16 3.404-.499 6.094-1.97 8.009-1.855 2.364-4.797 3.6-8.868 3.623z"/></svg>` },
+    { id:'behance',    label:'Behance',    placeholder:'username',        prefix:'https://behance.net/',             icon:`<svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M22 7h-7V5h7v2zm1.726 10c-.442 1.297-2.029 3-5.101 3-3.074 0-5.564-1.729-5.564-5.675 0-3.91 2.325-5.92 5.466-5.92 3.082 0 4.964 1.782 5.375 4.426.078.506.109 1.188.095 2.14H15.97c.13 3.211 3.483 3.312 4.588 2.029H23.726zm-7.726-3h3.457c-.073-1.580-1.002-2.18-1.712-2.18-.747 0-1.633.572-1.745 2.18zM7.17 9.025c.395 0 2.353.105 2.353 1.734 0 .97-.771 1.463-1.55 1.546v.047c.99.078 1.968.609 1.968 1.873 0 2.006-2.006 2.072-2.637 2.072H1V9.025h6.17zm-3.07 5.52h2.167c.588 0 1.14-.228 1.14-.91 0-.773-.693-.9-1.244-.9H4.1v1.81zm0-3.31h1.937c.5 0 1.057-.162 1.057-.836 0-.73-.625-.836-1.14-.836H4.1v1.672z"/></svg>` },
+    { id:'dribbble',   label:'Dribbble',   placeholder:'username',        prefix:'https://dribbble.com/',            icon:`<svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M12 24C5.385 24 0 18.615 0 12S5.385 0 12 0s12 5.385 12 12-5.385 12-12 12zm10.12-10.358c-.35-.11-3.17-.953-6.384-.438 1.34 3.684 1.887 6.684 1.992 7.308 2.3-1.555 3.936-4.02 4.395-6.87zm-6.115 7.808c-.153-.9-.75-4.032-2.19-7.77l-.066.02c-5.79 2.015-7.86 6.017-8.04 6.39 1.73 1.35 3.92 2.166 6.29 2.166 1.42 0 2.77-.29 4.01-.806zm-9.86-3.28c.24-.38 3.28-5.21 8.536-6.89.016-.064.033-.128.05-.192-1.52-.547-4.73-1.07-8.52-1.07-.284 0-.568.004-.85.012-.04.166-.065.334-.065.504 0 3.126 1.19 5.99 3.14 8.13zm7.715-10.27c-.47-1.353-1.31-3.373-2.38-5.13-1.34.09-2.63.41-3.79.94 1.46 1.764 2.546 3.764 2.77 4.43.67-.12 1.39-.2 2.16-.2.42 0 .83.02 1.24.06zm.36-.09c.46.03.92.09 1.37.17.01-.04.01-.09.01-.13 0-1.72-.468-3.335-1.286-4.72-.29.75-.784 2.52-1.094 4.68zm3.327.55c-.34-.066-.69-.12-1.043-.157.16-1.766.566-3.457 1.05-4.656.66.39 1.25.87 1.78 1.404-.676.952-1.452 2.307-1.787 3.41z"/></svg>` },
 ];
+
 function renderSlChips() {
     document.getElementById('slChips').innerHTML = SL_LIST.map(s => `
         <div class="sl-chip ${st.social_links[s.id] !== undefined ? 'active' : ''}"
@@ -1117,18 +995,10 @@ function toggleSlChip(id) {
     else st.social_links[id] = '';
     renderSlChips(); renderSlInputs(); markDirty();
 }
-function onSlInput(id, val) {
-    st.social_links[id] = buildFullUrl(id, val);
-    markDirty();
-}
-function escHtml(s) {
-    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
+function onSlInput(id, val) { st.social_links[id] = buildFullUrl(id, val); markDirty(); }
+function escHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 renderSlChips(); renderSlInputs();
 
-// ═══════════════════════════════════════════
-// LATAR BELAKANG
-// ═══════════════════════════════════════════
 function switchBgTab(btn, type) {
     document.querySelectorAll('.bg-tab').forEach(t => t.classList.remove('active'));
     btn.classList.add('active');
@@ -1190,7 +1060,9 @@ async function handleBgImg(input) {
     const reader = new FileReader();
     reader.onload = e => {
         const img = document.getElementById('bgImgPreview');
-        img.src = e.target.result; img.style.display = 'block';
+        img.src = e.target.result;
+        img.style.display = 'block';
+        document.getElementById('bgImgDelBtn').style.display = 'flex';
     };
     reader.readAsDataURL(file);
     document.querySelectorAll('.wg-item').forEach(el => el.classList.remove('active'));
@@ -1200,19 +1072,30 @@ async function handleBgImg(input) {
     try {
         const res  = await fetch('{{ route("dashboard.appearance.uploadBg") }}', { method:'POST', body:fd });
         const data = await res.json();
-        if (data.success) {
-            st.bg_image = data.path; st.bg_type = 'image';
-            markDirty();
-            showToast('Gambar berhasil diunggah! 🖼️', 'success');
-        } else {
-            showToast(data.message ?? 'Gagal mengunggah gambar.', 'error');
-        }
+        if (data.success) { st.bg_image = data.path; st.bg_type = 'image'; markDirty(); showToast('Gambar berhasil diunggah! 🖼️', 'success'); }
+        else showToast(data.message ?? 'Gagal mengunggah gambar.', 'error');
     } catch(e) { showToast('Gagal mengunggah gambar.', 'error'); }
 }
 
-// ═══════════════════════════════════════════
-// TOMBOL
-// ═══════════════════════════════════════════
+function toggleWgGallery() {
+    const wrap  = document.getElementById('wgCollapseWrap');
+    const btn   = document.getElementById('btnWgToggle');
+    const label = document.getElementById('btnWgLabel');
+    const isOpen = wrap.classList.contains('open');
+    wrap.classList.toggle('open', !isOpen);
+    btn.classList.toggle('open', !isOpen);
+    label.textContent = isOpen ? '✦ Lihat Galeri Wallpaper Payou' : '✦ Sembunyikan Galeri';
+}
+
+if (activeWgId) {
+    const wrap  = document.getElementById('wgCollapseWrap');
+    const btn   = document.getElementById('btnWgToggle');
+    const label = document.getElementById('btnWgLabel');
+    wrap.classList.add('open');
+    btn.classList.add('open');
+    label.textContent = '✦ Sembunyikan Galeri';
+}
+
 function selectBtnStyle(el, style) {
     document.querySelectorAll('.btn-style-item').forEach(i => i.classList.remove('active'));
     el.classList.add('active'); st.btn_style = style; markDirty();
@@ -1233,17 +1116,18 @@ function onBtnColorTextIn(v, which) {
     markDirty();
 }
 
-// ═══════════════════════════════════════════
-// HURUF
-// ═══════════════════════════════════════════
 function selectFont(el, fontId) {
     document.querySelectorAll('.font-item').forEach(i => i.classList.remove('active'));
     el.classList.add('active'); st.font_family = fontId; markDirty();
 }
 
-// ═══════════════════════════════════════════
-// BANGUN CSS TOMBOL
-// ═══════════════════════════════════════════
+function selectBlockLayout(el, layoutId) {
+    document.querySelectorAll('.bl-item').forEach(i => i.classList.remove('active'));
+    el.classList.add('active');
+    st.block_layout = layoutId;
+    markDirty();
+}
+
 function buildBtnCss() {
     switch(st.btn_style) {
         case 'fill':        return `background:${st.btn_color};color:${st.btn_text_color};border:2px solid ${st.btn_color};`;
@@ -1256,29 +1140,33 @@ function buildBtnCss() {
     }
 }
 
-// ═══════════════════════════════════════════
-// PRATINJAU LANGSUNG
-// ═══════════════════════════════════════════
 function updatePreview() {
     const frame = document.getElementById('previewFrame');
     if (!frame?.contentWindow) return;
-    let bgCss, bgColor = null, bgSize = null;
-    if (st.bg_type === 'image' && st.bg_image && st.bg_image.startsWith('wg_')) {
-        const wg = WALLPAPERS.find(w => w.id === st.bg_image);
-        if (wg) { bgCss = wg.cssValue; bgColor = wg.bgColor ?? null; bgSize = wg.bgSize ?? null; }
-        else { bgCss = st.background_color; }
+
+    let bgCss = null, bgImage = null, bgColor = null, bgSize = null;
+
+    if (st.bg_type === 'image' && st.bg_image) {
+        if (st.bg_image.startsWith('wg_')) {
+            const wg = WALLPAPERS.find(w => w.id === st.bg_image);
+            if (wg) { bgCss = wg.cssValue; bgColor = wg.bgColor ?? null; bgSize = wg.bgSize ?? null; }
+            else bgCss = st.background_color;
+        } else {
+            bgImage = `/storage/${st.bg_image}`;
+        }
     } else if (st.bg_type === 'gradient') {
         bgCss = `linear-gradient(${st.bg_gradient_direction}, ${st.bg_gradient_start}, ${st.bg_gradient_end})`;
-    } else if (st.bg_type === 'image' && st.bg_image) {
-        bgCss = `url('/storage/${st.bg_image}') center/cover no-repeat`;
     } else {
         bgCss = st.background_color;
     }
-    const shapeMap = { pill:'50px', rounded:'12px', square:'4px' };
+
+    const shapeMap = { pill: '50px', rounded: '12px', square: '4px' };
+
     frame.contentWindow.postMessage({
         type: 'payou_appearance_update',
         payload: {
-            bgCss, bgColor, bgSize,
+            bgCss, bgImage, bgColor, bgSize,
+            bgType:         st.bg_type,
             fontFamily:     st.font_family,
             textColor:      st.text_color,
             btnCss:         buildBtnCss(),
@@ -1287,9 +1175,11 @@ function updatePreview() {
             btn_shape:      st.btn_shape,
             btn_color:      st.btn_color,
             btn_text_color: st.btn_text_color,
+            block_layout:   st.block_layout,
         }
     }, '*');
 }
+
 function reloadPreview() {
     const f = document.getElementById('previewFrame');
     if (f) f.src = f.src;
@@ -1305,48 +1195,25 @@ function hidePreviewFrameScrollbar(frameId) {
         if (!styleEl) {
             styleEl = doc.createElement('style');
             styleEl.id = 'payou-hide-preview-scrollbar';
-            styleEl.textContent = `
-                html, body {
-                    scrollbar-width: none !important;
-                    -ms-overflow-style: none !important;
-                }
-                html::-webkit-scrollbar,
-                body::-webkit-scrollbar,
-                *::-webkit-scrollbar {
-                    width: 0 !important;
-                    height: 0 !important;
-                    display: none !important;
-                    background: transparent !important;
-                }
-            `;
+            styleEl.textContent = `html,body{scrollbar-width:none!important;-ms-overflow-style:none!important;}html::-webkit-scrollbar,body::-webkit-scrollbar,*::-webkit-scrollbar{width:0!important;height:0!important;display:none!important;background:transparent!important;}`;
             doc.head.appendChild(styleEl);
         }
-    } catch (error) {
-        console.warn('Tidak bisa menyembunyikan scrollbar pratinjau:', error);
-    }
+    } catch (error) {}
 }
 
-// ═══════════════════════════════════════════
-// SIMPAN & RESET
-// ═══════════════════════════════════════════
 async function saveAppearance() {
     const btn = document.getElementById('btnSave');
     if (btn) { btn.disabled = true; btn.classList.add('loading'); }
     try {
         const res = await fetch('{{ route("dashboard.appearance.save") }}', {
-            method:  'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': CSRF,
-                'Accept':       'application/json',
-            },
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json' },
             body: JSON.stringify(st),
         });
         const rawText = await res.text();
         let data;
         try {
-            const start = rawText.indexOf('{');
-            const end   = rawText.lastIndexOf('}');
+            const start = rawText.indexOf('{'); const end = rawText.lastIndexOf('}');
             const clean = (start !== -1 && end !== -1) ? rawText.slice(start, end + 1) : rawText;
             data = JSON.parse(clean);
         } catch { throw new Error('Respons tidak valid: ' + rawText.substring(0, 200)); }
@@ -1357,45 +1224,48 @@ async function saveAppearance() {
             setTimeout(reloadPreview, 400);
             if (typeof BroadcastChannel !== 'undefined' && data.broadcast_payload) {
                 const bc = new BroadcastChannel('payou_appearance');
-                bc.postMessage({
-                    type: 'payou_appearance_saved',
-                    payload: data.broadcast_payload,
-                });
+                bc.postMessage({ type: 'payou_appearance_saved', payload: data.broadcast_payload });
                 bc.close();
             }
             localStorage.setItem('payou_saved', Date.now());
         } else {
-            const errMsg = data.message
-                ?? (data.errors ? Object.values(data.errors).flat().join(', ') : null)
-                ?? `Kesalahan ${res.status}`;
+            const errMsg = data.message ?? (data.errors ? Object.values(data.errors).flat().join(', ') : null) ?? `Kesalahan ${res.status}`;
             showToast(errMsg, 'error');
         }
-    } catch(e) {
-        showToast('Gagal menyimpan: ' + e.message, 'error');
-        console.error('Kesalahan saat menyimpan:', e);
-    } finally {
-        if (btn) { btn.disabled = false; btn.classList.remove('loading'); }
-    }
+    } catch(e) { showToast('Gagal menyimpan: ' + e.message, 'error'); }
+    finally { if (btn) { btn.disabled = false; btn.classList.remove('loading'); } }
 }
 
 async function resetAppearance() {
     if (!confirm('Kembalikan tampilan ke pengaturan awal?')) return;
     try {
-        const res  = await fetch('{{ route("dashboard.appearance.reset") }}', {
-            method:  'POST',
-            headers: { 'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json' }
-        });
+        const res  = await fetch('{{ route("dashboard.appearance.reset") }}', { method:'POST', headers:{'X-CSRF-TOKEN':CSRF,'Accept':'application/json'} });
         const data = await res.json();
-        if (data.success) {
-            showToast('Tampilan berhasil dikembalikan ke awal.', 'success');
-            setTimeout(() => location.reload(), 800);
-        } else {
-            showToast(data.message ?? 'Gagal mereset tampilan.', 'error');
-        }
+        if (data.success) { showToast('Tampilan berhasil dikembalikan ke awal.', 'success'); setTimeout(() => location.reload(), 800); }
+        else showToast(data.message ?? 'Gagal mereset tampilan.', 'error');
     } catch(e) { showToast('Gagal mereset tampilan.', 'error'); }
 }
 
-// ─── Notifikasi ───
+async function deleteBgImage() {
+    if (!confirm('Hapus gambar background? Tampilan akan kembali ke warna default.')) return;
+    try {
+        const res  = await fetch('{{ route("dashboard.appearance.deleteBg") }}', { method:'POST', headers:{'X-CSRF-TOKEN':CSRF,'Accept':'application/json'} });
+        const data = await res.json();
+        if (data.success) {
+            const img = document.getElementById('bgImgPreview');
+            const delBtn = document.getElementById('bgImgDelBtn');
+            img.src = ''; img.style.display = 'none'; delBtn.style.display = 'none';
+            document.querySelectorAll('.wg-item').forEach(el => el.classList.remove('active'));
+            activeWgId = null;
+            st.bg_image = null; st.bg_type = 'color';
+            const colorTab = document.querySelector('.bg-tab[data-bg="color"]');
+            if (colorTab) switchBgTab(colorTab, 'color');
+            markDirty();
+            showToast('Background berhasil dihapus.', 'success');
+        } else showToast(data.message ?? 'Gagal menghapus background.', 'error');
+    } catch(e) { showToast('Gagal menghapus background.', 'error'); }
+}
+
 function showToast(msg, type = 'default') {
     const t = document.getElementById('apToast');
     t.textContent = msg; t.className = `ap-toast ${type} show`;
@@ -1403,7 +1273,6 @@ function showToast(msg, type = 'default') {
     toastTmr = setTimeout(() => t.classList.remove('show'), 3500);
 }
 
-// ─── Inisialisasi ───
 document.getElementById('previewFrame').addEventListener('load', () => {
     hidePreviewFrameScrollbar('previewFrame');
     setTimeout(updatePreview, 300);

@@ -120,6 +120,8 @@
         body {
             font-family: '{{ $fontFamily }}', system-ui, -apple-system, sans-serif;
             background: {{ $bgCss }};
+            --btn-color: {{ $btnColor }};
+            --btn-text-color: {{ $btnTxtColor }};
             @if($bgColorExtra) background-color: {{ $bgColorExtra }}; @endif
             @if($bgSizeExtra)  background-size: {{ $bgSizeExtra }}; @endif
             min-height: 100vh;
@@ -334,6 +336,324 @@
         /* ── Product Block ── */
         .block-product { background: rgba(255,255,255,0.9); backdrop-filter: blur(8px); border: 1px solid rgba(229,231,235,0.7); border-radius: 12px; overflow: hidden; transition: box-shadow 0.2s, transform 0.2s, border-color 0.2s; cursor: pointer; }
         .block-product:hover { box-shadow: 0 4px 16px rgba(37,99,235,0.1); transform: translateY(-2px); border-color: #bfdbfe; }
+
+        .blocks-container { display: flex; flex-direction: column; gap: 12px; }
+ 
+        /* ── GRID ── */
+        .blocks-container.layout-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+            width: 100%;
+        }
+
+        /* blok non produk full */
+        .blocks-container.layout-grid .block-text,
+        .blocks-container.layout-grid .block-link,
+        .blocks-container.layout-grid .block-image,
+        .blocks-container.layout-grid .block-video {
+            grid-column: 1 / -1;
+        }
+
+        /* CARD PRODUCT */
+        .blocks-container.layout-grid .block-product {
+            width: 100%;
+            border-radius: 14px;
+            overflow: hidden;
+            background: #fff;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* IMAGE */
+        .blocks-container.layout-grid .block-product .product-image-wrapper {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            overflow: hidden;
+        }
+
+        .blocks-container.layout-grid .block-product .product-image-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        /* DETAIL */
+        .blocks-container.layout-grid .block-product .product-details {
+            padding: 8px;
+        }
+
+        /* BADGE DISKON ATAS */
+        .blocks-container.layout-grid .block-product .product-discount-top {
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            margin-bottom: 4px;
+        }
+
+        /* TITLE */
+        .blocks-container.layout-grid .block-product .product-title {
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 4px;
+            line-height: 1.2;
+        }
+
+        /* PRICE AREA */
+        .blocks-container.layout-grid .block-product .product-price {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            flex-wrap: nowrap;
+            overflow: hidden;
+        }
+
+        /* CURRENT PRICE */
+        .blocks-container.layout-grid .block-product .product-current-price {
+            font-size: 13px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        /* ORIGINAL PRICE */
+        .blocks-container.layout-grid .block-product .product-original-price {
+            font-size: 10px;
+            white-space: nowrap;
+            opacity: 0.7;
+        }
+
+        /* DISCOUNT BADGE */
+        .blocks-container.layout-grid .block-product .product-discount-badge {
+            font-size: 9px;
+            padding: 1px 5px;
+            border-radius: 6px;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        /* ══════════════════════════════════════════ */
+        .blocks-container.layout-default {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .blocks-container.layout-default .block-product {
+            display: flex;
+            flex-direction: column;
+            border-radius: 16px;
+            overflow: hidden;
+        }
+        .blocks-container.layout-default .block-product .product-image-wrapper {
+            width: 100%;
+            height: 200px;
+            flex-shrink: 0;
+        }
+        .blocks-container.layout-default .block-product .product-image-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        .blocks-container.layout-default .block-product .product-details {
+            padding: 14px 16px 16px;
+        }
+        .blocks-container.layout-default .block-product .product-title {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            line-height: 1.4;
+        }
+        .blocks-container.layout-default .block-product .product-price-section {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 0;
+        }
+        .blocks-container.layout-default .block-product .product-current-price {
+            font-size: 18px;
+            font-weight: 700;
+            color: #2563eb;
+        }
+
+
+        /* ══════════════════════════════════════════
+        COMPACT: Foto kecil kiri, nama tengah, harga kanan
+        (seperti screenshot Es Jeruk)
+        ══════════════════════════════════════════ */
+        .blocks-container.layout-compact {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .blocks-container.layout-compact .block-product {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            border-radius: 14px;
+            overflow: visible;
+            padding: 8px 12px 8px 8px;
+            gap: 0;
+            min-height: 80px;
+        }
+        .blocks-container.layout-compact .block-product .product-image-wrapper {
+            width: 64px;
+            height: 64px;
+            min-width: 64px;
+            border-radius: 10px;
+            overflow: hidden;
+            flex-shrink: 0;
+            background: #f3f4f6;
+        }
+        .blocks-container.layout-compact .block-product .product-image-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        .blocks-container.layout-compact .block-product .product-details {
+            flex: 1;
+            padding: 0 0 0 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            min-width: 0;
+        }
+        .blocks-container.layout-compact .block-product .product-badge {
+            display: none;
+        }
+        .blocks-container.layout-compact .block-product .product-title {
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 0;
+            flex: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            line-height: 1.3;
+        }
+        .blocks-container.layout-compact .block-product .product-price-section {
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 2px;
+            margin-bottom: 0;
+            flex-shrink: 0;
+        }
+        /* Harga: badge biru seperti screenshot */
+        .blocks-container.layout-compact .block-product .product-current-price {
+            font-size: 13px;
+            font-weight: 700;
+            color: #ffffff;
+            background: #2563eb;
+            padding: 4px 12px;
+            border-radius: 50px;
+            white-space: nowrap;
+            line-height: 1.4;
+        }
+        .blocks-container.layout-compact .block-product .product-original-price,
+        .blocks-container.layout-compact .block-product .product-discount-badge {
+            display: none;
+        }
+
+
+        /* ══════════════════════════════════════════
+        HIGHLIGHT: Strip warna kiri ikut warna tombol user
+        + harga tetap biru
+        ══════════════════════════════════════════ */
+        .blocks-container.layout-highlight {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .blocks-container.layout-highlight .block-product {
+            display: flex;
+            flex-direction: row;
+            align-items: stretch;
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.10);
+            border: 1px solid rgba(0,0,0,0.06);
+            padding: 0;
+            position: relative;
+            transition: box-shadow 0.2s, transform 0.2s;
+        }
+        .blocks-container.layout-highlight .block-product:hover {
+            box-shadow: 0 8px 24px rgba(0,0,0,0.14);
+            transform: translateY(-2px);
+        }
+        /* Strip kiri — ikut warna tombol user via CSS variable */
+        .blocks-container.layout-highlight .block-product::before {
+            content: '';
+            display: block;
+            width: 5px;
+            min-width: 5px;
+            background: var(--btn-color, #2563eb);
+            flex-shrink: 0;
+        }
+        .blocks-container.layout-highlight .block-product .product-image-wrapper {
+            width: 76px;
+            height: 76px;
+            min-width: 76px;
+            border-radius: 10px;
+            overflow: hidden;
+            flex-shrink: 0;
+            align-self: center;
+            margin: 10px 8px;
+            background: #f3f4f6;
+        }
+        .blocks-container.layout-highlight .block-product .product-image-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        .blocks-container.layout-highlight .block-product .product-details {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 12px 14px 12px 4px;
+            gap: 5px;
+            min-width: 0;
+        }
+        .blocks-container.layout-highlight .block-product .product-badge {
+            display: none;
+        }
+        .blocks-container.layout-highlight .block-product .product-title {
+            font-size: 13.5px;
+            font-weight: 700;
+            margin-bottom: 0;
+            line-height: 1.3;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .blocks-container.layout-highlight .block-product .product-price-section {
+            margin-bottom: 0;
+            gap: 6px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        /* Harga tetap biru seperti default */
+        .blocks-container.layout-highlight .block-product .product-current-price {
+            font-size: 15px;
+            font-weight: 700;
+            color: #2563eb;
+        }
+        .blocks-container.layout-highlight .block-product .product-original-price {
+            font-size: 11px;
+            color: #9ca3af;
+            text-decoration: line-through;
+        }
+        .blocks-container.layout-highlight .block-product .product-discount-badge {
+            font-size: 10px;
+            font-weight: 600;
+            background: #fee2e2;
+            color: #dc2626;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+        
         .product-image-wrapper { width: 100%; height: 200px; background: #f3f4f6; display: flex; align-items: center; justify-content: center; overflow: hidden; }
         .product-image-wrapper img { width: 100%; height: 100%; object-fit: cover; }
         .product-image-placeholder { width: 56px; height: 56px; background: #eff6ff; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #2563eb; }
@@ -550,7 +870,9 @@
                 </div>
 
                 {{-- Blocks --}}
+                @php $blockLayout = $profile->block_layout ?? 'default'; @endphp
                 @if($userPage->blocks && $userPage->blocks->count() > 0)
+                    <div class="blocks-container layout-{{ $blockLayout }}" id="blocksContainer">
                     @foreach($userPage->blocks->sortBy('position') as $block)
                         @if($block->type === 'text')
                             <div class="block block-text" id="block-{{ $block->id }}">{{ $block->content['text'] ?? '' }}</div>
@@ -589,6 +911,7 @@
                             </div>
                         @endif
                     @endforeach
+                    </div>
                 @else
                     <div class="empty-state">
                         <div class="empty-icon">
@@ -948,33 +1271,59 @@ async function doSearch(query) {
     function applyAppearance(p) {
         if (!p) return;
 
-        if (p.bgCss) {
-            document.body.style.background           = p.bgCss;
-            document.body.style.backgroundSize       = 'cover';
-            document.body.style.backgroundAttachment = 'fixed';
-            document.body.style.backgroundRepeat     = 'no-repeat';
-            if (p.bgColor) document.body.style.backgroundColor = p.bgColor;
-            if (p.bgSize)  document.body.style.backgroundSize  = p.bgSize;
+        // ── Background ──
+        if (p.bgImage) {
+            // Gambar upload user
+            document.body.style.backgroundImage    = `url('${p.bgImage}')`;
+            document.body.style.backgroundSize     = 'cover';
+            document.body.style.backgroundPosition = 'center';
+            document.body.style.backgroundRepeat   = 'no-repeat';
+            document.body.style.backgroundColor   = '';
+            document.body.style.backgroundAttachment = 'scroll';
+        } else if (p.bgCss) {
+            // Solid color atau gradient atau wallpaper galeri
+            const isSolid = /^#[0-9a-fA-F]{3,8}$|^rgb/.test(p.bgCss.trim());
+            if (isSolid) {
+                document.body.style.backgroundImage = 'none';
+                document.body.style.backgroundColor = p.bgCss;
+            } else {
+                document.body.style.backgroundImage = p.bgCss;
+                document.body.style.backgroundColor = p.bgColor ?? '';
+                document.body.style.backgroundSize  = p.bgSize  ?? 'cover';
+            }
+            document.body.style.backgroundPosition   = 'center';
+            document.body.style.backgroundRepeat     = 'repeat';
+            document.body.style.backgroundAttachment = 'scroll';
         }
 
+        // ── Font ──
         if (p.fontFamily) {
             document.body.style.fontFamily = `'${p.fontFamily}', system-ui, -apple-system, sans-serif`;
             injectFont(p.fontFamily);
         }
 
+        // ── Warna teks ──
         if (p.textColor) {
             document.querySelectorAll('[data-profile-text]').forEach(el => {
                 el.style.color = p.textColor;
             });
-            // Update warna icon social links juga
             document.querySelectorAll('.social-link').forEach(el => {
                 el.style.color = p.textColor;
             });
         }
 
+        // ── Tombol ──
         if (p.btnCss || p.btnRadius) {
             document.querySelectorAll('.block-link a').forEach(btn => applyBtnStyle(btn, p));
-            if (p.btnCss) document.querySelectorAll('.btn-buy').forEach(btn => applyBtnStyle(btn, p));
+        }
+
+         // ── Block Layout ──
+        if (p.block_layout) {
+            const container = document.getElementById('blocksContainer');
+            if (container) {
+                container.className = container.className.replace(/\blayout-\S+/g, '').trim();
+                container.classList.add('layout-' + p.block_layout);
+            }
         }
     }
 

@@ -1,9 +1,25 @@
-﻿@php
+@php
     use Illuminate\Support\Str;
 
     $user = Auth::user();
     $userSlug = $user->username;
     $avatar = Auth::user()->avatar ?? null;
+    $premiumDate = data_get($user, 'premium_until') ?: data_get($user, 'premium_expires_at');
+    $hasPremiumDate = false;
+
+    if (!empty($premiumDate)) {
+        try {
+            $hasPremiumDate = \Carbon\Carbon::parse($premiumDate)->isFuture();
+        } catch (\Throwable $e) {
+            $hasPremiumDate = false;
+        }
+    }
+
+    $isPremiumUser =
+        (bool) data_get($user, 'is_premium') ||
+        $hasPremiumDate ||
+        in_array((string) data_get($user, 'plan'), ['pro', 'premium'], true) ||
+        in_array((string) data_get($user, 'subscription_plan'), ['pro', 'premium'], true);
 @endphp
 <!DOCTYPE html>
 <html lang="id">
@@ -108,6 +124,55 @@ html, body { margin: 0; padding: 0; min-height: 100vh; }
     object-fit: contain;
     display: block;
     margin: 0 auto;
+}
+
+.s-premium-wrap {
+    margin-top: 10px;
+}
+
+.s-premium-btn,
+.s-premium-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    width: 100%;
+    min-height: 38px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 800;
+    text-decoration: none;
+    transition: all var(--ease);
+}
+
+.s-premium-btn {
+    gap: 5px;
+    min-height: 24px;
+    border-radius: 0;
+    font-size: 11px;
+    font-weight: 700;
+    border: none;
+    background: transparent;
+    color: #15803d;
+    box-shadow: none;
+}
+
+.s-premium-btn:hover {
+    border-color: transparent;
+    background: transparent;
+    color: #166534;
+    transform: translateY(-1px);
+}
+
+.s-premium-btn i {
+    font-size: 10px;
+}
+
+.s-premium-badge {
+    border: 1px solid #22c55e;
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+    color: #ffffff;
+    box-shadow: 0 10px 18px rgba(34, 197, 94, .18);
 }
 
 /* ── TOP ACCOUNT ─────────────────────────────────── */
@@ -540,6 +605,19 @@ body:not(.preload) .content-pad {
         <a href="{{ route('dashboard') }}">
             <img src="{{ asset('img/logo.png') }}" alt="Payou.id">
         </a>
+        <div class="s-premium-wrap">
+            @if($isPremiumUser)
+                <div class="s-premium-badge">
+                    <i class="fas fa-circle-check"></i>
+                    Pro Member
+                </div>
+            @else
+                <a href="{{ route('premium.index') }}" class="s-premium-btn">
+                    <i class="fas fa-arrow-up-right-dots"></i>
+                    Upgrade to Pro
+                </a>
+            @endif
+        </div>
     </div>
 
     <!-- Profile -->

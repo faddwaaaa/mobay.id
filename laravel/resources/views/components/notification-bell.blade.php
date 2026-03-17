@@ -353,7 +353,7 @@ body.dark .notif-item-delete:hover { background: #2d1f1f; color: #fc8181; }
     var API_MARK_ALL   = '/notifications/mark-all';
     var API_MARK_ONE   = function(id) { return '/notifications/' + id + '/read'; };
     var API_DELETE_ONE = function(id) { return '/notifications/' + id; };
-    var API_DELETE_ALL = '/notifications';
+    var API_DELETE_ALL = '/notifications/all';
     var CSRF           = document.querySelector('meta[name="csrf-token"]') ? document.querySelector('meta[name="csrf-token"]').content : '';
 
     var panel         = document.getElementById('notifPanel');
@@ -369,9 +369,10 @@ body.dark .notif-item-delete:hover { background: #2d1f1f; color: #fc8181; }
     var badgeEls   = [];
     var activeBell = null;
 
-    var prevUnread    = -1;
-    var panelOpen     = false;
-    var notifications = [];
+    var prevUnread     = -1;
+    var panelOpen      = false;
+    var notifications  = [];
+    var justDeletedAll = false; // FIX: sentinel agar polling tidak anggap notif lama sebagai baru
 
     // ---- Browser Push Notification ----
     function requestNotifPermission() {
@@ -483,7 +484,7 @@ body.dark .notif-item-delete:hover { background: #2d1f1f; color: #fc8181; }
 
             // Klik item → mark read
             el.addEventListener('click', function(e) {
-                if (e.target.closest('.notif-item-delete')) return; // jangan trigger markOne
+                if (e.target.closest('.notif-item-delete')) return;
                 markOne(n.id, el, n.link);
             });
 
@@ -505,6 +506,15 @@ body.dark .notif-item-delete:hover { background: #2d1f1f; color: #fc8181; }
             var data = await res.json();
             notifications = data.notifications;
             var newUnread = data.unread_count;
+
+            // FIX: Jika baru saja delete all, sync prevUnread ke server tanpa bunyi suara
+            if (justDeletedAll) {
+                justDeletedAll = false;
+                prevUnread = newUnread;
+                updateBadge(newUnread);
+                if (panelOpen) render(notifications);
+                return;
+            }
 
             if (prevUnread >= 0 && newUnread > prevUnread) {
                 var newest      = notifications.slice(0, newUnread - prevUnread);
@@ -568,14 +578,19 @@ body.dark .notif-item-delete:hover { background: #2d1f1f; color: #fc8181; }
     async function deleteOne(id, el) {
         try {
             var wasUnread = el.classList.contains('unread');
-            // Animasi keluar
             el.style.transition = 'opacity .18s, transform .18s';
             el.style.opacity = '0';
             el.style.transform = 'translateX(16px)';
-            await fetch(API_DELETE_ONE(id), {
+            var res = await fetch(API_DELETE_ONE(id), {
                 method: 'DELETE',
                 headers: { 'X-CSRF-TOKEN': CSRF, 'X-Requested-With': 'XMLHttpRequest' }
             });
+            if (!res.ok) {
+                // Batalkan animasi jika server gagal
+                el.style.opacity = '1';
+                el.style.transform = 'translateX(0)';
+                return;
+            }
             setTimeout(function() { el.remove(); checkEmpty(); }, 180);
             notifications = notifications.filter(function(n) { return n.id != id; });
             if (wasUnread) {
@@ -585,16 +600,19 @@ body.dark .notif-item-delete:hover { background: #2d1f1f; color: #fc8181; }
         } catch(e) {}
     }
 
+    // FIX: deleteAll — cek res.ok + set justDeletedAll agar polling tidak bunyi suara
     async function deleteAll() {
         if (!notifications.length) return;
         if (!confirm('Hapus semua notifikasi?')) return;
         try {
-            await fetch(API_DELETE_ALL, {
+            var res = await fetch(API_DELETE_ALL, {
                 method: 'DELETE',
                 headers: { 'X-CSRF-TOKEN': CSRF, 'X-Requested-With': 'XMLHttpRequest' }
             });
-            notifications = [];
-            prevUnread = 0;
+            if (!res.ok) return; // Hentikan jika server gagal hapus
+            notifications  = [];
+            prevUnread     = 0;
+            justDeletedAll = true; // Sentinel: polling berikutnya skip deteksi "notif baru"
             updateBadge(0);
             render([]);
         } catch(e) {}

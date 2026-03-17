@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Page;
 use App\Models\Link;
 use App\Models\Product;
+use App\Models\ProductImage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -21,7 +22,7 @@ class LinkController extends Controller
         $user = Auth::user();
 
         // Jika belum punya page sama sekali, buat page Utama
-        if ($user->pages()->count() === 0) {
+        if (!$user->pages()->exists()) {
             $user->pages()->create([
                 'title' => 'Utama',
                 'slug' => 'utama',
@@ -29,17 +30,51 @@ class LinkController extends Controller
             ]);
         }
 
-        // Ambil semua pages + blocks
-        $pages = $user->pages()->with('blocks')->get();
-
         $selectedPageId = $request->query('page');
+        $pages = $user->pages()
+            ->select(['id', 'user_id', 'title', 'slug', 'is_default', 'created_at'])
+            ->orderBy('created_at')
+            ->get();
 
-        $activePage = $selectedPageId
-            ? $pages->where('id', $selectedPageId)->first()
-            : $pages->where('is_default', true)->first();
+        $activePageId = $selectedPageId
+            ? (int) $selectedPageId
+            : (int) optional($pages->firstWhere('is_default', true) ?? $pages->first())->id;
 
-        // 🔥 Ambil produk user (untuk modal block produk)
+        $activePage = $activePageId
+            ? $user->pages()
+                ->select(['id', 'user_id', 'title', 'slug', 'is_default', 'created_at'])
+                ->with([
+                    'blocks' => function ($query) {
+                        $query->select(['id', 'page_id', 'type', 'content', 'product_id', 'position'])
+                            ->orderBy('position')
+                            ->with([
+                                'product' => function ($productQuery) {
+                                    $productQuery
+                                        ->select(['id', 'title', 'price', 'discount', 'product_type'])
+                                        ->addSelect([
+                                            'image' => ProductImage::query()
+                                                ->select('image')
+                                                ->whereColumn('product_id', 'products.id')
+                                                ->orderBy('id')
+                                                ->limit(1),
+                                        ]);
+                                },
+                            ]);
+                    },
+                ])
+                ->find($activePageId)
+            : null;
+
+        // Ambil produk user seperlunya untuk modal block produk.
         $products = Product::where('user_id', $user->id)
+            ->select(['id', 'user_id', 'product_type', 'title', 'price', 'discount'])
+            ->addSelect([
+                'image' => ProductImage::query()
+                    ->select('image')
+                    ->whereColumn('product_id', 'products.id')
+                    ->orderBy('id')
+                    ->limit(1),
+            ])
             ->latest()
             ->get();
 
@@ -48,26 +83,6 @@ class LinkController extends Controller
             'activePage' => $activePage,
             'products' => $products,
         ]);
-
-        // Get pages with blocks
-        // 🔥 PENTING: Load product relationship
-        $pages = Page::where('user_id', $user->id)
-            ->with([
-                'blocks' => function ($query) {
-                    $query->orderBy('position');
-                },
-                'blocks.product.images' // Load product dan images-nya
-            ])
-            ->orderBy('created_at')
-            ->get();
-
-        // Get all products for modal
-        $products = Product::with('images')
-            ->where('user_id', $user->id)
-            ->latest()
-            ->get();
-
-        return view('links.index', compact('pages', 'products'));
     }
 
     /**

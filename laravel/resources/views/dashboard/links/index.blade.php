@@ -4,11 +4,6 @@
 @section('content')
 @php
     $user = auth()->user();
-    // Ambil page_id dari query parameter atau gunakan page pertama
-    $selectedPageId = request()->query('page');
-    $activePage = $selectedPageId 
-        ? $pages->where('id', $selectedPageId)->first() 
-        : $pages->first();
 @endphp
 
 <div class="max-w-7xl mx-auto px-4 py-6" id="main-content">
@@ -111,10 +106,10 @@
             </div>
 
             <!-- BLOCK LIST -->
-            <div class="bg-white rounded-xl shadow border border-gray-200">
+            <div class="bg-white rounded-xl shadow border border-gray-200 relative overflow-hidden" id="blockSectionCard">
                 <div class="p-6 border-b border-gray-200">
                     <div class="flex justify-between items-center">
-                        <h2 class="font-bold text-gray-900 text-lg">
+                        <h2 class="font-bold text-gray-900 text-lg" id="blockSectionHeading">
                             @if($activePage)
                                 Konten: <span class="text-blue-600">{{ $activePage->title }}</span>
                             @else
@@ -172,7 +167,7 @@
                 @endif
 
                 <!-- BLOCK DATA -->
-                <div class="p-6">
+                <div class="p-6" id="blockSectionContent">
                     @if($activePage)
                         @if($activePage->blocks->count() > 0)
                             <div id="blockList" class="space-y-3">
@@ -234,17 +229,37 @@
                                                         <p class="text-xs text-gray-400 mt-1">Video ID: {{ $block->content['youtube_id'] }}</p>
                                                     @endif
                                                 @elseif($block->type === 'product')
-                                                    <div id="block-product-info-{{ $block->id }}"
-                                                         data-product-id="{{ $block->product_id ?? '' }}">
-                                                        <div class="flex items-center gap-2">
-                                                            <div class="w-12 h-12 bg-yellow-50 rounded-lg flex items-center justify-center animate-pulse">
-                                                                <i class="fas fa-box text-yellow-300 text-sm"></i>
+                                                    @php
+                                                        $blockProduct = $block->product;
+                                                        $blockPrice = (int) ($blockProduct->price ?? 0);
+                                                        $blockDiscount = (int) ($blockProduct->discount ?? 0);
+                                                        $blockFinalPrice = ($blockDiscount > 0 && $blockDiscount < $blockPrice) ? $blockDiscount : $blockPrice;
+                                                    @endphp
+                                                    <div>
+                                                        @if($blockProduct)
+                                                            <div class="flex items-center gap-2">
+                                                                @if($blockProduct->image)
+                                                                    <img src="{{ asset('storage/' . $blockProduct->image) }}"
+                                                                         class="w-12 h-12 object-cover rounded-lg flex-shrink-0"
+                                                                         alt="{{ $blockProduct->title }}">
+                                                                @else
+                                                                    <div class="w-12 h-12 bg-yellow-50 rounded-lg flex items-center justify-center flex-shrink-0">
+                                                                        <i class="fas fa-box text-yellow-500 text-sm"></i>
+                                                                    </div>
+                                                                @endif
+                                                                <div class="min-w-0">
+                                                                    <p class="text-sm font-medium text-gray-900 truncate">{{ $blockProduct->title }}</p>
+                                                                    <div class="flex items-center gap-1 mt-1">
+                                                                        <span class="text-xs font-semibold text-blue-600">Rp {{ number_format($blockFinalPrice, 0, ',', '.') }}</span>
+                                                                        @if($blockFinalPrice < $blockPrice)
+                                                                            <span class="text-[10px] text-gray-400 line-through">Rp {{ number_format($blockPrice, 0, ',', '.') }}</span>
+                                                                        @endif
+                                                                    </div>
+                                                                </div>
                                                             </div>
-                                                            <div>
-                                                                <div class="h-3 w-24 bg-gray-200 rounded animate-pulse mb-1"></div>
-                                                                <div class="h-2.5 w-16 bg-gray-100 rounded animate-pulse"></div>
-                                                            </div>
-                                                        </div>
+                                                        @else
+                                                            <p class="text-xs text-gray-400">Produk tidak ditemukan</p>
+                                                        @endif
                                                     </div>
                                                 @endif
                                             </div>
@@ -301,39 +316,41 @@
                 </div>
                 
                 <div style="position:relative;width:290px;height:550px;border-radius:42px;background:linear-gradient(160deg,#dde0e4 0%,#c2c7cc 40%,#d4d8db 70%,#b0b5ba 100%);box-shadow:0 0 0 1px rgba(255,255,255,0.6),0 0 0 2.5px #909599,0 0 0 3.5px #636870,0 0 0 5px #bec3c8,0 20px 44px rgba(0,0,0,0.35),inset 0 1px 0 rgba(255,255,255,0.45);">
-    <div style="position:absolute;right:-3px;top:130px;width:3px;height:56px;background:linear-gradient(to right,#888d94,#b2b7bc);border-radius:0 3px 3px 0;"></div>
-    <div style="position:absolute;left:-3px;top:80px;width:3px;height:20px;background:linear-gradient(to left,#888d94,#b2b7bc);border-radius:3px 0 0 3px;"></div>
-    <div style="position:absolute;left:-3px;top:107px;width:3px;height:36px;background:linear-gradient(to left,#888d94,#b2b7bc);border-radius:3px 0 0 3px;"></div>
-    <div style="position:absolute;left:-3px;top:152px;width:3px;height:36px;background:linear-gradient(to left,#888d94,#b2b7bc);border-radius:3px 0 0 3px;"></div>
-    <div style="position:absolute;inset:5px;border-radius:38px;background:#080808;overflow:hidden;">
-        <div style="position:absolute;inset:0;border-radius:38px;background:#fff;overflow:hidden;">
-            <!-- Status bar -->
-            <div style="position:absolute;top:0;left:0;right:0;height:44px;z-index:30;display:flex;align-items:flex-end;justify-content:space-between;padding:0 18px 6px;background:#fff;pointer-events:none;">
-                <span style="font-size:11px;font-weight:600;color:#111;">9:41</span>
-                <div style="display:flex;align-items:center;gap:3px;">
-                    <svg width="13" height="10" viewBox="0 0 17 12" fill="#111"><rect x="0" y="7" width="3" height="5" rx="0.8"/><rect x="4.5" y="4.5" width="3" height="7.5" rx="0.8"/><rect x="9" y="2" width="3" height="10" rx="0.8"/><rect x="13.5" y="0" width="3" height="12" rx="0.8" opacity="0.3"/></svg>
-                    <svg width="12" height="10" viewBox="0 0 16 12" fill="#111"><circle cx="8" cy="10.5" r="1.5"/><path d="M3.5 6.5a6.5 6.5 0 019 0" stroke="#111" stroke-width="1.5" stroke-linecap="round" fill="none"/><path d="M1 4a10 10 0 0114 0" stroke="#111" stroke-width="1.5" stroke-linecap="round" fill="none" opacity="0.45"/></svg>
-                    <svg width="19" height="10" viewBox="0 0 25 12" fill="#111"><rect x="0.5" y="0.5" width="21" height="11" rx="2.5" stroke="#111" stroke-width="1" fill="none"/><rect x="22" y="3.5" width="2.5" height="5" rx="1" fill="#111" opacity="0.4"/><rect x="2" y="2" width="16" height="8" rx="1.5"/></svg>
-                </div>
+                    <div style="position:absolute;right:-3px;top:130px;width:3px;height:56px;background:linear-gradient(to right,#888d94,#b2b7bc);border-radius:0 3px 3px 0;"></div>
+                    <div style="position:absolute;left:-3px;top:80px;width:3px;height:20px;background:linear-gradient(to left,#888d94,#b2b7bc);border-radius:3px 0 0 3px;"></div>
+                    <div style="position:absolute;left:-3px;top:107px;width:3px;height:36px;background:linear-gradient(to left,#888d94,#b2b7bc);border-radius:3px 0 0 3px;"></div>
+                    <div style="position:absolute;left:-3px;top:152px;width:3px;height:36px;background:linear-gradient(to left,#888d94,#b2b7bc);border-radius:3px 0 0 3px;"></div>
+                    <div style="position:absolute;inset:5px;border-radius:38px;background:#080808;overflow:hidden;">
+                        <div style="position:absolute;inset:0;border-radius:38px;background:#fff;overflow:hidden;">
+                            <!-- Status bar -->
+                            <div style="position:absolute;top:0;left:0;right:0;height:44px;z-index:30;display:flex;align-items:flex-end;justify-content:space-between;padding:0 18px 6px;background:#fff;pointer-events:none;">
+                                <span style="font-size:11px;font-weight:600;color:#111;">9:41</span>
+                                <div style="display:flex;align-items:center;gap:3px;">
+                                    <svg width="13" height="10" viewBox="0 0 17 12" fill="#111"><rect x="0" y="7" width="3" height="5" rx="0.8"/><rect x="4.5" y="4.5" width="3" height="7.5" rx="0.8"/><rect x="9" y="2" width="3" height="10" rx="0.8"/><rect x="13.5" y="0" width="3" height="12" rx="0.8" opacity="0.3"/></svg>
+                                    <svg width="12" height="10" viewBox="0 0 16 12" fill="#111"><circle cx="8" cy="10.5" r="1.5"/><path d="M3.5 6.5a6.5 6.5 0 019 0" stroke="#111" stroke-width="1.5" stroke-linecap="round" fill="none"/><path d="M1 4a10 10 0 0114 0" stroke="#111" stroke-width="1.5" stroke-linecap="round" fill="none" opacity="0.45"/></svg>
+                                    <svg width="19" height="10" viewBox="0 0 25 12" fill="#111"><rect x="0.5" y="0.5" width="21" height="11" rx="2.5" stroke="#111" stroke-width="1" fill="none"/><rect x="22" y="3.5" width="2.5" height="5" rx="1" fill="#111" opacity="0.4"/><rect x="2" y="2" width="16" height="8" rx="1.5"/></svg>
+                                </div>
+                            </div>
+                            <!-- Dynamic island / notch -->
+                            <div style="position:absolute;top:10px;left:50%;transform:translateX(-50%);width:90px;height:25px;background:#080808;border-radius:14px;z-index:40;"></div>
+                            <!-- iframe area -->
+                            <div style="position:absolute;top:44px;left:0;right:0;bottom:0;border-radius:0 0 38px 38px;overflow:hidden;">
+                                <iframe
+                                    id="preview"
+                                    data-src="{{ url('/preview/'.$user->username) }}?page={{ $activePage->id ?? '' }}&t={{ time() }}"
+                                    frameborder="0"
+                                    loading="lazy"
+                                    style="position:absolute;top:0;left:0;width:375px;height:calc(100% / 0.7467);transform:scale(0.7467);transform-origin:top left;border:none;background:#fff;display:block;">
+                                </iframe>
+                            </div>
+                            <!-- Home indicator -->
+                            <div style="position:absolute;bottom:7px;left:50%;transform:translateX(-50%);width:90px;height:3px;background:rgba(0,0,0,0.22);border-radius:2px;z-index:30;pointer-events:none;"></div>
+                            <!-- Glass reflection -->
+                            <div style="position:absolute;inset:0;border-radius:38px;background:linear-gradient(130deg,rgba(255,255,255,0.16) 0%,rgba(255,255,255,0.05) 28%,transparent 55%);pointer-events:none;z-index:50;"></div>
+                        </div>
+                    </div>
+                </div>      
             </div>
-            <!-- Dynamic island / notch -->
-            <div style="position:absolute;top:10px;left:50%;transform:translateX(-50%);width:90px;height:25px;background:#080808;border-radius:14px;z-index:40;"></div>
-            <!-- iframe area -->
-            <div style="position:absolute;top:44px;left:0;right:0;bottom:0;border-radius:0 0 38px 38px;overflow:hidden;">
-                <iframe
-                    id="preview"
-                    src="{{ url('/preview/'.$user->username) }}?page={{ $activePage->id ?? '' }}&t={{ time() }}"
-                    frameborder="0"
-                    style="position:absolute;top:0;left:0;width:375px;height:calc(100% / 0.7467);transform:scale(0.7467);transform-origin:top left;border:none;background:#fff;display:block;">
-                </iframe>
-            </div>
-            <!-- Home indicator -->
-            <div style="position:absolute;bottom:7px;left:50%;transform:translateX(-50%);width:90px;height:3px;background:rgba(0,0,0,0.22);border-radius:2px;z-index:30;pointer-events:none;"></div>
-            <!-- Glass reflection -->
-            <div style="position:absolute;inset:0;border-radius:38px;background:linear-gradient(130deg,rgba(255,255,255,0.16) 0%,rgba(255,255,255,0.05) 28%,transparent 55%);pointer-events:none;z-index:50;"></div>
-        </div>
-    </div>
-</div>      </div>
         </div>
     </div>
 </div>
@@ -350,6 +367,26 @@
      class="fixed inset-0 hidden"
      style="z-index:9990; background:rgba(15,23,42,0.5); backdrop-filter:blur(5px); -webkit-backdrop-filter:blur(5px);"
      onclick="closeAllModals()">
+</div>
+
+<div id="confirmModal"
+     class="modal fixed inset-0 z-[9999] hidden items-center justify-center p-4"
+     style="pointer-events:none;">
+    <div class="modal-container bg-white rounded-xl shadow-2xl w-full max-w-sm relative" style="pointer-events:auto;">
+        <div class="p-6 border-b border-gray-100 flex items-center justify-between">
+            <h3 class="text-lg font-bold text-gray-900" id="confirmModalTitle">Konfirmasi</h3>
+            <button type="button" onclick="closeAllModals()" class="text-gray-400 hover:text-gray-600 w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 transition">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="p-6">
+            <p class="text-sm text-gray-600 leading-6" id="confirmModalMessage">Apakah Anda yakin?</p>
+        </div>
+        <div class="p-6 border-t border-gray-100 bg-gray-50 rounded-b-xl flex justify-end gap-3">
+            <button type="button" onclick="closeAllModals()" class="px-4 py-2 rounded-lg btn-secondary">Batal</button>
+            <button type="button" id="confirmModalAction" class="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 transition">Ya, lanjutkan</button>
+        </div>
+    </div>
 </div>
 
 <!-- MODAL EDIT PAGE -->
@@ -411,7 +448,9 @@
             <div class="p-6 border-t border-gray-200 bg-gray-50 rounded-b-xl">
                 <div class="flex justify-end gap-3">
                     <button type="button" onclick="closeAllModals()" class="px-4 py-2 rounded-lg btn-secondary">Batal</button>
-                    <button type="submit" class="px-4 py-2 rounded-lg btn-primary">Buat Halaman</button>
+                    <button type="submit" id="addPageSubmitBtn" class="px-4 py-2 rounded-lg btn-primary">
+                        <span id="addPageSubmitText">Buat Halaman</span>
+                    </button>
                 </div>
             </div>
         </form>
@@ -470,7 +509,7 @@
 
             <div class="flex justify-end gap-3 pt-4">
                 <button type="button" onclick="closeAllModals()" class="px-4 py-2 rounded-lg btn-secondary">Batal</button>
-                <button type="submit" class="px-4 py-2 rounded-lg btn-primary">
+                <button type="submit" id="blockSubmitBtn" class="px-4 py-2 rounded-lg btn-primary">
                     <span id="submitBtnText">Simpan</span>
                 </button>
             </div>
@@ -534,6 +573,8 @@
                             </div>
                         </div>
                         <button type="button"
+                            data-product-select-btn="true"
+                            data-product-id="{{ $product->id }}"
                             onclick="selectProduct({{ $product->id }}, {{ json_encode($product) }})"
                             class="flex-shrink-0 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm transition active:scale-95">
                             Pilih
@@ -623,6 +664,53 @@
 .sortable-ghost { opacity: 0.4; background: #dbeafe; }
 .sortable-drag  { opacity: 0.8; transform: rotate(2deg); }
 
+.block-section-busy {
+    position: absolute;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.78);
+    backdrop-filter: blur(3px);
+    z-index: 15;
+}
+
+.block-section-busy.show {
+    display: flex;
+}
+
+.block-section-busy-card {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    border-radius: 999px;
+    background: rgba(15, 23, 42, 0.92);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    box-shadow: 0 14px 30px rgba(15, 23, 42, 0.18);
+}
+
+.block-section-spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255,255,255,.28);
+    border-top-color: #fff;
+    border-radius: 999px;
+    animation: blockSectionSpin .7s linear infinite;
+}
+
+.block-item.is-removing {
+    opacity: 0.38;
+    transform: scale(0.985);
+    pointer-events: none;
+}
+
+@keyframes blockSectionSpin {
+    to { transform: rotate(360deg); }
+}
+
 .line-clamp-2 {
     display: -webkit-box;
     -webkit-line-clamp: 2;
@@ -649,54 +737,346 @@
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
 <script>
 // ============================================
-// LIVE FETCH PRODUCT INFO IN BLOCK LIST
-// ============================================
-function loadBlockProductInfos() {
-    document.querySelectorAll('[id^="block-product-info-"]').forEach(container => {
-        const productId = container.getAttribute('data-product-id');
-        if (!productId) return;
-        fetch(`/api/product/${productId}`)
-            .then(r => r.json())
-            .then(prod => {
-                const price    = prod.price    ?? 0;
-                const discount = prod.discount ?? null;
-                const final    = (discount && discount > 0 && discount < price) ? discount : price;
-                const hasDis   = final < price;
-                const imgHtml  = prod.image_url
-                    ? `<img src="${prod.image_url}" class="w-12 h-12 object-cover rounded-lg" alt="">`
-                    : `<div style="width:48px;height:48px;background:#fefce8;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                           <i class="fas fa-box" style="color:#ca8a04;font-size:14px;"></i>
-                       </div>`;
-                const priceHtml = hasDis
-                    ? `<span style="font-size:11px;color:#2563eb;font-weight:600;">Rp ${fmtNum(final)}</span>
-                       <span style="font-size:10px;color:#9ca3af;text-decoration:line-through;margin-left:3px;">Rp ${fmtNum(price)}</span>`
-                    : `<span style="font-size:11px;color:#2563eb;font-weight:600;">Rp ${fmtNum(final)}</span>`;
-                container.innerHTML = `
-                    <div style="display:flex;align-items:center;gap:10px;">
-                        <div style="flex-shrink:0;">${imgHtml}</div>
-                        <div style="min-width:0;">
-                            <p style="font-size:13px;font-weight:500;color:#111827;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px;">${escHtml(prod.title)}</p>
-                            <div style="display:flex;align-items:center;gap:4px;margin-top:2px;">${priceHtml}</div>
-                        </div>
-                    </div>`;
-            })
-            .catch(() => {
-                container.innerHTML = `<p style="font-size:12px;color:#9ca3af;">Produk tidak ditemukan</p>`;
-            });
-    });
-}
-
-function fmtNum(n) { return new Intl.NumberFormat('id-ID').format(Math.round(n)); }
-function escHtml(str) {
-    if (!str) return '';
-    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
-// ============================================
 // GLOBAL VARIABLES
 // ============================================
 let currentPageId     = {{ $activePage->id ?? 'null' }};
 let _replacingBlockId = null;
+let isBlockSubmitting = false;
+let isAddPageSubmitting = false;
+let isProductSubmitting = false;
+let confirmActionHandler = null;
+let blockSectionBusyCount = 0;
+
+function setBlockSubmitState(isLoading) {
+    const submitBtn = document.getElementById('blockSubmitBtn');
+    const submitTxt = document.getElementById('submitBtnText');
+    const isEdit = document.getElementById('isEdit')?.value === '1';
+
+    isBlockSubmitting = isLoading;
+
+    if (submitBtn) {
+        submitBtn.disabled = isLoading;
+        submitBtn.style.opacity = isLoading ? '0.7' : '';
+        submitBtn.style.cursor = isLoading ? 'not-allowed' : '';
+    }
+
+    if (submitTxt) {
+        submitTxt.textContent = isLoading
+            ? (isEdit ? 'Menyimpan...' : 'Menambahkan...')
+            : (isEdit ? 'Update' : 'Simpan');
+    }
+}
+
+function setAddPageSubmitState(isLoading) {
+    const submitBtn = document.getElementById('addPageSubmitBtn');
+    const submitTxt = document.getElementById('addPageSubmitText');
+
+    isAddPageSubmitting = isLoading;
+
+    if (submitBtn) {
+        submitBtn.disabled = isLoading;
+        submitBtn.style.opacity = isLoading ? '0.7' : '';
+        submitBtn.style.cursor = isLoading ? 'not-allowed' : '';
+    }
+
+    if (submitTxt) {
+        submitTxt.textContent = isLoading ? 'Membuat...' : 'Buat Halaman';
+    }
+}
+
+function setProductSubmitState(isLoading, activeProductId = null) {
+    const buttons = document.querySelectorAll('[data-product-select-btn="true"]');
+    isProductSubmitting = isLoading;
+
+    buttons.forEach((btn) => {
+        const isActive = activeProductId !== null && btn.getAttribute('data-product-id') === String(activeProductId);
+        btn.disabled = isLoading;
+        btn.style.opacity = isLoading ? '0.7' : '';
+        btn.style.cursor = isLoading ? 'not-allowed' : '';
+        btn.textContent = isLoading && isActive ? 'Memproses...' : 'Pilih';
+    });
+}
+
+function ensureBlockSectionBusyOverlay() {
+    const card = document.getElementById('blockSectionCard');
+    if (!card) return null;
+
+    let overlay = document.getElementById('blockSectionBusyOverlay');
+    if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = 'blockSectionBusyOverlay';
+        overlay.className = 'block-section-busy';
+        overlay.innerHTML = `
+            <div class="block-section-busy-card">
+                <span class="block-section-spinner"></span>
+                <span id="blockSectionBusyText">Memproses perubahan...</span>
+            </div>
+        `;
+        card.appendChild(overlay);
+    }
+
+    return overlay;
+}
+
+function setBlockSectionBusy(isBusy, message = 'Memproses perubahan...') {
+    const overlay = ensureBlockSectionBusyOverlay();
+    if (!overlay) return;
+
+    if (isBusy) {
+        blockSectionBusyCount += 1;
+        const textEl = document.getElementById('blockSectionBusyText');
+        if (textEl) textEl.textContent = message;
+        overlay.classList.add('show');
+        return;
+    }
+
+    blockSectionBusyCount = Math.max(0, blockSectionBusyCount - 1);
+    if (blockSectionBusyCount === 0) {
+        overlay.classList.remove('show');
+    }
+}
+
+function markBlockPendingState(blockId, isPending) {
+    const blockEl = document.querySelector(`#blockList [data-id="${blockId}"]`);
+    if (!blockEl) return;
+    blockEl.classList.toggle('is-removing', Boolean(isPending));
+}
+
+function escapeHtml(value) {
+    return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
+function fmtMoney(value) {
+    return 'Rp ' + new Intl.NumberFormat('id-ID').format(Math.round(Number(value || 0)));
+}
+
+function refreshPreview() {
+    const iframe = document.getElementById('preview');
+    if (!iframe) return;
+    const baseSrc = iframe.src || iframe.dataset.src || '';
+    if (!baseSrc) return;
+    const cleanSrc = baseSrc.replace(/([?&])t=\d+/, '$1').replace(/[?&]$/, '');
+    iframe.src = cleanSrc + (cleanSrc.includes('?') ? '&' : '?') + 't=' + Date.now();
+}
+
+function showConfirmDialog(message, onConfirm, options = {}) {
+    const titleEl = document.getElementById('confirmModalTitle');
+    const msgEl = document.getElementById('confirmModalMessage');
+    const actionBtn = document.getElementById('confirmModalAction');
+    if (titleEl) titleEl.textContent = options.title || 'Konfirmasi';
+    if (msgEl) msgEl.textContent = message;
+    if (actionBtn) {
+        actionBtn.textContent = options.confirmText || 'Ya, lanjutkan';
+        actionBtn.onclick = () => {
+            closeAllModals();
+            if (typeof confirmActionHandler === 'function') {
+                const handler = confirmActionHandler;
+                confirmActionHandler = null;
+                handler();
+            }
+        };
+    }
+    confirmActionHandler = onConfirm;
+    showModal('confirmModal');
+}
+
+function renderBlockContent(block) {
+    const content = block.content || {};
+    if (block.type === 'text' && content.text) {
+        return `<p class="text-sm text-gray-600 line-clamp-2">${escapeHtml(content.text)}</p>`;
+    }
+    if (block.type === 'link' && content.title) {
+        return `<p class="text-sm text-gray-600 font-medium">${escapeHtml(content.title)}</p>
+                <p class="text-xs text-gray-400 truncate">${escapeHtml(content.url || '')}</p>`;
+    }
+    if (block.type === 'image' && content.image) {
+        return `<div class="flex items-center gap-3">
+                    <img src="/storage/${escapeHtml(content.image)}" class="w-16 h-16 object-cover rounded-lg" alt="Block image">
+                </div>`;
+    }
+    if (block.type === 'video' && content.youtube_url) {
+        const videoIdHtml = content.youtube_id
+            ? `<p class="text-xs text-gray-400 mt-1">Video ID: ${escapeHtml(content.youtube_id)}</p>`
+            : '';
+        return `<div class="flex items-center gap-2">
+                    <i class="fab fa-youtube text-red-500"></i>
+                    <p class="text-xs text-gray-600 truncate">${escapeHtml(content.youtube_url)}</p>
+                </div>${videoIdHtml}`;
+    }
+    if (block.type === 'product') {
+        const product = content.product || {};
+        const price = Number(product.price || 0);
+        const discount = Number(product.discount || 0);
+        const finalPrice = discount > 0 && discount < price ? discount : price;
+        const imageHtml = product.image
+            ? `<img src="/storage/${escapeHtml(product.image)}" class="w-12 h-12 object-cover rounded-lg flex-shrink-0" alt="${escapeHtml(product.title || 'Produk')}">`
+            : `<div class="w-12 h-12 bg-yellow-50 rounded-lg flex items-center justify-center flex-shrink-0"><i class="fas fa-box text-yellow-500 text-sm"></i></div>`;
+        if (!product.title) {
+            return `<p class="text-xs text-gray-400">Produk tidak ditemukan</p>`;
+        }
+        return `<div class="flex items-center gap-2">
+                    ${imageHtml}
+                    <div class="min-w-0">
+                        <p class="text-sm font-medium text-gray-900 truncate">${escapeHtml(product.title)}</p>
+                        <div class="flex items-center gap-1 mt-1">
+                            <span class="text-xs font-semibold text-blue-600">${fmtMoney(finalPrice)}</span>
+                            ${finalPrice < price ? `<span class="text-[10px] text-gray-400 line-through">${fmtMoney(price)}</span>` : ''}
+                        </div>
+                    </div>
+                </div>`;
+    }
+    return `<p class="text-xs text-gray-400">Konten tidak tersedia</p>`;
+}
+
+function renderBlockActions(block) {
+    if (block.type === 'product') {
+        return `<button type="button"
+                    onclick="openReplaceProductModal(${block.id})"
+                    class="p-2 text-gray-400 hover:text-yellow-600 hover:bg-yellow-50 rounded-lg transition"
+                    title="Ganti produk">
+                    <i class="fas fa-edit text-sm"></i>
+                </button>
+                <button type="button"
+                    onclick="deleteBlock(${block.id})"
+                    class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition">
+                    <i class="fas fa-trash text-sm"></i>
+                </button>`;
+    }
+    const encodedContent = encodeURIComponent(JSON.stringify(block.content || {}));
+    return `<button type="button"
+                onclick="editBlockFromEncoded(${block.id}, '${escapeHtml(block.type)}', '${encodedContent}')"
+                class="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition">
+                <i class="fas fa-edit text-sm"></i>
+            </button>
+            <button type="button"
+                onclick="deleteBlock(${block.id})"
+                class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition">
+                <i class="fas fa-trash text-sm"></i>
+            </button>`;
+}
+
+function renderBlockCard(block) {
+    const iconMap = {
+        text: ['fas fa-font text-blue-600', 'Teks'],
+        image: ['fas fa-image text-green-600', 'Gambar'],
+        link: ['fas fa-link text-purple-600', 'Link'],
+        video: ['fab fa-youtube text-red-600', 'Video'],
+        product: ['fas fa-box text-yellow-600', 'Produk'],
+    };
+    const [iconClass, label] = iconMap[block.type] || ['fas fa-cube text-gray-500', block.type];
+    const badge = block.type === 'product' && block.product_id
+        ? `<span class="text-xs bg-yellow-50 text-yellow-600 border border-yellow-200 px-2 py-0.5 rounded-full">ID #${escapeHtml(block.product_id)}</span>`
+        : '';
+
+    return `<div data-id="${block.id}" class="block-item bg-white rounded-lg border border-gray-200 p-4 hover:border-blue-300 hover:shadow-sm transition cursor-move">
+                <div class="flex items-start justify-between gap-3">
+                    <div class="flex items-start gap-3 flex-1 min-w-0">
+                        <div class="mt-1">
+                            <i class="fas fa-grip-vertical text-gray-400"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center gap-2 mb-2">
+                                <i class="${iconClass}"></i>
+                                <span class="font-medium text-gray-900">${label}</span>
+                                ${badge}
+                            </div>
+                            ${renderBlockContent(block)}
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-1">
+                        ${renderBlockActions(block)}
+                    </div>
+                </div>
+            </div>`;
+}
+
+function initBlockSortable() {
+    const blockList = document.getElementById('blockList');
+    if (!blockList) return;
+    if (blockList._sortableInstance) {
+        blockList._sortableInstance.destroy();
+    }
+    blockList._sortableInstance = new Sortable(blockList, {
+        animation: 150,
+        ghostClass: 'sortable-ghost',
+        handle: '.fa-grip-vertical',
+        onEnd: function() {
+            const order = Array.from(blockList.children).map((item, index) => ({
+                id: item.dataset.id, position: index + 1
+            }));
+            fetch('{{ route("blocks.reorder") }}', {
+                method: 'POST',
+                headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Content-Type': 'application/json' },
+                body: JSON.stringify({ order })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) refreshPreview();
+            });
+        }
+    });
+}
+
+async function refreshActivePageBlocks() {
+    if (!currentPageId) return;
+    const res = await fetch(`/blocks?page_id=${currentPageId}`, {
+        headers: { 'Accept': 'application/json' }
+    });
+    const data = await res.json();
+    if (!res.ok || !data.success) {
+        throw new Error(data.message || 'Gagal memuat ulang blok');
+    }
+
+    const heading = document.getElementById('blockSectionHeading');
+    if (heading) {
+        heading.innerHTML = `Konten: <span class="text-blue-600">${escapeHtml(data.pageTitle || '')}</span>`;
+    }
+
+    const container = document.getElementById('blockSectionContent');
+    if (!container) return;
+
+    if (Array.isArray(data.blocks) && data.blocks.length > 0) {
+        container.innerHTML = `<div id="blockList" class="space-y-3">${data.blocks.map(renderBlockCard).join('')}</div>`;
+        initBlockSortable();
+    } else {
+        container.innerHTML = `<div class="text-center py-8 text-gray-400 border-2 border-dashed border-gray-300 rounded-lg">
+            <i class="fas fa-cubes text-3xl mb-3"></i>
+            <p class="font-medium">Belum ada blok</p>
+            <p class="text-sm mt-1">Tambahkan blok untuk menampilkan konten</p>
+        </div>`;
+    }
+}
+
+async function syncBuilderAfterChange() {
+    try {
+        await refreshActivePageBlocks();
+        refreshPreview();
+        return true;
+    } catch (error) {
+        console.error('Gagal sinkronisasi builder, fallback ke reload penuh:', error);
+        refreshPreview();
+        window.location.reload();
+        return false;
+    } finally {
+        blockSectionBusyCount = 0;
+        const overlay = document.getElementById('blockSectionBusyOverlay');
+        if (overlay) overlay.classList.remove('show');
+    }
+}
+
+function editBlockFromEncoded(blockId, type, encodedContent) {
+    try {
+        const content = JSON.parse(decodeURIComponent(encodedContent || ''));
+        editBlock(blockId, type, content);
+    } catch (error) {
+        showBuilderToast('Gagal membuka data blok untuk diedit', 'error');
+    }
+}
 
 // ============================================
 // MODAL MANAGEMENT
@@ -718,6 +1098,7 @@ function closeAllModals() {
     document.querySelectorAll('.modal.is-open').forEach(m => m.classList.remove('is-open'));
     document.getElementById('globalModalOverlay').classList.add('hidden');
     document.body.style.overflow = '';
+    setBlockSubmitState(false);
 }
 
 // ============================================
@@ -834,6 +1215,7 @@ function selectPage(pageId) {
 }
 
 function showAddPageForm() {
+    setAddPageSubmitState(false);
     showModal('addPageModal');
     setTimeout(() => document.getElementById('new_page_title').focus(), 100);
 }
@@ -847,14 +1229,19 @@ function showEditModal(pageId, pageTitle) {
 }
 
 function confirmDelete(button) {
-    if (confirm('Yakin ingin menghapus halaman ini?')) button.closest('form').submit();
+    showConfirmDialog('Yakin ingin menghapus halaman ini?', () => {
+        button.closest('form').submit();
+    }, {
+        title: 'Hapus Halaman',
+        confirmText: 'Ya, hapus'
+    });
 }
 
 // ============================================
 // BLOCK FUNCTIONS
 // ============================================
 function addBlock(type) {
-    if (!currentPageId) { alert('Silakan pilih halaman terlebih dahulu'); return; }
+    if (!currentPageId) { showBuilderToast('Silakan pilih halaman terlebih dahulu', 'error'); return; }
     document.getElementById('blockModalTitle').textContent = 'Tambah Blok ' + getBlockTypeName(type);
     document.getElementById('blockType').value = type;
     document.getElementById('isEdit').value    = '0';
@@ -872,6 +1259,7 @@ function addBlock(type) {
     if (imageInput) imageInput._compressedFile = null;
     const compressionInfo = document.getElementById('compressionInfo');
     if (compressionInfo) compressionInfo.remove();
+    setBlockSubmitState(false);
 
     if (type === 'text')  document.getElementById('textField').classList.remove('hidden');
     if (type === 'link')  document.getElementById('linkField').classList.remove('hidden');
@@ -896,6 +1284,7 @@ function editBlock(blockId, type, content) {
     if (imageInput) imageInput._compressedFile = null;
     const compressionInfo = document.getElementById('compressionInfo');
     if (compressionInfo) compressionInfo.remove();
+    setBlockSubmitState(false);
 
     if (type === 'text') {
         document.getElementById('textField').classList.remove('hidden');
@@ -930,14 +1319,33 @@ function getBlockTypeName(type) {
 }
 
 function deleteBlock(blockId) {
-    if (!confirm('Yakin ingin menghapus blok ini?')) return;
-    fetch(`/blocks/${blockId}`, {
-        method: 'DELETE',
-        headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Accept': 'application/json' }
-    })
-    .then(r => r.json())
-    .then(data => { if (data.success) location.reload(); else alert('Gagal menghapus blok'); })
-    .catch(() => alert('Terjadi kesalahan saat menghapus blok'));
+    showConfirmDialog('Yakin ingin menghapus blok ini?', () => {
+        markBlockPendingState(blockId, true);
+        setBlockSectionBusy(true, 'Menghapus blok...');
+        fetch(`/blocks/${blockId}`, {
+            method: 'DELETE',
+            headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Accept': 'application/json' }
+        })
+        .then(r => r.json())
+        .then(async data => {
+            if (data.success) {
+                await syncBuilderAfterChange();
+                showBuilderToast('Blok berhasil dihapus', 'success');
+            } else {
+                markBlockPendingState(blockId, false);
+                setBlockSectionBusy(false);
+                showBuilderToast(data.message || 'Gagal menghapus blok', 'error');
+            }
+        })
+        .catch(() => {
+            markBlockPendingState(blockId, false);
+            setBlockSectionBusy(false);
+            showBuilderToast('Terjadi kesalahan saat menghapus blok', 'error');
+        });
+    }, {
+        title: 'Hapus Blok',
+        confirmText: 'Ya, hapus'
+    });
 }
 
 // ============================================
@@ -1026,8 +1434,9 @@ function showCompressionInfo(originalKB, compressedKB, savedKB) {
 // PRODUCT FUNCTIONS
 // ============================================
 function openProductModal() {
-    if (!currentPageId) { alert('Silakan pilih halaman terlebih dahulu'); return; }
+    if (!currentPageId) { showBuilderToast('Silakan pilih halaman terlebih dahulu', 'error'); return; }
     _replacingBlockId = null;
+    setProductSubmitState(false);
     document.getElementById('productModalTitle').textContent = 'Pilih Produk';
     switchProdTab('all');
     showModal('productModal');
@@ -1035,6 +1444,7 @@ function openProductModal() {
 
 function openReplaceProductModal(blockId) {
     _replacingBlockId = blockId;
+    setProductSubmitState(false);
     document.getElementById('productModalTitle').textContent = 'Ganti Produk';
     switchProdTab('all');
     showModal('productModal');
@@ -1042,11 +1452,15 @@ function openReplaceProductModal(blockId) {
 
 function closeProductModal() {
     _replacingBlockId = null;
+    setProductSubmitState(false);
     closeAllModals();
 }
 
 function selectProduct(productId, productData) {
-    if (!currentPageId) { alert('Silakan pilih halaman terlebih dahulu'); closeProductModal(); return; }
+    if (!currentPageId) { showBuilderToast('Silakan pilih halaman terlebih dahulu', 'error'); closeProductModal(); return; }
+    if (isProductSubmitting) return;
+    setProductSubmitState(true, productId);
+    setBlockSectionBusy(true, _replacingBlockId ? 'Mengganti produk...' : 'Menambahkan produk...');
 
     if (_replacingBlockId) {
         const formData = new FormData();
@@ -1063,21 +1477,22 @@ function selectProduct(productId, productData) {
             body: formData
         })
         .then(r => r.json())
-        .then(data => {
+        .then(async data => {
             if (data.success) {
                 closeProductModal();
-                const iframe = document.getElementById('preview');
-                if (iframe) {
-                    const src = iframe.src.replace(/[&?]t=\d+/, '');
-                    iframe.src = src + (src.includes('?') ? '&' : '?') + 't=' + Date.now();
-                }
+                await syncBuilderAfterChange();
                 showBuilderToast('✓ Produk berhasil diganti!', 'success');
-                setTimeout(() => location.reload(), 800);
             } else {
-                alert('Gagal mengganti produk: ' + (data.message ?? ''));
+                setProductSubmitState(false);
+                setBlockSectionBusy(false);
+                showBuilderToast(data.message || 'Gagal mengganti produk', 'error');
             }
         })
-        .catch(() => alert('Terjadi kesalahan saat mengganti produk'));
+        .catch(() => {
+            setProductSubmitState(false);
+            setBlockSectionBusy(false);
+            showBuilderToast('Terjadi kesalahan saat mengganti produk', 'error');
+        });
     } else {
         const formData = new FormData();
         formData.append('page_id', currentPageId);
@@ -1091,11 +1506,23 @@ function selectProduct(productId, productData) {
             body: formData
         })
         .then(r => r.json())
-        .then(data => {
-            if (data.success) { closeProductModal(); location.reload(); }
-            else alert('Gagal menambahkan produk');
+        .then(async data => {
+            if (data.success) {
+                closeProductModal();
+                await syncBuilderAfterChange();
+                showBuilderToast('Produk berhasil ditambahkan', 'success');
+            }
+            else {
+                setProductSubmitState(false);
+                setBlockSectionBusy(false);
+                showBuilderToast(data.message || 'Gagal menambahkan produk', 'error');
+            }
         })
-        .catch(() => alert('Terjadi kesalahan saat menambahkan produk'));
+        .catch(() => {
+            setProductSubmitState(false);
+            setBlockSectionBusy(false);
+            showBuilderToast('Terjadi kesalahan saat menambahkan produk', 'error');
+        });
     }
 }
 
@@ -1110,13 +1537,46 @@ document.getElementById('editPageForm').addEventListener('submit', function(e) {
         body: new FormData(this)
     })
     .then(r => r.json())
-    .then(data => { if (data.success) location.reload(); else alert('Gagal mengupdate halaman'); })
-    .catch(() => alert('Terjadi kesalahan'));
+    .then(data => {
+        if (data.success) location.reload();
+        else showBuilderToast(data.message || 'Gagal mengupdate halaman', 'error');
+    })
+    .catch(() => showBuilderToast('Terjadi kesalahan saat mengupdate halaman', 'error'));
+});
+
+document.getElementById('addPageForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    if (isAddPageSubmitting) return;
+
+    setAddPageSubmitState(true);
+
+    fetch(this.action, {
+        method: 'POST',
+        headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Accept': 'application/json' },
+        body: new FormData(this)
+    })
+    .then(async (r) => {
+        const data = await r.json();
+        return { ok: r.ok, data };
+    })
+    .then(({ ok, data }) => {
+        if (ok && data.success) {
+            location.reload();
+            return;
+        }
+        setAddPageSubmitState(false);
+        showBuilderToast(data.message || 'Gagal menambahkan halaman', 'error');
+    })
+    .catch(() => {
+        setAddPageSubmitState(false);
+        showBuilderToast('Terjadi kesalahan saat menambahkan halaman', 'error');
+    });
 });
 
 document.getElementById('blockForm').addEventListener('submit', function(e) {
     e.preventDefault();
-    if (!currentPageId) { alert('Silakan pilih halaman terlebih dahulu'); return; }
+    if (isBlockSubmitting) return;
+    if (!currentPageId) { showBuilderToast('Silakan pilih halaman terlebih dahulu', 'error'); return; }
 
     const type    = document.getElementById('blockType').value;
     const isEdit  = document.getElementById('isEdit').value === '1';
@@ -1129,22 +1589,22 @@ document.getElementById('blockForm').addEventListener('submit', function(e) {
 
     if (type === 'text') {
         const v = document.getElementById('textContent').value;
-        if (!v && !isEdit) { alert('Teks tidak boleh kosong'); return; }
+        if (!v && !isEdit) { showBuilderToast('Teks tidak boleh kosong', 'error'); return; }
         formData.append('content[text]', v);
     }
     if (type === 'link') {
         const t = document.getElementById('linkTitle').value;
         const u = document.getElementById('linkUrl').value;
-        if (!t && !isEdit) { alert('Judul link tidak boleh kosong'); return; }
-        if (!u && !isEdit) { alert('URL tidak boleh kosong'); return; }
+        if (!t && !isEdit) { showBuilderToast('Judul link tidak boleh kosong', 'error'); return; }
+        if (!u && !isEdit) { showBuilderToast('URL tidak boleh kosong', 'error'); return; }
         formData.append('content[title]', t);
         formData.append('content[url]', u);
     }
     if (type === 'video') {
         const u  = document.getElementById('youtubeUrl').value;
         const id = extractYoutubeId(u);
-        if (!u && !isEdit) { alert('URL YouTube tidak boleh kosong'); return; }
-        if (u && !id)      { alert('URL YouTube tidak valid'); return; }
+        if (!u && !isEdit) { showBuilderToast('URL YouTube tidak boleh kosong', 'error'); return; }
+        if (u && !id)      { showBuilderToast('URL YouTube tidak valid', 'error'); return; }
         formData.append('content[youtube_url]', u);
         formData.append('content[youtube_id]', id);
     }
@@ -1153,16 +1613,33 @@ document.getElementById('blockForm').addEventListener('submit', function(e) {
         // Gunakan file terkompresi jika ada, fallback ke file asli
         const f = imageInput._compressedFile || imageInput.files[0];
         if (f)            { formData.append('image', f); }
-        else if (!isEdit) { alert('Silakan pilih gambar'); return; }
+        else if (!isEdit) { showBuilderToast('Silakan pilih gambar', 'error'); return; }
     }
 
     let url = '{{ route("blocks.store") }}';
     if (isEdit) { url = `/blocks/${blockId}`; formData.append('_method', 'PUT'); }
 
+    setBlockSubmitState(true);
+    setBlockSectionBusy(true, isEdit ? 'Memperbarui blok...' : 'Menambahkan blok...');
+
     fetch(url, { method: 'POST', headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' }, body: formData })
     .then(r => r.json())
-    .then(data => { if (data.success) { closeAllModals(); location.reload(); } else alert('Gagal menyimpan blok'); })
-    .catch(() => alert('Terjadi kesalahan saat menyimpan blok'));
+    .then(async data => {
+        if (data.success) {
+            closeAllModals();
+            await syncBuilderAfterChange();
+            showBuilderToast(isEdit ? 'Blok berhasil diperbarui' : 'Blok berhasil ditambahkan', 'success');
+            return;
+        }
+        setBlockSubmitState(false);
+        setBlockSectionBusy(false);
+        showBuilderToast(data.message || 'Gagal menyimpan blok', 'error');
+    })
+    .catch(() => {
+        setBlockSubmitState(false);
+        setBlockSectionBusy(false);
+        showBuilderToast('Terjadi kesalahan saat menyimpan blok', 'error');
+    });
 });
 
 // ============================================
@@ -1171,32 +1648,17 @@ document.getElementById('blockForm').addEventListener('submit', function(e) {
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeAllModals(); });
 
 document.addEventListener('DOMContentLoaded', function() {
-    loadBlockProductInfos();
-
     const previewFrame = document.getElementById('preview');
     if (previewFrame) {
+        requestAnimationFrame(() => {
+            if (!previewFrame.src) {
+                previewFrame.src = previewFrame.dataset.src || '';
+            }
+        });
         previewFrame.addEventListener('load', () => hidePreviewFrameScrollbar('preview'));
     }
 
-    // Sortable
-    const blockList = document.getElementById('blockList');
-    if (blockList) {
-        new Sortable(blockList, {
-            animation: 150, ghostClass: 'sortable-ghost', handle: '.fa-grip-vertical',
-            onEnd: function() {
-                const order = Array.from(blockList.children).map((item, index) => ({
-                    id: item.dataset.id, position: index + 1
-                }));
-                fetch('{{ route("blocks.reorder") }}', {
-                    method: 'POST',
-                    headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}', 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ order })
-                })
-                .then(r => r.json())
-                .then(data => { if (data.success) document.getElementById('preview').contentWindow.location.reload(); });
-            }
-        });
-    }
+    initBlockSortable();
 
     // YouTube preview
     const youtubeInput = document.getElementById('youtubeUrl');
