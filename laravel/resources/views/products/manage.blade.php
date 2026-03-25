@@ -314,7 +314,7 @@ tbody tr:hover { background: #f1f5f9; }
                     <form method="POST" action="{{ route('products.destroy', $product) }}" style="flex:1; display:flex;">
                         @csrf
                         @method('DELETE')
-                        <button onclick="return confirm('Yakin hapus produk?')" class="btn-delete" style="width:100%;">
+                        <button type="button" onclick="confirmDeleteProduct(this.form)" class="btn-delete" style="width:100%;">
                             <i class="fas fa-trash" style="font-size:10px; margin-right:4px;"></i> Hapus
                         </button>
                     </form>
@@ -525,6 +525,15 @@ function closeEditModal(id) {
         if (overlay) overlay.classList.add('hidden');
         document.body.style.overflow = '';
     }, 200);
+}
+
+async function confirmDeleteProduct(form) {
+    if (await window.appConfirm('Yakin hapus produk?', {
+        title: 'Hapus Produk',
+        confirmText: 'Ya, hapus'
+    })) {
+        form.submit();
+    }
 }
 </script>
 

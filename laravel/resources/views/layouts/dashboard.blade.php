@@ -119,7 +119,7 @@ html, body { margin: 0; padding: 0; min-height: 100vh; }
 }
 
 .s-logo img {
-    height: 52px;
+    height: 58px;
     width: auto;
     object-fit: contain;
     display: block;

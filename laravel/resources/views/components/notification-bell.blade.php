@@ -603,7 +603,10 @@ body.dark .notif-item-delete:hover { background: #2d1f1f; color: #fc8181; }
     // FIX: deleteAll — cek res.ok + set justDeletedAll agar polling tidak bunyi suara
     async function deleteAll() {
         if (!notifications.length) return;
-        if (!confirm('Hapus semua notifikasi?')) return;
+        if (!await window.appConfirm('Hapus semua notifikasi?', {
+            title: 'Hapus Semua Notifikasi',
+            confirmText: 'Ya, hapus'
+        })) return;
         try {
             var res = await fetch(API_DELETE_ALL, {
                 method: 'DELETE',

@@ -894,7 +894,10 @@ async function handleBannerUpload(input) {
 }
 
 async function deleteBanner() {
-    if (!confirm('Hapus banner? Tindakan ini tidak bisa dibatalkan.')) return;
+    if (!await window.appConfirm('Hapus banner? Tindakan ini tidak bisa dibatalkan.', {
+        title: 'Hapus Banner',
+        confirmText: 'Ya, hapus'
+    })) return;
     try {
         const res  = await fetch('{{ route("dashboard.appearance.deleteBanner") }}', { method:'POST', headers: { 'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json' } });
         const data = await res.json();
@@ -1245,7 +1248,11 @@ async function saveAppearance() {
 }
 
 async function resetAppearance() {
-    if (!confirm('Kembalikan tampilan ke pengaturan awal?')) return;
+    if (!await window.appConfirm('Kembalikan tampilan ke pengaturan awal?', {
+        title: 'Reset Tampilan',
+        confirmText: 'Ya, reset',
+        variant: 'primary'
+    })) return;
     try {
         const res  = await fetch('{{ route("dashboard.appearance.reset") }}', { method:'POST', headers:{'X-CSRF-TOKEN':CSRF,'Accept':'application/json'} });
         const data = await res.json();
@@ -1255,7 +1262,10 @@ async function resetAppearance() {
 }
 
 async function deleteBgImage() {
-    if (!confirm('Hapus gambar background? Tampilan akan kembali ke warna default.')) return;
+    if (!await window.appConfirm('Hapus gambar background? Tampilan akan kembali ke warna default.', {
+        title: 'Hapus Background',
+        confirmText: 'Ya, hapus'
+    })) return;
     try {
         const res  = await fetch('{{ route("dashboard.appearance.deleteBg") }}', { method:'POST', headers:{'X-CSRF-TOKEN':CSRF,'Accept':'application/json'} });
         const data = await res.json();

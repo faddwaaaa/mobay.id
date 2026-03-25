@@ -1166,7 +1166,11 @@ async function handleCheckout() {
         const data = await apiCall('/api/cart');
         if (!data.items||data.items.length===0) { showToast('Keranjang kosong.','error'); return; }
         if (data.items.length===1) { window.location.href=`/checkout/${data.items[0].product_id}`; return; }
-        if (confirm(`Keranjang berisi ${data.items.length} produk.\nLanjut "${data.items[0].title}"?`)) window.location.href=`/checkout/${data.items[0].product_id}`;
+        if (await window.appConfirm(`Keranjang berisi ${data.items.length} produk.\nLanjut "${data.items[0].title}"?`, {
+            title: 'Lanjut Checkout',
+            confirmText: 'Ya, lanjut',
+            variant: 'primary'
+        })) window.location.href=`/checkout/${data.items[0].product_id}`;
     } catch { showToast('Gagal memproses checkout.','error'); }
 }
 
@@ -1382,5 +1386,6 @@ async function doSearch(query) {
 })();
 </script>
 </div>
+@include('components.app-alert')
 </body>
 </html>
