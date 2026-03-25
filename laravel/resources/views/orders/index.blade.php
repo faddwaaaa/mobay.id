@@ -1,6 +1,6 @@
 @extends('layouts.dashboard')
 
-@section('title', 'Pesanan Masuk | Payou.id')
+@section('title', 'Pesanan Masuk | Mobay.id')
 
 @section('content')
 <style>

@@ -12,7 +12,7 @@
 
                 <tr>
                     <td align="center" style="padding-bottom:24px;">
-                        <img src="{{ url('img/logo.png') }}" alt="Payou.id" style="height:40px;display:block;">
+                        <img src="{{ url('img/logo.png') }}" alt="Mobay.id" style="height:40px;display:block;">
                     </td>
                 </tr>
 
@@ -49,7 +49,7 @@
 
                 <tr>
                     <td align="center" style="padding:20px 0 8px;">
-                        <p style="font-size:12px;color:#94a3b8;margin:0;">Email otomatis dari <strong style="color:#64748b;">Payou.id</strong> &middot;
+                        <p style="font-size:12px;color:#94a3b8;margin:0;">Email otomatis dari <strong style="color:#64748b;">Mobay.id</strong> &middot;
                             <a href="mailto:smeganemolab@gmail.com" style="color:#2563eb;text-decoration:none;">Hubungi CS</a>
                         </p>
                     </td>

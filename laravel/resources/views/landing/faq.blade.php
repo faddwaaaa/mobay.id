@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FAQ - Payou.id</title>
+    <title>FAQ - Mobay.id</title>
 
     <!-- Font Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -23,7 +23,7 @@
 <nav>
     <div class="nav-container">
         <a href="/" class="logo">
-            <img src="../img/logo.png" alt="payou.id">
+            <img src="../img/logo.png" alt="mobay.id">
         </a>
         <div class="nav-buttons" id="navButtons">
             <a href="{{ route('service') }}" class="btn btn-secondary">Service</a>
@@ -108,13 +108,13 @@
             <div class="faq-item" data-category="account">
                 <button class="faq-question">
                     <span class="faq-icon">🔐</span>
-                    <span class="flex-1 text-left">Bagaimana cara membuat akun di Payou.id?</span>
+                    <span class="flex-1 text-left">Bagaimana cara membuat akun di Mobay.id?</span>
                     <svg class="faq-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                     </svg>
                 </button>
                 <div class="faq-answer">
-                    <p>Membuat akun di Payou.id sangat mudah. Klik tombol "Daftar", masukkan email dan password, lalu verifikasi email Anda.</p>
+                    <p>Membuat akun di Mobay.id sangat mudah. Klik tombol "Daftar", masukkan email dan password, lalu verifikasi email Anda.</p>
                 </div>
             </div>
 
@@ -219,7 +219,7 @@
             <div class="p-8 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl text-white text-center shadow-lg">
                 <h3 class="text-2xl font-bold mb-3">Masih Punya Pertanyaan?</h3>
                 <p class="mb-6 opacity-90">Tim Customer Service kami siap membantu Anda 24/7</p>
-                <a href="https://wa.me/6285600489815?text=Halo%20Admin%20Payou.id!%20Saya%20punya%20pertanyaan" 
+                <a href="https://wa.me/6285600489815?text=Halo%20Admin%20Mobay.id!%20Saya%20punya%20pertanyaan" 
                 target="_blank"
                 class="inline-flex items-center gap-3 bg-white text-blue-600 px-8 py-4 rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-200">
                     <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
@@ -236,7 +236,7 @@
 <footer class="footer">
     <div class="footer-wrapper">
         <a href="/" class="logo">
-            <img src="../img/logo.png" alt="payou.id">
+            <img src="../img/logo.png" alt="mobay.id">
         </a>
         <div class="footer-links">
             <a href="{{ route('about') }}">About Us</a>
@@ -246,7 +246,7 @@
         </div>
     </div>
     <div class="footer-bottom">
-        <p>© 2025 payou.id - Satu Link untuk Semua Kebutuhan Bisnis UMKM</p>
+        <p>© 2025 mobay.id - Satu Link untuk Semua Kebutuhan Bisnis UMKM</p>
     </div>
 </footer>
 

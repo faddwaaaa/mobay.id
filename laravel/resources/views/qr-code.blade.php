@@ -1,6 +1,6 @@
 
 @extends('layouts.dashboard')
-@section('title', 'QR Code | Payou.id')
+@section('title', 'QR Code | Mobay.id')
 
 @section('content')
 <div style="min-height: 100vh; background: #f8fafc; padding: 24px;">
@@ -38,7 +38,7 @@
                 <div style="background: linear-gradient(145deg, #ffffff 0%, #f8fbff 100%); border: 2px solid #e6f0ff; border-radius: 16px; padding: 32px; margin-bottom: 20px; display: flex; justify-content: center; align-items: center; min-height: 280px; position: relative; box-shadow: 0 8px 20px rgba(0,102,204,0.08);">
                     {{-- Icon Payou di tengah QR --}}
                     <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 50px; height: 50px; background: #ffffff; border-radius: 16px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,102,204,0.12); border: 6px solid #ffffff; z-index: 10; pointer-events: none; overflow: hidden;">
-                        <img src="{{ asset('img/icon.png') }}" alt="Payou.id" style="width: 100%; height: 100%; object-fit: cover; display: block; border-radius: 10px;" onerror="this.parentElement.style.display='none';">
+                        <img src="{{ asset('img/icon.png') }}" alt="Mobay.id" style="width: 100%; height: 100%; object-fit: cover; display: block; border-radius: 10px;" onerror="this.parentElement.style.display='none';">
                     </div>
                     <div id="qrcode-main" style="filter: drop-shadow(0 4px 8px rgba(0,102,204,0.1));"></div>
                 </div>
@@ -104,7 +104,7 @@
                     <div style="margin-bottom: 20px;">
                         <label style="display: block; font-size: 13px; font-weight: 500; color: #475569; margin-bottom: 10px;">Warna QR Code</label>
                         <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
-                            <button onclick="changeColor('#0066CC', this)" class="color-btn active" title="Biru Payou"
+                            <button onclick="changeColor('#0066CC', this)" class="color-btn active" title="Biru Mobay"
                                 style="width: 38px; height: 38px; background: #0066CC; border-radius: 50%; border: 3px solid white; cursor: pointer; box-shadow: 0 0 0 3px rgba(0,102,204,0.35); transition: all 0.2s;">
                             </button>
                             <button onclick="changeColor('#111827', this)" class="color-btn" title="Hitam"
@@ -131,7 +131,7 @@
                             </label>
                         </div>
                         <p style="margin: 10px 0 0 0; font-size: 11px; color: #94a3b8;">
-                            Warna aktif: <span id="color-label" style="font-weight: 600; color: #0066CC;">#0066CC (Biru Payou)</span>
+                            Warna aktif: <span id="color-label" style="font-weight: 600; color: #0066CC;">#0066CC (Biru Mobay)</span>
                         </p>
                         <div style="margin-top: 8px; background: #fffbeb; border: 1px solid #fde68a; border-radius: 6px; padding: 8px 10px; display: flex; align-items: center; gap: 7px;">
                             <i class="fas fa-exclamation-triangle" style="color: #d97706; font-size: 11px; flex-shrink: 0;"></i>
@@ -232,7 +232,7 @@
 <div id="qr-poster-design" style="position:fixed; top:-9999px; left:-9999px; width:500px; height:550px; background:#ffffff; padding:25px; box-sizing:border-box; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; display:flex; flex-direction:column;">
     <div style="display:flex; align-items:center; gap:12px; margin-bottom:15px; flex-shrink:0;">
         <div style="display:flex; flex-direction:column;">
-            <span style="font-size:22px; font-weight:700; color:#0066CC; letter-spacing:-0.5px; line-height:1.2;">payou.id</span>
+            <span style="font-size:22px; font-weight:700; color:#0066CC; letter-spacing:-0.5px; line-height:1.2;">mobay.id</span>
             <span style="font-size:13px; color:#64748B; margin-top:2px;">Digital Business Card</span>
         </div>
     </div>
@@ -240,7 +240,7 @@
     <div style="display:flex; justify-content:center; align-items:center; margin-bottom:20px; background:linear-gradient(145deg,#ffffff,#f8fbff); padding:20px; border-radius:24px; box-shadow:0 15px 35px rgba(0,102,204,0.15); border:1px solid #e6f0ff; flex:1; position:relative;">
         {{-- Icon Payou di tengah QR poster --}}
         <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:60px; height:60px; background:#ffffff; border-radius:18px; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 10px rgba(0,102,204,0.14); border:7px solid #ffffff; z-index:10; pointer-events:none; overflow:hidden;">
-            <img id="poster-center-icon" src="{{ asset('img/icon.png') }}" alt="Payou.id" style="width:100%; height:100%; object-fit:cover; display:block; border-radius:11px;" onerror="this.parentElement.style.display='none';">
+            <img id="poster-center-icon" src="{{ asset('img/icon.png') }}" alt="Mobay.id" style="width:100%; height:100%; object-fit:cover; display:block; border-radius:11px;" onerror="this.parentElement.style.display='none';">
         </div>
         <div id="poster-qrcode" style="display:flex; justify-content:center; align-items:center;"></div>
     </div>
@@ -262,7 +262,7 @@
         </div>
     </div>
     <div style="border-top:1px solid #E2E8F0; padding-top:10px; text-align:center; flex-shrink:0;">
-        <span style="color:#94A3B8; font-size:10px;">© 2026 payou.id · All rights reserved</span>
+        <span style="color:#94A3B8; font-size:10px;">© 2026 mobay.id · All rights reserved</span>
     </div>
 </div>
 
@@ -320,10 +320,10 @@ button:active { transform: translateY(0); }
 let currentUrl      = '{{ url("/" . ($userSlug ?? "username")) }}';
 let currentUsername = '{{ $userSlug ?? "username" }}';
 let currentColor    = '#0066CC';
-const QR_DOWNLOAD_FILE = `payou-${currentUsername}.png`;
+const QR_DOWNLOAD_FILE = `mobay-${currentUsername}.png`;
 
 function buildShareCaption() {
-    return `Halo,\n\nSaya ingin berbagi kartu digital Payou.id saya.\n${currentUrl}\n\nScan QR pada gambar untuk membuka profil saya.`;
+    return `Halo,\n\nSaya ingin berbagi kartu digital Mobay.id saya.\n${currentUrl}\n\nScan QR pada gambar untuk membuka profil saya.`;
 }
 
 async function buildPosterImageUrl() {
@@ -409,13 +409,13 @@ async function shareOrderQR(imageUrl, captionText) {
     }
 
     const blob = await response.blob();
-    const file = new File([blob], `payou-${currentUsername}.png`, {
+    const file = new File([blob], `mobay-${currentUsername}.png`, {
         type: blob.type || 'image/png',
     });
 
     if (navigator.share && typeof navigator.canShare === 'function' && navigator.canShare({ files: [file] })) {
         await navigator.share({
-            title: `Payou.id - @${currentUsername}`,
+            title: `Mobay.id - @${currentUsername}`,
             text: captionText,
             files: [file],
         });
@@ -459,7 +459,7 @@ async function handleQRShare(buttonId = null) {
 }
 
 const COLOR_NAMES = {
-    '#0066CC': 'Biru Payou',
+    '#0066CC': 'Biru Mobay',
     '#111827': 'Hitam',
     '#16a34a': 'Hijau',
     '#dc2626': 'Merah',
@@ -576,7 +576,7 @@ function printQR() {
   .url{font-size:11px;color:#94a3b8;text-align:center;}
   @media print{button{display:none!important;}}
 </style></head><body>
-  <div class="logo">payou.id</div>
+  <div class="logo">mobay.id</div>
   <div class="sub">Digital Business Card</div>
   <div class="qr-wrap"><img src="${dataUrl}" alt="QR Code"></div>
   <div class="username">@${currentUsername}</div>
@@ -614,15 +614,15 @@ async function legacyShareWhatsApp() {
             windowWidth: 500, windowHeight: 550,
         });
 
-        const message = `Halo 👋\n\nSaya ingin berbagi kartu digital Payou.id saya:\n${currentUrl}\n\nSilakan scan QR code di bawah ini untuk terhubung dengan saya.\n\nTerima kasih! 🙏`;
+        const message = `Halo 👋\n\nSaya ingin berbagi kartu digital Mobay.id saya:\n${currentUrl}\n\nSilakan scan QR code di bawah ini untuk terhubung dengan saya.\n\nTerima kasih! 🙏`;
 
         if (navigator.canShare && navigator.canShare({ files: [new File([], 'test.png')] })) {
             const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png', 1.0));
-            const file = new File([blob], `payou-${currentUsername}.png`, { type: 'image/png' });
-            await navigator.share({ title: `Payou.id - @${currentUsername}`, text: message, files: [file] });
+            const file = new File([blob], `mobay-${currentUsername}.png`, { type: 'image/png' });
+            await navigator.share({ title: `Mobay.id - @${currentUsername}`, text: message, files: [file] });
         } else {
             const link    = document.createElement('a');
-            link.download = `payou-${currentUsername}.png`;
+            link.download = `mobay-${currentUsername}.png`;
             link.href     = canvas.toDataURL('image/png');
             document.body.appendChild(link); link.click(); document.body.removeChild(link);
             setTimeout(() => {
@@ -633,7 +633,7 @@ async function legacyShareWhatsApp() {
     } catch (error) {
         console.error('Error:', error);
         if (error.name !== 'AbortError' && !error.message?.includes('cancel')) {
-            window.open(`https://wa.me/?text=${encodeURIComponent(`Halo,\n\nSilakan kunjungi profil Payou.id saya:\n${currentUrl}`)}`, '_blank');
+            window.open(`https://wa.me/?text=${encodeURIComponent(`Halo,\n\nSilakan kunjungi profil Mobay.id saya:\n${currentUrl}`)}`, '_blank');
         }
     } finally {
         shareBtn.classList.remove('share-loading');

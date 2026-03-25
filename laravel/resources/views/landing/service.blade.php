@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Layanan Kami - Payou.id</title>
+    <title>Layanan Kami - Mobay.id</title>
 
     <!-- Font Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -23,7 +23,7 @@
 <nav>
     <div class="nav-container">
         <a href="/" class="logo">
-            <img src="../img/logo.png" alt="payou.id">
+            <img src="../img/logo.png" alt="mobay.id">
         </a>
         <div class="nav-buttons" id="navButtons">
             <a href="{{ route('service') }}" class="btn btn-secondary">Service</a>
@@ -198,7 +198,7 @@
                     </div>
                     
                     <div class="flex flex-col gap-3">
-                        <a href="https://wa.me/6285600489815?text=Halo%20Admin%20Payou.id!%20Saya%20tertarik%20dengan%20layanan%20Anda" 
+                        <a href="https://wa.me/6285600489815?text=Halo%20Admin%20Mobay.id!%20Saya%20tertarik%20dengan%20layanan%20Anda" 
                            target="_blank"
                            class="group flex items-center gap-3 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-8 py-4 rounded-xl font-semibold shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-200">
                             <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
@@ -214,7 +214,7 @@
                         </a>
 
                         <div class="flex gap-3 justify-center">
-                            <a href="mailto:smeganemolab@gmail.com?subject=Pertanyaan%20Payou.id&body=Halo%20Admin,%20saya%20ingin%20bertanya%20tentang%20layanan%20Payou.id" 
+                            <a href="mailto:smeganemolab@gmail.com?subject=Pertanyaan%20Mobay.id&body=Halo%20Admin,%20saya%20ingin%20bertanya%20tentang%20layanan%20Mobay.id" 
                                class="flex items-center gap-2 text-gray-600 hover:text-blue-600 transition-colors">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
@@ -273,7 +273,7 @@
 <footer class="footer">
     <div class="footer-wrapper">
         <a href="/" class="logo">
-            <img src="../img/logo.png" alt="payou.id">
+            <img src="../img/logo.png" alt="mobay.id">
         </a>
         <div class="footer-links">
             <a href="{{ route('about') }}">About Us</a>
@@ -283,7 +283,7 @@
         </div>
     </div>
     <div class="footer-bottom">
-        <p>© 2025 payou.id - Satu Link untuk Semua Kebutuhan Bisnis UMKM</p>
+        <p>© 2025 mobay.id - Satu Link untuk Semua Kebutuhan Bisnis UMKM</p>
     </div>
 </footer>
 

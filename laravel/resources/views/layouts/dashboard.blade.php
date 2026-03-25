@@ -34,7 +34,7 @@
         })();
     </script>
     <link rel="stylesheet" href="...">
-    <title>@yield('title', 'Dashboard | Payou.id')</title>
+    <title>@yield('title', 'Dashboard | Mobay.id')</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
@@ -588,7 +588,7 @@ body:not(.preload) .content-pad {
     </button>
     <div class="m-topbar-logo">
         <a href="{{ route('dashboard') }}">
-            <img src="{{ asset('img/logo.png') }}" alt="Payou.id">
+            <img src="{{ asset('img/logo.png') }}" alt="Mobay.id">
         </a>
     </div>
     <button class="notif-bell-btn notif-bell-trigger" id="notifBellBtnMobile" aria-label="Notifikasi">
@@ -603,7 +603,7 @@ body:not(.preload) .content-pad {
     <!-- Logo -->
     <div class="s-logo">
         <a href="{{ route('dashboard') }}">
-            <img src="{{ asset('img/logo.png') }}" alt="Payou.id">
+            <img src="{{ asset('img/logo.png') }}" alt="Mobay.id">
         </a>
         <div class="s-premium-wrap">
             @if($isPremiumUser)

@@ -1,6 +1,6 @@
 @extends('layouts.dashboard')
 
-@section('title', 'Dashboard | Payou.id')
+@section('title', 'Dashboard | Mobay.id')
 
 @php
     use Illuminate\Support\Str;
@@ -76,7 +76,7 @@
 
         <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
             <div style="font-size:13px;font-weight:700;opacity:.9;letter-spacing:.03em;text-transform:uppercase;">
-                {{ $primaryAccount ? 'Saldo Tersedia' : 'Saldo Payou.id' }}
+                {{ $primaryAccount ? 'Saldo Tersedia' : 'Saldo Mobay.id' }}
             </div>
             <span style="padding:5px 10px;border-radius:999px;background:rgba(255,255,255,.18);
                          font-size:11px;font-weight:700;white-space:nowrap;">

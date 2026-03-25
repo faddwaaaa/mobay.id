@@ -34,7 +34,7 @@
             <label for="username" class="block text-sm font-medium text-gray-700 mb-1">Username</label>
             <div class="relative">
                 <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-gray-400 text-sm select-none pointer-events-none">
-                    payou.id/
+                    mobay.id/
                 </span>
                 <input id="username" name="username" type="text"
                     value="{{ old('username', $user->username) }}"

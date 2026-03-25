@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lupa Password - Payou</title>
+    <title>Lupa Password - Mobay</title>
     <style>
         * {
             margin: 0;

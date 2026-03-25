@@ -1,5 +1,5 @@
 @extends('layouts.dashboard')
-@section('title', 'Link Saya | Payou.id')
+@section('title', 'Link Saya | Mobay.id')
 
 @section('content')
 @php

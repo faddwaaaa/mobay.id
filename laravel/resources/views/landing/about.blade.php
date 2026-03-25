@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>About Us - Payou.id</title>
+    <title>About Us - Mobay.id</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/landing.css') }}">
@@ -13,7 +13,7 @@
 <nav>
     <div class="nav-container">
         <a href="/" class="logo">
-            <img src="../img/logo.png" alt="payou.id">
+            <img src="../img/logo.png" alt="mobay.id">
         </a>
         <div class="nav-buttons" id="navButtons">
             <a href="{{ route('service') }}" class="btn btn-secondary">Service</a>
@@ -36,7 +36,7 @@
             <span class="hero-badge">💙 Tentang Kami</span>
             <h1>Misi Kami Membantu <span class="highlight">UMKM Indonesia</span> Go Digital</h1>
             <p>
-                Payou.id hadir sebagai solusi all-in-one untuk membantu pelaku usaha
+                Mobay.id hadir sebagai solusi all-in-one untuk membantu pelaku usaha
                 mengelola link bio, pembayaran, dan katalog produk dalam satu halaman profesional.
             </p>
         </div>
@@ -45,7 +45,7 @@
 
 <section class="vision-section">
     <div class="vision-container">
-        <div class="vision-label">VISI PAYOU.ID</div>
+        <div class="vision-label">VISI MOBAY.ID</div>
         <h2>Membangun Masa Depan Digital UMKM Indonesia</h2>
         <p>
             Menjadi platform digital terpercaya yang membantu UMKM Indonesia
@@ -91,7 +91,7 @@
 <footer class="footer">
     <div class="footer-wrapper">
         <a href="/" class="logo">
-            <img src="../img/logo.png" alt="payou.id">
+            <img src="../img/logo.png" alt="mobay.id">
         </a>
         <div class="footer-links">
             <a href="{{ route('about') }}">About Us</a>
@@ -101,7 +101,7 @@
         </div>
     </div>
     <div class="footer-bottom">
-        <p>© 2025 payou.id - Satu Link untuk Semua Kebutuhan Bisnis UMKM</p>
+        <p>© 2025 mobay.id - Satu Link untuk Semua Kebutuhan Bisnis UMKM</p>
     </div>
 </footer>
 

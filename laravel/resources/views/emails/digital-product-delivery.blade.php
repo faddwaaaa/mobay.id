@@ -15,7 +15,7 @@
                 {{-- LOGO --}}
                 <tr>
                     <td align="center" style="padding-bottom:24px;">
-                        <img src="{{ url('img/logo.png') }}" alt="Payou.id" style="height:44px;display:block;">
+                        <img src="{{ url('img/logo.png') }}" alt="Mobay.id" style="height:44px;display:block;">
                     </td>
                 </tr>
 
@@ -41,7 +41,7 @@
                             Halo <strong>{{ $buyerName }}</strong>,
                         </p>
                         <p style="font-size:15px;color:#475569;line-height:1.7;margin:0 0 28px;">
-                            Terima kasih sudah melakukan pembelian di <strong style="color:#2563eb;">Payou.id</strong>. Pembayaranmu telah dikonfirmasi dan file siap untuk didownload.
+                            Terima kasih sudah melakukan pembelian di <strong style="color:#2563eb;">Mobay.id</strong>. Pembayaranmu telah dikonfirmasi dan file siap untuk didownload.
                         </p>
 
                         {{-- Detail pesanan --}}
@@ -134,7 +134,7 @@
                 {{-- FOOTER --}}
                 <tr>
                     <td align="center" style="padding:24px 0 8px;">
-                        <p style="font-size:12px;color:#94a3b8;margin:0 0 4px;">Email ini dikirim otomatis oleh <strong style="color:#64748b;">Payou.id</strong></p>
+                        <p style="font-size:12px;color:#94a3b8;margin:0 0 4px;">Email ini dikirim otomatis oleh <strong style="color:#64748b;">Mobay.id</strong></p>
                         <p style="font-size:12px;color:#94a3b8;margin:0;">Ada masalah? Hubungi CS kami di
                             <a href="mailto:smeganemolab@gmail.com" style="color:#2563eb;text-decoration:none;font-weight:700;">smeganemolab@gmail.com</a>
                         </p>

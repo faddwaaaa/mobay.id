@@ -1,6 +1,6 @@
 @extends('layouts.dashboard')
 
-@section('title', 'Tampilan | Payou.id')
+@section('title', 'Tampilan | Mobay.id')
 
 @push('styles')
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -499,14 +499,14 @@
 
                 <button class="btn-wg-toggle" id="btnWgToggle" onclick="toggleWgGallery()">
                     <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4-4 4 4 4-8"/></svg>
-                    <span id="btnWgLabel">✦ Lihat Galeri Wallpaper Payou</span>
+                    <span id="btnWgLabel">✦ Lihat Galeri Wallpaper Mobay</span>
                     <svg class="wg-chevron" width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
                 </button>
 
                 <div class="wg-collapse-wrap" id="wgCollapseWrap">
                     <div class="wg-divider" style="margin-top:12px;">
                         <div class="wg-divider-line"></div>
-                        <span class="wg-divider-label">✦ Galeri Wallpaper Payou</span>
+                        <span class="wg-divider-label">✦ Galeri Wallpaper Mobay</span>
                         <div class="wg-divider-line"></div>
                     </div>
                     <div class="wg-cats" id="wgCats">
@@ -1084,7 +1084,7 @@ function toggleWgGallery() {
     const isOpen = wrap.classList.contains('open');
     wrap.classList.toggle('open', !isOpen);
     btn.classList.toggle('open', !isOpen);
-    label.textContent = isOpen ? '✦ Lihat Galeri Wallpaper Payou' : '✦ Sembunyikan Galeri';
+    label.textContent = isOpen ? '✦ Lihat Galeri Wallpaper Mobay' : '✦ Sembunyikan Galeri';
 }
 
 if (activeWgId) {

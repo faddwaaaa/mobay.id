@@ -1,5 +1,5 @@
 @extends('layouts.dashboard')
-@section('title', 'Upgrade to Pro Package | Payou.id')
+@section('title', 'Upgrade to Pro Package | Mobay.id')
 
 @section('content')
 @php

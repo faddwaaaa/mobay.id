@@ -1,6 +1,6 @@
 @extends('layouts.dashboard')
 
-@section('title', 'Pengaturan Pengiriman | Payou.id')
+@section('title', 'Pengaturan Pengiriman | Mobay.id')
 
 @section('content')
 <div class="max-w-7xl mx-auto px-4 py-6" id="main-content">

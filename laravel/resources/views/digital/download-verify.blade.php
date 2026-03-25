@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Verifikasi Download - Payou.id</title>
+    <title>Verifikasi Download - Mobay.id</title>
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
     <style>
@@ -182,7 +182,7 @@
 <div class="container">
 
     <div class="logo-bar">
-        <img src="{{ asset('img/logo.png') }}" alt="Payou.id" style="height:40px;">
+        <img src="{{ asset('img/logo.png') }}" alt="Mobay.id" style="height:40px;">
     </div>
 
     <div class="card">
@@ -284,7 +284,7 @@
     </div>
 
     <div class="footer">
-        Dilindungi oleh <a href="/">Payou.id</a> &middot; Transaksi aman &amp; terenkripsi
+        Dilindungi oleh <a href="/">Mobay.id</a> &middot; Transaksi aman &amp; terenkripsi
     </div>
 
 </div>
@@ -312,7 +312,7 @@ function kirimLaporan() {
     }
 
     const text = encodeURIComponent(
-        'Halo CS Payou.id, saya ingin melaporkan masalah:\n\n' +
+        'Halo CS Mobay.id, saya ingin melaporkan masalah:\n\n' +
         'Nama: ' + name + '\n' +
         'Email: ' + email + '\n' +
         'Order: ' + (order || '-') + '\n' +

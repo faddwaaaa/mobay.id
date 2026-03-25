@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daftar - Payou</title>
+    <title>Daftar - Mobay</title>
     <style>
         * {
             margin: 0;
@@ -252,7 +252,7 @@
     <!-- Logo Outside Card -->
     <div class="logo-wrapper">
         <div class="logo">
-            <img src="{{ asset('img/logo.png') }}" alt="Logo Payou">
+            <img src="{{ asset('img/logo.png') }}" alt="Logo Mobay">
         </div>
         <p class="logo-subtitle">Buat akun baru Anda</p>
     </div>

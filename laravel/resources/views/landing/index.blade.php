@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Payou.id - Satu Link untuk Semua Kebutuhan Bisnis UMKM</title>
+    <title>Mobay.id - Satu Link untuk Semua Kebutuhan Bisnis UMKM</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/landing.css') }}">
     <script src="{{ asset('js/landing.js') }}"></script>
@@ -14,7 +14,7 @@
     
     <nav>
         <div class="nav-container">
-            <a href="/" class="logo"><img src="../img/logo.png" alt="payou.id" srcset=""></a>
+            <a href="/" class="logo"><img src="../img/logo.png" alt="mobay.id" srcset=""></a>
             <div class="nav-buttons" id="navButtons">
                 <a href="{{ route('service') }}" class="btn btn-secondary">Service</a>
                 <a href="{{ route('faq') }}" class="btn btn-secondary">FAQ</a>
@@ -134,7 +134,7 @@
     <section class="testimonials">
         <div class="testimonials-header">
             <h2>Lihat Apa Kata UMKM</h2>
-            <p>Tidak perlu banyak aplikasi, Payou.id menyatukan semuanya.</p>
+            <p>Tidak perlu banyak aplikasi, Mobay.id menyatukan semuanya.</p>
         </div>
 
         <div class="testimonial-columns">
@@ -148,7 +148,7 @@
                     </div>
                 </div>
                 <p class="testimonial-text">
-                     Fitur-fitur di Payou.id sangat membantu bisnis saya. 
+                     Fitur-fitur di Mobay.id sangat membantu bisnis saya. 
                     Sekarang pelanggan bisa langsung bayar tanpa ribet chat bolak-balik.
                 </p>
                 </p>
@@ -163,7 +163,7 @@
                     </div>
                 </div>
                 <p class="testimonial-text">
-                    Sejak pakai Payou.id, jualan online jadi lebih rapi dan profesional.
+                    Sejak pakai Mobay.id, jualan online jadi lebih rapi dan profesional.
                     Link bio saya sekarang kelihatan jauh lebih meyakinkan.
                 </p>
             </div>
@@ -177,7 +177,7 @@
                     </div>
                 </div>
                 <p class="testimonial-text">
-                    Payou.id bikin usaha saya kelihatan lebih profesional.
+                    Mobay.id bikin usaha saya kelihatan lebih profesional.
                 </p>
             </div>
 
@@ -218,7 +218,7 @@
                     </div>
                 </div>
                 <p class="testimonial-text">
-                    Sejauh ini Payou.id benar-benar membantu workflow bisnis saya.
+                    Sejauh ini Mobay.id benar-benar membantu workflow bisnis saya.
                     Simple, cepat, dan mudah digunakan.
                 </p>
             </div>
@@ -236,7 +236,7 @@
                 <div class="feature-card">
                     <div class="feature-icon">🔗</div>
                     <h3>Satu Link untuk Semua</h3>
-                    <p>Ganti banyak link di bio Instagram, TikTok, atau WhatsApp dengan satu link payou.id yang mencakup semuanya</p>
+                    <p>Ganti banyak link di bio Instagram, TikTok, atau WhatsApp dengan satu link mobay.id yang mencakup semuanya</p>
                 </div>
                 <div class="feature-card">
                     <div class="feature-icon">💳</div>
@@ -278,7 +278,7 @@
     <footer class="footer">
         <div class="footer-wrapper">
             <a href="/" class="logo">
-                <img src="../img/logo.png" alt="payou.id">
+                <img src="../img/logo.png" alt="mobay.id">
             </a>
             <div class="footer-links">
                 <a href="{{ route('about') }}">About Us</a>
@@ -288,7 +288,7 @@
             </div>
         </div>
         <div class="footer-bottom">
-            <p>© 2025 payou.id - Satu Link untuk Semua Kebutuhan Bisnis UMKM</p>
+            <p>© 2025 mobay.id - Satu Link untuk Semua Kebutuhan Bisnis UMKM</p>
         </div>
     </footer>
 

@@ -1,5 +1,5 @@
 @extends('layouts.dashboard')
-@section('title', 'Analitik | Payou.id')
+@section('title', 'Analitik | Mobay.id')
 
 @section('content')
 <div style="padding: 24px; min-height: 100vh;" class="analitik-page">

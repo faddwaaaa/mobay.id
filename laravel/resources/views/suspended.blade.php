@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Akun Ditangguhkan - Payou.id</title>
+    <title>Akun Ditangguhkan - Mobay.id</title>
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
@@ -92,6 +92,25 @@
     }
     textarea:focus { border-color: #2356e8; background: white; }
     .char-count { font-size: 10.5px; color: #7a8db5; text-align: right; margin-top: 4px; }
+    .field-error {
+        font-size: 10.5px;
+        color: #dc2626;
+        margin-top: 6px;
+        font-weight: 700;
+        display: none;
+    }
+    .form-group.has-error .form-label,
+    .form-group.has-error .form-label span {
+        color: #dc2626 !important;
+    }
+    .form-group.has-error textarea,
+    .form-group.has-error .upload-box {
+        border-color: #f87171;
+        background: #fff5f5;
+    }
+    .form-group.has-error .char-count {
+        color: #dc2626;
+    }
     .upload-box {
         border: 1.5px dashed #c9d8ff;
         border-radius: 12px;
@@ -137,6 +156,79 @@
     .alert-msg { border-radius: 10px; padding: 10px 14px; font-size: 12px; font-weight: 700; margin-bottom: 12px; text-align: left; }
     .alert-success { background: #dcfce7; color: #15803d; border: 1.5px solid #bbf7d0; }
     .alert-error { background: #fee2e2; color: #b91c1c; border: 1.5px solid #fecaca; }
+    .modal-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(12, 21, 51, .45);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        z-index: 1000;
+    }
+    .modal-backdrop.show { display: flex; }
+    .modal-card {
+        width: 100%;
+        max-width: 420px;
+        background: #fff;
+        border-radius: 18px;
+        padding: 22px 20px 18px;
+        border: 1.5px solid #fecaca;
+        box-shadow: 0 20px 60px rgba(12, 21, 51, .18);
+        text-align: left;
+    }
+    .modal-head {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        margin-bottom: 14px;
+    }
+    .modal-icon {
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+        background: #fee2e2;
+        color: #b91c1c;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+    .modal-title {
+        font-size: 15px;
+        font-weight: 800;
+        color: #0c1533;
+        margin-bottom: 4px;
+    }
+    .modal-text {
+        font-size: 12px;
+        line-height: 1.6;
+        color: #5b6785;
+    }
+    .modal-list {
+        margin: 14px 0 0;
+        padding-left: 18px;
+        color: #b91c1c;
+        font-size: 12px;
+        font-weight: 700;
+        line-height: 1.7;
+    }
+    .modal-actions {
+        display: flex;
+        justify-content: flex-end;
+        margin-top: 18px;
+    }
+    .modal-btn {
+        border: none;
+        border-radius: 10px;
+        background: #1a3fa8;
+        color: #fff;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 12.5px;
+        font-weight: 800;
+        padding: 10px 16px;
+        cursor: pointer;
+    }
     @media (max-width: 640px) {
         .wrap { padding: 28px 22px; }
     }
@@ -144,7 +236,7 @@
 </head>
 <body>
 <div class="wrap">
-    <div class="logo">Payou.id</div>
+    <div class="logo">Mobay.id</div>
 
     <div class="icon-wrap">
         <svg width="32" height="32" fill="none" viewBox="0 0 24 24" stroke="#b91c1c" stroke-width="1.8">
@@ -153,7 +245,7 @@
     </div>
 
     <h1>Akun Anda Ditangguhkan</h1>
-    <p class="sub">Tim moderasi Payou.id telah menangguhkan akun Anda. Semua akses ke dashboard, toko, dan profil publik Anda dinonaktifkan sementara.</p>
+    <p class="sub">Tim moderasi Mobay.id telah menangguhkan akun Anda. Semua akses ke dashboard, toko, dan profil publik Anda dinonaktifkan sementara.</p>
 
     <div class="info-box">
         <p>Selama penangguhan, Anda tidak dapat:</p>
@@ -171,22 +263,22 @@
     </div>
 
     <div id="tab-banding" class="tab-panel active">
-        <div id="alertBox" style="display:none;"></div>
-
         <div id="formArea">
-            <div class="form-group">
+            <div class="form-group" data-field="reason">
                 <label class="form-label">Alasan Banding <span>*</span></label>
                 <textarea id="reason" rows="5" maxlength="2000" placeholder="Jelaskan mengapa Anda merasa penangguhan ini tidak tepat. Sertakan kronologi yang relevan dan konteks pendukung. Minimal 30 karakter."></textarea>
                 <div class="char-count"><span id="reasonCount">0</span>/2000</div>
+                <div class="field-error" id="reasonError"></div>
             </div>
 
-            <div class="form-group">
+            <div class="form-group" data-field="additional_info">
                 <label class="form-label">Informasi Tambahan <span style="color:#7a8db5;font-weight:600;">(opsional)</span></label>
                 <textarea id="additionalInfo" rows="2" maxlength="1000" placeholder="Tambahkan konteks lain yang mendukung banding Anda..."></textarea>
                 <div class="char-count"><span id="addCount">0</span>/1000</div>
+                <div class="field-error" id="additionalInfoError"></div>
             </div>
 
-            <div class="form-group">
+            <div class="form-group" data-field="evidence">
                 <label class="form-label">Upload Bukti <span style="color:#7a8db5;font-weight:600;">(opsional, maks 3 gambar)</span></label>
                 <div class="upload-box">
                     <input id="appealEvidence" type="file" accept="image/jpeg,image/png,image/webp" multiple>
@@ -194,6 +286,7 @@
                     <div id="uploadStatus" class="upload-help" style="display:none;"></div>
                     <div id="uploadList" class="upload-list" style="display:none;"></div>
                 </div>
+                <div class="field-error" id="evidenceError"></div>
             </div>
 
             <button id="submitBtn" onclick="submitAppeal()" class="btn-primary" type="button">
@@ -231,7 +324,27 @@
         </button>
     </form>
 
-    <p class="contact">Pertanyaan lain? <a href="mailto:support@payou.id">support@payou.id</a></p>
+    <p class="contact">Pertanyaan lain? <a href="mailto:support@mobay.id">support@mobay.id</a></p>
+</div>
+
+<div id="errorModal" class="modal-backdrop" onclick="handleModalBackdrop(event)">
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="errorModalTitle">
+        <div class="modal-head">
+            <div class="modal-icon">
+                <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.4">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m0 3.75h.008v.008H12v-.008zm9-3.75a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+            </div>
+            <div>
+                <div id="errorModalTitle" class="modal-title">Periksa Form Banding</div>
+                <div id="errorModalText" class="modal-text">Masih ada bagian yang perlu diperbaiki sebelum form bisa dikirim.</div>
+            </div>
+        </div>
+        <ul id="errorModalList" class="modal-list" style="display:none;"></ul>
+        <div class="modal-actions">
+            <button type="button" class="modal-btn" onclick="closeErrorModal()">Mengerti</button>
+        </div>
+    </div>
 </div>
 
 <script>
@@ -239,6 +352,9 @@ const CSRF = document.querySelector('meta[name="csrf-token"]').content;
 const evidenceInput = document.getElementById('appealEvidence');
 const uploadList = document.getElementById('uploadList');
 const uploadStatus = document.getElementById('uploadStatus');
+const errorModal = document.getElementById('errorModal');
+const errorModalText = document.getElementById('errorModalText');
+const errorModalList = document.getElementById('errorModalList');
 let compressedEvidenceFiles = [];
 
 function switchTab(tab) {
@@ -250,19 +366,78 @@ function switchTab(tab) {
     if (tab === 'status') loadStatus();
 }
 
+function fieldConfig(field) {
+    const map = {
+        reason: {
+            group: document.querySelector('.form-group[data-field="reason"]'),
+            input: document.getElementById('reason'),
+            error: document.getElementById('reasonError'),
+        },
+        additional_info: {
+            group: document.querySelector('.form-group[data-field="additional_info"]'),
+            input: document.getElementById('additionalInfo'),
+            error: document.getElementById('additionalInfoError'),
+        },
+        evidence: {
+            group: document.querySelector('.form-group[data-field="evidence"]'),
+            input: document.getElementById('appealEvidence'),
+            error: document.getElementById('evidenceError'),
+        },
+    };
+
+    return map[field] || null;
+}
+
+function clearFieldError(field) {
+    const config = fieldConfig(field);
+    if (!config) return;
+    config.group.classList.remove('has-error');
+    config.error.style.display = 'none';
+    config.error.textContent = '';
+}
+
+function setFieldError(field, message) {
+    const config = fieldConfig(field);
+    if (!config) return;
+    config.group.classList.add('has-error');
+    config.error.textContent = message;
+    config.error.style.display = 'block';
+}
+
+function clearFormErrors() {
+    ['reason', 'additional_info', 'evidence'].forEach(clearFieldError);
+}
+
+function showErrorModal(messages, fallbackMessage) {
+    const items = Array.isArray(messages) ? messages.filter(Boolean) : [];
+    errorModalText.textContent = fallbackMessage || 'Masih ada bagian yang perlu diperbaiki sebelum form bisa dikirim.';
+    errorModalList.innerHTML = items.map(message => `<li>${message}</li>`).join('');
+    errorModalList.style.display = items.length ? 'block' : 'none';
+    errorModal.classList.add('show');
+}
+
+function closeErrorModal() {
+    errorModal.classList.remove('show');
+}
+
+function handleModalBackdrop(event) {
+    if (event.target === errorModal) closeErrorModal();
+}
+
 document.getElementById('reason').addEventListener('input', function () {
     document.getElementById('reasonCount').textContent = this.value.length;
+    if (this.value.trim().length >= 30) clearFieldError('reason');
 });
 
 document.getElementById('additionalInfo').addEventListener('input', function () {
     document.getElementById('addCount').textContent = this.value.length;
+    if (this.value.length <= 1000) clearFieldError('additional_info');
 });
 
 function showAlert(type, msg) {
-    const el = document.getElementById('alertBox');
-    el.className = 'alert-msg alert-' + type;
-    el.textContent = msg;
-    el.style.display = 'block';
+    if (type === 'error') {
+        showErrorModal([msg], msg);
+    }
 }
 
 function formatKB(bytes) {
@@ -357,10 +532,12 @@ evidenceInput.addEventListener('change', async function () {
     if (!selectedFiles.length) return;
 
     if (compressedEvidenceFiles.length + selectedFiles.length > 3) {
+        setFieldError('evidence', 'Maksimal 3 gambar bukti dapat diunggah.');
         showAlert('error', 'Maksimal 3 gambar bukti.');
         return;
     }
 
+    clearFieldError('evidence');
     uploadStatus.style.display = 'block';
     uploadStatus.textContent = 'Menyiapkan gambar...';
 
@@ -372,6 +549,7 @@ evidenceInput.addEventListener('change', async function () {
         renderEvidenceList();
     } catch (error) {
         uploadStatus.style.display = 'none';
+        setFieldError('evidence', error.message || 'Gagal memproses gambar.');
         showAlert('error', error.message || 'Gagal memproses gambar.');
     }
 });
@@ -380,16 +558,18 @@ async function submitAppeal() {
     const reason = document.getElementById('reason').value.trim();
     const info = document.getElementById('additionalInfo').value.trim();
     const btn = document.getElementById('submitBtn');
-    const alert = document.getElementById('alertBox');
+    clearFormErrors();
+    closeErrorModal();
 
     if (reason.length < 30) {
+        setFieldError('reason', 'Alasan banding minimal 30 karakter.');
         showAlert('error', 'Alasan banding minimal 30 karakter. Mohon jelaskan lebih detail.');
+        document.getElementById('reason').focus();
         return;
     }
 
     btn.disabled = true;
     btn.textContent = 'Mengirim...';
-    alert.style.display = 'none';
 
     try {
         const formData = new FormData();
@@ -419,9 +599,29 @@ async function submitAppeal() {
 
         let message = data?.message || 'Terjadi kesalahan. Coba lagi.';
         if (data?.errors) {
-            const firstError = Object.values(data.errors)[0];
-            if (Array.isArray(firstError) && firstError[0]) {
-                message = firstError[0];
+            const modalMessages = [];
+
+            Object.entries(data.errors).forEach(([field, messages]) => {
+                const normalizedField = field.startsWith('evidence.') ? 'evidence' : field;
+                const firstMessage = Array.isArray(messages) ? messages[0] : messages;
+
+                if (!firstMessage) return;
+
+                setFieldError(normalizedField, firstMessage);
+                modalMessages.push(firstMessage);
+            });
+
+            if (modalMessages.length) {
+                showErrorModal(modalMessages, 'Beberapa bagian form masih belum sesuai.');
+                const firstField = ['reason', 'additional_info', 'evidence'].find(name => {
+                    const config = fieldConfig(name);
+                    return config?.group.classList.contains('has-error');
+                });
+                const firstConfig = firstField ? fieldConfig(firstField) : null;
+                if (firstConfig?.input) {
+                    firstConfig.input.focus();
+                }
+                return;
             }
         }
 
@@ -433,6 +633,12 @@ async function submitAppeal() {
         btn.innerHTML = '<svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg> Kirim Pengajuan Banding';
     }
 }
+
+document.addEventListener('keydown', function (event) {
+    if (event.key === 'Escape') {
+        closeErrorModal();
+    }
+});
 
 async function loadStatus() {
     const loading = document.getElementById('statusLoading');

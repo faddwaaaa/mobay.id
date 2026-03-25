@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>Contact - Payou.id</title>
+    <title>Contact - Mobay.id</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
@@ -18,7 +18,7 @@
 <nav>
     <div class="nav-container">
         <a href="/" class="logo">
-            <img src="../img/logo.png" alt="payou.id">
+            <img src="../img/logo.png" alt="mobay.id">
         </a>
         <div class="nav-buttons" id="navButtons">
             <a href="{{ route('service') }}" class="btn btn-secondary">Service</a>
@@ -50,7 +50,7 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-3xl mx-auto">
 
             <!-- WhatsApp -->
-            <a href="https://wa.me/6285600489815?text=Halo%20Admin%20Payou.id!%20Saya%20ingin%20bertanya%20tentang%20layanan%20Anda"
+            <a href="https://wa.me/6285600489815?text=Halo%20Admin%20Mobay.id!%20Saya%20ingin%20bertanya%20tentang%20layanan%20Anda"
                 target="_blank"
                 class="group bg-white p-8 rounded-2xl shadow-md hover:shadow-xl transition-all border border-gray-200 hover:-translate-y-2">
 
@@ -99,7 +99,7 @@
 <footer class="footer">
     <div class="footer-wrapper">
         <a href="/" class="logo">
-            <img src="../img/logo.png" alt="payou.id">
+            <img src="../img/logo.png" alt="mobay.id">
         </a>
         <div class="footer-links">
             <a href="{{ route('about') }}">About Us</a>
@@ -109,7 +109,7 @@
         </div>
     </div>
     <div class="footer-bottom">
-        <p>© 2025 payou.id - Satu Link untuk Semua Kebutuhan Bisnis UMKM</p>
+        <p>© 2025 mobay.id - Satu Link untuk Semua Kebutuhan Bisnis UMKM</p>
     </div>
 </footer>
 <!-- JS Hamburger dari Landing -->
