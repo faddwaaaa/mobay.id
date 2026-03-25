@@ -759,6 +759,7 @@ body:not(.preload) .content-pad {
 <script src="{{ asset('js/darkmode.js') }}"></script>
 
 @include('components.notification-bell')
+@include('components.app-alert')
 @stack('modals')
 
 <script>

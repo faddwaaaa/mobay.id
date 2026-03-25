@@ -288,6 +288,7 @@
     </div>
 
 </div>
+@include('components.app-alert')
 <script>
 function toggleMasalah() {
     const form = document.getElementById('masalahForm');
