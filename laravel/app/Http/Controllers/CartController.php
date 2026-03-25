@@ -4,184 +4,257 @@ namespace App\Http\Controllers;
 
 use App\Models\Cart;
 use App\Models\Product;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class CartController extends Controller
 {
     // ─────────────────────────────────────────────────────────────
-    //  Helper: ambil atau buat session ID untuk guest
+    // HELPERS
     // ─────────────────────────────────────────────────────────────
-    private function getSessionId(Request $request): string
+
+    private function getCartSessionId(Request $request): string
     {
-        if (! $request->session()->has('cart_session_id')) {
-            $request->session()->put('cart_session_id', uniqid('cart_', true));
-        }
-        return $request->session()->get('cart_session_id');
+        // Prioritas: cookie cart_sid → session Laravel → buat UUID baru
+        return $request->cookie('cart_sid')
+            ?? session()->getId()
+            ?: ('cart_' . Str::uuid()->toString());
     }
 
-    // ─────────────────────────────────────────────────────────────
-    //  Helper: base query — filter berdasarkan session
-    // ─────────────────────────────────────────────────────────────
+    /**
+     * Query builder cart milik user saat ini.
+     * - Login  → filter by user_id
+     * - Guest  → filter by session_id (cookie cart_sid)
+     */
     private function cartQuery(Request $request)
     {
-        return Cart::forSession($this->getSessionId($request))
-                   ->with('product');
+        if (auth()->check()) {
+            return Cart::where('user_id', auth()->id());
+        }
+
+        $sid = $this->getCartSessionId($request);
+        return Cart::where('session_id', $sid)->whereNull('user_id');
+    }
+
+    /**
+     * Ambil URL gambar pertama dari tabel product_images.
+     * Kolom 'image' sesuai ProductImage model.
+     */
+    private function getProductImageUrl(Product $product): ?string
+    {
+        $firstImage = $product->images->first();
+
+        if (!$firstImage || !$firstImage->image) return null;
+
+        if (str_starts_with($firstImage->image, 'http')) {
+            return $firstImage->image;
+        }
+
+        return asset('storage/' . $firstImage->image);
+    }
+
+    /**
+     * Hitung harga final setelah diskon.
+     * Kolom 'discount' berisi harga setelah diskon (bukan persentase).
+     * Jika discount > 0 dan discount < price → pakai discount sebagai harga final.
+     */
+    private function getFinalPrice(Product $product): float
+    {
+        $price    = (float) ($product->price    ?? 0);
+        $discount = (float) ($product->discount ?? 0);
+
+        if ($discount > 0 && $discount < $price) {
+            return $discount;
+        }
+
+        return $price;
     }
 
     // ─────────────────────────────────────────────────────────────
-    //  GET /api/cart
-    //  Ambil semua item + total harga + jumlah item
+    // GET /api/cart
     // ─────────────────────────────────────────────────────────────
-    public function index(Request $request): JsonResponse
+    public function index(Request $request)
     {
-        $items = $this->cartQuery($request)->get();
+        $cartRows = $this->cartQuery($request)
+            ->with(['product.images']) // eager load, cegah N+1
+            ->get();
 
-        $data = $items->map(fn($item) => $this->formatItem($item));
+        $items = $cartRows->map(function (Cart $cart) {
+            $product = $cart->product;
+            if (!$product) return null;
+
+            $price      = (float) ($product->price ?? 0);
+            $finalPrice = $this->getFinalPrice($product);
+            $hasDis     = $finalPrice < $price;
+
+            return [
+                'id'             => $cart->id,
+                'product_id'     => $cart->product_id,
+                'title'          => $product->title,
+                'image_url'      => $this->getProductImageUrl($product),
+                'quantity'       => (int) $cart->quantity,
+                'original_price' => $price,
+                'final_price'    => $finalPrice,
+                'has_discount'   => $hasDis,
+                'stock'          => $product->stock ?? 999,
+                'product_type'   => $product->product_type ?? 'physical',
+            ];
+        })->filter()->values();
 
         return response()->json([
-            'items'       => $data,
-            'total_items' => $items->sum('quantity'),
-            'total_price' => $items->sum('subtotal'),
+            'items'       => $items,
+            'total_items' => (int) $items->sum('quantity'),
         ]);
     }
 
     // ─────────────────────────────────────────────────────────────
-    //  POST /api/cart/add
-    //  Tambah produk ke keranjang (atau tambah qty jika sudah ada)
+    // POST /api/cart/add
     // ─────────────────────────────────────────────────────────────
-    public function add(Request $request): JsonResponse
+    public function add(Request $request)
     {
         $request->validate([
-            'product_id' => 'required|exists:products,id',
+            'product_id' => 'required|integer|exists:products,id',
             'quantity'   => 'sometimes|integer|min:1|max:100',
         ]);
 
-        $product = Product::findOrFail($request->product_id);
+        $productId = (int) $request->product_id;
+        $qty       = (int) ($request->quantity ?? 1);
+        $product   = Product::findOrFail($productId);
 
-        // Cek stok
-        if ($product->stock <= 0) {
+        // Tolak jika stok habis
+        if ($product->stock !== null && $product->stock < 1) {
             return response()->json(['message' => 'Stok produk habis.'], 422);
         }
 
-        $sessionId = $this->getSessionId($request);
-        $qty       = $request->input('quantity', 1);
+        $sid = $this->getCartSessionId($request);
 
-        $cartItem = Cart::firstOrNew([
-            'session_id' => $sessionId,
-            'product_id' => $product->id,
-        ]);
+        // Cari baris cart yang sudah ada
+        $existingQuery = auth()->check()
+            ? Cart::where('user_id', auth()->id())->where('product_id', $productId)
+            : Cart::where('session_id', $sid)->whereNull('user_id')->where('product_id', $productId);
 
-        $newQty = $cartItem->exists ? $cartItem->quantity + $qty : $qty;
+        $cart = $existingQuery->first();
 
-        // Jangan melebihi stok
-        if ($newQty > $product->stock) {
-            return response()->json([
-                'message' => "Stok tersedia hanya {$product->stock}.",
-            ], 422);
+        if ($cart) {
+            // Sudah ada → tambah quantity, batasi dengan stok
+            $newQty = $cart->quantity + $qty;
+            if ($product->stock !== null) {
+                $newQty = min($newQty, $product->stock);
+            }
+            $cart->quantity = $newQty;
+            $cart->save();
+        } else {
+            // Baru → insert ke DB
+            $cart = Cart::create([
+                'session_id' => $sid,
+                'user_id'    => auth()->check() ? auth()->id() : null,
+                'product_id' => $productId,
+                'quantity'   => $product->stock !== null
+                    ? min($qty, $product->stock)
+                    : $qty,
+            ]);
         }
 
-        $cartItem->quantity = $newQty;
-        $cartItem->user_id  = auth()->id();
-        $cartItem->save();
+        $totalItems = (int) $this->cartQuery($request)->sum('quantity');
 
-        $totalItems = $this->cartQuery($request)->sum('quantity');
-
-        return response()->json([
+        $response = response()->json([
             'message'     => 'Produk berhasil ditambahkan ke keranjang.',
+            'cart_id'     => $cart->id,
             'total_items' => $totalItems,
-            'item'        => $this->formatItem($cartItem->load('product')),
-        ], 201);
+        ]);
+
+        // Simpan session_id ke cookie agar persist 1 tahun (guest)
+        if (!auth()->check()) {
+            $response->withCookie(
+                cookie('cart_sid', $sid, 60 * 24 * 365, '/', null, false, false)
+            );
+        }
+
+        return $response;
     }
 
     // ─────────────────────────────────────────────────────────────
-    //  PATCH /api/cart/{id}
-    //  Update qty satu item
+    // PATCH /api/cart/{id}
     // ─────────────────────────────────────────────────────────────
-    public function update(Request $request, int $id): JsonResponse
+    public function update(Request $request, int $id)
     {
         $request->validate([
             'quantity' => 'required|integer|min:1|max:100',
         ]);
 
-        $item = $this->cartQuery($request)->findOrFail($id);
+        $cart    = $this->cartQuery($request)->where('id', $id)->firstOrFail();
+        $product = $cart->product;
+        $newQty  = (int) $request->quantity;
 
-        if ($request->quantity > $item->product->stock) {
-            return response()->json([
-                'message' => "Stok tersedia hanya {$item->product->stock}.",
-            ], 422);
+        if ($product && $product->stock !== null && $newQty > $product->stock) {
+            return response()->json(['message' => 'Melebihi stok tersedia.'], 422);
         }
 
-        $item->update(['quantity' => $request->quantity]);
-
-        $cartItems  = $this->cartQuery($request)->get();
-        $totalPrice = $cartItems->sum('subtotal');
-        $totalItems = $cartItems->sum('quantity');
+        $cart->quantity = $newQty;
+        $cart->save();
 
         return response()->json([
-            'message'     => 'Jumlah produk diperbarui.',
-            'item'        => $this->formatItem($item->fresh('product')),
-            'total_price' => $totalPrice,
-            'total_items' => $totalItems,
+            'message'     => 'Keranjang diperbarui.',
+            'total_items' => (int) $this->cartQuery($request)->sum('quantity'),
         ]);
     }
 
     // ─────────────────────────────────────────────────────────────
-    //  DELETE /api/cart/{id}
-    //  Hapus satu item dari keranjang
+    // DELETE /api/cart/{id}   ← nama method 'remove' sesuai routes/web.php
     // ─────────────────────────────────────────────────────────────
-    public function remove(Request $request, int $id): JsonResponse
+    public function remove(Request $request, int $id)
     {
-        $item = $this->cartQuery($request)->findOrFail($id);
-        $item->delete();
-
-        $cartItems  = $this->cartQuery($request)->get();
-        $totalPrice = $cartItems->sum('subtotal');
-        $totalItems = $cartItems->sum('quantity');
+        $cart = $this->cartQuery($request)->where('id', $id)->firstOrFail();
+        $cart->delete();
 
         return response()->json([
             'message'     => 'Produk dihapus dari keranjang.',
-            'total_price' => $totalPrice,
-            'total_items' => $totalItems,
+            'total_items' => (int) $this->cartQuery($request)->sum('quantity'),
         ]);
     }
 
     // ─────────────────────────────────────────────────────────────
-    //  DELETE /api/cart
-    //  Kosongkan semua keranjang
+    // DELETE /api/cart/clear  — kosongkan semua
     // ─────────────────────────────────────────────────────────────
-    public function clear(Request $request): JsonResponse
+    public function clear(Request $request)
     {
         $this->cartQuery($request)->delete();
 
-        return response()->json(['message' => 'Keranjang dikosongkan.']);
+        return response()->json([
+            'message'     => 'Keranjang dikosongkan.',
+            'total_items' => 0,
+        ]);
     }
 
     // ─────────────────────────────────────────────────────────────
-    //  Helper: format satu item untuk response JSON
+    // Merge cart guest → user setelah login
+    // Panggil di AuthController setelah Auth::attempt() berhasil:
+    //   CartController::mergeGuestCart($request, auth()->id());
     // ─────────────────────────────────────────────────────────────
-    private function formatItem(Cart $item): array
-{
-    $product = $item->product;
+    public static function mergeGuestCart(Request $request, int $userId): void
+    {
+        $sid = $request->cookie('cart_sid') ?? session()->getId();
+        if (!$sid) return;
 
-    // Hitung final price: discount adalah harga diskon langsung
-    $finalPrice = ($product->discount && $product->discount > 0 && $product->discount < $product->price)
-        ? $product->discount
-        : $product->price;
+        $guestItems = Cart::where('session_id', $sid)
+            ->whereNull('user_id')
+            ->get();
 
-    return [
-        'id'             => $item->id,
-        'product_id'     => $product->id,
-        'title'          => $product->title,
-        'image_url'      => $product->images->first()
-                                ? asset('storage/' . $product->images->first()->image)
-                                : null,
-        'original_price' => $product->price,
-        'final_price'    => $finalPrice,
-        'has_discount'   => $finalPrice < $product->price,
-        'quantity'       => $item->quantity,
-        'subtotal'       => $finalPrice * $item->quantity,
-        'stock'          => $product->stock,
-    ];
-}
+        foreach ($guestItems as $guestCart) {
+            $existing = Cart::where('user_id', $userId)
+                ->where('product_id', $guestCart->product_id)
+                ->first();
+
+            if ($existing) {
+                $maxStock           = $guestCart->product?->stock ?? 999;
+                $existing->quantity = min($existing->quantity + $guestCart->quantity, $maxStock);
+                $existing->save();
+                $guestCart->delete();
+            } else {
+                $guestCart->user_id    = $userId;
+                $guestCart->session_id = session()->getId();
+                $guestCart->save();
+            }
+        }
+    }
 }

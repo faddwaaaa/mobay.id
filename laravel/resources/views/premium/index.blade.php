@@ -1,30 +1,30 @@
 @extends('layouts.dashboard')
-@section('title', 'Upgrade to Pro Package | Mobay.id')
+@section('title', 'Upgrade ke Paket Pro | Mobay.id')
 
 @section('content')
 @php
     $features = [
-        ['label' => 'Unlimited Link', 'free' => 'check', 'pro' => 'check'],
-        ['label' => 'Digital Store', 'free' => 'check', 'pro' => 'check'],
-        ['label' => 'Statistic / Traffic', 'free' => 'check', 'pro' => 'check'],
-        ['label' => 'Templates', 'free' => 'check', 'pro' => 'check'],
-        ['label' => 'Custom Fonts & Button', 'free' => 'check', 'pro' => 'check'],
-        ['label' => 'Custom Background', 'free' => 'check', 'pro' => 'check'],
-        ['label' => 'Transaction Fee', 'free' => '10% -> 5%', 'pro' => '10% -> 3%'],
-        ['label' => 'Withdrawal Fee', 'free' => 'Rp 5k', 'pro' => 'FREE'],
-        ['label' => 'About me', 'free' => 'check', 'pro' => 'check'],
-        ['label' => 'Email Notification', 'free' => 'check', 'pro' => 'check'],
-        ['label' => 'Export data to csv', 'free' => 'check', 'pro' => 'check'],
-        ['label' => 'FB Pixels', 'free' => 'cross', 'pro' => 'check'],
+        ['label' => 'Link Tak Terbatas', 'free' => 'check', 'pro' => 'check'],
+        ['label' => 'Toko Digital', 'free' => 'check', 'pro' => 'check'],
+        ['label' => 'Statistik / Pengunjung', 'free' => 'check', 'pro' => 'check'],
+        ['label' => 'Desain Tampilan (Template)', 'free' => 'check', 'pro' => 'check'],
+        ['label' => 'Ganti Font & Tombol Sesuka Hati', 'free' => 'check', 'pro' => 'check'],
+        ['label' => 'Ganti Latar Belakang Sesuka Hati', 'free' => 'check', 'pro' => 'check'],
+        ['label' => 'Biaya Transaksi', 'free' => '10% → 5%', 'pro' => '10% → 3%'],
+        ['label' => 'Biaya Penarikan Uang', 'free' => 'Rp 5.000', 'pro' => 'GRATIS'],
+        ['label' => 'Profil / Tentang Saya', 'free' => 'check', 'pro' => 'check'],
+        ['label' => 'Notifikasi lewat Email', 'free' => 'check', 'pro' => 'check'],
+        ['label' => 'Unduh Data ke CSV', 'free' => 'check', 'pro' => 'check'],
+        ['label' => 'FB Pixel (Iklan Facebook)', 'free' => 'cross', 'pro' => 'check'],
         ['label' => 'Google Analytics', 'free' => 'cross', 'pro' => 'check'],
-        ['label' => 'UTM Parameters', 'free' => 'cross', 'pro' => 'check'],
-        ['label' => 'Custom Meta Text (SEO)', 'free' => 'cross', 'pro' => 'check'],
-        ['label' => 'Request Payout anytime', 'free' => 'check', 'pro' => 'check'],
-        ['label' => 'Remove lynk.id logo', 'free' => 'cross', 'pro' => 'check'],
-        ['label' => 'Maximum file size', 'free' => '100 mb', 'pro' => '5 GB'],
-        ['label' => 'Product Appearance', 'free' => 'cross', 'pro' => 'check'],
-        ['label' => 'E-course Video', 'free' => '10 Mins', 'pro' => '480 Mins'],
-        ['label' => 'Questionnaire', 'free' => 'cross', 'pro' => '20 GB'],
+        ['label' => 'Parameter UTM (Lacak Iklan)', 'free' => 'cross', 'pro' => 'check'],
+        ['label' => 'Judul & Deskripsi Halaman (SEO)', 'free' => 'cross', 'pro' => 'check'],
+        ['label' => 'Tarik Dana Kapan Saja', 'free' => 'check', 'pro' => 'check'],
+        ['label' => 'Hapus Logo lynk.id', 'free' => 'cross', 'pro' => 'check'],
+        ['label' => 'Ukuran File Maksimal', 'free' => '100 MB', 'pro' => '5 GB'],
+        ['label' => 'Tampilan Produk Kustom', 'free' => 'cross', 'pro' => 'check'],
+        ['label' => 'Video E-course', 'free' => '10 Menit', 'pro' => '480 Menit'],
+        ['label' => 'Kuesioner / Formulir', 'free' => 'cross', 'pro' => '20 GB'],
     ];
 
     $renderValue = function ($value) {
@@ -43,45 +43,45 @@
 <div class="pro-page">
     <section class="pro-hero">
         <div class="hero-copy">
-            <div class="hero-kicker">Pro upgrade</div>
-            <h1>Upgrade to Pro Package</h1>
-            <p class="hero-subtitle">Unlock advanced tools and grow your digital store faster.</p>
+            <div class="hero-kicker">Naik ke Pro</div>
+            <h1>Upgrade ke Paket Pro</h1>
+            <p class="hero-subtitle">Buka fitur-fitur canggih dan kembangkan toko digitalmu lebih cepat.</p>
         </div>
 
         <div class="hero-pricing-card">
             <div class="offer-pill">
                 <i class="fas fa-bolt"></i>
-                Limited offer
+                Penawaran terbatas
             </div>
             <div class="hero-price-list">
                 <div class="hero-price-item">
-                    <span class="hero-price-label">Monthly</span>
-                    <strong>IDR 49.900/month</strong>
+                    <span class="hero-price-label">Bayar Bulanan</span>
+                    <strong>IDR 49.900/bulan</strong>
                 </div>
                 <div class="hero-price-item">
-                    <span class="hero-price-label">Yearly</span>
-                    <strong>IDR 500.000/year</strong>
+                    <span class="hero-price-label">Bayar Tahunan</span>
+                    <strong>IDR 500.000/tahun</strong>
                 </div>
             </div>
-            <p class="hero-note">Soft green pricing highlight inspired by modern creator SaaS layouts.</p>
+            <p class="hero-note">Harga terjangkau, fitur lengkap — cocok untuk pemula hingga penjual profesional.</p>
         </div>
     </section>
 
     <section class="pro-section">
         <div class="section-head">
             <div>
-                <span class="section-tag">Comparison</span>
-                <h2>Feature Comparison</h2>
+                <span class="section-tag">Perbandingan</span>
+                <h2>Perbandingan Fitur</h2>
             </div>
-            <p>Compare what you get on Free and Pro in one clear table.</p>
+            <p>Lihat perbedaan fitur antara akun Gratis dan akun Pro dalam satu tabel yang mudah dibaca.</p>
         </div>
 
         <div class="compare-shell">
             <table class="compare-table">
                 <thead>
                     <tr>
-                        <th>Feature</th>
-                        <th>Free</th>
+                        <th>Fitur</th>
+                        <th>Gratis</th>
                         <th>Pro</th>
                     </tr>
                 </thead>
@@ -101,29 +101,29 @@
     <section class="pro-section">
         <div class="section-head">
             <div>
-                <span class="section-tag">Pricing</span>
-                <h2>Choose your plan</h2>
+                <span class="section-tag">Harga</span>
+                <h2>Pilih Paketmu</h2>
             </div>
-            <p>Pick the billing cycle that fits your store growth plan.</p>
+            <p>Pilih cara bayar yang paling cocok untuk rencana jualan kamu.</p>
         </div>
 
         <div class="plan-grid">
             <article class="plan-card">
                 <div class="plan-card-top">
-                    <span class="plan-chip">Monthly plan</span>
-                    <h3>IDR 49.900/month</h3>
-                    <p>Pay monthly</p>
+                    <span class="plan-chip">Paket Bulanan</span>
+                    <h3>IDR 49.900/bulan</h3>
+                    <p>Bayar setiap bulan, bisa berhenti kapan saja</p>
                 </div>
-                <button type="button" class="upgrade-btn">Upgrade Now</button>
+                <button type="button" class="upgrade-btn">Upgrade Sekarang</button>
             </article>
 
             <article class="plan-card plan-card-highlight">
                 <div class="plan-card-top">
-                    <span class="plan-chip plan-chip-highlight">Recommended</span>
-                    <h3>IDR 500.000/yr</h3>
-                    <p>Pay annually (Save 2 months)</p>
+                    <span class="plan-chip plan-chip-highlight">Paling Hemat 🔥</span>
+                    <h3>IDR 500.000/tahun</h3>
+                    <p>Bayar setahun sekali (hemat 2 bulan gratis!)</p>
                 </div>
-                <button type="button" class="upgrade-btn">Upgrade Now</button>
+                <button type="button" class="upgrade-btn">Upgrade Sekarang</button>
             </article>
         </div>
     </section>
