@@ -102,7 +102,6 @@
     top: 90px;
     left: calc(var(--sidebar-w, 220px) + 16px);
     width: 380px;
-    max-height: 530px;
     background: #fff;
     border-radius: 14px;
     box-shadow: 0 8px 40px rgba(35,86,232,.13), 0 2px 8px rgba(0,0,0,.08);
@@ -177,9 +176,9 @@
 
 /* ---------- Body ---------- */
 .notif-panel-body {
-    flex: 1;
     overflow-y: auto;
     padding: 5px 0;
+    max-height: 285px;
 }
 
 .notif-panel-body::-webkit-scrollbar { width: 4px; }
