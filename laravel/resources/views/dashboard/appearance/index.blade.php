@@ -181,7 +181,7 @@
 .wg-item {
     border-radius: 10px; overflow: hidden; cursor: pointer;
     border: 2.5px solid transparent; transition: all 0.18s;
-    position: relative; aspect-ratio: 9/16;
+    position: relative; aspect-ratio: 9/16; box-shadow: 0 0 0 1px rgba(0,0,0,0.07);
 }
 .wg-item:hover  { border-color: #93c5fd; transform: translateY(-2px); box-shadow: 0 6px 16px rgba(59,130,246,0.15); }
 .wg-item.active { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.2); }
@@ -195,7 +195,7 @@
 .wg-label { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.45); color: #fff; font-size: 9px; font-weight: 700; text-align: center; padding: 3px 2px; }
 
 .wg-collapse-wrap { overflow: hidden; transition: max-height 0.35s ease; max-height: 0; }
-.wg-collapse-wrap.open { max-height: 2000px; }
+.wg-collapse-wrap.open { max-height: 4000px; }
 .btn-wg-toggle {
     width: 100%; display: flex; align-items: center; justify-content: center; gap: 6px;
     padding: 9px 14px; margin-top: 10px; border: 1.5px solid #e5e7eb; border-radius: 10px;
@@ -780,44 +780,51 @@ let toastTmr;
 
 function markDirty() { isDirty = true; updatePreview(); }
 
-const WALLPAPERS = [
-    { id:'wg_aurora',    cat:'gradient', label:'Aurora',        cssValue:'linear-gradient(135deg,#667eea 0%,#764ba2 50%,#f093fb 100%)' },
-    { id:'wg_peach',     cat:'gradient', label:'Persik',        cssValue:'linear-gradient(135deg,#f6d365,#fda085)' },
-    { id:'wg_ocean',     cat:'gradient', label:'Samudra',       cssValue:'linear-gradient(135deg,#2193b0,#6dd5ed)' },
-    { id:'wg_forest',    cat:'gradient', label:'Hutan',         cssValue:'linear-gradient(135deg,#11998e,#38ef7d)' },
-    { id:'wg_candy',     cat:'gradient', label:'Permen',        cssValue:'linear-gradient(135deg,#f953c6,#b91d73)' },
-    { id:'wg_golden',    cat:'gradient', label:'Emas',          cssValue:'linear-gradient(135deg,#f7971e,#ffd200)' },
-    { id:'wg_royal',     cat:'gradient', label:'Kerajaan',      cssValue:'linear-gradient(135deg,#141e30,#243b55)' },
-    { id:'wg_rose',      cat:'gradient', label:'Mawar',         cssValue:'linear-gradient(135deg,#ff6a88,#ff99ac)' },
-    { id:'wg_nordic',    cat:'gradient', label:'Nordik',        cssValue:'linear-gradient(135deg,#a8edea,#fed6e3)' },
-    { id:'wg_twilight',  cat:'gradient', label:'Senja',         cssValue:'linear-gradient(135deg,#0f0c29,#302b63,#24243e)' },
-    { id:'wg_spring',    cat:'gradient', label:'Semi',          cssValue:'linear-gradient(135deg,#96fbc4,#f9f586)' },
-    { id:'wg_dusk',      cat:'gradient', label:'Petang',        cssValue:'linear-gradient(135deg,#2c3e50,#fd746c)' },
-    { id:'wg_dots',      cat:'pattern',  label:'Titik-titik',   cssValue:'radial-gradient(circle,#cbd5e1 1.5px,transparent 1.5px)', bgSize:'24px 24px', bgColor:'#f8fafc' },
-    { id:'wg_grid',      cat:'pattern',  label:'Kotak-kotak',   cssValue:'linear-gradient(#e2e8f0 1px,transparent 1px),linear-gradient(90deg,#e2e8f0 1px,transparent 1px)', bgSize:'24px 24px', bgColor:'#f8fafc' },
-    { id:'wg_diagonal',  cat:'pattern',  label:'Garis Miring',  cssValue:'repeating-linear-gradient(45deg,#cbd5e1,#cbd5e1 1px,transparent 1px,transparent 12px)', bgColor:'#f1f5f9' },
-    { id:'wg_checker',   cat:'pattern',  label:'Catur',         cssValue:'conic-gradient(#e2e8f0 90deg,#f8fafc 90deg 180deg,#e2e8f0 180deg 270deg,#f8fafc 270deg)', bgSize:'20px 20px', bgColor:'#f8fafc' },
-    { id:'wg_dotsdark',  cat:'pattern',  label:'Titik Gelap',   cssValue:'radial-gradient(circle,#475569 1.5px,transparent 1.5px)', bgSize:'24px 24px', bgColor:'#1e293b' },
-    { id:'wg_griddark',  cat:'pattern',  label:'Kotak Gelap',   cssValue:'linear-gradient(#334155 1px,transparent 1px),linear-gradient(90deg,#334155 1px,transparent 1px)', bgSize:'24px 24px', bgColor:'#0f172a' },
-    { id:'wg_wave',      cat:'pattern',  label:'Gelombang',     cssValue:'repeating-radial-gradient(circle at 0 0,transparent 0,#e0f2fe 8px),repeating-linear-gradient(#bae6fd55,#bae6fd)' },
-    { id:'wg_mesh',      cat:'pattern',  label:'Jaring',        cssValue:'radial-gradient(at 40% 20%,#fde68a 0,transparent 50%),radial-gradient(at 80% 0,#c7d2fe 0,transparent 50%),radial-gradient(at 0 50%,#fecdd3 0,transparent 50%)', bgColor:'#fff7ed' },
-    { id:'wg_white',     cat:'minimal',  label:'Putih',         cssValue:'#ffffff',   solid:true },
-    { id:'wg_cream',     cat:'minimal',  label:'Krem',          cssValue:'#fef9f0',   solid:true },
-    { id:'wg_blush',     cat:'minimal',  label:'Merah Muda',    cssValue:'#fdf2f8',   solid:true },
-    { id:'wg_mint',      cat:'minimal',  label:'Mint',          cssValue:'#f0fdf4',   solid:true },
-    { id:'wg_sky',       cat:'minimal',  label:'Langit',        cssValue:'#f0f9ff',   solid:true },
-    { id:'wg_gray',      cat:'minimal',  label:'Abu-abu',       cssValue:'#f1f5f9',   solid:true },
-    { id:'wg_warmgray',  cat:'minimal',  label:'Abu Hangat',    cssValue:'#fafaf9',   solid:true },
-    { id:'wg_sand',      cat:'minimal',  label:'Pasir',         cssValue:'#fef3c7',   solid:true },
-    { id:'wg_obsidian',  cat:'dark',     label:'Obsidian',      cssValue:'#0a0a0a',   solid:true },
-    { id:'wg_night',     cat:'dark',     label:'Malam',         cssValue:'#0f172a',   solid:true },
-    { id:'wg_smoke',     cat:'dark',     label:'Asap',          cssValue:'#1c1c1e',   solid:true },
-    { id:'wg_deep',      cat:'dark',     label:'Dalam',         cssValue:'#111827',   solid:true },
-    { id:'wg_void',      cat:'dark',     label:'Kegelapan',     cssValue:'linear-gradient(135deg,#0f0c29,#302b63,#24243e)' },
-    { id:'wg_abyss',     cat:'dark',     label:'Jurang',        cssValue:'linear-gradient(135deg,#000000,#434343)' },
-    { id:'wg_cosmos',    cat:'dark',     label:'Kosmos',        cssValue:'linear-gradient(135deg,#0d0d0d,#1a1a2e,#16213e)' },
-    { id:'wg_eclipse',   cat:'dark',     label:'Gerhana',       cssValue:'linear-gradient(135deg,#1a1a2e,#16213e,#0f3460)' },
-];
+    const WALLPAPERS = [
+        { id:'wg_aurora',   cat:'gradient', label:'Aurora',       cssValue:'linear-gradient(135deg,#667eea 0%,#764ba2 50%,#f093fb 100%)' },
+        { id:'wg_peach',    cat:'gradient', label:'Persik',       cssValue:'linear-gradient(135deg,#f6d365,#fda085)' },
+        { id:'wg_ocean',    cat:'gradient', label:'Samudra',      cssValue:'linear-gradient(135deg,#2193b0,#6dd5ed)' },
+        { id:'wg_forest',   cat:'gradient', label:'Hutan',        cssValue:'linear-gradient(135deg,#11998e,#38ef7d)' },
+        { id:'wg_candy',    cat:'gradient', label:'Permen',       cssValue:'linear-gradient(135deg,#f953c6,#b91d73)' },
+        { id:'wg_golden',   cat:'gradient', label:'Emas',         cssValue:'linear-gradient(135deg,#f7971e,#ffd200)' },
+        { id:'wg_royal',    cat:'gradient', label:'Kerajaan',     cssValue:'linear-gradient(135deg,#141e30,#243b55)' },
+        { id:'wg_rose',     cat:'gradient', label:'Mawar',        cssValue:'linear-gradient(135deg,#ff6a88,#ff99ac)' },
+        { id:'wg_nordic',   cat:'gradient', label:'Nordik',       cssValue:'linear-gradient(135deg,#a8edea,#fed6e3)' },
+        { id:'wg_twilight', cat:'gradient', label:'Senja',        cssValue:'linear-gradient(135deg,#0f0c29,#302b63,#24243e)' },
+        { id:'wg_spring',   cat:'gradient', label:'Semi',         cssValue:'linear-gradient(135deg,#96fbc4,#f9f586)' },
+        { id:'wg_dusk',     cat:'gradient', label:'Petang',       cssValue:'linear-gradient(135deg,#2c3e50,#fd746c)' },
+
+        { id:'wg_dots',       cat:'pattern', label:'Titik-titik',    cssValue:'radial-gradient(circle,#cbd5e1 1.5px,transparent 1.5px)',                                                                                                                                          bgSize:'24px 24px', bgColor:'#f8fafc' },
+        { id:'wg_grid',       cat:'pattern', label:'Kotak-kotak',    cssValue:'linear-gradient(#e2e8f0 1px,transparent 1px),linear-gradient(90deg,#e2e8f0 1px,transparent 1px)',                                                                                                  bgSize:'24px 24px', bgColor:'#f8fafc' },
+        { id:'wg_diagonal',   cat:'pattern', label:'Garis Miring',   cssValue:'repeating-linear-gradient(45deg,#cbd5e1,#cbd5e1 1px,transparent 1px,transparent 12px)',                                                                                                                             bgColor:'#f1f5f9' },
+        { id:'wg_checker',    cat:'pattern', label:'Catur',          cssValue:'conic-gradient(#e2e8f0 90deg,#f8fafc 90deg 180deg,#e2e8f0 180deg 270deg,#f8fafc 270deg)',                                                                                                          bgSize:'20px 20px', bgColor:'#f8fafc' },
+        { id:'wg_dotsdark',   cat:'pattern', label:'Titik Gelap',    cssValue:'radial-gradient(circle,#475569 1.5px,transparent 1.5px)',                                                                                                                                          bgSize:'24px 24px', bgColor:'#1e293b' },
+        { id:'wg_griddark',   cat:'pattern', label:'Kotak Gelap',    cssValue:'linear-gradient(#334155 1px,transparent 1px),linear-gradient(90deg,#334155 1px,transparent 1px)',                                                                                                  bgSize:'24px 24px', bgColor:'#0f172a' },
+        { id:'wg_diagdark',   cat:'pattern', label:'Garis Gelap',    cssValue:'repeating-linear-gradient(45deg,#334155,#334155 1px,transparent 1px,transparent 12px)',                                                                                                                             bgColor:'#0f172a' },
+        { id:'wg_checkdark',  cat:'pattern', label:'Catur Gelap',    cssValue:'conic-gradient(#1e293b 90deg,#0f172a 90deg 180deg,#1e293b 180deg 270deg,#0f172a 270deg)',                                                                                                          bgSize:'20px 20px', bgColor:'#0f172a' },
+        { id:'wg_wave',       cat:'pattern', label:'Gelombang',      cssValue:'repeating-radial-gradient(circle at 0 0,transparent 0,#e0f2fe 8px),repeating-linear-gradient(#bae6fd55,#bae6fd)' },
+        { id:'wg_mesh',       cat:'pattern', label:'Jaring',         cssValue:'radial-gradient(at 40% 20%,#fde68a 0,transparent 50%),radial-gradient(at 80% 0,#c7d2fe 0,transparent 50%),radial-gradient(at 0 50%,#fecdd3 0,transparent 50%)',                                    bgColor:'#fff7ed' },
+        { id:'wg_wavedark',   cat:'pattern', label:'Gelombang Gelap',cssValue:'repeating-radial-gradient(circle at 0 0,transparent 0,#0f172a 6px),repeating-linear-gradient(#1e3a5f55,#1e3a5f)',                                                                                              bgColor:'#060d1a' },
+        { id:'wg_meshdark',   cat:'pattern', label:'Jaring Gelap',   cssValue:'radial-gradient(at 40% 20%,#312e81 0,transparent 50%),radial-gradient(at 80% 0,#064e3b 0,transparent 50%),radial-gradient(at 0 50%,#1e1b4b 0,transparent 50%)',                                    bgColor:'#030712' },
+
+        { id:'wg_white',    cat:'minimal',  label:'Putih',        cssValue:'#f0f0f0', solid:true },
+        { id:'wg_cream',    cat:'minimal',  label:'Krem',         cssValue:'#fdf0d5', solid:true },
+        { id:'wg_blush',    cat:'minimal',  label:'Merah Muda',   cssValue:'#fce4ec', solid:true },
+        { id:'wg_mint',     cat:'minimal',  label:'Mint',         cssValue:'#d6f5e3', solid:true },
+        { id:'wg_sky',      cat:'minimal',  label:'Langit',       cssValue:'#d4eaf7', solid:true },
+        { id:'wg_gray',     cat:'minimal',  label:'Abu-abu',      cssValue:'#dde1e7', solid:true },
+        { id:'wg_warmgray', cat:'minimal',  label:'Abu Hangat',   cssValue:'#e8e0d5', solid:true },
+        { id:'wg_sand',     cat:'minimal',  label:'Pasir',        cssValue:'#f5dfa0', solid:true },
+
+        { id:'wg_obsidian', cat:'dark', label:'Obsidian',  cssValue:'#1a1a2e',  solid:true },
+        { id:'wg_night',    cat:'dark', label:'Malam',     cssValue:'#0d1b2a',  solid:true },
+        { id:'wg_smoke',    cat:'dark', label:'Slate',     cssValue:'#1e293b',  solid:true },
+        { id:'wg_deep',     cat:'dark', label:'Hutan',     cssValue:'#1a2e1a',  solid:true },
+        { id:'wg_void',     cat:'dark', label:'Kegelapan', cssValue:'linear-gradient(135deg,#0f0c29,#302b63,#24243e)' },
+        { id:'wg_abyss',    cat:'dark', label:'Maroon',    cssValue:'linear-gradient(135deg,#1a0a0a,#3d1515,#1a0a0a)' },
+        { id:'wg_cosmos',   cat:'dark', label:'Kosmos',    cssValue:'linear-gradient(135deg,#0d1b2a,#1a3a5c,#0d2137)' },
+        { id:'wg_eclipse',  cat:'dark', label:'Gerhana',   cssValue:'linear-gradient(135deg,#1a1a2e,#16213e,#0f3460)' },
+            ];
 
 let activeWgCat = 'all';
 let activeWgId  = @json(
@@ -825,12 +832,13 @@ let activeWgId  = @json(
 );
 
 function wgThumbStyle(wg) {
-    if (wg.solid) return `background:${wg.cssValue}`;
+    if (wg.solid) return `background:${wg.cssValue};outline:1.5px solid rgba(0,0,0,0.10);outline-offset:-1px`;
     let s = `background:${wg.cssValue}`;
     if (wg.bgColor) s += `;background-color:${wg.bgColor}`;
     if (wg.bgSize)  s += `;background-size:${wg.bgSize}`;
     return s;
 }
+
 function renderWgGrid(cat) {
     const grid = document.getElementById('wgGrid');
     const list = cat === 'all' ? WALLPAPERS : WALLPAPERS.filter(w => w.cat === cat);
