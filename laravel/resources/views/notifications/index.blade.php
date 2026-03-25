@@ -141,7 +141,7 @@
                     </button>
                 </form>
                 @endif
-                <form method="POST" action="{{ route('notifications.destroy', $notif->id) }}" class="d-inline" onsubmit="return confirm('Hapus notifikasi ini?')">
+                <form method="POST" action="{{ route('notifications.destroy', $notif->id) }}" class="d-inline" onsubmit="return confirmNotificationDelete(event, this)">
                     @csrf
                     @method('DELETE')
                     <button type="submit" class="notif-page-action-btn delete" title="Hapus">
@@ -694,10 +694,24 @@ body.dark .notif-page-list .notif-empty-state { border-color: #2d3748; }
 </style>
 
 <script>
-function confirmDeleteAll() {
-    if (confirm('Hapus semua notifikasi? Tindakan ini tidak bisa dibatalkan.')) {
+async function confirmDeleteAll() {
+    if (await window.appConfirm('Hapus semua notifikasi? Tindakan ini tidak bisa dibatalkan.', {
+        title: 'Hapus Semua Notifikasi',
+        confirmText: 'Ya, hapus'
+    })) {
         document.getElementById('deleteAllForm').submit();
     }
+}
+
+async function confirmNotificationDelete(event, form) {
+    event.preventDefault();
+    if (await window.appConfirm('Hapus notifikasi ini?', {
+        title: 'Hapus Notifikasi',
+        confirmText: 'Ya, hapus'
+    })) {
+        form.submit();
+    }
+    return false;
 }
 </script>
 @endsection

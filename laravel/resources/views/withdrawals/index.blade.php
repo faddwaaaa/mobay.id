@@ -158,8 +158,11 @@ function viewDetail(id) {
     alert('Detail penarikan ID: ' + id);
 }
 
-function cancelWithdrawal(id) {
-    if (confirm('Apakah Anda yakin ingin membatalkan penarikan ini? Saldo akan dikembalikan ke akun Anda.')) {
+async function cancelWithdrawal(id) {
+    if (await window.appConfirm('Apakah Anda yakin ingin membatalkan penarikan ini? Saldo akan dikembalikan ke akun Anda.', {
+        title: 'Batalkan Penarikan',
+        confirmText: 'Ya, batalkan'
+    })) {
         fetch(`/withdrawal/${id}/cancel`, {
             method: 'POST',
             headers: {
@@ -183,8 +186,12 @@ function cancelWithdrawal(id) {
     }
 }
 
-function checkStatus(id) {
-    if (confirm('Refresh status penarikan dari Midtrans?')) {
+async function checkStatus(id) {
+    if (await window.appConfirm('Refresh status penarikan dari Midtrans?', {
+        title: 'Refresh Status',
+        confirmText: 'Ya, refresh',
+        variant: 'primary'
+    })) {
         fetch(`/withdrawal/${id}/check-status`, {
             method: 'GET',
             headers: {
