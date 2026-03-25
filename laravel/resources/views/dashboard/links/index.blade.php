@@ -384,8 +384,7 @@
         </div>
         <div class="p-6 border-t border-gray-100 bg-gray-50 rounded-b-xl flex justify-end gap-3">
             <button type="button" onclick="closeAllModals()" class="px-4 py-2 rounded-lg btn-secondary">Batal</button>
-            <button type="button" id="confirmModalAction" class="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 transition">Ya, lanjutkan</button>
-        </div>
+            <button type="button" id="confirmModalAction" class="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 transition font-bold">Ya, lanjutkan</button>    </div>
     </div>
 </div>
 
