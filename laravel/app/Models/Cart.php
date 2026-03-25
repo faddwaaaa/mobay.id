@@ -14,42 +14,19 @@ class Cart extends Model
         'quantity',
     ];
 
-    // ─── Relasi ───────────────────────────────────────────────
+    protected $casts = [
+        'quantity'   => 'integer',
+        'user_id'    => 'integer',
+        'product_id' => 'integer',
+    ];
+
     public function product(): BelongsTo
     {
-        return $this->belongsTo(Product::class);
+        return $this->belongsTo(Product::class, 'product_id');
     }
 
     public function user(): BelongsTo
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'user_id');
     }
-
-    // ─── Scope: ambil cart berdasarkan session aktif ──────────
-    public function scopeForSession($query, string $sessionId)
-    {
-        return $query->where('session_id', $sessionId);
-    }
-
-    // ─── Hitung subtotal item ini ─────────────────────────────
-    public function getSubtotalAttribute(): float
-    {
-        $price = $this->product->discount > 0
-            ? $this->product->price - ($this->product->price * $this->product->discount / 100)
-            : $this->product->price;
-
-        return $this->final_price * $this->quantity;
-    }
-
-    // ─── Final price per item (setelah diskon) ────────────────
-    public function getFinalPriceAttribute(): float
-{
-    $product = $this->product;
-
-    // discount adalah harga diskon langsung, bukan persentase
-    return ($product->discount && $product->discount > 0 && $product->discount < $product->price)
-        ? $product->discount
-        : $product->price;
-}
-
 }
