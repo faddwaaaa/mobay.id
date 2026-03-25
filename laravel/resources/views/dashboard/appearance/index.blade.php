@@ -25,7 +25,7 @@
 
 .ap-preview {
     position: sticky; top: 0; height: 100vh;
-    background: #f8fafc; border-left: 1px solid #e5e7eb;
+    /* background: #f8fafc; border-left: 1px solid #e5e7eb; */
     display: flex; flex-direction: column; align-items: center;
     justify-content: center; padding: 24px 16px; gap: 14px;
 }
@@ -249,7 +249,11 @@
 
 .ap-save-bar {
     position: sticky; bottom: 0;
-    background: rgba(255,255,255,0.96); backdrop-filter: blur(14px);
+    /* background: rgba(255,255,255,0.96); backdrop-filter: blur(14px); */
+    background: rgba(0, 0, 0, 0.05);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(8.3px);
+    -webkit-backdrop-filter: blur(8.3px);
     border-top: 1px solid #e5e7eb; padding: 14px 36px;
     display: flex; align-items: center; justify-content: space-between; gap: 12px;
     z-index: 50; margin: 0 -36px;
