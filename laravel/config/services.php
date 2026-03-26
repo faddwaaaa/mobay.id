@@ -50,4 +50,8 @@ return [
         'is_3ds'        => true,
     ],
 
+    'biteship' => [
+        'webhook_secret' => env('BITESHIP_WEBHOOK_SECRET'),
+    ],
+
 ];

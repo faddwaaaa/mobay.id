@@ -8,6 +8,8 @@ use App\Models\Transaction;
 use App\Models\ProductSale;
 use App\Models\User;
 use App\Models\DigitalOrder;
+use App\Models\PhysicalOrder;                        // ✅ TAMBAHAN
+use App\Mail\PhysicalOrderConfirmation;              // ✅ TAMBAHAN
 use App\Services\DigitalOrderService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -443,9 +445,16 @@ class CheckoutController extends Controller
             $product->decrement('stock', $notes['qty'] ?? 1);
         }
 
-        // 3. ✅ Kirim file digital via link download (token-based)
+        // 3. Kirim file digital via link download (token-based)
         if ($product->product_type === 'digital') {
             $this->sendDigitalFileViaToken($product, $notes, $transaction);
+        }
+
+        // =========================================================
+        // ✅ 3b. BUAT PHYSICAL ORDER + KIRIM EMAIL KONFIRMASI
+        // =========================================================
+        if ($product->product_type === 'fisik') {
+            $this->createPhysicalOrder($product, $notes, $transaction);
         }
 
         // 4. Tambah saldo seller
@@ -481,8 +490,64 @@ class CheckoutController extends Controller
     }
 
     // =========================================================
-    // ✅ KIRIM FILE DIGITAL VIA TOKEN (BARU)
-    // Menggantikan sendDigitalFile() yang lama
+    // ✅ BUAT PHYSICAL ORDER & KIRIM EMAIL KONFIRMASI
+    // =========================================================
+    private function createPhysicalOrder(Product $product, array $notes, Transaction $transaction): void
+    {
+        // Cek sudah ada belum — hindari double create
+        $exists = PhysicalOrder::where('midtrans_order_id', $transaction->order_id)->exists();
+        if ($exists) {
+            Log::info("PhysicalOrder untuk {$transaction->order_id} sudah ada, skip.");
+            return;
+        }
+
+        // Parse alamat dari notes — buyer_address disimpan sebagai string di notes
+        // Format: "Jl. Contoh No. 1, RT/RW, Kelurahan, Kecamatan"
+        // shipping_city & province diambil dari destination_label
+        // Contoh destination_label: "Purwokerto, Banyumas, Jawa Tengah"
+        $destinationLabel = $notes['destination_label'] ?? '';
+        $labelParts       = array_map('trim', explode(',', $destinationLabel));
+        $shippingCity     = $labelParts[1] ?? ($labelParts[0] ?? '');
+        $shippingProvince = $labelParts[2] ?? '';
+
+        try {
+            $physicalOrder = PhysicalOrder::create([
+                'product_id'           => $product->id,
+                'seller_id'            => $transaction->user_id,
+                'buyer_name'           => $notes['buyer_name'] ?? '',
+                'buyer_email'          => $notes['buyer_email'] ?? '',
+                'buyer_phone'          => $notes['buyer_phone'] ?? null,
+                'product_name'         => $notes['product_title'] ?? $product->title,
+                'product_price'        => $notes['unit_price'] ?? $product->price,
+                'quantity'             => $notes['qty'] ?? 1,
+                'shipping_cost'        => $notes['shipping_cost'] ?? 0,
+                'total_amount'         => $notes['base_total'] ?? $transaction->amount,
+                'shipping_address'     => $notes['buyer_address'] ?? '',
+                'shipping_city'        => $shippingCity,
+                'shipping_province'    => $shippingProvince,
+                'shipping_postal_code' => '',   // tidak ada di notes, bisa ditambah nanti
+                'status'               => 'paid',
+                'midtrans_order_id'    => $transaction->order_id,
+                'midtrans_transaction_id' => $transaction->transaction_id,
+                'payment_method'       => $transaction->payment_method,
+                'paid_at'              => now(),
+                'courier_code'         => $notes['selected_courier'] ?? null,
+                'courier_service'      => $notes['selected_service'] ?? null,
+            ]);
+
+            // Kirim email konfirmasi ke pembeli
+            Mail::to($physicalOrder->buyer_email)
+                ->send(new PhysicalOrderConfirmation($physicalOrder));
+
+            Log::info("✅ PhysicalOrder {$physicalOrder->order_code} dibuat & email dikirim ke {$physicalOrder->buyer_email}");
+
+        } catch (\Exception $e) {
+            Log::error("createPhysicalOrder gagal untuk {$transaction->order_id}: " . $e->getMessage());
+        }
+    }
+
+    // =========================================================
+    // ✅ KIRIM FILE DIGITAL VIA TOKEN
     // =========================================================
     private function sendDigitalFileViaToken(Product $product, array $notes, Transaction $transaction): void
     {
@@ -495,17 +560,13 @@ class CheckoutController extends Controller
         }
 
         try {
-            // Cari atau buat DigitalProduct berdasarkan Product yang ada
             $digitalProduct = \App\Models\DigitalProduct::where('product_id', $product->id)->first();
 
-            // Kalau belum ada di tabel digital_products, buat otomatis
             if (!$digitalProduct) {
-                // Ambil file pertama dari product files
                 $productFile = $product->files->first();
 
                 if (!$productFile) {
                     Log::error("sendDigitalFileViaToken: Tidak ada file untuk product id={$product->id}");
-                    // Fallback: kirim email tanpa link download
                     $this->sendDigitalFileFallback($product, $notes, $transaction);
                     return;
                 }
@@ -520,7 +581,6 @@ class CheckoutController extends Controller
                 ]);
             }
 
-            // Buat DigitalOrder
             $digitalOrder = \App\Models\DigitalOrder::create([
                 'digital_product_id' => $digitalProduct->id,
                 'buyer_email'        => $buyerEmail,
@@ -530,7 +590,6 @@ class CheckoutController extends Controller
                 'order_code'         => $transaction->order_id,
             ]);
 
-            // Buat token & kirim email via DigitalOrderService
             $service = app(DigitalOrderService::class);
             $service->completeOrder($digitalOrder);
 
@@ -538,14 +597,12 @@ class CheckoutController extends Controller
 
         } catch (\Exception $e) {
             Log::error("sendDigitalFileViaToken gagal untuk order {$transaction->order_id}: " . $e->getMessage());
-            // Fallback ke cara lama (attach file langsung)
             $this->sendDigitalFileFallback($product, $notes, $transaction);
         }
     }
 
     // =========================================================
     // FALLBACK: kirim file langsung sebagai attachment
-    // Dipakai jika token system gagal
     // =========================================================
     private function sendDigitalFileFallback(Product $product, array $notes, Transaction $transaction): void
     {
