@@ -5,6 +5,7 @@
 @php
     use Illuminate\Support\Str;
     $user = Auth::user();
+    $isProUser = method_exists($user, 'isPro') ? $user->isPro() : in_array((string) data_get($user, 'subscription_plan'), ['pro', 'premium'], true);
     $publicProfileUrl = url('/' . $user->username);
     $savedAccountsCount = $user->paymentAccounts()->count();
     $primaryAccount = $user->paymentAccounts()->where('is_default', true)->first()
@@ -53,6 +54,13 @@
                 </div>
             </div>
         </div>
+
+@if (session('success'))
+    <div style="margin-bottom:18px;padding:14px 16px;border-radius:14px;border:1px solid #bbf7d0;background:#f0fdf4;color:#166534;display:flex;align-items:center;gap:10px;">
+        <i class="fas fa-circle-check"></i>
+        <span style="font-size:14px;font-weight:600;">{{ session('success') }}</span>
+    </div>
+@endif
 
 <!-- ================= SALDO ================= -->
 {{-- ================= SALDO CARD — ganti bagian balance-card di dashboard ================= --}}
@@ -153,6 +161,27 @@
         </div>
 
         <div style="display:grid;gap:10px;margin-bottom:14px;">
+            <div style="padding:11px 12px;background:{{ $isProUser ? '#ecfdf5' : '#fffaf3' }};border:1px solid {{ $isProUser ? '#bbf7d0' : '#fde3b0' }};border-radius:12px;">
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;">
+                    <div>
+                        <div style="font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;">Status Langganan</div>
+                        <div style="font-size:15px;font-weight:800;color:#111827;margin-top:4px;">{{ $isProUser ? 'Pro' : 'Free' }}</div>
+                        <div style="font-size:12px;color:#6b7280;margin-top:3px;">
+                            {{ $isProUser ? 'Mode uji coba Pro sedang aktif.' : 'Mode default akun saat ini Free.' }}
+                        </div>
+                    </div>
+
+                    <form method="POST" action="{{ route('dashboard.subscription.trial-toggle') }}">
+                        @csrf
+                        <button type="submit"
+                                style="display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:8px 11px;border:1px solid {{ $isProUser ? '#86efac' : '#fdba74' }};border-radius:999px;background:{{ $isProUser ? '#f0fdf4' : '#fff7ed' }};color:{{ $isProUser ? '#15803d' : '#c2410c' }};font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;box-shadow:none;">
+                            <i class="fas {{ $isProUser ? 'fa-rotate-left' : 'fa-bolt' }}"></i>
+                            {{ $isProUser ? 'Balik ke Free' : 'Coba Pro' }}
+                        </button>
+                    </form>
+                </div>
+            </div>
+
             <div style="padding:11px 12px;background:#f8fafc;border:1px solid #eef2f7;border-radius:12px;">
                 <div style="font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;">Link Publik</div>
                 <a href="{{ $publicProfileUrl }}" target="_blank"

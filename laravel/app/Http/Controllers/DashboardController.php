@@ -12,6 +12,7 @@ use App\Models\Click;
 use App\Models\Product;
 use App\Models\DigitalOrder;
 use Carbon\Carbon;
+use Illuminate\Http\RedirectResponse;
 
 class DashboardController extends Controller
 {
@@ -152,6 +153,25 @@ class DashboardController extends Controller
         ]);
     }
 
+    public function toggleProTrial(Request $request): RedirectResponse
+    {
+        $user = $request->user();
+        $isPro = $user->isPro();
+
+        $user->forceFill([
+            'subscription_plan' => $isPro ? 'free' : 'pro',
+        ])->save();
+
+        return redirect()
+            ->route('dashboard')
+            ->with(
+                'success',
+                $isPro
+                    ? 'Mode Pro trial dimatikan. Akun kembali ke status Free.'
+                    : 'Mode Pro trial berhasil diaktifkan. Akun sekarang berstatus Pro.'
+            );
+    }
+
     public function getStats()
     {
         $user = Auth::user();
@@ -169,6 +189,31 @@ class DashboardController extends Controller
             'total_clicks'      => Click::whereHas('link', fn($q) => $q->where('user_id', $user->id))->count(),
             'total_links'       => Link::where('user_id', $user->id)->count(),
             'active_links'      => Link::where('user_id', $user->id)->where('is_active', true)->count(),
+        ]);
+    }
+
+    /**
+     * ===== STORAGE API =====
+     * Get user storage information
+     * 
+     * Response:
+     * - used: bytes yang sudah digunakan
+     * - used_formatted: format readable (KB, MB, GB)
+     * - limit: bytes limit sebagai total penyimpanan
+     * - limit_formatted: format readable
+     * - available: bytes yang masih tersedia
+     * - available_formatted: format readable
+     * - percentage: persentase penggunaan storage
+     * - plan: subscription plan user (Free/Pro)
+     */
+    public function getStorageInfo()
+    {
+        $user = Auth::user();
+        $storageInfo = $user->getStorageInfo();
+
+        return response()->json([
+            'success' => true,
+            'storage' => $storageInfo,
         ]);
     }
 }

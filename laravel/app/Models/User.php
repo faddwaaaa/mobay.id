@@ -31,9 +31,12 @@ class User extends Authenticatable
         'balance',
         'role',          
         'is_suspended',
+        'subscription_plan',
         'origin_village_code',
         'origin_city_id',
-        'origin_city_name'
+        'origin_city_name',
+        'storage_used',
+        'storage_limit'
     ];
 
     protected $hidden = [
@@ -45,6 +48,72 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
+
+    public function isPro(): bool
+    {
+        return in_array((string) $this->subscription_plan, ['pro', 'premium'], true);
+    }
+
+    /**
+     * ===== STORAGE MANAGEMENT =====
+     * Method untuk mengelola kapasitas penyimpanan user
+     */
+
+    /**
+     * Dapatkan info penyimpanan user
+     */
+    public function getStorageInfo(): array
+    {
+        return \App\Services\StorageService::getStorageInfo($this);
+    }
+
+    /**
+     * Validasi apakah user bisa upload file
+     */
+    public function canUpload(int $fileSize): array
+    {
+        return \App\Services\StorageService::validateUpload($this, $fileSize);
+    }
+
+    /**
+     * Tambahkan storage usage setelah file diupload
+     */
+    public function addStorageUsage(int $fileSize): void
+    {
+        \App\Services\StorageService::addStorageUsage($this, $fileSize);
+    }
+
+    /**
+     * Kurangi storage usage ketika file dihapus
+     */
+    public function removeStorageUsage(int $fileSize): void
+    {
+        \App\Services\StorageService::removeStorageUsage($this, $fileSize);
+    }
+
+    /**
+     * Dapatkan sisa storage yang tersedia
+     */
+    public function getAvailableStorage(): int
+    {
+        return \App\Services\StorageService::getAvailableStorage($this);
+    }
+
+    /**
+     * Dapatkan persentase penggunaan storage
+     */
+    public function getStoragePercentage(): float
+    {
+        return \App\Services\StorageService::getStoragePercentage($this);
+    }
+
+    /**
+     * Set storage limit berdasarkan subscription plan
+     */
+    public function updateStorageLimit(): void
+    {
+        \App\Services\StorageService::updateStorageLimit($this);
+    }
 
     // ===== RELATIONS =====
 

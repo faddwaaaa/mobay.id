@@ -48,14 +48,34 @@ class ProfileController extends Controller
 
     // upload avatar baru (kalau ada)
     if ($request->hasFile('avatar')) {
+        $avatarFile = $request->file('avatar');
 
-        // hapus avatar lama JIKA dari storage
+        /**
+         * ===== STORAGE VALIDATION =====
+         * Check kapasitas penyimpanan sebelum upload avatar
+         */
+        $storageValidation = $user->canUpload($avatarFile->getSize());
+        if (!$storageValidation['can_upload']) {
+            return Redirect::route('dashboard.profile')
+                ->with('error', $storageValidation['message'])
+                ->withInput();
+        }
+
+        // hapus avatar lama JIKA dari storage & kurangi storage usage
         if ($user->avatar && !Str::startsWith($user->avatar, ['http://','https://'])) {
-            Storage::disk('public')->delete($user->avatar);
+            if (Storage::disk('public')->exists($user->avatar)) {
+                $oldFileSize = Storage::disk('public')->size($user->avatar);
+                Storage::disk('public')->delete($user->avatar);
+                // Kurangi storage usage saat avatar lama dihapus
+                $user->removeStorageUsage($oldFileSize);
+            }
         }
 
         $path = $request->file('avatar')->store('avatars', 'public');
         $user->avatar = $path;
+        
+        // Tambahkan storage usage setelah avatar baru diupload
+        $user->addStorageUsage($avatarFile->getSize());
     }
 
     // email berubah → unverified

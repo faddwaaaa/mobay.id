@@ -127,7 +127,7 @@ html, body { margin: 0; padding: 0; min-height: 100vh; }
 }
 
 .s-premium-wrap {
-    margin-top: 10px;
+    margin-top: 8px;
 }
 
 .s-premium-btn,
@@ -136,31 +136,29 @@ html, body { margin: 0; padding: 0; min-height: 100vh; }
     align-items: center;
     justify-content: center;
     gap: 7px;
-    width: 100%;
-    min-height: 38px;
-    border-radius: 12px;
-    font-size: 12px;
-    font-weight: 800;
+    width: auto;
+    max-width: 100%;
+    min-height: 28px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
     text-decoration: none;
     transition: all var(--ease);
 }
 
 .s-premium-btn {
-    gap: 5px;
-    min-height: 24px;
-    border-radius: 0;
-    font-size: 11px;
-    font-weight: 700;
-    border: none;
-    background: transparent;
-    color: #15803d;
+    gap: 6px;
+    padding: 6px 10px;
+    border: 1px solid #dbeafe;
+    background: #f8fbff;
+    color: #1d4ed8;
     box-shadow: none;
 }
 
 .s-premium-btn:hover {
-    border-color: transparent;
-    background: transparent;
-    color: #166534;
+    border-color: #bfdbfe;
+    background: #eff6ff;
+    color: #1e40af;
     transform: translateY(-1px);
 }
 
@@ -169,10 +167,11 @@ html, body { margin: 0; padding: 0; min-height: 100vh; }
 }
 
 .s-premium-badge {
-    border: 1px solid #22c55e;
-    background: linear-gradient(135deg, #22c55e, #16a34a);
-    color: #ffffff;
-    box-shadow: 0 10px 18px rgba(34, 197, 94, .18);
+    padding: 6px 10px;
+    border: 1px solid #bbf7d0;
+    background: #f0fdf4;
+    color: #15803d;
+    box-shadow: none;
 }
 
 /* ── TOP ACCOUNT ─────────────────────────────────── */
@@ -609,12 +608,12 @@ body:not(.preload) .content-pad {
             @if($isPremiumUser)
                 <div class="s-premium-badge">
                     <i class="fas fa-circle-check"></i>
-                    Pro Member
+                    Pro aktif
                 </div>
             @else
                 <a href="{{ route('premium.index') }}" class="s-premium-btn">
-                    <i class="fas fa-arrow-up-right-dots"></i>
-                    Upgrade to Pro
+                    <i class="fas fa-sparkles"></i>
+                    Coba Pro
                 </a>
             @endif
         </div>
