@@ -206,6 +206,11 @@ Route::middleware(['auth'])->group(function () {
 Route::middleware('auth')->group(function () {
     Route::get('/pesanan', [OrderController::class, 'index'])->name('orders.index');
     Route::get('/pesanan/{id}', [OrderController::class, 'show'])->name('orders.show');
+
+Route::get('/pesanan/fisik/{physicalOrder}/resi', [\App\Http\Controllers\Admin\PhysicalOrderShipmentController::class, 'edit'])
+        ->name('physical-orders.shipment.edit');
+    Route::put('/pesanan/fisik/{physicalOrder}/resi', [\App\Http\Controllers\Admin\PhysicalOrderShipmentController::class, 'update'])
+        ->name('physical-orders.shipment.update');
 });
 
 
@@ -352,6 +357,9 @@ Route::get('/preview/{username}', function ($username) {
     return view('public.profile', compact('user', 'profile', 'socialLinks'));
 })->name('preview.profile');
 
+//biteship
+Route::post('/webhooks/biteship', [\App\Http\Controllers\BiteshipWebhookController::class, 'handle'])
+    ->name('webhooks.biteship');
 
 /*
 |--------------------------------------------------------------------------

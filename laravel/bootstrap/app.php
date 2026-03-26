@@ -37,8 +37,13 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         // CheckSuspended otomatis berjalan di semua route web
-        // Sehingga user yang disuspend langsung diarahkan ke /suspended
         $middleware->appendToGroup('web', \App\Http\Middleware\CheckSuspended::class);
+
+        // ✅ Pengecualian CSRF — webhook tidak bisa kirim CSRF token
+        $middleware->validateCsrfTokens(except: [
+            'midtrans/webhook',
+            'webhooks/biteship',
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
