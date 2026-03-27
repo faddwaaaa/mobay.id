@@ -739,6 +739,81 @@ const buyerAddressEl    = document.getElementById('buyerAddress');
 const addressDropdown   = document.getElementById('addressDropdown');
 let cityTimer = null;
 let addressTimer = null;
+const citySearchCache = {};
+const citySearchKeys = [];
+const addressSearchCache = {};
+const addressSearchKeys = [];
+let citySearchToken = 0;
+let addressSearchToken = 0;
+
+function normalizeQuery(q) {
+    return String(q || '').replace(/\s+/g, ' ').trim().toLowerCase();
+}
+
+function filterAreaData(data, q) {
+    if (!Array.isArray(data) || !data.length) return [];
+    const needle = normalizeQuery(q);
+    if (!needle) return [];
+    return data.filter((v) => {
+        const village = String(v.village_name || '').toLowerCase();
+        const district = String(v.district_name || '').toLowerCase();
+        const city = String(v.city_name || '').toLowerCase();
+        return village.includes(needle) || district.includes(needle) || city.includes(needle);
+    });
+}
+
+function getCachedAreaResults(cache, keys, q) {
+    const needle = normalizeQuery(q);
+    if (!needle || needle.length < 2) return [];
+    if (cache[needle]) return cache[needle];
+
+    let bestFallback = null;
+    for (const key of keys) {
+        const item = cache[key];
+        if (!item || !item.length) continue;
+
+        const commonPrefixLength = (function(a, b) {
+            let i = 0;
+            while (i < a.length && i < b.length && a[i] === b[i]) i++;
+            return i;
+        })(key, needle);
+
+        const isClose = needle.startsWith(key)
+            || key.startsWith(needle)
+            || key.includes(needle)
+            || needle.includes(key)
+            || commonPrefixLength >= 4;
+
+        if (!isClose) continue;
+
+        const filtered = filterAreaData(item, needle);
+        if (filtered.length) return filtered;
+
+        if (!bestFallback) {
+            bestFallback = item;
+        }
+    }
+
+    if (bestFallback) {
+        return bestFallback.slice(0, 20);
+    }
+
+    // final generic fallback: scan all cache entries
+    const final = [];
+    const seen = new Set();
+    for (const entry of Object.values(cache)) {
+        if (!Array.isArray(entry)) continue;
+        const f = filterAreaData(entry, needle);
+        for (const v of f) {
+            if (seen.has(v.village_code)) continue;
+            seen.add(v.village_code);
+            final.push(v);
+            if (final.length >= 20) break;
+        }
+        if (final.length >= 20) break;
+    }
+    return final;
+}
 
 if (citySearch) {
     citySearch.addEventListener('input', function () {
@@ -750,10 +825,18 @@ if (citySearch) {
         if (SHIPPING_ENABLED) clearCourierSelection();
         updateSummary(currentQty);
         clearTimeout(cityTimer);
-        if (!SHIPPING_ENABLED || q.length < 3) { cityDropdown.classList.remove('show'); return; }
+
+        if (!SHIPPING_ENABLED || q.length < 2) { cityDropdown.classList.remove('show'); return; }
+
+        const k = normalizeQuery(q);
         cityDropdown.innerHTML = '<div class="city-item" style="color:#9ca3af">🔍 Mencari area...</div>';
         cityDropdown.classList.add('show');
-        cityTimer = setTimeout(() => searchCity(q), 300);
+
+        const cached = getCachedAreaResults(citySearchCache, citySearchKeys, q);
+        renderCityResults(cached);
+
+        const requestToken = ++citySearchToken;
+        cityTimer = setTimeout(() => searchCity(q, requestToken), 150);
     });
     document.addEventListener('click', (e) => {
         if (!citySearch.contains(e.target) && !cityDropdown.contains(e.target))
@@ -771,7 +854,12 @@ if (buyerAddressEl && addressDropdown) {
         }
         addressDropdown.innerHTML = '<div class="city-item" style="color:#9ca3af">Mencari rekomendasi area...</div>';
         addressDropdown.classList.add('show');
-        addressTimer = setTimeout(() => searchAddressSuggestion(q), 300);
+
+        const cached = getCachedAreaResults(addressSearchCache, addressSearchKeys, q);
+        renderAddressResults(cached);
+
+        const requestToken = ++addressSearchToken;
+        addressTimer = setTimeout(() => searchAddressSuggestion(q, requestToken), 150);
     });
 
     document.addEventListener('click', (e) => {
@@ -781,24 +869,41 @@ if (buyerAddressEl && addressDropdown) {
     });
 }
 
-async function searchCity(q) {
+function renderCityResults(data) {
+    cityDropdown.innerHTML = '';
+    if (!Array.isArray(data) || !data.length) {
+        cityDropdown.innerHTML = '<div class="city-item" style="color:#9ca3af">Area tidak ditemukan</div>';
+        return;
+    }
+    data.forEach((v) => {
+        const el = document.createElement('div');
+        el.className = 'city-item';
+        el.innerHTML = `<div class="city-main">${v.village_name || '-'}</div>
+                        <div class="city-sub">${v.district_name || ''}, ${v.city_name || ''}, ${v.province || ''}</div>`;
+        el.addEventListener('click', () => selectCity(v));
+        cityDropdown.appendChild(el);
+    });
+}
+
+async function searchCity(q, token) {
+    const currentToken = token;
     try {
         const res  = await fetch('/api/ongkir/cities?q=' + encodeURIComponent(q));
         const data = await res.json();
-        cityDropdown.innerHTML = '';
-        if (!Array.isArray(data) || !data.length) {
-            cityDropdown.innerHTML = '<div class="city-item" style="color:#9ca3af">Area tidak ditemukan</div>';
-            return;
+
+        if (currentToken !== citySearchToken) return;
+
+        const key = normalizeQuery(q);
+        citySearchCache[key] = data;
+        if (!citySearchKeys.includes(key)) {
+            citySearchKeys.unshift(key);
+            if (citySearchKeys.length > 35) citySearchKeys.pop();
         }
-        data.forEach((v) => {
-            const el = document.createElement('div');
-            el.className = 'city-item';
-            el.innerHTML = `<div class="city-main">${v.village_name || '-'}</div>
-                            <div class="city-sub">${v.district_name || ''}, ${v.city_name || ''}, ${v.province || ''}</div>`;
-            el.addEventListener('click', () => selectCity(v));
-            cityDropdown.appendChild(el);
-        });
+
+        const filtered = filterAreaData(data, q);
+        renderCityResults(filtered.length ? filtered : data);
     } catch (e) {
+        if (currentToken !== citySearchToken) return;
         cityDropdown.innerHTML = '<div class="city-item" style="color:#dc2626">Gagal memuat area</div>';
     }
 }
@@ -825,24 +930,41 @@ function extractAddressSearchTerm(value) {
         .pop() || '';
 }
 
-async function searchAddressSuggestion(q) {
+function renderAddressResults(data) {
+    addressDropdown.innerHTML = '';
+    if (!Array.isArray(data) || !data.length) {
+        addressDropdown.innerHTML = '<div class="city-item" style="color:#9ca3af">Rekomendasi area tidak ditemukan</div>';
+        return;
+    }
+    data.forEach((v) => {
+        const el = document.createElement('div');
+        el.className = 'city-item';
+        el.innerHTML = `<div class="city-main">${v.village_name || '-'}</div>
+                        <div class="city-sub">${v.district_name || ''}, ${v.city_name || ''}, ${v.province || ''}</div>`;
+        el.addEventListener('click', () => applyAddressSuggestion(v));
+        addressDropdown.appendChild(el);
+    });
+}
+
+async function searchAddressSuggestion(q, token) {
+    const currentToken = token;
     try {
         const res = await fetch('/api/ongkir/cities?q=' + encodeURIComponent(q));
         const data = await res.json();
-        addressDropdown.innerHTML = '';
-        if (!Array.isArray(data) || !data.length) {
-            addressDropdown.innerHTML = '<div class="city-item" style="color:#9ca3af">Rekomendasi area tidak ditemukan</div>';
-            return;
+
+        if (currentToken !== addressSearchToken) return;
+
+        const key = normalizeQuery(q);
+        addressSearchCache[key] = data;
+        if (!addressSearchKeys.includes(key)) {
+            addressSearchKeys.unshift(key);
+            if (addressSearchKeys.length > 35) addressSearchKeys.pop();
         }
-        data.forEach((v) => {
-            const el = document.createElement('div');
-            el.className = 'city-item';
-            el.innerHTML = `<div class="city-main">${v.village_name || '-'}</div>
-                            <div class="city-sub">${v.district_name || ''}, ${v.city_name || ''}, ${v.province || ''}</div>`;
-            el.addEventListener('click', () => applyAddressSuggestion(v));
-            addressDropdown.appendChild(el);
-        });
+
+        const filtered = filterAreaData(data, q);
+        renderAddressResults(filtered.length ? filtered : data);
     } catch (e) {
+        if (currentToken !== addressSearchToken) return;
         addressDropdown.innerHTML = '<div class="city-item" style="color:#dc2626">Gagal memuat rekomendasi area</div>';
     }
 }

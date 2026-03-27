@@ -360,7 +360,7 @@
             </div>
         </div>
 
-        <div class="plan-note">
+        <!-- <div class="plan-note">
             <div class="plan-note-copy">
                 <p class="plan-note-title">Free sudah cukup powerful untuk memulai bisnis!</p>
                 <p class="plan-note-text">Dapatkan background gradient yang cantik, 4 gaya tombol profesional, 4 font premium, dan 3 layout produk responsif. Saat bisnismu berkembang dan butuh lebih banyak pelanggan, upgrade ke Pro untuk fitur eksklusif seperti background gambar custom, efek neon/glass, gaya sorotan produk, dan 7+ font tambahan yang membuat brandmu terlihat lebih premium.</p>
@@ -369,7 +369,7 @@
                 <i class="fas {{ $isProUser ? 'fa-crown' : 'fa-rocket' }}"></i>
                 {{ $isProUser ? 'Mode Pro aktif' : 'Mode Free aktif' }}
             </span>
-        </div>
+        </div> -->
 
         {{-- ══════════ 1. KARTU PROFIL ══════════ --}}
         <div class="sec-card">

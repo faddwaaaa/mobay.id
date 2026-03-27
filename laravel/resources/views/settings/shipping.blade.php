@@ -109,7 +109,7 @@
             </div>
         </div>
 
-        <div class="mt-4 bg-white rounded-2xl border border-gray-200 shadow-sm p-5">
+        <!-- <div class="mt-4 bg-white rounded-2xl border border-gray-200 shadow-sm p-5">
             <h3 class="text-sm font-semibold text-gray-800 mb-1">🧪 Test Koneksi Biteship</h3>
             <p class="text-xs text-gray-500 mb-3">Pastikan API key testing mode dan endpoint ongkir bekerja</p>
             <div id="testResult" class="text-sm text-gray-500 italic mb-3">Belum ditest</div>
@@ -117,7 +117,7 @@
                     class="px-4 py-2 text-sm border border-gray-200 rounded-lg hover:bg-gray-50 text-gray-600 transition-colors">
                 🔌 Test API Sekarang
             </button>
-        </div>
+        </div> -->
 </div>
 
 <script>
@@ -127,39 +127,143 @@ const originVillage  = document.getElementById('originVillageCode');
 const originCity     = document.getElementById('originCityName');
 const clearOriginBtn = document.getElementById('clearOriginBtn');
 let searchTimer = null;
+const originSearchCache = {};
+const originSearchKeys = [];
+let originSearchToken = 0;
+
+function normalizeQuery(q) {
+    return String(q || '').replace(/\s+/g, ' ').trim().toLowerCase();
+}
+
+function filterVillageData(data, q) {
+    if (!Array.isArray(data) || !data.length) return [];
+    const needle = normalizeQuery(q);
+    if (!needle) return [];
+    return data.filter((v) => {
+        const village = String(v.village_name || '').toLowerCase();
+        const district = String(v.district_name || '').toLowerCase();
+        const city = String(v.city_name || '').toLowerCase();
+        return village.includes(needle) || district.includes(needle) || city.includes(needle);
+    });
+}
+
+function getCachedOriginResults(q) {
+    const needle = normalizeQuery(q);
+    if (!needle || needle.length < 2) return [];
+    if (originSearchCache[needle]) {
+        return originSearchCache[needle];
+    }
+
+    let bestFallback = null;
+    for (const key of originSearchKeys) {
+        const item = originSearchCache[key];
+        if (!item || !item.length) continue;
+
+        const commonPrefixLength = (function(a, b) {
+            let i = 0;
+            while (i < a.length && i < b.length && a[i] === b[i]) i++;
+            return i;
+        })(key, needle);
+
+        const isClose = needle.startsWith(key)
+            || key.startsWith(needle)
+            || key.includes(needle)
+            || needle.includes(key)
+            || commonPrefixLength >= 4;
+
+        if (!isClose) continue;
+
+        const filtered = filterVillageData(item, needle);
+        if (filtered.length) return filtered;
+
+        if (!bestFallback) {
+            bestFallback = item;
+        }
+    }
+
+    if (bestFallback) {
+        return bestFallback.slice(0, 20);
+    }
+
+    const final = [];
+    const seen = new Set();
+    for (const entry of Object.values(originSearchCache)) {
+        if (!Array.isArray(entry)) continue;
+        const f = filterVillageData(entry, needle);
+        for (const v of f) {
+            if (seen.has(v.village_code)) continue;
+            seen.add(v.village_code);
+            final.push(v);
+            if (final.length >= 20) break;
+        }
+        if (final.length >= 20) break;
+    }
+    return final;
+}
 
 originSearch.addEventListener('input', function(){
-    const q = this.value.replace(/\s+/g, ' ').trim(); clearTimeout(searchTimer);
+    const q = this.value.replace(/\s+/g, ' ').trim();
+    const requestToken = ++originSearchToken;
+    clearTimeout(searchTimer);
     originVillage.value = '';
     originCity.value = '';
     toggleClearButton();
     if(q.length < 2){ originDropdown.classList.add('hidden'); return; }
+
     originDropdown.innerHTML = '<div class="px-4 py-2.5 text-xs text-gray-400">Mencari...</div>';
     originDropdown.classList.remove('hidden');
-    searchTimer = setTimeout(() => doSearch(q), 350);
+
+    const cached = getCachedOriginResults(q);
+    renderOriginDropdown(cached);
+
+    searchTimer = setTimeout(() => doSearch(q, requestToken), 150);
 });
 
-async function doSearch(q){
+function renderOriginDropdown(data){
+    originDropdown.innerHTML = '';
+    if(!Array.isArray(data) || !data.length){
+        originDropdown.innerHTML='<div class="px-4 py-2.5 text-xs text-gray-400">Kelurahan tidak ditemukan</div>';
+        return;
+    }
+
+    data.forEach(v => {
+        const el = document.createElement('div');
+        el.className = 'px-4 py-2.5 cursor-pointer hover:bg-blue-50 border-b border-gray-100 last:border-0';
+        el.innerHTML = `<div class="text-sm font-semibold text-gray-800">${v.village_name}</div><div class="text-xs text-gray-400">${v.district_name}, ${v.city_name}, ${v.province}</div>`;
+        el.addEventListener('click', () => {
+            const label = `${v.village_name}, ${v.district_name}, ${v.city_name}`;
+            originSearch.value   = label;
+            originVillage.value  = v.village_code;
+            originCity.value     = label;
+            toggleClearButton();
+            originDropdown.classList.add('hidden');
+        });
+        originDropdown.appendChild(el);
+    });
+}
+
+async function doSearch(q, token){
+    const currentToken = token;
     try{
         const res  = await fetch('/api/ongkir/cities?q=' + encodeURIComponent(q));
         const data = await res.json();
-        originDropdown.innerHTML = '';
-        if(!data.length){ originDropdown.innerHTML='<div class="px-4 py-2.5 text-xs text-gray-400">Kelurahan tidak ditemukan</div>'; return; }
-        data.forEach(v => {
-            const el = document.createElement('div');
-            el.className = 'px-4 py-2.5 cursor-pointer hover:bg-blue-50 border-b border-gray-100 last:border-0';
-            el.innerHTML = `<div class="text-sm font-semibold text-gray-800">${v.village_name}</div><div class="text-xs text-gray-400">${v.district_name}, ${v.city_name}, ${v.province}</div>`;
-            el.addEventListener('click', () => {
-                const label = `${v.village_name}, ${v.district_name}, ${v.city_name}`;
-                originSearch.value   = label;
-                originVillage.value  = v.village_code;
-                originCity.value     = label;
-                toggleClearButton();
-                originDropdown.classList.add('hidden');
-            });
-            originDropdown.appendChild(el);
-        });
-    } catch(e){ originDropdown.innerHTML='<div class="px-4 py-2.5 text-xs text-red-500">Gagal memuat data</div>'; }
+
+        // stale response guard
+        if (currentToken !== originSearchToken) return;
+
+        const key = normalizeQuery(q);
+        originSearchCache[key] = data;
+        if (!originSearchKeys.includes(key)) {
+            originSearchKeys.unshift(key);
+            if (originSearchKeys.length > 35) originSearchKeys.pop();
+        }
+
+        const filtered = filterVillageData(data, q);
+        renderOriginDropdown(filtered.length ? filtered : data);
+    } catch(e){
+        if (currentToken !== originSearchToken) return;
+        originDropdown.innerHTML='<div class="px-4 py-2.5 text-xs text-red-500">Gagal memuat data</div>';
+    }
 }
 
 document.addEventListener('click', e => {
