@@ -49,13 +49,15 @@ class PhysicalOrder extends Model
         'total_amount'      => 'decimal:2',
     ];
 
-    // Auto-generate order_code saat creating (pola sama seperti DigitalOrder)
     protected static function boot()
     {
         parent::boot();
 
         static::creating(function ($order) {
-            $order->order_code = 'FORD-' . strtoupper(Str::random(10));
+            // ✅ Hanya generate FORD- kalau order_code belum diset manual
+            if (empty($order->order_code)) {
+                $order->order_code = 'FORD-' . strtoupper(Str::random(10));
+            }
         });
     }
 

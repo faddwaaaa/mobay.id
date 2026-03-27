@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pembayaran Berhasil</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         :root {
@@ -59,6 +60,80 @@
             position: relative;
             z-index: 1;
         }
+
+        /* ── EMAIL STRIP (dalam hero, pisah dengan garis) ── */
+        .email-strip {
+            margin-top: 16px;
+            padding-top: 14px;
+            border-top: 1px solid rgba(255,255,255,.18);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            position: relative;
+            z-index: 1;
+            flex-wrap: wrap;
+        }
+        .email-strip .icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: rgba(255,255,255,.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .email-strip .icon svg { width: 18px; height: 18px; }
+        .email-strip .txt { flex: 1; min-width: 180px; }
+        .email-strip .txt span {
+            display: block;
+            font-size: 13px;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 2px;
+        }
+        .email-strip .txt small {
+            font-size: 12px;
+            color: rgba(255,255,255,.7);
+        }
+        .email-strip .txt small b { color: #bfdbfe; }
+        .step-pills {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+        .step-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: rgba(255,255,255,.1);
+            border: 1px solid rgba(255,255,255,.15);
+            border-radius: 999px;
+            padding: 4px 9px;
+            font-size: 11px;
+            color: rgba(255,255,255,.8);
+            font-weight: 600;
+        }
+        .step-pill .dot {
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background: rgba(255,255,255,.4);
+            flex-shrink: 0;
+        }
+        .step-pill.done .dot { background: #4ade80; }
+        .step-pill.active .dot {
+            background: #facc15;
+            animation: pulse 1.4s ease-in-out infinite;
+        }
+        .step-arrow { color: rgba(255,255,255,.3); font-size: 10px; }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: .3; }
+        }
+
+        /* ── GRID & CARD ── */
         .grid {
             display: grid;
             grid-template-columns: 1.2fr .8fr;
@@ -122,6 +197,7 @@
         @media (max-width: 860px) {
             .grid { grid-template-columns: 1fr; }
             .hero h1 { font-size: 21px; }
+            .email-strip { flex-direction: column; align-items: flex-start; gap: 10px; }
         }
     </style>
 </head>
@@ -132,12 +208,39 @@
     $unitPrice = (int) ($notes['unit_price'] ?? 0);
     $subtotal = (int) ($notes['subtotal'] ?? ($unitPrice * $qty));
     $shipping = (int) ($notes['shipping_cost'] ?? 0);
+    $productType = $notes['product_type'] ?? '';
+    $buyerEmail = $notes['buyer_email'] ?? '';
 @endphp
 <div class="wrap">
     <div class="hero">
         <h1>Pembayaran Berhasil</h1>
         <p>Pesanan Anda sudah kami terima dan sedang diproses.</p>
         <div class="badge">Status: Lunas</div>
+
+        {{-- ── EMAIL STRIP — hanya untuk produk fisik ── --}}
+        @if($productType === 'fisik')
+        <div class="email-strip">
+            <div class="icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="2" y="4" width="20" height="16" rx="3"/>
+                    <path d="M2 7l10 7 10-7"/>
+                </svg>
+            </div>
+            <div class="txt">
+                <span>Update pesanan dikirim ke email</span>
+                <small>Resi & tracking akan dikirim ke <b>{{ $buyerEmail }}</b></small>
+            </div>
+            <div class="step-pills">
+                <span class="step-pill done"><span class="dot"></span> Konfirmasi</span>
+                <span class="step-arrow">›</span>
+                <span class="step-pill active"><span class="dot"></span> Diproses</span>
+                <span class="step-arrow">›</span>
+                <span class="step-pill"><span class="dot"></span> Dikirim</span>
+                <span class="step-arrow">›</span>
+                <span class="step-pill"><span class="dot"></span> Tiba</span>
+            </div>
+        </div>
+        @endif
     </div>
 
     @if($transaction)
@@ -169,9 +272,9 @@
                 <div class="row"><span class="k">Layanan</span><span class="v">{{ $notes['selected_service'] ?? '-' }}</span></div>
                 <div class="row"><span class="k">Waktu Transaksi</span><span class="v">{{ optional($transaction->created_at)->format('d M Y H:i') }}</span></div>
 
-                @if(($notes['product_type'] ?? '') === 'digital')
+                @if($productType === 'digital')
                     <div class="note">File digital dikirim ke email pembeli. Cek inbox/spam untuk memastikan file diterima.</div>
-                @elseif(($notes['product_type'] ?? '') === 'fisik')
+                @elseif($productType === 'fisik')
                     <div class="note">Pesanan fisik akan diproses penjual. Simpan nomor order untuk kebutuhan follow-up.</div>
                 @endif
 
@@ -190,4 +293,3 @@
 </div>
 </body>
 </html>
-

@@ -373,6 +373,16 @@ Route::get('/preview/{username}', function ($username) {
 Route::post('/webhooks/biteship', [\App\Http\Controllers\BiteshipWebhookController::class, 'handle'])
     ->name('webhooks.biteship');
 
+    Route::get('/debug/biteship', function () {
+    return response()->json([
+        'webhook_secret_set' => !empty(config('services.biteship.webhook_secret')),
+        'api_key_set'        => !empty(env('BITESHIP_API_KEY')),
+        'webhook_url'        => config('app.url') . '/webhooks/biteship', // ✅ ganti ini
+        'app_url'            => config('app.url'),
+        'environment'        => app()->environment(),
+    ]);
+})->middleware('auth');
+
 /*
 |--------------------------------------------------------------------------
 | LINK TRACKING /go/

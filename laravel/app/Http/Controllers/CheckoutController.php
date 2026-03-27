@@ -8,8 +8,8 @@ use App\Models\Transaction;
 use App\Models\ProductSale;
 use App\Models\User;
 use App\Models\DigitalOrder;
-use App\Models\PhysicalOrder;                        // ✅ TAMBAHAN
-use App\Mail\PhysicalOrderConfirmation;              // ✅ TAMBAHAN
+use App\Models\PhysicalOrder;
+use App\Mail\PhysicalOrderConfirmation;
 use App\Services\DigitalOrderService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -450,9 +450,7 @@ class CheckoutController extends Controller
             $this->sendDigitalFileViaToken($product, $notes, $transaction);
         }
 
-        // =========================================================
-        // ✅ 3b. BUAT PHYSICAL ORDER + KIRIM EMAIL KONFIRMASI
-        // =========================================================
+        // 3b. BUAT PHYSICAL ORDER + KIRIM EMAIL KONFIRMASI
         if ($product->product_type === 'fisik') {
             $this->createPhysicalOrder($product, $notes, $transaction);
         }
@@ -490,7 +488,7 @@ class CheckoutController extends Controller
     }
 
     // =========================================================
-    // ✅ BUAT PHYSICAL ORDER & KIRIM EMAIL KONFIRMASI
+    // BUAT PHYSICAL ORDER & KIRIM EMAIL KONFIRMASI
     // =========================================================
     private function createPhysicalOrder(Product $product, array $notes, Transaction $transaction): void
     {
@@ -501,10 +499,6 @@ class CheckoutController extends Controller
             return;
         }
 
-        // Parse alamat dari notes — buyer_address disimpan sebagai string di notes
-        // Format: "Jl. Contoh No. 1, RT/RW, Kelurahan, Kecamatan"
-        // shipping_city & province diambil dari destination_label
-        // Contoh destination_label: "Purwokerto, Banyumas, Jawa Tengah"
         $destinationLabel = $notes['destination_label'] ?? '';
         $labelParts       = array_map('trim', explode(',', $destinationLabel));
         $shippingCity     = $labelParts[1] ?? ($labelParts[0] ?? '');
@@ -512,27 +506,28 @@ class CheckoutController extends Controller
 
         try {
             $physicalOrder = PhysicalOrder::create([
-                'product_id'           => $product->id,
-                'seller_id'            => $transaction->user_id,
-                'buyer_name'           => $notes['buyer_name'] ?? '',
-                'buyer_email'          => $notes['buyer_email'] ?? '',
-                'buyer_phone'          => $notes['buyer_phone'] ?? null,
-                'product_name'         => $notes['product_title'] ?? $product->title,
-                'product_price'        => $notes['unit_price'] ?? $product->price,
-                'quantity'             => $notes['qty'] ?? 1,
-                'shipping_cost'        => $notes['shipping_cost'] ?? 0,
-                'total_amount'         => $notes['base_total'] ?? $transaction->amount,
-                'shipping_address'     => $notes['buyer_address'] ?? '',
-                'shipping_city'        => $shippingCity,
-                'shipping_province'    => $shippingProvince,
-                'shipping_postal_code' => '',   // tidak ada di notes, bisa ditambah nanti
-                'status'               => 'paid',
-                'midtrans_order_id'    => $transaction->order_id,
+                'product_id'              => $product->id,
+                'seller_id'               => $transaction->user_id,
+                'buyer_name'              => $notes['buyer_name'] ?? '',
+                'buyer_email'             => $notes['buyer_email'] ?? '',
+                'buyer_phone'             => $notes['buyer_phone'] ?? null,
+                'order_code'              => $transaction->order_id, // ✅ Pakai PAYOU-xxx biar sama dengan admin
+                'product_name'            => $notes['product_title'] ?? $product->title,
+                'product_price'           => $notes['unit_price'] ?? $product->price,
+                'quantity'                => $notes['qty'] ?? 1,
+                'shipping_cost'           => $notes['shipping_cost'] ?? 0,
+                'total_amount'            => $notes['base_total'] ?? $transaction->amount,
+                'shipping_address'        => $notes['buyer_address'] ?? '',
+                'shipping_city'           => $shippingCity,
+                'shipping_province'       => $shippingProvince,
+                'shipping_postal_code'    => '',
+                'status'                  => 'paid',
+                'midtrans_order_id'       => $transaction->order_id,
                 'midtrans_transaction_id' => $transaction->transaction_id,
-                'payment_method'       => $transaction->payment_method,
-                'paid_at'              => now(),
-                'courier_code'         => $notes['selected_courier'] ?? null,
-                'courier_service'      => $notes['selected_service'] ?? null,
+                'payment_method'          => $transaction->payment_method,
+                'paid_at'                 => now(),
+                'courier_code'            => $notes['selected_courier'] ?? null,
+                'courier_service'         => $notes['selected_service'] ?? null,
             ]);
 
             // Kirim email konfirmasi ke pembeli
@@ -547,7 +542,7 @@ class CheckoutController extends Controller
     }
 
     // =========================================================
-    // ✅ KIRIM FILE DIGITAL VIA TOKEN
+    // KIRIM FILE DIGITAL VIA TOKEN
     // =========================================================
     private function sendDigitalFileViaToken(Product $product, array $notes, Transaction $transaction): void
     {

@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Mail\PhysicalOrderStatusUpdatedOrderStatusUpdated;
+use App\Mail\PhysicalOrderStatusUpdated;
 use App\Models\PhysicalOrder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -28,14 +28,14 @@ class BiteshipWebhookController extends Controller
      */
     public function handle(Request $request)
     {
-        // 1. Verifikasi webhook secret dari Biteship
-        // $secret = $request->header('x-api-key');
-        // if ($secret !== config('services.biteship.webhook_secret')) {
-        //     Log::warning('[Biteship] Unauthorized webhook attempt', [
-        //         'ip' => $request->ip(),
-        //     ]);
-        //     return response()->json(['message' => 'Unauthorized'], 401);
-        // }
+        //1. Verifikasi webhook secret dari Biteship
+        $secret = $request->header('x-api-key');
+        if ($secret !== config('services.biteship.webhook_secret')) {
+            Log::warning('[Biteship] Unauthorized webhook attempt', [
+                'ip' => $request->ip(),
+            ]);
+            return response()->json(['message' => 'Unauthorized'], 401);
+        }
 
         $payload = $request->all();
 
