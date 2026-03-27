@@ -1,4 +1,4 @@
-pi<?php
+<?php
 
 namespace App\Http\Controllers\Auth;
 

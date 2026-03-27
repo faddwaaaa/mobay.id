@@ -255,6 +255,7 @@ Route::middleware('auth')->group(function () {
 
     Route::prefix('analitik')->name('analitik.')->group(function () {
         Route::get('/', [AnalyticsController::class, 'index'])->name('index');
+        Route::get('/export', [AnalyticsController::class, 'export'])->name('export');
     });
 
     Route::get('/premium', function () { return view('premium.index'); })->name('premium.index');
