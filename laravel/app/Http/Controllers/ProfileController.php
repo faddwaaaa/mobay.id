@@ -40,64 +40,78 @@ class ProfileController extends Controller
      * Update the user's profile information.
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
-{
-    $user = $request->user();
+    {
+        $user = $request->user();
 
-    // update basic fields
-    $user->fill($request->validated());
+        // update basic fields
+        $user->fill($request->validated());
 
-    // upload avatar baru (kalau ada)
-    if ($request->hasFile('avatar')) {
-        $avatarFile = $request->file('avatar');
+        // upload avatar baru (kalau ada)
+        if ($request->hasFile('avatar')) {
+            $avatarFile = $request->file('avatar');
 
-        /**
-         * ===== STORAGE VALIDATION =====
-         * Check kapasitas penyimpanan sebelum upload avatar
-         */
-        $storageValidation = $user->canUpload($avatarFile->getSize());
-        if (!$storageValidation['can_upload']) {
-            return Redirect::route('dashboard.profile')
-                ->with('error', $storageValidation['message'])
-                ->withInput();
-        }
-
-        // hapus avatar lama JIKA dari storage & kurangi storage usage
-        if ($user->avatar && !Str::startsWith($user->avatar, ['http://','https://'])) {
-            if (Storage::disk('public')->exists($user->avatar)) {
-                $oldFileSize = Storage::disk('public')->size($user->avatar);
-                Storage::disk('public')->delete($user->avatar);
-                // Kurangi storage usage saat avatar lama dihapus
-                $user->removeStorageUsage($oldFileSize);
+            /**
+             * ===== STORAGE VALIDATION =====
+             * Check kapasitas penyimpanan sebelum upload avatar
+             */
+            $storageValidation = $user->canUpload($avatarFile->getSize());
+            if (!$storageValidation['can_upload']) {
+                return Redirect::route('dashboard.profile')
+                    ->with('error', $storageValidation['message'])
+                    ->withInput();
             }
+
+            // hapus avatar lama JIKA dari storage & kurangi storage usage
+            if ($user->avatar && !Str::startsWith($user->avatar, ['http://','https://'])) {
+                if (Storage::disk('public')->exists($user->avatar)) {
+                    $oldFileSize = Storage::disk('public')->size($user->avatar);
+                    Storage::disk('public')->delete($user->avatar);
+                    // Kurangi storage usage saat avatar lama dihapus
+                    $user->removeStorageUsage($oldFileSize);
+                }
+            }
+
+            $path = $request->file('avatar')->store('avatars', 'public');
+            $user->avatar = $path;
+            
+            // Tambahkan storage usage setelah avatar baru diupload
+            $user->addStorageUsage($avatarFile->getSize());
         }
 
-        $path = $request->file('avatar')->store('avatars', 'public');
-        $user->avatar = $path;
-        
-        // Tambahkan storage usage setelah avatar baru diupload
-        $user->addStorageUsage($avatarFile->getSize());
+        // email berubah → unverified
+        if ($user->isDirty('email')) {
+            $user->email_verified_at = null;
+        }
+
+        $user->save();
+
+        return Redirect::route('dashboard.profile')->with('status', 'profile-updated');
     }
-
-    // email berubah → unverified
-    if ($user->isDirty('email')) {
-        $user->email_verified_at = null;
-    }
-
-    $user->save();
-
-    return Redirect::route('dashboard.profile')->with('status', 'profile-updated');
-}
 
     /**
      * Delete the user's account.
      */
     public function destroy(Request $request): RedirectResponse
     {
-        $request->validateWithBag('userDeletion', [
-            'password' => ['required', 'current_password'],
-        ]);
-
         $user = $request->user();
+
+        if (!is_null($user->google_id)) {
+            // User Google — validasi via email
+            $request->validateWithBag('userDeletion', [
+                'email_confirm' => ['required', 'string'],
+            ]);
+
+            if ($request->email_confirm !== $user->email) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'email_confirm' => 'Email yang dimasukkan tidak cocok dengan akun Anda.',
+                ])->errorBag('userDeletion');
+            }
+        } else {
+            // User manual — validasi via password
+            $request->validateWithBag('userDeletion', [
+                'password' => ['required', 'current_password'],
+            ]);
+        }
 
         Auth::logout();
 

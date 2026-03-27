@@ -84,7 +84,7 @@
                 <div class="relative w-20 h-20 flex-shrink-0">
                     @if ($user->avatar)
                         <img id="avatarPreview"
-                            src="{{ asset('storage/'.$user->avatar) }}"
+                            src="{{ $user->avatar_url }}"
                             class="w-20 h-20 rounded-full object-cover ring-2 ring-gray-200">
                     @else
                         <img id="avatarPreview"

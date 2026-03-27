@@ -5,7 +5,8 @@ use App\Models\Product;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Storage;   
 
 // RELATION MODELS
 use App\Models\UserProfile;
@@ -211,6 +212,14 @@ public function profileReports()
 {
     return $this->hasMany(ProfileReport::class, 'reported_user_id');
 }
+public function getAvatarUrlAttribute(): string
+    {
+        if (!$this->avatar) {
+            return asset('images/default-avatar.png');
+        }
+
+        return Str::startsWith($this->avatar, ['http://', 'https://'])
+            ? $this->avatar
+            : Storage::url($this->avatar);
+    }
 }
-
-

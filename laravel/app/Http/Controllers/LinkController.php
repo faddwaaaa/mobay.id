@@ -21,8 +21,11 @@ class LinkController extends Controller
     {
         $user = Auth::user();
 
-        // Jika belum punya page sama sekali, buat page Utama
-        if (!$user->pages()->exists()) {
+        // Ambil semua halaman dengan slug utama
+        $utamaPages = $user->pages()->where('slug', 'utama')->get();
+
+        // Kalau belum ada sama sekali → buat
+        if ($utamaPages->count() === 0) {
             $user->pages()->create([
                 'title' => 'Utama',
                 'slug' => 'utama',
@@ -30,7 +33,24 @@ class LinkController extends Controller
             ]);
         }
 
+        // Kalau lebih dari 1 → hapus sisanya
+        if ($utamaPages->count() > 1) {
+            $utamaPages->slice(1)->each(function ($page) {
+                $page->delete();
+            });
+        }
+
+        // Pastikan hanya 1 yang jadi default
+        $user->pages()
+            ->where('slug', 'utama')
+            ->update(['is_default' => true]);
+
+        $user->pages()
+            ->where('slug', '!=', 'utama')
+            ->update(['is_default' => false]);
+
         $selectedPageId = $request->query('page');
+
         $pages = $user->pages()
             ->select(['id', 'user_id', 'title', 'slug', 'is_default', 'created_at'])
             ->orderBy('created_at')
@@ -38,7 +58,9 @@ class LinkController extends Controller
 
         $activePageId = $selectedPageId
             ? (int) $selectedPageId
-            : (int) optional($pages->firstWhere('is_default', true) ?? $pages->first())->id;
+            : (int) optional(
+                $pages->firstWhere('is_default', true) ?? $pages->first()
+            )->id;
 
         $activePage = $activePageId
             ? $user->pages()
@@ -65,7 +87,6 @@ class LinkController extends Controller
                 ->find($activePageId)
             : null;
 
-        // Ambil produk user seperlunya untuk modal block produk.
         $products = Product::where('user_id', $user->id)
             ->select(['id', 'user_id', 'product_type', 'title', 'price', 'discount'])
             ->addSelect([
