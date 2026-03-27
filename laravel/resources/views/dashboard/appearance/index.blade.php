@@ -998,7 +998,7 @@ function showProFeatureToast(feature = 'Fitur ini') {
         { id:'wg_abyss',    cat:'dark', label:'Maroon',    cssValue:'linear-gradient(135deg,#1a0a0a,#3d1515,#1a0a0a)' },
         { id:'wg_cosmos',   cat:'dark', label:'Kosmos',    cssValue:'linear-gradient(135deg,#0d1b2a,#1a3a5c,#0d2137)' },
         { id:'wg_eclipse',  cat:'dark', label:'Gerhana',   cssValue:'linear-gradient(135deg,#1a1a2e,#16213e,#0f3460)' },
-            ];
+    ];
 
 let activeWgCat = 'all';
 let activeWgId  = @json(

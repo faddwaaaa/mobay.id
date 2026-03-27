@@ -11,6 +11,7 @@ use App\Models\Link;
 use App\Models\Click;
 use App\Models\Product;
 use App\Models\DigitalOrder;
+use App\Models\PhysicalOrder;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 
@@ -79,11 +80,14 @@ class DashboardController extends Controller
 
         // ✅ Total Produk & Total Pesanan
         $totalProducts = Product::where('user_id', $user->id)->count();
-        $totalOrders   = DigitalOrder::whereIn(
+        $totalDigitalOrders = DigitalOrder::whereIn(
             'digital_product_id',
             Product::where('user_id', $user->id)->pluck('id')
         )->count();
 
+        $totalPhysicalOrders = PhysicalOrder::where('seller_id', $user->id)->count();
+
+        $totalOrders = $totalDigitalOrders + $totalPhysicalOrders;
         return view('dashboard.index', compact(
             'user',
             'links',

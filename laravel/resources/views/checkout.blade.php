@@ -403,7 +403,7 @@
         @if($seller)
         <div class="seller-row">
             @if($seller->avatar ?? null)
-                <img src="{{ asset('storage/'.$seller->avatar) }}" class="seller-ava" alt="{{ $seller->name }}">
+                <img src="{{ $seller->avatar_url }}" class="seller-ava" alt="{{ $seller->name }}">
             @else
                 <div class="seller-ava-ph">👤</div>
             @endif
