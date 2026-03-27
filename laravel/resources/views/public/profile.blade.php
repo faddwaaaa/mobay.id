@@ -23,6 +23,27 @@
         $btnStyle     = $profile->btn_style ?? 'fill';
         $shapeMap     = ['pill' => '50px', 'rounded' => '12px', 'square' => '4px'];
         $btnRadius    = $shapeMap[$btnShape] ?? '12px';
+        $toRgba       = static function (?string $color, float $alpha, string $fallback = '59,130,246'): string {
+            if (! is_string($color)) {
+                return "rgba({$fallback},{$alpha})";
+            }
+
+            $hex = ltrim(trim($color), '#');
+
+            if (preg_match('/^[0-9a-fA-F]{3}$/', $hex)) {
+                $hex = $hex[0].$hex[0].$hex[1].$hex[1].$hex[2].$hex[2];
+            }
+
+            if (! preg_match('/^[0-9a-fA-F]{6}$/', $hex)) {
+                return "rgba({$fallback},{$alpha})";
+            }
+
+            $r = hexdec(substr($hex, 0, 2));
+            $g = hexdec(substr($hex, 2, 2));
+            $b = hexdec(substr($hex, 4, 2));
+
+            return "rgba({$r},{$g},{$b},{$alpha})";
+        };
 
         switch ($btnStyle) {
             case 'outline':
@@ -39,6 +60,14 @@
                 break;
             case 'minimal':
                 $btnCssDb = "background:transparent; color:{$btnColor}; border:none; border-bottom:2px solid {$btnColor}; border-radius:0 !important;";
+                break;
+            case 'neon':
+                $btnGlowColor = $profile->btn_glow_color ?? '#38bdf8';
+                $btnGlowBg = $profile->btn_glow_bg ?? '#111827';
+                $btnCssDb = "background:{$btnGlowBg}; color:{$btnTxtColor}; border:2px solid {$btnGlowColor}; box-shadow:0 0 12px ".$toRgba($btnGlowColor, 0.45).", 0 0 24px ".$toRgba($btnGlowColor, 0.25).";";
+                break;
+            case 'glass':
+                $btnCssDb = "background:".$toRgba($btnColor, 0.12)."; color:{$btnTxtColor}; border:1px solid ".$toRgba($btnColor, 0.28)."; box-shadow:0 8px 20px ".$toRgba($btnColor, 0.14)."; backdrop-filter:blur(6px);";
                 break;
             default:
                 $btnCssDb = "background:{$btnColor}; color:{$btnTxtColor}; border:2px solid {$btnColor};";
@@ -60,6 +89,9 @@
             --btn-text-color: {{ $btnTxtColor }};
             @if($bgColorExtra) background-color: {{ $bgColorExtra }}; @endif
             @if($bgSizeExtra) background-size: {{ $bgSizeExtra }}; @endif
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
             min-height: 100vh;
             overflow-x: hidden;
         }
@@ -583,9 +615,7 @@
             white-space: nowrap;
         }
         .blocks-container.layout-grid .block-product .product-discount-badge {
-            font-size: 10px;
-            padding: 2px 6px;
-            white-space: nowrap;
+            display: none;
         }
 
         .blocks-container.layout-default {
@@ -795,6 +825,88 @@
             color: #dc2626;
             padding: 2px 6px;
             border-radius: 4px;
+        }
+
+        .blocks-container.layout-masonry {
+            column-count: 2;
+            column-gap: 10px;
+        }
+        .blocks-container.layout-masonry > .block {
+            display: inline-block;
+            width: 100%;
+            margin: 0 0 10px;
+            break-inside: avoid;
+            -webkit-column-break-inside: avoid;
+        }
+        .blocks-container.layout-masonry .block-product {
+            display: flex;
+            flex-direction: column;
+            border-radius: 14px;
+            overflow: hidden;
+        }
+        .blocks-container.layout-masonry .block-product .product-image-wrapper {
+            width: 100%;
+            aspect-ratio: 1 / 1.15;
+        }
+        .blocks-container.layout-masonry > .block:nth-child(3n) .product-image-wrapper {
+            aspect-ratio: 1 / 1.35;
+        }
+        .blocks-container.layout-masonry > .block:nth-child(4n) .product-image-wrapper {
+            aspect-ratio: 1 / 0.9;
+        }
+        .blocks-container.layout-masonry .block-product .product-details {
+            padding: 10px 12px 12px;
+        }
+        .blocks-container.layout-masonry .block-product .product-title {
+            font-size: 13px;
+            margin-bottom: 8px;
+        }
+        .blocks-container.layout-masonry .block-product .product-price-section {
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-bottom: 0;
+        }
+        .blocks-container.layout-masonry .block-product .product-current-price {
+            font-size: 14px;
+        }
+        .blocks-container.layout-masonry .block-product .product-original-price {
+            font-size: 11px;
+        }
+        .blocks-container.layout-masonry .block-product .product-discount-badge {
+            font-size: 9px;
+            padding: 2px 5px;
+        }
+
+        .blocks-container.layout-carousel {
+            display: flex;
+            flex-wrap: nowrap;
+            gap: 12px;
+            overflow-x: auto;
+            overflow-y: hidden;
+            scroll-snap-type: x mandatory;
+            padding-bottom: 6px;
+            -webkit-overflow-scrolling: touch;
+        }
+        .blocks-container.layout-carousel > .block {
+            flex: 0 0 82%;
+            min-width: 82%;
+            scroll-snap-align: start;
+        }
+        .blocks-container.layout-carousel .block-product {
+            display: flex;
+            flex-direction: column;
+            border-radius: 16px;
+            overflow: hidden;
+        }
+        .blocks-container.layout-carousel .block-product .product-image-wrapper {
+            width: 100%;
+            height: 190px;
+        }
+        .blocks-container.layout-carousel .block-product .product-details {
+            padding: 14px 16px 16px;
+        }
+        .blocks-container.layout-carousel .block-product .product-title {
+            font-size: 15px;
         }
 
         .product-image-wrapper { width: 100%; height: 200px; background: #f3f4f6; display: flex; align-items: center; justify-content: center; overflow: hidden; }
@@ -1423,7 +1535,12 @@
                 </div>
 
                 {{-- Blocks --}}
-                @php $blockLayout = $profile->block_layout ?? 'default'; @endphp
+                @php
+                    $allowedLayouts = ['default', 'grid', 'compact', 'highlight'];
+                    $blockLayout = in_array($profile->block_layout ?? 'default', $allowedLayouts, true)
+                        ? ($profile->block_layout ?? 'default')
+                        : 'default';
+                @endphp
                 @if($userPage->blocks && $userPage->blocks->count() > 0)
                     <div class="blocks-container layout-{{ $blockLayout }}" id="blocksContainer">
                     @foreach($userPage->blocks->sortBy('position') as $block)
@@ -2314,6 +2431,13 @@ async function doSearch(query) {
         if (p.textColor) {
             document.querySelectorAll('[data-profile-text]').forEach(el => { el.style.color = p.textColor; });
             document.querySelectorAll('.social-link, .block-text, .product-title').forEach(el => { el.style.color = p.textColor; });
+        }
+        if (p.block_layout) {
+            const container = document.getElementById('blocksContainer');
+            if (container) {
+                container.className = container.className.replace(/\blayout-\S+/g, '').trim();
+                container.classList.add('layout-' + p.block_layout);
+            }
         }
         if (p.btnCss || p.btnRadius) {
             document.querySelectorAll('.block-link a, .btn-buy, .btn-checkout, .btn-cart').forEach(btn => {

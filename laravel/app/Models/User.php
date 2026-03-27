@@ -33,7 +33,7 @@ class User extends Authenticatable
         'background_types' => ['color', 'gradient', 'image'],
         'button_styles' => ['fill', 'outline', 'hard_shadow', 'soft_shadow', 'ghost', 'minimal', 'neon', 'glass'],
         'fonts' => ['Plus Jakarta Sans', 'Inter', 'Poppins', 'Lato', 'Merriweather', 'Space Grotesk', 'Nunito', 'DM Sans', 'Playfair Display', 'Roboto Mono', 'Dancing Script'],
-        'block_layouts' => ['default', 'grid', 'compact', 'highlight', 'masonry', 'carousel'],
+        'block_layouts' => ['default', 'grid', 'compact', 'highlight'],
         'max_social_links' => 15,
         'analytics_advanced' => true,
         'custom_css' => true,
