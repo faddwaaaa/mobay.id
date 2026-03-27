@@ -831,6 +831,15 @@
                 <p style="margin: 0; font-size: 14px; color: #797979;">Kelola rekening bank tersimpan untuk penarikan saldo</p>
             </div>
         </div>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+            <span style="display:inline-flex;align-items:center;gap:6px;padding:7px 12px;border-radius:999px;background:{{ $isProUser ? '#eff6ff' : '#f8fafc' }};border:1px solid {{ $isProUser ? '#bfdbfe' : '#e2e8f0' }};font-size:12px;font-weight:700;color:{{ $isProUser ? '#1d4ed8' : '#475569' }};">
+                <i class="fas {{ $isProUser ? 'fa-crown' : 'fa-wallet' }}"></i>
+                {{ $isProUser ? 'Pro: hingga 5 rekening' : 'Free: hingga 2 rekening' }}
+            </span>
+            @unless($isProUser)
+                <span style="font-size:12px;color:#64748b;">Upgrade ke Pro untuk menambah sampai 5 rekening bank.</span>
+            @endunless
+        </div>
     </div>
 
     {{-- Security badge --}}

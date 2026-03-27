@@ -40,6 +40,9 @@ class AnalyticsController extends Controller
     {
         $startDate = Carbon::now()->subDays(89)->startOfDay();
         $endDate = Carbon::now()->endOfDay();
+        $currentTrendStart = Carbon::now()->subDays(6)->startOfDay();
+        $previousTrendStart = Carbon::now()->subDays(13)->startOfDay();
+        $previousTrendEnd = Carbon::now()->subDays(7)->endOfDay();
 
         $totalClicks = ProductViews::whereHas('product', fn ($q) => $q->where('user_id', $user->id))
             ->whereBetween('created_at', [$startDate, $endDate])
@@ -112,6 +115,8 @@ class AnalyticsController extends Controller
             });
 
         $clicksPerDay = $this->getClicksPerDay($user->id, $startDate, $endDate);
+        $currentTrendPeriod = $this->getClicksPerDay($user->id, $currentTrendStart, $endDate);
+        $previousTrendPeriod = $this->getClicksPerDay($user->id, $previousTrendStart, $previousTrendEnd);
 
         $bestTrafficDay = collect($clicksPerDay)
             ->sortByDesc(fn ($day) => ($day['views'] ?? 0) + ($day['clicks'] ?? 0))
@@ -134,6 +139,26 @@ class AnalyticsController extends Controller
             'active_traffic_days' => collect($clicksPerDay)->filter(fn ($day) => (($day['views'] ?? 0) + ($day['clicks'] ?? 0)) > 0)->count(),
         ];
 
+        $currentSummary = $this->summarizePeriod($currentTrendPeriod);
+        $previousSummary = $this->summarizePeriod($previousTrendPeriod);
+
+        $trendStats = [
+            'views' => $this->makeTrend($currentSummary['views'], $previousSummary['views'], 'vs 7 hari sebelumnya'),
+            'clicks' => $this->makeTrend($currentSummary['clicks'], $previousSummary['clicks'], 'vs 7 hari sebelumnya'),
+            'sold' => $this->makeTrend($currentSummary['sold'], $previousSummary['sold'], 'vs 7 hari sebelumnya'),
+            'revenue' => $this->makeTrend($currentSummary['revenue'], $previousSummary['revenue'], 'vs 7 hari sebelumnya'),
+            'conversion_click_to_sale' => $this->makeTrend(
+                $currentSummary['clicks'] > 0 ? round(($currentSummary['sold'] / $currentSummary['clicks']) * 100, 1) : 0,
+                $previousSummary['clicks'] > 0 ? round(($previousSummary['sold'] / $previousSummary['clicks']) * 100, 1) : 0,
+                '7 hari terakhir'
+            ),
+            'revenue_per_click' => $this->makeTrend(
+                $currentSummary['clicks'] > 0 ? round($currentSummary['revenue'] / $currentSummary['clicks'], 0) : 0,
+                $previousSummary['clicks'] > 0 ? round($previousSummary['revenue'] / $previousSummary['clicks'], 0) : 0,
+                '7 hari terakhir'
+            ),
+        ];
+
         return [
             'isProUser' => $user->isPro(),
             'totalClicks' => $totalClicks,
@@ -144,6 +169,7 @@ class AnalyticsController extends Controller
             'topViewedProducts' => $topViewedProducts,
             'clicksPerDay' => $clicksPerDay,
             'advancedStats' => $advancedStats,
+            'trendStats' => $trendStats,
             'analyticsRangeLabel' => $startDate->translatedFormat('d M Y') . ' - ' . $endDate->translatedFormat('d M Y'),
         ];
     }
@@ -168,10 +194,11 @@ class AnalyticsController extends Controller
             ->join('products', 'product_sales.product_id', '=', 'products.id')
             ->where('products.user_id', $userId)
             ->whereBetween('product_sales.created_at', [$startDate, $endDate])
-            ->selectRaw('DATE(product_sales.created_at) as date, SUM(product_sales.qty * product_sales.price) as revenue')
+            ->selectRaw('DATE(product_sales.created_at) as date, SUM(product_sales.qty * product_sales.price) as revenue, SUM(product_sales.qty) as sold')
             ->groupBy('date')
             ->orderBy('date')
-            ->pluck('revenue', 'date');
+            ->get()
+            ->keyBy('date');
 
         $result = [];
         $current = $startDate->copy();
@@ -183,7 +210,8 @@ class AnalyticsController extends Controller
                 'full_date' => $current->format('Y-m-d'),
                 'clicks' => (int) ($clicksData[$dateStr] ?? 0),
                 'views' => (int) ($viewsData[$dateStr] ?? 0),
-                'sales' => (float) ($salesData[$dateStr] ?? 0),
+                'sales' => (float) data_get($salesData, $dateStr . '.revenue', 0),
+                'sold' => (int) data_get($salesData, $dateStr . '.sold', 0),
             ];
             $current->addDay();
         }
@@ -261,5 +289,36 @@ class AnalyticsController extends Controller
             ->view('dashboard.analytics.export_excel', $analytics)
             ->header('Content-Type', 'application/vnd.ms-excel; charset=UTF-8')
             ->header('Content-Disposition', 'attachment; filename="' . $filename . '"');
+    }
+
+    private function summarizePeriod(array $rows): array
+    {
+        return [
+            'views' => (int) collect($rows)->sum('views'),
+            'clicks' => (int) collect($rows)->sum('clicks'),
+            'sold' => (int) collect($rows)->sum('sold'),
+            'revenue' => (float) collect($rows)->sum('sales'),
+        ];
+    }
+
+    private function makeTrend(float|int $currentValue, float|int $previousValue, string $context): array
+    {
+        $delta = $currentValue - $previousValue;
+        $direction = $delta > 0 ? 'up' : ($delta < 0 ? 'down' : 'flat');
+        $percent = $previousValue > 0
+            ? round((abs($delta) / $previousValue) * 100, 1)
+            : ($currentValue > 0 ? 100.0 : 0.0);
+
+        return [
+            'direction' => $direction,
+            'percent' => $percent,
+            'delta' => $delta,
+            'context' => $context,
+            'label' => match ($direction) {
+                'up' => 'Naik',
+                'down' => 'Turun',
+                default => 'Stabil',
+            },
+        ];
     }
 }
