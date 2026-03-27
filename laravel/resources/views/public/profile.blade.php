@@ -1121,7 +1121,9 @@
                 <span></span><span></span><span></span>
                 <span></span><span></span><span></span>
             </div>
-            <div class="navbar-title">{{ $user->name }}</div>
+            <div class="navbar-title" id="navbarTitle">
+                {{ $user->pages?->firstWhere('id', $activePageId)?->title ?? $user->name }}
+            </div>
         </div>
         <div class="navbar-right">
             <div class="nav-icon report" id="reportBtn" title="Laporkan">
@@ -1369,7 +1371,7 @@
             <div class="tab-content {{ $activePageId === $userPage->id ? 'active' : '' }}" id="tab-page-{{ $userPage->id }}">
                 <div class="user-profile">
                     @if($user->avatar)
-                        <img src="{{ asset('storage/' . $user->avatar) }}" class="avatar" alt="{{ $user->name }}">
+                        <img src="{{ $user->avatar_url }}" class="avatar" alt="{{ $user->name }}">
                     @else
                         <div class="avatar-placeholder">
                             <svg width="32" height="32" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1612,6 +1614,11 @@ document.querySelectorAll('.fullmenu-item[data-tab]').forEach(item => {
         item.classList.add('active');
         document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
         document.getElementById(`tab-${tab}`)?.classList.add('active');
+
+        const pageTitle = item.textContent.trim();
+        const navTitle = document.getElementById('navbarTitle');
+        if (navTitle && pageTitle) navTitle.textContent = pageTitle;
+
         closeMenu();
     });
 });
