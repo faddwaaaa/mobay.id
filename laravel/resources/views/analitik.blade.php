@@ -1,5 +1,5 @@
 @extends('layouts.dashboard')
-@section('title', 'Analitik | Toko')
+@section('title', 'Analitik | Mobay.id')
 
 @section('content')
 <style>
