@@ -31,10 +31,12 @@ use App\Http\Controllers\{
     PublicProfileController,
     PublicProfileReportController,
     DigitalOrderController,
-    ShippingSettingsController
+    ShippingSettingsController,
+    BiteshipWebhookController
 };
 
 use App\Http\Controllers\Admin\ProfileReportController;
+use App\Http\Controllers\Admin\PhysicalOrderShipmentController;
 
 Route::get('/', [LandingController::class, 'index'])->name('home');
 Route::get('/service', [LandingController::class, 'service'])->name('service');
@@ -204,13 +206,14 @@ Route::middleware(['auth'])->group(function () {
 |--------------------------------------------------------------------------
 */
 Route::middleware('auth')->group(function () {
+    // ✅ spesifik dulu, baru wildcard
+    Route::get('/pesanan/fisik/{physicalOrder}/resi', [PhysicalOrderShipmentController::class, 'edit'])
+        ->name('physical-orders.shipment.edit');
+    Route::put('/pesanan/fisik/{physicalOrder}/resi', [PhysicalOrderShipmentController::class, 'update'])
+        ->name('physical-orders.shipment.update');
+
     Route::get('/pesanan', [OrderController::class, 'index'])->name('orders.index');
     Route::get('/pesanan/{id}', [OrderController::class, 'show'])->name('orders.show');
-
-Route::get('/pesanan/fisik/{physicalOrder}/resi', [\App\Http\Controllers\Admin\PhysicalOrderShipmentController::class, 'edit'])
-        ->name('physical-orders.shipment.edit');
-    Route::put('/pesanan/fisik/{physicalOrder}/resi', [\App\Http\Controllers\Admin\PhysicalOrderShipmentController::class, 'update'])
-        ->name('physical-orders.shipment.update');
 });
 
 
@@ -223,6 +226,14 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
 
     Route::get('/dashboard', [App\Http\Controllers\Admin\DashboardController::class, 'index'])
         ->name('admin.dashboard');
+
+    // ✅ TAMBAHAN: Admin input resi produk fisik
+    Route::middleware(['is_admin'])->group(function () {
+        Route::get('physical-orders/{physicalOrder}/shipment', [PhysicalOrderShipmentController::class, 'edit'])
+            ->name('admin.physical-orders.shipment.edit');
+        Route::put('physical-orders/{physicalOrder}/shipment', [PhysicalOrderShipmentController::class, 'update'])
+            ->name('admin.physical-orders.shipment.update');
+    });
 
     Route::get   ('/reports',                           [ProfileReportController::class, 'index'])       ->name('admin.reports.index');
     Route::get   ('/reports/export',                    [ProfileReportController::class, 'exportCsv'])   ->name('admin.reports.export');
@@ -361,6 +372,16 @@ Route::get('/preview/{username}', function ($username) {
 //biteship
 Route::post('/webhooks/biteship', [\App\Http\Controllers\BiteshipWebhookController::class, 'handle'])
     ->name('webhooks.biteship');
+
+    Route::get('/debug/biteship', function () {
+    return response()->json([
+        'webhook_secret_set' => !empty(config('services.biteship.webhook_secret')),
+        'api_key_set'        => !empty(env('BITESHIP_API_KEY')),
+        'webhook_url'        => config('app.url') . '/webhooks/biteship', // ✅ ganti ini
+        'app_url'            => config('app.url'),
+        'environment'        => app()->environment(),
+    ]);
+})->middleware('auth');
 
 /*
 |--------------------------------------------------------------------------
