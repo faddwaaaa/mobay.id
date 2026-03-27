@@ -80,10 +80,14 @@ class DashboardController extends Controller
 
         // ✅ Total Produk & Total Pesanan
         $totalProducts = Product::where('user_id', $user->id)->count();
-        $totalDigitalOrders = DigitalOrder::whereIn(
-            'digital_product_id',
-            Product::where('user_id', $user->id)->pluck('id')
-        )->count();
+        $digitalProductIds = \App\Models\DigitalProduct::whereIn(
+        'product_id',
+        Product::where('user_id', $user->id)->pluck('id')
+    )->pluck('id');
+
+        $totalDigitalOrders = DigitalOrder::whereIn('digital_product_id', $digitalProductIds)
+            ->where('status', 'paid')
+            ->count();
 
         $totalPhysicalOrders = PhysicalOrder::where('seller_id', $user->id)->count();
 
