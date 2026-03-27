@@ -363,7 +363,7 @@
         <div class="plan-note">
             <div class="plan-note-copy">
                 <p class="plan-note-title">Free sudah cukup powerful untuk memulai bisnis!</p>
-                <p class="plan-note-text">Dapatkan background gradient yang cantik, 4 gaya tombol profesional, 4 font premium, dan 3 layout responsif. Saat bisnismu berkembang dan butuh lebih banyak pelanggan, upgrade ke Pro untuk fitur eksklusif seperti background gambar custom, efek neon/glass, layout masonry & carousel, dan 7+ font tambahan yang membuat brandmu terlihat lebih premium.</p>
+                <p class="plan-note-text">Dapatkan background gradient yang cantik, 4 gaya tombol profesional, 4 font premium, dan 3 layout produk responsif. Saat bisnismu berkembang dan butuh lebih banyak pelanggan, upgrade ke Pro untuk fitur eksklusif seperti background gambar custom, efek neon/glass, gaya sorotan produk, dan 7+ font tambahan yang membuat brandmu terlihat lebih premium.</p>
             </div>
             <span class="plan-badge {{ $isProUser ? 'pro' : 'free' }}">
                 <i class="fas {{ $isProUser ? 'fa-crown' : 'fa-rocket' }}"></i>
@@ -603,7 +603,7 @@
 
             <div class="subsec-head">
                 <p style="font-size:12.5px;font-weight:700;color:#374151;">Gaya Tombol</p>
-                <span class="pro-grid-note">Free: 4 gaya profesional untuk kebutuhan dasar. Pro: Tambah efek neon, glass, dan minimalis untuk brand premium.</span>
+                <span class="pro-grid-note">Free: 4 gaya profesional untuk kebutuhan dasar. Pro: Tambah efek neon, kaca, dan minimalis yang tetap mengikuti warna tombol pilihanmu.</span>
             </div>
             @php
             $btnStyles = [
@@ -613,8 +613,8 @@
                 ['id'=>'soft_shadow', 'name'=>'Bayangan Tipis','css'=>'background:#fff;color:#374151;border:1.5px solid #e5e7eb;box-shadow:0 4px 12px rgba(0,0,0,0.12);', 'pro'=>false],
                 ['id'=>'ghost',       'name'=>'Tembus',        'css'=>'background:rgba(255,255,255,0.12);color:#fff;border:1.5px solid rgba(255,255,255,0.3);backdrop-filter:blur(8px);', 'pro'=>true],
                 ['id'=>'minimal',     'name'=>'Minimalis',     'css'=>'background:transparent;color:#111;border:none;border-bottom:2px solid #111;border-radius:0!important;', 'pro'=>true],
-                ['id'=>'neon',        'name'=>'Neon Glow',     'css'=>'background:#000;color:#00ff88;border:2px solid #00ff88;box-shadow:0 0 20px rgba(0,255,136,0.5);', 'pro'=>true],
-                ['id'=>'glass',       'name'=>'Kaca',         'css'=>'background:rgba(255,255,255,0.1);color:#111;border:1px solid rgba(255,255,255,0.3);backdrop-filter:blur(10px);', 'pro'=>true],
+                ['id'=>'neon',        'name'=>'Neon Glow',     'css'=>'background:#111827;color:#ffffff;border:2px solid #38bdf8;box-shadow:0 0 20px rgba(56,189,248,0.45);', 'pro'=>true],
+                ['id'=>'glass',       'name'=>'Kaca',          'css'=>'background:rgba(59,130,246,0.12);color:#1e3a8a;border:1px solid rgba(59,130,246,0.28);backdrop-filter:blur(6px);', 'pro'=>true],
             ];
             $curBtnStyle = $profile->btn_style ?? 'fill';
             @endphp
@@ -674,6 +674,32 @@
                         <input type="text" class="color-field-input" id="btnTxtColorText" value="{{ $profile->btn_text_color ?? '#ffffff' }}" oninput="onBtnColorTextIn(this.value,'txt')" placeholder="#ffffff">
                     </div>
                 </div>
+            </div>
+
+            <div id="neonControls" style="display:none; margin-top:14px;">
+                <div class="ap-divider"></div>
+                <p style="font-size:12.5px;font-weight:700;color:#374151;margin-bottom:10px;">Pengaturan Neon Glow</p>
+                <div class="color-row-2">
+                    <div class="color-field">
+                        <label>Warna Glow</label>
+                        <div class="color-field-inner">
+                            <div class="color-dot" id="btnGlowColorDot" style="background:{{ $profile->btn_glow_color ?? '#38bdf8' }}">
+                                <input type="color" id="btnGlowColorPicker" value="{{ $profile->btn_glow_color ?? '#38bdf8' }}" oninput="onBtnEffectColorIn(this.value,'glow')">
+                            </div>
+                            <input type="text" class="color-field-input" id="btnGlowColorText" value="{{ $profile->btn_glow_color ?? '#38bdf8' }}" oninput="onBtnEffectColorTextIn(this.value,'glow')" placeholder="#38bdf8">
+                        </div>
+                    </div>
+                    <div class="color-field">
+                        <label>Background Neon</label>
+                        <div class="color-field-inner">
+                            <div class="color-dot" id="btnGlowBgDot" style="background:{{ $profile->btn_glow_bg ?? '#111827' }}">
+                                <input type="color" id="btnGlowBgPicker" value="{{ $profile->btn_glow_bg ?? '#111827' }}" oninput="onBtnEffectColorIn(this.value,'glow_bg')">
+                            </div>
+                            <input type="text" class="color-field-input" id="btnGlowBgText" value="{{ $profile->btn_glow_bg ?? '#111827' }}" oninput="onBtnEffectColorTextIn(this.value,'glow_bg')" placeholder="#111827">
+                        </div>
+                    </div>
+                </div>
+                <p style="font-size:11px;color:#94a3b8;margin:8px 0 0;">Atur warna glow dan latar khusus untuk gaya Neon Glow.</p>
             </div>
         </div>
 
@@ -746,15 +772,15 @@
                         <i class="fas fa-magic" style="color:#0ea5e9;font-size:16px;"></i>
                         <span style="font-weight:700;color:#0c4a6e;font-size:14px;">Efek Spesial</span>
                     </div>
-                    <p style="font-size:12px;color:#64748b;margin:0;">Tombol neon glow, glass effect, dan animasi yang membuat profilmu standout.</p>
+                    <p style="font-size:12px;color:#64748b;margin:0;">Tombol neon glow dan efek kaca yang ikut menyesuaikan warna tombol pilihanmu.</p>
                 </div>
 
                 <div style="background:#fff;padding:16px;border-radius:12px;border:1px solid #e0f2fe;">
                     <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
                         <i class="fas fa-th-large" style="color:#0ea5e9;font-size:16px;"></i>
-                        <span style="font-weight:700;color:#0c4a6e;font-size:14px;">Layout Advanced</span>
+                        <span style="font-weight:700;color:#0c4a6e;font-size:14px;">Tampilan Premium</span>
                     </div>
-                    <p style="font-size:12px;color:#64748b;margin:0;">Masonry Pinterest-style dan carousel slider untuk pengalaman browsing yang modern.</p>
+                    <p style="font-size:12px;color:#64748b;margin:0;">Sorotan produk, background gambar, dan efek visual tambahan untuk tampilan toko yang lebih menonjol.</p>
                 </div>
             </div>
 
@@ -780,53 +806,42 @@
 
             <div class="bl-grid">
                 @php
-                $currentLayout = $profile->block_layout ?? 'default';
+                $allowedLayouts = ['default', 'grid', 'compact', 'highlight'];
+                $currentLayout = in_array($profile->block_layout ?? 'default', $allowedLayouts, true)
+                    ? ($profile->block_layout ?? 'default')
+                    : 'default';
                 $layouts = [
                     [
                         'id'   => 'default',
-                        'name' => 'Default',
+                        'name' => 'Standar',
                         'desc' => 'Satu kolom, foto besar di atas',
                         'pro'  => false,
                         'svg'  => '<rect x="4" y="3" width="16" height="11" rx="1.5" fill="currentColor" opacity=".28"/><rect x="4" y="16" width="10" height="2" rx="1" fill="currentColor" opacity=".35"/><rect x="4" y="20" width="7" height="1.5" rx=".75" fill="currentColor" opacity=".2"/>',
                     ],
                     [
                         'id'   => 'grid',
-                        'name' => 'Grid',
+                        'name' => 'Kisi',
                         'desc' => '2 kolom berdampingan',
                         'pro'  => false,
                         'svg'  => '<rect x="3" y="4" width="8" height="8" rx="1.5" fill="currentColor" opacity=".25"/><rect x="13" y="4" width="8" height="8" rx="1.5" fill="currentColor" opacity=".25"/><rect x="3" y="14" width="8" height="8" rx="1.5" fill="currentColor" opacity=".18"/><rect x="13" y="14" width="8" height="8" rx="1.5" fill="currentColor" opacity=".18"/>',
                     ],
                     [
                         'id'   => 'compact',
-                        'name' => 'Compact',
+                        'name' => 'Ringkas',
                         'desc' => 'Foto kecil kiri, nama & harga kanan',
                         'pro'  => false,
                         'svg'  => '<rect x="3" y="4" width="6" height="6" rx="1" fill="currentColor" opacity=".3"/><rect x="11" y="5" width="8" height="2" rx="1" fill="currentColor" opacity=".35"/><rect x="17" y="4" width="4" height="6" rx="1" fill="currentColor" opacity=".2"/><rect x="3" y="12" width="6" height="6" rx="1" fill="currentColor" opacity=".25"/><rect x="11" y="13" width="8" height="2" rx="1" fill="currentColor" opacity=".3"/><rect x="17" y="12" width="4" height="6" rx="1" fill="currentColor" opacity=".18"/>',
                     ],
                     [
                         'id'   => 'highlight',
-                        'name' => 'Highlight',
+                        'name' => 'Sorotan',
                         'desc' => 'Kartu dengan aksen warna & bayangan',
                         'pro'  => true,
                         'svg'  => '<rect x="3" y="3" width="18" height="8" rx="2" fill="currentColor" opacity=".22"/><rect x="3" y="3" width="4" height="8" rx="1.5" fill="currentColor" opacity=".4"/><rect x="9" y="4.5" width="9" height="2" rx="1" fill="currentColor" opacity=".38"/><rect x="9" y="8" width="6" height="1.5" rx=".75" fill="currentColor" opacity=".22"/><rect x="3" y="13" width="18" height="8" rx="2" fill="currentColor" opacity=".18"/><rect x="3" y="13" width="4" height="8" rx="1.5" fill="currentColor" opacity=".32"/><rect x="9" y="14.5" width="9" height="2" rx="1" fill="currentColor" opacity=".3"/><rect x="9" y="18" width="6" height="1.5" rx=".75" fill="currentColor" opacity=".18"/>',
                     ],
-                    [
-                        'id'   => 'masonry',
-                        'name' => 'Masonry',
-                        'desc' => 'Layout Pinterest-style yang dinamis',
-                        'pro'  => true,
-                        'svg'  => '<rect x="3" y="3" width="6" height="10" rx="1.5" fill="currentColor" opacity=".25"/><rect x="11" y="3" width="6" height="6" rx="1.5" fill="currentColor" opacity=".3"/><rect x="19" y="3" width="2" height="6" rx="1" fill="currentColor" opacity=".35"/><rect x="11" y="11" width="6" height="8" rx="1.5" fill="currentColor" opacity=".2"/><rect x="19" y="11" width="2" height="8" rx="1" fill="currentColor" opacity=".25"/><rect x="3" y="15" width="6" height="6" rx="1.5" fill="currentColor" opacity=".18"/>',
-                    ],
-                    [
-                        'id'   => 'carousel',
-                        'name' => 'Carousel',
-                        'desc' => 'Slider produk dengan navigasi',
-                        'pro'  => true,
-                        'svg'  => '<rect x="3" y="4" width="14" height="8" rx="2" fill="currentColor" opacity=".2"/><circle cx="6" cy="16" r="1.5" fill="currentColor" opacity=".4"/><circle cx="10" cy="16" r="1.5" fill="currentColor" opacity=".25"/><circle cx="14" cy="16" r="1.5" fill="currentColor" opacity=".15"/><rect x="16" y="4" width="5" height="8" rx="1" fill="currentColor" opacity=".1" stroke="currentColor" stroke-width="0.5" fill="none"/>',
-                    ],
                 ];
                 @endphp
-                <p class="pro-grid-note" style="grid-column:1 / -1; margin:0 0 2px;">Free: 3 layout responsif yang fleksibel untuk berbagai kebutuhan. Pro: Tambah masonry Pinterest-style dan carousel slider untuk pengalaman browsing yang lebih menarik dan modern.</p>
+                <p class="pro-grid-note" style="grid-column:1 / -1; margin:0 0 2px;">Tersedia 3 layout produk utama, ditambah layout sorotan untuk pengguna Pro.</p>
                 @foreach($layouts as $l)
                 <div class="bl-item {{ $currentLayout === $l['id'] ? 'active' : '' }} {{ ($l['pro'] && !in_array($l['id'], $appearanceAccess['block_layouts'], true)) ? 'is-locked' : '' }}"
                      data-layout="{{ $l['id'] }}"
@@ -846,44 +861,10 @@
             </div>
         </div>
 
-        {{-- ══════════ 6. FITUR PRO EKSKLUSIF ══════════ --}}
-        @if($isProUser)
-        <div class="sec-card">
-            <div class="sec-header">
-                <div class="sec-icon" style="background:#fef3c7; color:#d97706;">
-                    <svg width="17" height="17" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
-                </div>
-                <div>
-                    <p class="sec-title">Fitur Pro Eksklusif</p>
-                    <p class="sec-desc">Custom CSS dan efek animasi untuk kontrol penuh atas tampilan</p>
-                </div>
-            </div>
-
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
-                <div>
-                    <p style="font-size:12.5px;font-weight:700;color:#374151;margin-bottom:8px;">Custom CSS</p>
-                    <textarea style="width:100%;min-height:80px;padding:8px;border:1.5px solid #e5e7eb;border-radius:8px;font-size:12px;font-family:monospace;resize:vertical;" placeholder="/* Tambahkan CSS custom Anda di sini */"></textarea>
-                    <p style="font-size:11px;color:#9ca3af;margin:4px 0 0;">Untuk styling yang sangat spesifik</p>
-                </div>
-
-                <div>
-                    <p style="font-size:12.5px;font-weight:700;color:#374151;margin-bottom:8px;">Efek Animasi</p>
-                    <div style="display:flex;gap:8px;flex-wrap:wrap;">
-                        <button style="padding:6px 12px;border:1.5px solid #e5e7eb;border-radius:6px;background:#fff;font-size:11px;cursor:pointer;">Fade In</button>
-                        <button style="padding:6px 12px;border:1.5px solid #e5e7eb;border-radius:6px;background:#fff;font-size:11px;cursor:pointer;">Slide Up</button>
-                        <button style="padding:6px 12px;border:1.5px solid #e5e7eb;border-radius:6px;background:#fff;font-size:11px;cursor:pointer;">Bounce</button>
-                        <button style="padding:6px 12px;border:1.5px solid #e5e7eb;border-radius:6px;background:#fff;font-size:11px;cursor:pointer;">Glow</button>
-                    </div>
-                    <p style="font-size:11px;color:#9ca3af;margin:4px 0 0;">Animasi halus untuk interaksi yang lebih menarik</p>
-                </div>
-            </div>
-        </div>
-        @endif
-
         {{-- ══════════ BILAH SIMPAN ══════════ --}}
         <div class="ap-save-bar">
             <div class="save-bar-actions" style="display:flex;gap:9px;">
-                <button class="btn-reset-def" onclick="resetAppearance()">Reset Default</button>
+                <button class="btn-reset-def" onclick="resetAppearance()">Reset Awal</button>
                 <button class="btn-save-ap" id="btnSave" onclick="saveAppearance()">
                     <div class="spin"></div>
                     <span class="save-lbl">Simpan Tampilan</span>
@@ -959,6 +940,8 @@ let st = {
     btn_shape:             profileData.btn_shape             ?? 'rounded',
     btn_color:             profileData.btn_color             ?? '#3b82f6',
     btn_text_color:        profileData.btn_text_color        ?? '#ffffff',
+    btn_glow_color:        profileData.btn_glow_color        ?? '#38bdf8',
+    btn_glow_bg:           profileData.btn_glow_bg           ?? '#111827',
     font_family:           profileData.font_family           ?? 'Plus Jakarta Sans',
     block_layout:          profileData.block_layout          ?? 'default',
 };
@@ -1317,7 +1300,10 @@ function selectBtnStyle(el, style) {
         return;
     }
     document.querySelectorAll('.btn-style-item').forEach(i => i.classList.remove('active'));
-    el.classList.add('active'); st.btn_style = style; markDirty();
+    el.classList.add('active');
+    st.btn_style = style;
+    updateEffectControls();
+    markDirty();
 }
 function selectBtnShape(el, shape) {
     document.querySelectorAll('.btn-shape-item').forEach(i => i.classList.remove('active'));
@@ -1333,6 +1319,38 @@ function onBtnColorTextIn(v, which) {
     if (which === 'btn') { st.btn_color = v; document.getElementById('btnColorPicker').value = v; document.getElementById('btnColorDot').style.background = v; }
     else { st.btn_text_color = v; document.getElementById('btnTxtColorPicker').value = v; document.getElementById('btnTxtColorDot').style.background = v; }
     markDirty();
+}
+
+function onBtnEffectColorIn(v, which) {
+    if (which === 'glow') {
+        st.btn_glow_color = v;
+        document.getElementById('btnGlowColorText').value = v;
+        document.getElementById('btnGlowColorDot').style.background = v;
+    } else {
+        st.btn_glow_bg = v;
+        document.getElementById('btnGlowBgText').value = v;
+        document.getElementById('btnGlowBgDot').style.background = v;
+    }
+    markDirty();
+}
+
+function onBtnEffectColorTextIn(v, which) {
+    if (!/^#[0-9a-fA-F]{6}$/.test(v)) return;
+    if (which === 'glow') {
+        st.btn_glow_color = v;
+        document.getElementById('btnGlowColorPicker').value = v;
+        document.getElementById('btnGlowColorDot').style.background = v;
+    } else {
+        st.btn_glow_bg = v;
+        document.getElementById('btnGlowBgPicker').value = v;
+        document.getElementById('btnGlowBgDot').style.background = v;
+    }
+    markDirty();
+}
+
+function updateEffectControls() {
+    const neonControls = document.getElementById('neonControls');
+    if (neonControls) neonControls.style.display = st.btn_style === 'neon' ? 'block' : 'none';
 }
 
 function selectFont(el, fontId) {
@@ -1355,6 +1373,25 @@ function selectBlockLayout(el, layoutId) {
     markDirty();
 }
 
+function hexToRgba(color, alpha, fallback = '59,130,246') {
+    if (typeof color !== 'string') return `rgba(${fallback},${alpha})`;
+    const hex = color.trim().replace('#', '');
+    if (/^[0-9a-fA-F]{3}$/.test(hex)) {
+        const full = hex.split('').map(ch => ch + ch).join('');
+        const r = parseInt(full.slice(0, 2), 16);
+        const g = parseInt(full.slice(2, 4), 16);
+        const b = parseInt(full.slice(4, 6), 16);
+        return `rgba(${r},${g},${b},${alpha})`;
+    }
+    if (/^[0-9a-fA-F]{6}$/.test(hex)) {
+        const r = parseInt(hex.slice(0, 2), 16);
+        const g = parseInt(hex.slice(2, 4), 16);
+        const b = parseInt(hex.slice(4, 6), 16);
+        return `rgba(${r},${g},${b},${alpha})`;
+    }
+    return `rgba(${fallback},${alpha})`;
+}
+
 function buildBtnCss() {
     switch(st.btn_style) {
         case 'fill':        return `background:${st.btn_color};color:${st.btn_text_color};border:2px solid ${st.btn_color};`;
@@ -1363,6 +1400,8 @@ function buildBtnCss() {
         case 'soft_shadow': return `background:${st.btn_color};color:${st.btn_text_color};border:none;box-shadow:0 4px 16px rgba(0,0,0,0.15);`;
         case 'ghost':       return `background:rgba(255,255,255,0.15);color:${st.btn_text_color};border:1.5px solid rgba(255,255,255,0.3);backdrop-filter:blur(8px);`;
         case 'minimal':     return `background:transparent;color:${st.btn_color};border:none;border-bottom:2px solid ${st.btn_color};border-radius:0!important;`;
+        case 'neon':        return `background:${st.btn_glow_bg};color:${st.btn_text_color};border:2px solid ${st.btn_glow_color};box-shadow:0 0 12px ${hexToRgba(st.btn_glow_color, 0.45)},0 0 24px ${hexToRgba(st.btn_glow_color, 0.25)};`;
+        case 'glass':       return `background:${hexToRgba(st.btn_color, 0.12)};color:${st.btn_text_color};border:1px solid ${hexToRgba(st.btn_color, 0.28)};box-shadow:0 8px 20px ${hexToRgba(st.btn_color, 0.14)};backdrop-filter:blur(6px);`;
         default:            return `background:${st.btn_color};color:${st.btn_text_color};border:2px solid ${st.btn_color};`;
     }
 }
@@ -1402,6 +1441,8 @@ function updatePreview() {
             btn_shape:      st.btn_shape,
             btn_color:      st.btn_color,
             btn_text_color: st.btn_text_color,
+            btn_glow_color: st.btn_glow_color,
+            btn_glow_bg:    st.btn_glow_bg,
             block_layout:   st.block_layout,
         }
     }, '*');
@@ -1511,5 +1552,6 @@ document.getElementById('previewFrame').addEventListener('load', () => {
     hidePreviewFrameScrollbar('previewFrame');
     setTimeout(updatePreview, 300);
 });
+updateEffectControls();
 </script>
 @endpush

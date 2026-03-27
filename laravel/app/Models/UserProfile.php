@@ -32,6 +32,8 @@ class UserProfile extends Model
         'btn_shape',
         'btn_color',
         'btn_text_color',
+        'btn_glow_color',
+        'btn_glow_bg',
         'font_family',
         'block_layout', // ← TAMBAH INI
         'template',
@@ -104,7 +106,7 @@ class UserProfile extends Model
         }
 
         if ($bgType === 'image' && $this->bg_image) {
-            return "url('" . asset('storage/' . $this->bg_image) . "') center/cover no-repeat fixed";
+            return "url('" . asset('storage/' . $this->bg_image) . "') center center / cover no-repeat fixed";
         }
 
         if ($bgType === 'gradient' && $this->bg_gradient_start && $this->bg_gradient_end) {
