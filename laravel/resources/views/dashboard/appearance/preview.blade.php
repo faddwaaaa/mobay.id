@@ -29,13 +29,13 @@
                     'wg_twilight' => ['cssValue' => 'linear-gradient(135deg,#0f0c29,#302b63,#24243e)'],
                     'wg_spring'   => ['cssValue' => 'linear-gradient(135deg,#96fbc4,#f9f586)'],
                     'wg_dusk'     => ['cssValue' => 'linear-gradient(135deg,#2c3e50,#fd746c)'],
- 
+
                     // ── PATTERN (light) ──
                     'wg_dots'     => ['cssValue' => 'radial-gradient(circle,#cbd5e1 1.5px,transparent 1.5px)',                                                                                                           'bgSize' => '24px 24px', 'bgColor' => '#f8fafc'],
                     'wg_grid'     => ['cssValue' => 'linear-gradient(#e2e8f0 1px,transparent 1px),linear-gradient(90deg,#e2e8f0 1px,transparent 1px)',                                                                    'bgSize' => '24px 24px', 'bgColor' => '#f8fafc'],
                     'wg_diagonal' => ['cssValue' => 'repeating-linear-gradient(45deg,#cbd5e1,#cbd5e1 1px,transparent 1px,transparent 12px)',                                                                                                             'bgColor' => '#f1f5f9'],
                     'wg_checker'  => ['cssValue' => 'conic-gradient(#e2e8f0 90deg,#f8fafc 90deg 180deg,#e2e8f0 180deg 270deg,#f8fafc 270deg)',                                                                            'bgSize' => '20px 20px', 'bgColor' => '#f8fafc'],
- 
+
                     // ── PATTERN (dark) ──
                     'wg_dotsdark'  => ['cssValue' => 'radial-gradient(circle,#475569 1.5px,transparent 1.5px)',                                                                                                          'bgSize' => '24px 24px', 'bgColor' => '#1e293b'],
                     'wg_griddark'  => ['cssValue' => 'linear-gradient(#334155 1px,transparent 1px),linear-gradient(90deg,#334155 1px,transparent 1px)',                                                                   'bgSize' => '24px 24px', 'bgColor' => '#0f172a'],
@@ -45,7 +45,7 @@
                     'wg_mesh'      => ['cssValue' => 'radial-gradient(at 40% 20%,#fde68a 0,transparent 50%),radial-gradient(at 80% 0,#c7d2fe 0,transparent 50%),radial-gradient(at 0 50%,#fecdd3 0,transparent 50%)',   'bgColor' => '#fff7ed'],
                     'wg_wavedark'  => ['cssValue' => 'repeating-radial-gradient(circle at 0 0,transparent 0,#0f172a 6px),repeating-linear-gradient(#1e3a5f55,#1e3a5f)',                                                                                  'bgColor' => '#060d1a'],
                     'wg_meshdark'  => ['cssValue' => 'radial-gradient(at 40% 20%,#312e81 0,transparent 50%),radial-gradient(at 80% 0,#064e3b 0,transparent 50%),radial-gradient(at 0 50%,#1e1b4b 0,transparent 50%)',   'bgColor' => '#030712'],
- 
+
                     // ── MINIMAL ──
                     'wg_white'    => ['cssValue' => '#f0f0f0'],
                     'wg_cream'    => ['cssValue' => '#fdf0d5'],
@@ -55,7 +55,7 @@
                     'wg_gray'     => ['cssValue' => '#dde1e7'],
                     'wg_warmgray' => ['cssValue' => '#e8e0d5'],
                     'wg_sand'     => ['cssValue' => '#f5dfa0'],
- 
+
                     // ── DARK ──
                     'wg_obsidian' => ['cssValue' => '#1a1a2e'],
                     'wg_night'    => ['cssValue' => '#0d1b2a'],
@@ -66,7 +66,7 @@
                     'wg_cosmos'   => ['cssValue' => 'linear-gradient(135deg,#0d1b2a,#1a3a5c,#0d2137)'],
                     'wg_eclipse'  => ['cssValue' => 'linear-gradient(135deg,#1a1a2e,#16213e,#0f3460)'],
                 ];
- 
+
                 $wg = $wgData[$profile->bg_image] ?? null;
                 if ($wg) {
                     $bgCss        = $wg['cssValue'];
@@ -162,13 +162,17 @@
 
         body {
             font-family: '{{ $fontFamily }}', system-ui, -apple-system, sans-serif;
-            background: {{ $bgCss }};
+            @if($bgColorExtra)
+                background-color: {{ $bgColorExtra }};
+                background-image: {{ $bgCss }};
+            @else
+                background: {{ $bgCss }};
+            @endif
             --btn-color: {{ $btnColor }};
             --btn-text-color: {{ $btnTxtColor }};
-            @if($bgColorExtra) background-color: {{ $bgColorExtra }}; @endif
-            @if($bgSizeExtra)  background-size: {{ $bgSizeExtra }}; @endif
+            @if($bgSizeExtra) background-size: {{ $bgSizeExtra }}; @endif
             background-position: center;
-            background-repeat: no-repeat;
+            background-repeat: repeat;
             background-attachment: fixed;
             min-height: 100vh;
         }
@@ -300,7 +304,7 @@
             background-position: center;
             background-repeat: no-repeat;
             margin-bottom: 16px;
-             border-radius: 0 0 35px 35px;
+            border-radius: 0 0 35px 35px;
         }
 
         /* ── Profile Card ── */
@@ -448,80 +452,22 @@
         /* ══════════════════════════════════════════
            CART BOTTOM SHEET
         ══════════════════════════════════════════ */
-        .cart-overlay {
-            position: fixed; inset: 0;
-            background: rgba(0,0,0,0.5);
-            z-index: 500; opacity: 0; visibility: hidden;
-            transition: opacity 0.3s ease, visibility 0.3s ease;
-        }
+        .cart-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 500; opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0.3s ease; }
         .cart-overlay.active { opacity: 1; visibility: visible; }
-
-        .cart-drawer {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            width: 100%;
-            background: #fff;
-            z-index: 501;
-            border-radius: 20px 20px 0 0;
-            transition: transform 0.38s cubic-bezier(.32,1.1,.64,1);
-            display: flex;
-            flex-direction: column;
-            max-height: 88vh;
-            overflow: hidden;
-            box-shadow: 0 -8px 40px rgba(0,0,0,0.18);
-            transform: translateY(100%);
-        }
-        .cart-drawer.active {
-            transform: translateY(0);
-        }
-
-        .cart-handle {
-            width: 40px; height: 4px;
-            background: #e5e7eb; border-radius: 99px;
-            margin: 10px auto 0;
-            flex-shrink: 0;
-            cursor: grab;
-        }
-
-        .cart-header {
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 12px 20px 14px;
-            border-bottom: 1px solid #f3f4f6;
-            flex-shrink: 0;
-        }
+        .cart-drawer { position: fixed; bottom: 0; left: 0; right: 0; width: 100%; background: #fff; z-index: 501; border-radius: 20px 20px 0 0; transition: transform 0.38s cubic-bezier(.32,1.1,.64,1); display: flex; flex-direction: column; max-height: 88vh; overflow: hidden; box-shadow: 0 -8px 40px rgba(0,0,0,0.18); transform: translateY(100%); }
+        .cart-drawer.active { transform: translateY(0); }
+        .cart-handle { width: 40px; height: 4px; background: #e5e7eb; border-radius: 99px; margin: 10px auto 0; flex-shrink: 0; cursor: grab; }
+        .cart-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 20px 14px; border-bottom: 1px solid #f3f4f6; flex-shrink: 0; }
         .cart-header h3 { font-size: 16px; font-weight: 700; color: #111827; }
-        .cart-close {
-            width: 32px; height: 32px; border-radius: 50%;
-            background: #f3f4f6; border: none; cursor: pointer;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 14px; color: #6b7280;
-        }
+        .cart-close { width: 32px; height: 32px; border-radius: 50%; background: #f3f4f6; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; color: #6b7280; }
         .cart-close:hover { background: #e5e7eb; }
-
-        /* Select all row */
-        .cart-select-all-row {
-            display: flex; align-items: center; gap: 10px;
-            padding: 10px 20px;
-            border-bottom: 1px solid #f3f4f6;
-            flex-shrink: 0;
-            background: #fafafa;
-        }
+        .cart-select-all-row { display: flex; align-items: center; gap: 10px; padding: 10px 20px; border-bottom: 1px solid #f3f4f6; flex-shrink: 0; background: #fafafa; }
         .cart-select-all-row label { font-size: 12px; font-weight: 600; color: #6b7280; cursor: pointer; user-select: none; }
         .cart-select-all-row input[type="checkbox"] { width: 18px; height: 18px; accent-color: #2563eb; cursor: pointer; }
-
         .cart-items { flex: 1; overflow-y: auto; padding: 4px 20px 8px; }
-
-        .cart-item {
-            display: flex; gap: 12px;
-            padding: 12px 0; border-bottom: 1px solid #f3f4f6;
-            animation: fadeInUp 0.2s ease; align-items: center;
-        }
+        .cart-item { display: flex; gap: 12px; padding: 12px 0; border-bottom: 1px solid #f3f4f6; animation: fadeInUp 0.2s ease; align-items: center; }
         .cart-item:last-child { border-bottom: none; }
-
         .cart-item-check { flex-shrink: 0; width: 20px; height: 20px; accent-color: #2563eb; cursor: pointer; }
-
         .cart-item-img { width: 60px; height: 60px; border-radius: 10px; background: #f3f4f6; flex-shrink: 0; overflow: hidden; }
         .cart-item-img img { width: 100%; height: 100%; object-fit: cover; }
         .cart-item-img-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: #9ca3af; }
@@ -534,33 +480,18 @@
         .qty-value { min-width: 32px; text-align: center; font-size: 13px; font-weight: 600; padding: 0 4px; color: #111827; background: #fff; }
         .cart-item-remove { align-self: flex-start; margin-top: 2px; flex-shrink: 0; width: 26px; height: 26px; border-radius: 6px; background: none; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #9ca3af; transition: all 0.2s; }
         .cart-item-remove:hover { background: #fee2e2; color: #dc2626; }
-
         .cart-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 180px; gap: 12px; color: #9ca3af; }
         .cart-empty p { font-size: 14px; }
-
-        /* Order Summary */
         .cart-order-summary { padding: 12px 20px 0; border-top: 1px solid #f3f4f6; flex-shrink: 0; }
         .cart-summary-label-sm { font-size: 11px; font-weight: 700; color: #9ca3af; letter-spacing: .6px; text-transform: uppercase; margin-bottom: 8px; }
         .cart-summary-row { display: flex; justify-content: space-between; font-size: 13px; color: #6b7280; margin-bottom: 4px; }
         .cart-summary-row.grand { font-size: 15px; font-weight: 700; color: #111827; margin-top: 6px; padding-top: 8px; border-top: 1px dashed #e5e7eb; }
-
-        .cart-footer {
-            padding: 14px 20px calc(24px + env(safe-area-inset-bottom, 0px));
-            border-top: 1px solid #f3f4f6;
-            flex-shrink: 0;
-            background: #fff;
-        }
+        .cart-footer { padding: 14px 20px calc(24px + env(safe-area-inset-bottom, 0px)); border-top: 1px solid #f3f4f6; flex-shrink: 0; background: #fff; }
         .cart-footer-hint { font-size: 11px; color: #9ca3af; text-align: center; margin-bottom: 8px; min-height: 16px; }
         .btn-checkout { width: 100%; padding: 14px; background: #2563eb; color: white; border: none; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; transition: background 0.2s; }
         .btn-checkout:hover { background: #1d4ed8; } .btn-checkout:disabled { opacity: 0.5; cursor: not-allowed; }
-        .btn-continue-shopping {
-            width: 100%; padding: 11px; background: transparent; color: #2563eb;
-            border: 1.5px solid #2563eb; border-radius: 12px; font-size: 14px;
-            font-weight: 600; cursor: pointer; transition: all 0.2s;
-            margin-top: 8px; margin-bottom: 0; display: block;
-        }
+        .btn-continue-shopping { width: 100%; padding: 11px; background: transparent; color: #2563eb; border: 1.5px solid #2563eb; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; margin-top: 8px; margin-bottom: 0; display: block; }
         .btn-continue-shopping:hover { background: #eff6ff; }
-
         .cart-loading { display: flex; align-items: center; justify-content: center; height: 120px; color: #6b7280; font-size: 14px; gap: 8px; }
 
         /* Checkout Picker */
@@ -581,7 +512,6 @@
         .checkout-picker-arrow { color: #d1d5db; flex-shrink: 0; }
         .checkout-picker-cancel { width: 100%; padding: 12px; background: #f3f4f6; border: none; border-radius: 12px; font-size: 14px; font-weight: 600; color: #374151; cursor: pointer; margin-top: 4px; transition: background 0.2s; }
         .checkout-picker-cancel:hover { background: #e5e7eb; }
-        /* ══════════════════════════════════════════ */
 
         @keyframes spin { to { transform: rotate(360deg); } }
         .spinner { width: 18px; height: 18px; border: 2px solid #e5e7eb; border-top-color: #2563eb; border-radius: 50%; animation: spin 0.6s linear infinite; }
@@ -826,32 +756,21 @@
     </div>
 </div>
 
-{{-- ════════════════════════════════════════
-     CART BOTTOM SHEET
-     ════════════════════════════════════════ --}}
+{{-- CART BOTTOM SHEET --}}
 <div class="cart-overlay" id="cartOverlay"></div>
 <div class="cart-drawer" id="cartDrawer">
-    {{-- Handle bar --}}
     <div class="cart-handle" id="cartHandle"></div>
-
-    {{-- Header --}}
     <div class="cart-header">
         <h3 id="cartTitle">Keranjang Belanja</h3>
         <button class="cart-close" onclick="closeCart()">&#10005;</button>
     </div>
-
-    {{-- Select All --}}
     <div class="cart-select-all-row" id="cartSelectAllRow" style="display:none;">
         <input type="checkbox" id="cartCheckAll" onchange="toggleSelectAll(this.checked)">
         <label for="cartCheckAll" id="cartSelectAllLabel">Pilih Semua</label>
     </div>
-
-    {{-- Items --}}
     <div class="cart-items" id="cartItems">
         <div class="cart-loading"><div class="spinner"></div> Memuat...</div>
     </div>
-
-    {{-- Summary + Footer --}}
     <div id="cartSummarySection" style="display:none;">
         <div class="cart-order-summary">
             <div class="cart-summary-label-sm">Ringkasan Pesanan</div>
@@ -866,14 +785,11 @@
         </div>
         <div class="cart-footer">
             <div class="cart-footer-hint" id="cartHint"></div>
-            <button class="btn-checkout" id="btnCheckout" onclick="handleCheckout()" disabled>
-                Beli Sekarang
-            </button>
+            <button class="btn-checkout" id="btnCheckout" onclick="handleCheckout()" disabled>Beli Sekarang</button>
             <button class="btn-continue-shopping" onclick="closeCart()">Lanjut Belanja</button>
         </div>
     </div>
 </div>
-{{-- ════════════════════ END CART ════════════════════ --}}
 
 <script>
 const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
@@ -924,10 +840,8 @@ document.querySelectorAll('.fullmenu-item[data-tab]').forEach(item => {
         item.classList.add('active');
         document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
         document.getElementById(`tab-${tab}`)?.classList.add('active');
-
         const navTitle = document.getElementById('navbarTitle');
         if (navTitle) navTitle.textContent = item.textContent.trim();
-
         closeMenu();
     });
 });
@@ -1009,40 +923,18 @@ document.getElementById('btnAddToCart').addEventListener('click', async () => {
     finally { btn.classList.remove('loading'); }
 });
 
-// ══════════════════════════════════════════
-// CART BOTTOM SHEET — dengan pilih produk
-// ══════════════════════════════════════════
+// ── Cart ──
 const cartOverlay = document.getElementById('cartOverlay');
 const cartDrawer  = document.getElementById('cartDrawer');
-
-// Swipe down to close
 let cartTouchStartY = 0;
-document.getElementById('cartHandle').addEventListener('touchstart', e => {
-    cartTouchStartY = e.touches[0].clientY;
-}, { passive: true });
-document.getElementById('cartHandle').addEventListener('touchmove', e => {
-    if (e.touches[0].clientY - cartTouchStartY > 60) closeCart();
-}, { passive: true });
-
-function openCart() {
-    cartOverlay.classList.add('active');
-    cartDrawer.classList.add('active');
-    document.body.style.overflow = 'hidden';
-    loadCart();
-}
-function closeCart() {
-    cartOverlay.classList.remove('active');
-    cartDrawer.classList.remove('active');
-    document.body.style.overflow = '';
-}
+document.getElementById('cartHandle').addEventListener('touchstart', e => { cartTouchStartY = e.touches[0].clientY; }, { passive: true });
+document.getElementById('cartHandle').addEventListener('touchmove', e => { if (e.touches[0].clientY - cartTouchStartY > 60) closeCart(); }, { passive: true });
+function openCart() { cartOverlay.classList.add('active'); cartDrawer.classList.add('active'); document.body.style.overflow = 'hidden'; loadCart(); }
+function closeCart() { cartOverlay.classList.remove('active'); cartDrawer.classList.remove('active'); document.body.style.overflow = ''; }
 cartOverlay.addEventListener('click', closeCart);
 document.getElementById('cartBtn').addEventListener('click', openCart);
-
-// State: Set of selected cart item IDs
 let selectedCartItems = new Set();
-// Cache data items terakhir
 let _lastCartData = null;
-
 async function loadCart() {
     const container = document.getElementById('cartItems');
     const summary   = document.getElementById('cartSummarySection');
@@ -1050,61 +942,32 @@ async function loadCart() {
     container.innerHTML = `<div class="cart-loading"><div class="spinner"></div> Memuat...</div>`;
     summary.style.display = 'none';
     selectAllRow.style.display = 'none';
-    try {
-        const data = await apiCall('/api/cart');
-        renderCartItems(data);
-    } catch {
-        container.innerHTML = `<div class="cart-empty">${CART_EMPTY_SVG}<p>Gagal memuat keranjang.</p></div>`;
-    }
+    try { const data = await apiCall('/api/cart'); renderCartItems(data); }
+    catch { container.innerHTML = `<div class="cart-empty">${CART_EMPTY_SVG}<p>Gagal memuat keranjang.</p></div>`; }
 }
-
 function renderCartItems(data) {
-    const container    = document.getElementById('cartItems');
-    const summary      = document.getElementById('cartSummarySection');
-    const titleEl      = document.getElementById('cartTitle');
+    const container = document.getElementById('cartItems');
+    const summary = document.getElementById('cartSummarySection');
+    const titleEl = document.getElementById('cartTitle');
     const selectAllRow = document.getElementById('cartSelectAllRow');
-
     if (!data.items || data.items.length === 0) {
         container.innerHTML = `<div class="cart-empty">${CART_EMPTY_SVG}<p>Keranjangmu masih kosong.</p></div>`;
-        summary.style.display = 'none';
-        selectAllRow.style.display = 'none';
-        titleEl.textContent = 'Keranjang Belanja';
-        selectedCartItems = new Set();
-        _lastCartData = null;
-        return;
+        summary.style.display = 'none'; selectAllRow.style.display = 'none';
+        titleEl.textContent = 'Keranjang Belanja'; selectedCartItems = new Set(); _lastCartData = null; return;
     }
-
     _lastCartData = data.items;
     titleEl.textContent = `Keranjang (${data.items.length})`;
-
     const existingIds = new Set(data.items.map(i => i.id));
-    for (const id of selectedCartItems) {
-        if (!existingIds.has(id)) selectedCartItems.delete(id);
-    }
-    if (selectedCartItems.size === 0) {
-        data.items.forEach(i => selectedCartItems.add(i.id));
-    }
-
+    for (const id of selectedCartItems) { if (!existingIds.has(id)) selectedCartItems.delete(id); }
+    if (selectedCartItems.size === 0) { data.items.forEach(i => selectedCartItems.add(i.id)); }
     container.innerHTML = data.items.map(item => {
         const checked = selectedCartItems.has(item.id) ? 'checked' : '';
-        return `
-        <div class="cart-item" id="cart-item-${item.id}">
-            <input type="checkbox" class="cart-item-check" id="chk-${item.id}"
-                ${checked}
-                onchange="onItemCheckChange(${item.id}, this.checked)">
-            <div class="cart-item-img">
-                ${item.image_url
-                    ? `<img src="${item.image_url}" alt="${escHtml(item.title)}">`
-                    : `<div class="cart-item-img-placeholder">${CART_PLACEHOLDER_SVG}</div>`}
-            </div>
+        return `<div class="cart-item" id="cart-item-${item.id}">
+            <input type="checkbox" class="cart-item-check" id="chk-${item.id}" ${checked} onchange="onItemCheckChange(${item.id}, this.checked)">
+            <div class="cart-item-img">${item.image_url ? `<img src="${item.image_url}" alt="${escHtml(item.title)}">` : `<div class="cart-item-img-placeholder">${CART_PLACEHOLDER_SVG}</div>`}</div>
             <div class="cart-item-info">
                 <div class="cart-item-title">${escHtml(item.title)}</div>
-                <div class="cart-item-price">
-                    ${formatRupiah(item.final_price)}
-                    ${item.has_discount
-                        ? `<span style="font-size:11px;color:#9ca3af;text-decoration:line-through;margin-left:4px;">${formatRupiah(item.original_price)}</span>`
-                        : ''}
-                </div>
+                <div class="cart-item-price">${formatRupiah(item.final_price)}${item.has_discount ? `<span style="font-size:11px;color:#9ca3af;text-decoration:line-through;margin-left:4px;">${formatRupiah(item.original_price)}</span>` : ''}</div>
                 <div class="qty-control">
                     <button class="qty-btn" onclick="changeQty(${item.id},${item.quantity - 1},${item.stock})" ${item.quantity <= 1 ? 'disabled' : ''}>&#8722;</button>
                     <span class="qty-value">${item.quantity}</span>
@@ -1112,168 +975,87 @@ function renderCartItems(data) {
                 </div>
             </div>
             <button class="cart-item-remove" onclick="removeItem(${item.id})">
-                <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                </svg>
+                <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
             </button>
         </div>`;
     }).join('');
-
-    selectAllRow.style.display = 'flex';
-    summary.style.display = 'block';
-    refreshSummary();
+    selectAllRow.style.display = 'flex'; summary.style.display = 'block'; refreshSummary();
 }
-
-function onItemCheckChange(id, checked) {
-    if (checked) selectedCartItems.add(id);
-    else selectedCartItems.delete(id);
-    refreshSummary();
-}
-
+function onItemCheckChange(id, checked) { if (checked) selectedCartItems.add(id); else selectedCartItems.delete(id); refreshSummary(); }
 function toggleSelectAll(checked) {
     if (!_lastCartData) return;
-    if (checked) {
-        _lastCartData.forEach(i => selectedCartItems.add(i.id));
-    } else {
-        selectedCartItems.clear();
-    }
-    _lastCartData.forEach(i => {
-        const chk = document.getElementById(`chk-${i.id}`);
-        if (chk) chk.checked = checked;
-    });
+    if (checked) { _lastCartData.forEach(i => selectedCartItems.add(i.id)); } else { selectedCartItems.clear(); }
+    _lastCartData.forEach(i => { const chk = document.getElementById(`chk-${i.id}`); if (chk) chk.checked = checked; });
     refreshSummary();
 }
-
 function refreshSummary() {
     if (!_lastCartData) return;
-
     const total = _lastCartData.length;
     const selectedItems = _lastCartData.filter(i => selectedCartItems.has(i.id));
     const count = selectedItems.length;
     const grandTotal = selectedItems.reduce((sum, i) => sum + (i.final_price * i.quantity), 0);
-
     const checkAllEl = document.getElementById('cartCheckAll');
     const selectLabelEl = document.getElementById('cartSelectAllLabel');
-    if (checkAllEl) {
-        checkAllEl.checked = count === total && total > 0;
-        checkAllEl.indeterminate = count > 0 && count < total;
-    }
-    if (selectLabelEl) {
-        selectLabelEl.textContent = count === total
-            ? 'Pilih Semua'
-            : `Pilih Semua (${count}/${total} dipilih)`;
-    }
-
+    if (checkAllEl) { checkAllEl.checked = count === total && total > 0; checkAllEl.indeterminate = count > 0 && count < total; }
+    if (selectLabelEl) { selectLabelEl.textContent = count === total ? 'Pilih Semua' : `Pilih Semua (${count}/${total} dipilih)`; }
     document.getElementById('cartSelectedLabel').textContent = `${count} item dipilih`;
-    document.getElementById('cartSubtotal').textContent  = formatRupiah(grandTotal);
-    document.getElementById('cartTotal').textContent     = formatRupiah(grandTotal);
-
-    const hintEl      = document.getElementById('cartHint');
+    document.getElementById('cartSubtotal').textContent = formatRupiah(grandTotal);
+    document.getElementById('cartTotal').textContent = formatRupiah(grandTotal);
+    const hintEl = document.getElementById('cartHint');
     const checkoutBtn = document.getElementById('btnCheckout');
-
-    if (count === 0) {
-        hintEl.textContent        = 'Centang produk yang ingin dibeli';
-        checkoutBtn.disabled      = true;
-        checkoutBtn.textContent   = 'Beli Sekarang';
-    } else if (count === 1) {
-        hintEl.textContent        = '';
-        checkoutBtn.disabled      = false;
-        checkoutBtn.textContent   = 'Beli Sekarang';
-    } else {
-        hintEl.textContent        = `${count} produk dipilih — pilih salah satu untuk checkout`;
-        checkoutBtn.disabled      = false;
-        checkoutBtn.textContent   = `Checkout (${count} produk)`;
-    }
+    if (count === 0) { hintEl.textContent = 'Centang produk yang ingin dibeli'; checkoutBtn.disabled = true; checkoutBtn.textContent = 'Beli Sekarang'; }
+    else if (count === 1) { hintEl.textContent = ''; checkoutBtn.disabled = false; checkoutBtn.textContent = 'Beli Sekarang'; }
+    else { hintEl.textContent = `${count} produk dipilih — pilih salah satu untuk checkout`; checkoutBtn.disabled = false; checkoutBtn.textContent = `Checkout (${count} produk)`; }
 }
-
 async function changeQty(id, newQty, stock) {
     if (newQty < 1 || newQty > stock) return;
-    try {
-        const data = await apiCall(`/api/cart/${id}`, 'PATCH', { quantity: newQty });
-        updateBadge(data.total_items);
-        renderCartItems(await apiCall('/api/cart'));
-    } catch (err) { showToast(err.message, 'error'); }
+    try { const data = await apiCall(`/api/cart/${id}`, 'PATCH', { quantity: newQty }); updateBadge(data.total_items); renderCartItems(await apiCall('/api/cart')); }
+    catch (err) { showToast(err.message, 'error'); }
 }
-
 async function removeItem(id) {
     const itemEl = document.getElementById(`cart-item-${id}`);
     if (itemEl) { itemEl.style.opacity = '0.4'; itemEl.style.transition = 'opacity 0.2s'; }
     selectedCartItems.delete(id);
-    try {
-        const data = await apiCall(`/api/cart/${id}`, 'DELETE');
-        updateBadge(data.total_items);
-        showToast('Produk dihapus dari keranjang.');
-        renderCartItems(await apiCall('/api/cart'));
-    } catch (err) {
-        showToast(err.message, 'error');
-        if (itemEl) itemEl.style.opacity = '1';
-    }
+    try { const data = await apiCall(`/api/cart/${id}`, 'DELETE'); updateBadge(data.total_items); showToast('Produk dihapus dari keranjang.'); renderCartItems(await apiCall('/api/cart')); }
+    catch (err) { showToast(err.message, 'error'); if (itemEl) itemEl.style.opacity = '1'; }
 }
-
 function handleCheckout() {
     if (!_lastCartData) return;
     const selectedItems = _lastCartData.filter(i => selectedCartItems.has(i.id));
-    if (selectedItems.length === 0) {
-        showToast('Pilih minimal 1 produk dulu.', 'error');
-        return;
-    }
-    if (selectedItems.length === 1) {
-        window.location.href = `/checkout/${selectedItems[0].product_id}`;
-        return;
-    }
+    if (selectedItems.length === 0) { showToast('Pilih minimal 1 produk dulu.', 'error'); return; }
+    if (selectedItems.length === 1) { window.location.href = `/checkout/${selectedItems[0].product_id}`; return; }
     showCheckoutPicker(selectedItems);
 }
-
 function showCheckoutPicker(items) {
     const existing = document.getElementById('checkoutPickerOverlay');
     if (existing) existing.remove();
-
     const itemsHtml = items.map(item => `
         <div class="checkout-picker-item" onclick="window.location.href='/checkout/${item.product_id}'">
-            <div class="checkout-picker-img">
-                ${item.image_url
-                    ? `<img src="${item.image_url}" alt="${escHtml(item.title)}">`
-                    : `<div class="checkout-picker-img-ph">${CART_PLACEHOLDER_SVG}</div>`}
-            </div>
-            <div class="checkout-picker-info">
-                <div class="checkout-picker-name">${escHtml(item.title)}</div>
-                <div class="checkout-picker-price">${formatRupiah(item.final_price)}</div>
-            </div>
-            <div class="checkout-picker-arrow">
-                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-                </svg>
-            </div>
+            <div class="checkout-picker-img">${item.image_url ? `<img src="${item.image_url}" alt="${escHtml(item.title)}">` : `<div class="checkout-picker-img-ph">${CART_PLACEHOLDER_SVG}</div>`}</div>
+            <div class="checkout-picker-info"><div class="checkout-picker-name">${escHtml(item.title)}</div><div class="checkout-picker-price">${formatRupiah(item.final_price)}</div></div>
+            <div class="checkout-picker-arrow"><svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg></div>
         </div>`).join('');
-
-    const pickerHtml = `
-    <div id="checkoutPickerOverlay" class="checkout-picker-overlay"
-         onclick="if(event.target===this){ document.getElementById('checkoutPickerOverlay').remove(); }">
+    document.body.insertAdjacentHTML('beforeend', `
+    <div id="checkoutPickerOverlay" class="checkout-picker-overlay" onclick="if(event.target===this){ document.getElementById('checkoutPickerOverlay').remove(); }">
         <div class="checkout-picker-sheet">
             <div class="checkout-picker-handle"></div>
             <div class="checkout-picker-title">Pilih Produk untuk Checkout</div>
             <div class="checkout-picker-sub">Tap produk yang ingin kamu beli sekarang</div>
             ${itemsHtml}
-            <button class="checkout-picker-cancel"
-                onclick="document.getElementById('checkoutPickerOverlay').remove()">
-                Batal
-            </button>
+            <button class="checkout-picker-cancel" onclick="document.getElementById('checkoutPickerOverlay').remove()">Batal</button>
         </div>
-    </div>`;
-
-    document.body.insertAdjacentHTML('beforeend', pickerHtml);
+    </div>`);
 }
 
 // ── Search ──
-const USERNAME             = '{{ $user->username }}';
-const searchBtn            = document.getElementById('searchBtn');
-const searchBarWrap        = document.getElementById('searchBarWrap');
-const searchBackBtn        = document.getElementById('searchBackBtn');
-const searchInput          = document.getElementById('searchInput');
-const searchClearBtn       = document.getElementById('searchClearBtn');
+const USERNAME = '{{ $user->username }}';
+const searchBtn = document.getElementById('searchBtn');
+const searchBarWrap = document.getElementById('searchBarWrap');
+const searchBackBtn = document.getElementById('searchBackBtn');
+const searchInput = document.getElementById('searchInput');
+const searchClearBtn = document.getElementById('searchClearBtn');
 const searchResultsOverlay = document.getElementById('searchResultsOverlay');
-const searchResultsPanel   = document.getElementById('searchResultsPanel');
+const searchResultsPanel = document.getElementById('searchResultsPanel');
 let searchDebounce = null;
 function openSearch()  { searchBarWrap.classList.add('open'); setTimeout(()=>searchInput.focus(),350); }
 function closeSearch() { searchBarWrap.classList.remove('open'); hideResults(); searchInput.value=''; searchClearBtn.classList.remove('visible'); }
@@ -1359,31 +1141,46 @@ async function doSearch(query) {
     } catch(err) { renderState('error','Gagal mencari',err?.message||'Terjadi kesalahan'); }
 }
 
-// ── Live preview via postMessage dari appearance editor ──
+// ── Live preview via postMessage ──
 (function () {
     function applyAppearance(p) {
         if (!p) return;
+
         if (p.bgImage) {
+            // Gambar upload custom
             document.body.style.backgroundImage    = `url('${p.bgImage}')`;
             document.body.style.backgroundSize     = 'cover';
             document.body.style.backgroundPosition = 'center';
             document.body.style.backgroundRepeat   = 'no-repeat';
-            document.body.style.backgroundColor   = '';
+            document.body.style.backgroundColor    = '';
             document.body.style.backgroundAttachment = 'fixed';
         } else if (p.bgCss) {
             const isSolid = /^#[0-9a-fA-F]{3,8}$|^rgb/.test(p.bgCss.trim());
             if (isSolid) {
+                // Warna solid
                 document.body.style.backgroundImage = 'none';
                 document.body.style.backgroundColor = p.bgCss;
+                document.body.style.backgroundSize  = 'auto';
+            } else if (p.bgColor) {
+                // Pattern wallpaper: bgColor = warna dasar, bgCss = motif di atasnya
+                document.body.style.backgroundColor    = p.bgColor;
+                document.body.style.backgroundImage    = p.bgCss;
+                document.body.style.backgroundSize     = p.bgSize ?? 'auto';
+                document.body.style.backgroundRepeat   = 'repeat';
+                document.body.style.backgroundPosition = 'center';
+                document.body.style.backgroundAttachment = 'fixed';
             } else {
-                document.body.style.backgroundImage = p.bgCss;
-                document.body.style.backgroundColor = p.bgColor ?? '';
-                document.body.style.backgroundSize  = p.bgSize  ?? 'cover';
+                // Gradient atau wallpaper tanpa bgColor (gradient wg_ dll)
+                document.body.style.backgroundColor    = '';
+                document.body.style.backgroundImage    = 'none';
+                document.body.style.background         = p.bgCss;
+                document.body.style.backgroundPosition = 'center';
+                document.body.style.backgroundRepeat   = 'no-repeat';
+                document.body.style.backgroundSize     = 'cover';
+                document.body.style.backgroundAttachment = 'fixed';
             }
-            document.body.style.backgroundPosition   = 'center';
-            document.body.style.backgroundRepeat     = 'no-repeat';
-            document.body.style.backgroundAttachment = 'fixed';
         }
+
         if (p.fontFamily) {
             document.body.style.fontFamily = `'${p.fontFamily}', system-ui, -apple-system, sans-serif`;
             injectFont(p.fontFamily);
