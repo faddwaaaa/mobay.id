@@ -31,7 +31,7 @@ class UserObserver
     public function updated(User $user): void
     {
         // Jika subscription_plan berubah, update storage limit
-        if ($user->isDirty('subscription_plan')) {
+        if ($user->wasChanged('subscription_plan')) {
             StorageService::updateStorageLimit($user);
         }
     }

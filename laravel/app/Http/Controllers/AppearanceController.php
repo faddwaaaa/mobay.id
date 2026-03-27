@@ -28,7 +28,9 @@ class AppearanceController extends Controller
     public function index()
     {
         [$user, $profile] = $this->getOrCreateProfile();
-        return view('dashboard.appearance.index', compact('user', 'profile'));
+        $appearanceAccess = $user->appearanceAccess();
+
+        return view('dashboard.appearance.index', compact('user', 'profile', 'appearanceAccess'));
     }
 
     public function preview()
@@ -42,6 +44,7 @@ class AppearanceController extends Controller
     public function save(Request $request)
     {
         [$user, $profile] = $this->getOrCreateProfile();
+        $appearanceAccess = $user->appearanceAccess();
 
         $validated = $request->validate([
             // Profile Card
@@ -66,6 +69,23 @@ class AppearanceController extends Controller
             // Block Layout — highlight sudah ditambahkan
             'block_layout'          => 'nullable|in:default,grid,compact,highlight',
         ]);
+
+        if (! in_array($validated['bg_type'] ?? ($profile->bg_type ?? 'color'), $appearanceAccess['background_types'], true)) {
+            $validated['bg_type'] = 'color';
+            $validated['bg_image'] = null;
+        }
+
+        if (! in_array($validated['btn_style'] ?? ($profile->btn_style ?? 'fill'), $appearanceAccess['button_styles'], true)) {
+            $validated['btn_style'] = 'fill';
+        }
+
+        if (! in_array($validated['font_family'] ?? ($profile->font_family ?? 'Plus Jakarta Sans'), $appearanceAccess['fonts'], true)) {
+            $validated['font_family'] = 'Plus Jakarta Sans';
+        }
+
+        if (! in_array($validated['block_layout'] ?? ($profile->block_layout ?? 'default'), $appearanceAccess['block_layouts'], true)) {
+            $validated['block_layout'] = 'default';
+        }
 
         $profile->update($validated);
         $fresh = $profile->fresh();
@@ -96,6 +116,13 @@ class AppearanceController extends Controller
 
     public function uploadBgImage(Request $request)
     {
+        if (! $request->user()?->isPro()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Background gambar hanya tersedia untuk akun Pro.',
+            ], 403);
+        }
+
         $request->validate(['image' => 'required|image|mimes:jpeg,png,jpg,webp|max:2048']);
 
         [$user, $profile] = $this->getOrCreateProfile();

@@ -162,6 +162,22 @@ class DashboardController extends Controller
             'subscription_plan' => $isPro ? 'free' : 'pro',
         ])->save();
 
+        if ($isPro) {
+            $profile = $user->fresh()->userProfile;
+
+            if ($profile) {
+                $freeAppearance = $user->fresh()->appearanceAccess();
+
+                $profile->update([
+                    'bg_type' => in_array($profile->bg_type ?? 'color', $freeAppearance['background_types'], true) ? $profile->bg_type : 'color',
+                    'bg_image' => in_array($profile->bg_type ?? 'color', $freeAppearance['background_types'], true) ? $profile->bg_image : null,
+                    'btn_style' => in_array($profile->btn_style ?? 'fill', $freeAppearance['button_styles'], true) ? $profile->btn_style : 'fill',
+                    'font_family' => in_array($profile->font_family ?? 'Plus Jakarta Sans', $freeAppearance['fonts'], true) ? $profile->font_family : 'Plus Jakarta Sans',
+                    'block_layout' => in_array($profile->block_layout ?? 'default', $freeAppearance['block_layouts'], true) ? $profile->block_layout : 'default',
+                ]);
+            }
+        }
+
         return redirect()
             ->route('dashboard')
             ->with(

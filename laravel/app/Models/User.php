@@ -20,6 +20,27 @@ class User extends Authenticatable
 {
     use HasFactory, Notifiable;
 
+    public const FREE_APPEARANCE_ACCESS = [
+        'background_types' => ['color', 'gradient'],
+        'button_styles' => ['fill', 'outline', 'soft_shadow', 'hard_shadow'],
+        'fonts' => ['Plus Jakarta Sans', 'Inter', 'Poppins', 'Lato'],
+        'block_layouts' => ['default', 'compact', 'grid'],
+        'max_social_links' => 5,
+        'analytics_basic' => true,
+    ];
+
+    public const PRO_APPEARANCE_ACCESS = [
+        'background_types' => ['color', 'gradient', 'image'],
+        'button_styles' => ['fill', 'outline', 'hard_shadow', 'soft_shadow', 'ghost', 'minimal', 'neon', 'glass'],
+        'fonts' => ['Plus Jakarta Sans', 'Inter', 'Poppins', 'Lato', 'Merriweather', 'Space Grotesk', 'Nunito', 'DM Sans', 'Playfair Display', 'Roboto Mono', 'Dancing Script'],
+        'block_layouts' => ['default', 'grid', 'compact', 'highlight', 'masonry', 'carousel'],
+        'max_social_links' => 15,
+        'analytics_advanced' => true,
+        'custom_css' => true,
+        'animation_effects' => true,
+        'priority_support' => true,
+    ];
+
     protected $fillable = [
         'name',
         'username',
@@ -52,6 +73,13 @@ class User extends Authenticatable
     public function isPro(): bool
     {
         return in_array((string) $this->subscription_plan, ['pro', 'premium'], true);
+    }
+
+    public function appearanceAccess(): array
+    {
+        return $this->isPro()
+            ? self::PRO_APPEARANCE_ACCESS
+            : self::FREE_APPEARANCE_ACCESS;
     }
 
     /**

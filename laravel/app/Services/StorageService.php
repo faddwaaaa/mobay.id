@@ -35,7 +35,12 @@ class StorageService
     public static function updateStorageLimit(User $user): void
     {
         $newLimit = self::getStorageLimit($user);
-        $user->update(['storage_limit' => $newLimit]);
+
+        if ((int) $user->storage_limit === $newLimit) {
+            return;
+        }
+
+        $user->forceFill(['storage_limit' => $newLimit])->saveQuietly();
     }
 
     /**
