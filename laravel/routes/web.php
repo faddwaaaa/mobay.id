@@ -113,6 +113,9 @@ Route::prefix('api')->group(function () {
     Route::post('/ongkir/cost', [RajaOngkirController::class, 'cost']);
     Route::post('/callback/midtrans', [CallbackController::class, 'handleMidtransCallback'])->name('midtrans.callback');
 
+    // ===== STORAGE API =====
+    Route::middleware('auth')->get('/storage/info', [DashboardController::class, 'getStorageInfo'])->name('api.storage.info');
+
     Route::post('/callback/midtrans', [CallbackController::class, 'handleMidtransCallback'])->name('midtrans.callback');
 
     Route::post('/topup', [TransactionController::class, 'createTopUp']);
@@ -258,9 +261,12 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/dashboard/chart-data', [DashboardController::class, 'chartData']);
+    Route::post('/dashboard/subscription/trial-toggle', [DashboardController::class, 'toggleProTrial'])
+        ->name('dashboard.subscription.trial-toggle');
 
     Route::prefix('analitik')->name('analitik.')->group(function () {
         Route::get('/', [AnalyticsController::class, 'index'])->name('index');
+        Route::get('/export', [AnalyticsController::class, 'export'])->name('export');
     });
 
     Route::get('/premium', function () { return view('premium.index'); })->name('premium.index');

@@ -275,6 +275,42 @@
 .ap-toast.error   { background: #dc2626; }
 
 .ap-divider { height: 1px; background: #f1f5f9; margin: 16px 0; }
+.plan-note {
+    display: flex; align-items: flex-start; justify-content: space-between; gap: 14px;
+    padding: 14px 16px; margin-bottom: 18px; border-radius: 14px; border: 1px solid #e5e7eb; background: #ffffff;
+}
+.plan-note-copy { min-width: 0; }
+.plan-note-title { font-size: 13px; font-weight: 700; color: #111827; margin: 0 0 4px; }
+.plan-note-text { font-size: 12px; color: #6b7280; margin: 0; line-height: 1.5; }
+.plan-badge {
+    display: inline-flex; align-items: center; gap: 6px; padding: 7px 10px; border-radius: 999px;
+    font-size: 11px; font-weight: 700; white-space: nowrap;
+}
+.plan-badge.free { background: #f8fafc; color: #475569; border: 1px solid #e2e8f0; }
+.plan-badge.pro { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
+.pro-lock {
+    display: inline-flex; align-items: center; gap: 5px; padding: 4px 8px; border-radius: 999px;
+    background: #fff7ed; color: #c2410c; border: 1px solid #fed7aa; font-size: 10px; font-weight: 700;
+}
+.subsec-head {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px; flex-wrap: wrap;
+}
+.subsec-head p { margin: 0 !important; }
+.pro-grid-note { margin-top: 8px; font-size: 11.5px; color: #9ca3af; }
+.is-locked {
+    position: relative;
+    opacity: 0.72;
+}
+.is-locked::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+}
+.lock-overlay {
+    position: absolute; top: 8px; right: 8px; z-index: 2;
+    display: inline-flex; align-items: center; gap: 4px; padding: 4px 7px;
+    border-radius: 999px; background: rgba(15, 23, 42, 0.78); color: #fff; font-size: 10px; font-weight: 700;
+}
 
 @media (max-width: 1080px) {
     body { overflow-x: hidden; }
@@ -300,6 +336,14 @@
 @section('content')
 <div class="ap-toast" id="apToast"></div>
 
+@php
+    $appearanceAccess = $appearanceAccess ?? ($user->appearanceAccess() ?? \App\Models\User::FREE_APPEARANCE_ACCESS);
+    $isProUser = method_exists($user, 'isPro') ? $user->isPro() : in_array((string) data_get($user, 'subscription_plan'), ['pro', 'premium'], true);
+    $freeButtonStyles = \App\Models\User::FREE_APPEARANCE_ACCESS['button_styles'];
+    $freeFonts = \App\Models\User::FREE_APPEARANCE_ACCESS['fonts'];
+    $freeLayouts = \App\Models\User::FREE_APPEARANCE_ACCESS['block_layouts'];
+@endphp
+
 <div class="ap-layout">
 
     {{-- ═══════════ EDITOR ═══════════ --}}
@@ -314,6 +358,17 @@
                     <p style="margin:0;font-size:14px;color:#797979;">Kustomisasi tampilan halaman profil publik kamu</p>
                 </div>
             </div>
+        </div>
+
+        <div class="plan-note">
+            <div class="plan-note-copy">
+                <p class="plan-note-title">Free sudah cukup powerful untuk memulai bisnis!</p>
+                <p class="plan-note-text">Dapatkan background gradient yang cantik, 4 gaya tombol profesional, 4 font premium, dan 3 layout produk responsif. Saat bisnismu berkembang dan butuh lebih banyak pelanggan, upgrade ke Pro untuk fitur eksklusif seperti background gambar custom, efek neon/glass, gaya sorotan produk, dan 7+ font tambahan yang membuat brandmu terlihat lebih premium.</p>
+            </div>
+            <span class="plan-badge {{ $isProUser ? 'pro' : 'free' }}">
+                <i class="fas {{ $isProUser ? 'fa-crown' : 'fa-rocket' }}"></i>
+                {{ $isProUser ? 'Mode Pro aktif' : 'Mode Free aktif' }}
+            </span>
         </div>
 
         {{-- ══════════ 1. KARTU PROFIL ══════════ --}}
@@ -417,7 +472,7 @@
                 <button class="bg-tab {{ ($profile->bg_type ?? 'color') === 'gradient' ? 'active' : '' }}" data-bg="gradient" onclick="switchBgTab(this,'gradient')">
                     <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4l16 16M4 20h16V4"/></svg> Gradien
                 </button>
-                <button class="bg-tab {{ ($profile->bg_type ?? 'color') === 'image' ? 'active' : '' }}" data-bg="image" onclick="switchBgTab(this,'image')">
+                <button class="bg-tab {{ ($profile->bg_type ?? 'color') === 'image' ? 'active' : '' }}" data-bg="image" onclick="{{ in_array('image', $appearanceAccess['background_types'], true) ? "switchBgTab(this,'image')" : "showProFeatureToast('Background gambar & wallpaper')" }}">
                     <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg> Gambar
                 </button>
             </div>
@@ -477,12 +532,21 @@
 
             {{-- Panel: Gambar --}}
             <div class="bg-panel {{ ($profile->bg_type ?? 'color') === 'image' ? 'active' : '' }}" id="panel-image">
-                <div class="bg-upload" onclick="document.getElementById('bgImgInput').click()">
+                <div class="subsec-head">
+                    <p style="font-size:12.5px;font-weight:700;color:#374151;">Background Gambar</p>
+                    @unless(in_array('image', $appearanceAccess['background_types'], true))
+                        <span class="pro-lock"><i class="fas fa-lock"></i> Pro</span>
+                    @endunless
+                </div>
+                <div class="bg-upload {{ in_array('image', $appearanceAccess['background_types'], true) ? '' : 'is-locked' }}" onclick="{{ in_array('image', $appearanceAccess['background_types'], true) ? "document.getElementById('bgImgInput').click()" : "showProFeatureToast('Background gambar & wallpaper')" }}">
                     <div class="bg-upload-icon">
                         <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                     </div>
                     <p>Unggah gambar sendiri</p>
                     <span>PNG, JPG, WEBP — maks 2MB</span>
+                    @unless(in_array('image', $appearanceAccess['background_types'], true))
+                        <span class="lock-overlay"><i class="fas fa-crown"></i> Pro</span>
+                    @endunless
                     <input type="file" id="bgImgInput" accept="image/*" style="display:none" onchange="handleBgImg(this)">
                 </div>
                 @if($profile->bg_image && !str_starts_with($profile->bg_image ?? '', 'wg_'))
@@ -501,7 +565,7 @@
                 </div>
                 @endif
 
-                <button class="btn-wg-toggle" id="btnWgToggle" onclick="toggleWgGallery()">
+                <button class="btn-wg-toggle {{ in_array('image', $appearanceAccess['background_types'], true) ? '' : 'is-locked' }}" id="btnWgToggle" onclick="{{ in_array('image', $appearanceAccess['background_types'], true) ? 'toggleWgGallery()' : "showProFeatureToast('Wallpaper gallery Mobay')" }}">
                     <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4-4 4 4 4-8"/></svg>
                     <span id="btnWgLabel">✦ Lihat Galeri Wallpaper Mobay</span>
                     <svg class="wg-chevron" width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
@@ -537,22 +601,30 @@
                 </div>
             </div>
 
-            <p style="font-size:12.5px;font-weight:700;color:#374151;margin-bottom:10px;">Gaya Tombol</p>
+            <div class="subsec-head">
+                <p style="font-size:12.5px;font-weight:700;color:#374151;">Gaya Tombol</p>
+                <span class="pro-grid-note">Free: 4 gaya profesional untuk kebutuhan dasar. Pro: Tambah efek neon, kaca, dan minimalis yang tetap mengikuti warna tombol pilihanmu.</span>
+            </div>
             @php
             $btnStyles = [
-                ['id'=>'fill',        'name'=>'Warna Penuh',   'css'=>'background:#3b82f6;color:#fff;border:2px solid #3b82f6;'],
-                ['id'=>'outline',     'name'=>'Garis Luar',    'css'=>'background:transparent;color:#3b82f6;border:2px solid #3b82f6;'],
-                ['id'=>'hard_shadow', 'name'=>'Bayangan Tebal','css'=>'background:#fff;color:#111;border:2px solid #111;box-shadow:3px 3px 0 #111;'],
-                ['id'=>'soft_shadow', 'name'=>'Bayangan Tipis','css'=>'background:#fff;color:#374151;border:1.5px solid #e5e7eb;box-shadow:0 4px 12px rgba(0,0,0,0.12);'],
-                ['id'=>'ghost',       'name'=>'Tembus',        'css'=>'background:rgba(255,255,255,0.12);color:#fff;border:1.5px solid rgba(255,255,255,0.3);backdrop-filter:blur(8px);'],
-                ['id'=>'minimal',     'name'=>'Minimalis',     'css'=>'background:transparent;color:#111;border:none;border-bottom:2px solid #111;border-radius:0!important;'],
+                ['id'=>'fill',        'name'=>'Warna Penuh',   'css'=>'background:#3b82f6;color:#fff;border:2px solid #3b82f6;', 'pro'=>false],
+                ['id'=>'outline',     'name'=>'Garis Luar',    'css'=>'background:transparent;color:#3b82f6;border:2px solid #3b82f6;', 'pro'=>false],
+                ['id'=>'hard_shadow', 'name'=>'Bayangan Tebal','css'=>'background:#fff;color:#111;border:2px solid #111;box-shadow:3px 3px 0 #111;', 'pro'=>false],
+                ['id'=>'soft_shadow', 'name'=>'Bayangan Tipis','css'=>'background:#fff;color:#374151;border:1.5px solid #e5e7eb;box-shadow:0 4px 12px rgba(0,0,0,0.12);', 'pro'=>false],
+                ['id'=>'ghost',       'name'=>'Tembus',        'css'=>'background:rgba(255,255,255,0.12);color:#fff;border:1.5px solid rgba(255,255,255,0.3);backdrop-filter:blur(8px);', 'pro'=>true],
+                ['id'=>'minimal',     'name'=>'Minimalis',     'css'=>'background:transparent;color:#111;border:none;border-bottom:2px solid #111;border-radius:0!important;', 'pro'=>true],
+                ['id'=>'neon',        'name'=>'Neon Glow',     'css'=>'background:#111827;color:#ffffff;border:2px solid #38bdf8;box-shadow:0 0 20px rgba(56,189,248,0.45);', 'pro'=>true],
+                ['id'=>'glass',       'name'=>'Kaca',          'css'=>'background:rgba(59,130,246,0.12);color:#1e3a8a;border:1px solid rgba(59,130,246,0.28);backdrop-filter:blur(6px);', 'pro'=>true],
             ];
             $curBtnStyle = $profile->btn_style ?? 'fill';
             @endphp
             <div class="btn-style-grid">
                 @foreach($btnStyles as $bs)
-                <div class="btn-style-item {{ $curBtnStyle === $bs['id'] ? 'active' : '' }}"
-                     data-bstyle="{{ $bs['id'] }}" onclick="selectBtnStyle(this,'{{ $bs['id'] }}')">
+                <div class="btn-style-item {{ $curBtnStyle === $bs['id'] ? 'active' : '' }} {{ ($bs['pro'] && !in_array($bs['id'], $appearanceAccess['button_styles'], true)) ? 'is-locked' : '' }}"
+                     data-bstyle="{{ $bs['id'] }}" onclick="{{ in_array($bs['id'], $appearanceAccess['button_styles'], true) ? "selectBtnStyle(this,'{$bs['id']}')" : "showProFeatureToast('Gaya tombol {$bs['name']}')" }}">
+                    @if($bs['pro'] && !in_array($bs['id'], $appearanceAccess['button_styles'], true))
+                        <span class="lock-overlay"><i class="fas fa-crown"></i> Pro</span>
+                    @endif
                     <div class="btn-style-preview" style="{{ $bs['css'] }}">Link Kamu</div>
                     <div class="btn-style-name">{{ $bs['name'] }}</div>
                 </div>
@@ -603,6 +675,32 @@
                     </div>
                 </div>
             </div>
+
+            <div id="neonControls" style="display:none; margin-top:14px;">
+                <div class="ap-divider"></div>
+                <p style="font-size:12.5px;font-weight:700;color:#374151;margin-bottom:10px;">Pengaturan Neon Glow</p>
+                <div class="color-row-2">
+                    <div class="color-field">
+                        <label>Warna Glow</label>
+                        <div class="color-field-inner">
+                            <div class="color-dot" id="btnGlowColorDot" style="background:{{ $profile->btn_glow_color ?? '#38bdf8' }}">
+                                <input type="color" id="btnGlowColorPicker" value="{{ $profile->btn_glow_color ?? '#38bdf8' }}" oninput="onBtnEffectColorIn(this.value,'glow')">
+                            </div>
+                            <input type="text" class="color-field-input" id="btnGlowColorText" value="{{ $profile->btn_glow_color ?? '#38bdf8' }}" oninput="onBtnEffectColorTextIn(this.value,'glow')" placeholder="#38bdf8">
+                        </div>
+                    </div>
+                    <div class="color-field">
+                        <label>Background Neon</label>
+                        <div class="color-field-inner">
+                            <div class="color-dot" id="btnGlowBgDot" style="background:{{ $profile->btn_glow_bg ?? '#111827' }}">
+                                <input type="color" id="btnGlowBgPicker" value="{{ $profile->btn_glow_bg ?? '#111827' }}" oninput="onBtnEffectColorIn(this.value,'glow_bg')">
+                            </div>
+                            <input type="text" class="color-field-input" id="btnGlowBgText" value="{{ $profile->btn_glow_bg ?? '#111827' }}" oninput="onBtnEffectColorTextIn(this.value,'glow_bg')" placeholder="#111827">
+                        </div>
+                    </div>
+                </div>
+                <p style="font-size:11px;color:#94a3b8;margin:8px 0 0;">Atur warna glow dan latar khusus untuk gaya Neon Glow.</p>
+            </div>
         </div>
 
         {{-- ══════════ 4. FONT ══════════ --}}
@@ -618,21 +716,28 @@
             </div>
             @php
             $fonts = [
-                ['id'=>'Plus Jakarta Sans','sample'=>'Aa','family'=>"'Plus Jakarta Sans', sans-serif"],
-                ['id'=>'Inter',            'sample'=>'Aa','family'=>"'Inter', sans-serif"],
-                ['id'=>'Poppins',          'sample'=>'Aa','family'=>"'Poppins', sans-serif"],
-                ['id'=>'Lato',             'sample'=>'Aa','family'=>"'Lato', sans-serif"],
-                ['id'=>'Merriweather',     'sample'=>'Aa','family'=>"'Merriweather', serif"],
-                ['id'=>'Space Grotesk',    'sample'=>'Aa','family'=>"'Space Grotesk', sans-serif"],
-                ['id'=>'Nunito',           'sample'=>'Aa','family'=>"'Nunito', sans-serif"],
-                ['id'=>'DM Sans',          'sample'=>'Aa','family'=>"'DM Sans', sans-serif"],
+                ['id'=>'Plus Jakarta Sans','sample'=>'Aa','family'=>"'Plus Jakarta Sans', sans-serif", 'pro'=>false],
+                ['id'=>'Inter',            'sample'=>'Aa','family'=>"'Inter', sans-serif", 'pro'=>false],
+                ['id'=>'Poppins',          'sample'=>'Aa','family'=>"'Poppins', sans-serif", 'pro'=>false],
+                ['id'=>'Lato',             'sample'=>'Aa','family'=>"'Lato', sans-serif", 'pro'=>false],
+                ['id'=>'Merriweather',     'sample'=>'Aa','family'=>"'Merriweather', serif", 'pro'=>true],
+                ['id'=>'Space Grotesk',    'sample'=>'Aa','family'=>"'Space Grotesk', sans-serif", 'pro'=>true],
+                ['id'=>'Nunito',           'sample'=>'Aa','family'=>"'Nunito', sans-serif", 'pro'=>true],
+                ['id'=>'DM Sans',          'sample'=>'Aa','family'=>"'DM Sans', sans-serif", 'pro'=>true],
+                ['id'=>'Playfair Display', 'sample'=>'Aa','family'=>"'Playfair Display', serif", 'pro'=>true],
+                ['id'=>'Roboto Mono',      'sample'=>'Aa','family'=>"'Roboto Mono', monospace", 'pro'=>true],
+                ['id'=>'Dancing Script',   'sample'=>'Aa','family'=>"'Dancing Script', cursive", 'pro'=>true],
             ];
             $curFont = $profile->font_family ?? 'Plus Jakarta Sans';
             @endphp
+            <p class="pro-grid-note" style="margin:0 0 12px;">Free sudah dapat 4 font profesional yang siap pakai. Font Pro menambah 7+ opsi eksklusif seperti serif elegan, monospace modern, dan cursive yang stylish untuk brand yang lebih sophisticated.</p>
             <div class="font-grid">
                 @foreach($fonts as $f)
-                <div class="font-item {{ $curFont === $f['id'] ? 'active' : '' }}"
-                     data-font="{{ $f['id'] }}" onclick="selectFont(this,'{{ $f['id'] }}')">
+                <div class="font-item {{ $curFont === $f['id'] ? 'active' : '' }} {{ ($f['pro'] && !in_array($f['id'], $appearanceAccess['fonts'], true)) ? 'is-locked' : '' }}"
+                     data-font="{{ $f['id'] }}" onclick="{{ in_array($f['id'], $appearanceAccess['fonts'], true) ? "selectFont(this,'{$f['id']}')" : "showProFeatureToast('Font {$f['id']}')" }}">
+                    @if($f['pro'] && !in_array($f['id'], $appearanceAccess['fonts'], true))
+                        <span class="lock-overlay"><i class="fas fa-crown"></i> Pro</span>
+                    @endif
                     <div class="font-sample" style="font-family: {{ $f['family'] }}">{{ $f['sample'] }}</div>
                     <div class="font-name">{{ $f['id'] }}</div>
                 </div>
@@ -640,7 +745,54 @@
             </div>
         </div>
 
-        {{-- ══════════ 5. TAMPILAN BLOK ══════════ --}}
+        {{-- ══════════ UPGRADE PROMPT (FREE USERS ONLY) ══════════ --}}
+        @unless($isProUser)
+        <div class="sec-card" style="background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); border: 2px solid #0ea5e9;">
+            <div class="sec-header">
+                <div class="sec-icon" style="background:#eff6ff; color:#0ea5e9;">
+                    <svg width="17" height="17" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                </div>
+                <div>
+                    <p class="sec-title" style="color:#0ea5e9;">Upgrade ke Pro untuk Lebih Banyak Fitur Premium!</p>
+                    <p class="sec-desc">Saat bisnismu makin sukses, tampilan yang lebih menarik akan membantu menarik lebih banyak pelanggan.</p>
+                </div>
+            </div>
+
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-top:16px;">
+                <div style="background:#fff;padding:16px;border-radius:12px;border:1px solid #e0f2fe;">
+                    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+                        <i class="fas fa-palette" style="color:#0ea5e9;font-size:16px;"></i>
+                        <span style="font-weight:700;color:#0c4a6e;font-size:14px;">Background Gambar</span>
+                    </div>
+                    <p style="font-size:12px;color:#64748b;margin:0;">Upload gambar custom + galeri wallpaper premium untuk brand yang lebih personal.</p>
+                </div>
+
+                <div style="background:#fff;padding:16px;border-radius:12px;border:1px solid #e0f2fe;">
+                    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+                        <i class="fas fa-magic" style="color:#0ea5e9;font-size:16px;"></i>
+                        <span style="font-weight:700;color:#0c4a6e;font-size:14px;">Efek Spesial</span>
+                    </div>
+                    <p style="font-size:12px;color:#64748b;margin:0;">Tombol neon glow dan efek kaca yang ikut menyesuaikan warna tombol pilihanmu.</p>
+                </div>
+
+                <div style="background:#fff;padding:16px;border-radius:12px;border:1px solid #e0f2fe;">
+                    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+                        <i class="fas fa-th-large" style="color:#0ea5e9;font-size:16px;"></i>
+                        <span style="font-weight:700;color:#0c4a6e;font-size:14px;">Tampilan Premium</span>
+                    </div>
+                    <p style="font-size:12px;color:#64748b;margin:0;">Sorotan produk, background gambar, dan efek visual tambahan untuk tampilan toko yang lebih menonjol.</p>
+                </div>
+            </div>
+
+            <div style="text-align:center;margin-top:20px;">
+                <button style="background:#0ea5e9;color:#fff;border:none;padding:12px 24px;border-radius:8px;font-weight:700;font-size:14px;cursor:pointer;display:inline-flex;align-items:center;gap:8px;">
+                    <i class="fas fa-crown"></i>
+                    Upgrade ke Pro Sekarang
+                </button>
+                <p style="font-size:11px;color:#64748b;margin:8px 0 0;">Harga terjangkau untuk hasil maksimal</p>
+            </div>
+        </div>
+        @endunless
         <div class="sec-card">
             <div class="sec-header">
                 <div class="sec-icon" style="background:#f5f3ff; color:#7c3aed;">
@@ -654,38 +806,49 @@
 
             <div class="bl-grid">
                 @php
-                $currentLayout = $profile->block_layout ?? 'default';
+                $allowedLayouts = ['default', 'grid', 'compact', 'highlight'];
+                $currentLayout = in_array($profile->block_layout ?? 'default', $allowedLayouts, true)
+                    ? ($profile->block_layout ?? 'default')
+                    : 'default';
                 $layouts = [
                     [
                         'id'   => 'default',
-                        'name' => 'Default',
+                        'name' => 'Standar',
                         'desc' => 'Satu kolom, foto besar di atas',
+                        'pro'  => false,
                         'svg'  => '<rect x="4" y="3" width="16" height="11" rx="1.5" fill="currentColor" opacity=".28"/><rect x="4" y="16" width="10" height="2" rx="1" fill="currentColor" opacity=".35"/><rect x="4" y="20" width="7" height="1.5" rx=".75" fill="currentColor" opacity=".2"/>',
                     ],
                     [
                         'id'   => 'grid',
-                        'name' => 'Grid',
+                        'name' => 'Kisi',
                         'desc' => '2 kolom berdampingan',
+                        'pro'  => false,
                         'svg'  => '<rect x="3" y="4" width="8" height="8" rx="1.5" fill="currentColor" opacity=".25"/><rect x="13" y="4" width="8" height="8" rx="1.5" fill="currentColor" opacity=".25"/><rect x="3" y="14" width="8" height="8" rx="1.5" fill="currentColor" opacity=".18"/><rect x="13" y="14" width="8" height="8" rx="1.5" fill="currentColor" opacity=".18"/>',
                     ],
                     [
                         'id'   => 'compact',
-                        'name' => 'Compact',
+                        'name' => 'Ringkas',
                         'desc' => 'Foto kecil kiri, nama & harga kanan',
+                        'pro'  => false,
                         'svg'  => '<rect x="3" y="4" width="6" height="6" rx="1" fill="currentColor" opacity=".3"/><rect x="11" y="5" width="8" height="2" rx="1" fill="currentColor" opacity=".35"/><rect x="17" y="4" width="4" height="6" rx="1" fill="currentColor" opacity=".2"/><rect x="3" y="12" width="6" height="6" rx="1" fill="currentColor" opacity=".25"/><rect x="11" y="13" width="8" height="2" rx="1" fill="currentColor" opacity=".3"/><rect x="17" y="12" width="4" height="6" rx="1" fill="currentColor" opacity=".18"/>',
                     ],
                     [
                         'id'   => 'highlight',
-                        'name' => 'Highlight',
+                        'name' => 'Sorotan',
                         'desc' => 'Kartu dengan aksen warna & bayangan',
+                        'pro'  => true,
                         'svg'  => '<rect x="3" y="3" width="18" height="8" rx="2" fill="currentColor" opacity=".22"/><rect x="3" y="3" width="4" height="8" rx="1.5" fill="currentColor" opacity=".4"/><rect x="9" y="4.5" width="9" height="2" rx="1" fill="currentColor" opacity=".38"/><rect x="9" y="8" width="6" height="1.5" rx=".75" fill="currentColor" opacity=".22"/><rect x="3" y="13" width="18" height="8" rx="2" fill="currentColor" opacity=".18"/><rect x="3" y="13" width="4" height="8" rx="1.5" fill="currentColor" opacity=".32"/><rect x="9" y="14.5" width="9" height="2" rx="1" fill="currentColor" opacity=".3"/><rect x="9" y="18" width="6" height="1.5" rx=".75" fill="currentColor" opacity=".18"/>',
                     ],
                 ];
                 @endphp
+                <p class="pro-grid-note" style="grid-column:1 / -1; margin:0 0 2px;">Tersedia 3 layout produk utama, ditambah layout sorotan untuk pengguna Pro.</p>
                 @foreach($layouts as $l)
-                <div class="bl-item {{ $currentLayout === $l['id'] ? 'active' : '' }}"
+                <div class="bl-item {{ $currentLayout === $l['id'] ? 'active' : '' }} {{ ($l['pro'] && !in_array($l['id'], $appearanceAccess['block_layouts'], true)) ? 'is-locked' : '' }}"
                      data-layout="{{ $l['id'] }}"
-                     onclick="selectBlockLayout(this, '{{ $l['id'] }}')">
+                     onclick="{{ in_array($l['id'], $appearanceAccess['block_layouts'], true) ? "selectBlockLayout(this, '{$l['id']}')" : "showProFeatureToast('Layout {$l['name']}')" }}">
+                    @if($l['pro'] && !in_array($l['id'], $appearanceAccess['block_layouts'], true))
+                        <span class="lock-overlay"><i class="fas fa-crown"></i> Pro</span>
+                    @endif
                     <div class="bl-preview">
                         <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                             {!! $l['svg'] !!}
@@ -701,7 +864,7 @@
         {{-- ══════════ BILAH SIMPAN ══════════ --}}
         <div class="ap-save-bar">
             <div class="save-bar-actions" style="display:flex;gap:9px;">
-                <button class="btn-reset-def" onclick="resetAppearance()">Reset Default</button>
+                <button class="btn-reset-def" onclick="resetAppearance()">Reset Awal</button>
                 <button class="btn-save-ap" id="btnSave" onclick="saveAppearance()">
                     <div class="spin"></div>
                     <span class="save-lbl">Simpan Tampilan</span>
@@ -753,6 +916,8 @@
 <script>
 const CSRF = document.querySelector('meta[name="csrf-token"]')?.content;
 const profileData = @json($profile);
+const IS_PRO_USER = @json($isProUser);
+const APPEARANCE_ACCESS = @json($appearanceAccess);
 
 let st = {
     banner_image:          profileData.banner_image          ?? null,
@@ -775,6 +940,8 @@ let st = {
     btn_shape:             profileData.btn_shape             ?? 'rounded',
     btn_color:             profileData.btn_color             ?? '#3b82f6',
     btn_text_color:        profileData.btn_text_color        ?? '#ffffff',
+    btn_glow_color:        profileData.btn_glow_color        ?? '#38bdf8',
+    btn_glow_bg:           profileData.btn_glow_bg           ?? '#111827',
     font_family:           profileData.font_family           ?? 'Plus Jakarta Sans',
     block_layout:          profileData.block_layout          ?? 'default',
 };
@@ -783,6 +950,9 @@ let isDirty = false;
 let toastTmr;
 
 function markDirty() { isDirty = true; updatePreview(); }
+function showProFeatureToast(feature = 'Fitur ini') {
+    showToast(`${feature} tersedia di Pro. Free tetap dapat fitur dasar yang penting.`, 'default');
+}
 
     const WALLPAPERS = [
         { id:'wg_aurora',   cat:'gradient', label:'Aurora',       cssValue:'linear-gradient(135deg,#667eea 0%,#764ba2 50%,#f093fb 100%)' },
@@ -1015,6 +1185,10 @@ function escHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;'
 renderSlChips(); renderSlInputs();
 
 function switchBgTab(btn, type) {
+    if (!APPEARANCE_ACCESS.background_types.includes(type)) {
+        showProFeatureToast(type === 'image' ? 'Background gambar & wallpaper' : 'Fitur ini');
+        return;
+    }
     document.querySelectorAll('.bg-tab').forEach(t => t.classList.remove('active'));
     btn.classList.add('active');
     document.querySelectorAll('.bg-panel').forEach(p => p.classList.remove('active'));
@@ -1070,6 +1244,11 @@ function selectDir(btn, dir) {
     markDirty();
 }
 async function handleBgImg(input) {
+    if (!APPEARANCE_ACCESS.background_types.includes('image')) {
+        input.value = '';
+        showProFeatureToast('Background gambar & wallpaper');
+        return;
+    }
     const file = input.files[0];
     if (!file) return;
     const reader = new FileReader();
@@ -1093,6 +1272,10 @@ async function handleBgImg(input) {
 }
 
 function toggleWgGallery() {
+    if (!APPEARANCE_ACCESS.background_types.includes('image')) {
+        showProFeatureToast('Wallpaper gallery Mobay');
+        return;
+    }
     const wrap  = document.getElementById('wgCollapseWrap');
     const btn   = document.getElementById('btnWgToggle');
     const label = document.getElementById('btnWgLabel');
@@ -1112,8 +1295,15 @@ if (activeWgId) {
 }
 
 function selectBtnStyle(el, style) {
+    if (!APPEARANCE_ACCESS.button_styles.includes(style)) {
+        showProFeatureToast('Gaya tombol premium');
+        return;
+    }
     document.querySelectorAll('.btn-style-item').forEach(i => i.classList.remove('active'));
-    el.classList.add('active'); st.btn_style = style; markDirty();
+    el.classList.add('active');
+    st.btn_style = style;
+    updateEffectControls();
+    markDirty();
 }
 function selectBtnShape(el, shape) {
     document.querySelectorAll('.btn-shape-item').forEach(i => i.classList.remove('active'));
@@ -1131,16 +1321,75 @@ function onBtnColorTextIn(v, which) {
     markDirty();
 }
 
+function onBtnEffectColorIn(v, which) {
+    if (which === 'glow') {
+        st.btn_glow_color = v;
+        document.getElementById('btnGlowColorText').value = v;
+        document.getElementById('btnGlowColorDot').style.background = v;
+    } else {
+        st.btn_glow_bg = v;
+        document.getElementById('btnGlowBgText').value = v;
+        document.getElementById('btnGlowBgDot').style.background = v;
+    }
+    markDirty();
+}
+
+function onBtnEffectColorTextIn(v, which) {
+    if (!/^#[0-9a-fA-F]{6}$/.test(v)) return;
+    if (which === 'glow') {
+        st.btn_glow_color = v;
+        document.getElementById('btnGlowColorPicker').value = v;
+        document.getElementById('btnGlowColorDot').style.background = v;
+    } else {
+        st.btn_glow_bg = v;
+        document.getElementById('btnGlowBgPicker').value = v;
+        document.getElementById('btnGlowBgDot').style.background = v;
+    }
+    markDirty();
+}
+
+function updateEffectControls() {
+    const neonControls = document.getElementById('neonControls');
+    if (neonControls) neonControls.style.display = st.btn_style === 'neon' ? 'block' : 'none';
+}
+
 function selectFont(el, fontId) {
+    if (!APPEARANCE_ACCESS.fonts.includes(fontId)) {
+        showProFeatureToast(`Font ${fontId}`);
+        return;
+    }
     document.querySelectorAll('.font-item').forEach(i => i.classList.remove('active'));
     el.classList.add('active'); st.font_family = fontId; markDirty();
 }
 
 function selectBlockLayout(el, layoutId) {
+    if (!APPEARANCE_ACCESS.block_layouts.includes(layoutId)) {
+        showProFeatureToast('Layout blok premium');
+        return;
+    }
     document.querySelectorAll('.bl-item').forEach(i => i.classList.remove('active'));
     el.classList.add('active');
     st.block_layout = layoutId;
     markDirty();
+}
+
+function hexToRgba(color, alpha, fallback = '59,130,246') {
+    if (typeof color !== 'string') return `rgba(${fallback},${alpha})`;
+    const hex = color.trim().replace('#', '');
+    if (/^[0-9a-fA-F]{3}$/.test(hex)) {
+        const full = hex.split('').map(ch => ch + ch).join('');
+        const r = parseInt(full.slice(0, 2), 16);
+        const g = parseInt(full.slice(2, 4), 16);
+        const b = parseInt(full.slice(4, 6), 16);
+        return `rgba(${r},${g},${b},${alpha})`;
+    }
+    if (/^[0-9a-fA-F]{6}$/.test(hex)) {
+        const r = parseInt(hex.slice(0, 2), 16);
+        const g = parseInt(hex.slice(2, 4), 16);
+        const b = parseInt(hex.slice(4, 6), 16);
+        return `rgba(${r},${g},${b},${alpha})`;
+    }
+    return `rgba(${fallback},${alpha})`;
 }
 
 function buildBtnCss() {
@@ -1151,6 +1400,8 @@ function buildBtnCss() {
         case 'soft_shadow': return `background:${st.btn_color};color:${st.btn_text_color};border:none;box-shadow:0 4px 16px rgba(0,0,0,0.15);`;
         case 'ghost':       return `background:rgba(255,255,255,0.15);color:${st.btn_text_color};border:1.5px solid rgba(255,255,255,0.3);backdrop-filter:blur(8px);`;
         case 'minimal':     return `background:transparent;color:${st.btn_color};border:none;border-bottom:2px solid ${st.btn_color};border-radius:0!important;`;
+        case 'neon':        return `background:${st.btn_glow_bg};color:${st.btn_text_color};border:2px solid ${st.btn_glow_color};box-shadow:0 0 12px ${hexToRgba(st.btn_glow_color, 0.45)},0 0 24px ${hexToRgba(st.btn_glow_color, 0.25)};`;
+        case 'glass':       return `background:${hexToRgba(st.btn_color, 0.12)};color:${st.btn_text_color};border:1px solid ${hexToRgba(st.btn_color, 0.28)};box-shadow:0 8px 20px ${hexToRgba(st.btn_color, 0.14)};backdrop-filter:blur(6px);`;
         default:            return `background:${st.btn_color};color:${st.btn_text_color};border:2px solid ${st.btn_color};`;
     }
 }
@@ -1190,6 +1441,8 @@ function updatePreview() {
             btn_shape:      st.btn_shape,
             btn_color:      st.btn_color,
             btn_text_color: st.btn_text_color,
+            btn_glow_color: st.btn_glow_color,
+            btn_glow_bg:    st.btn_glow_bg,
             block_layout:   st.block_layout,
         }
     }, '*');
@@ -1299,5 +1552,6 @@ document.getElementById('previewFrame').addEventListener('load', () => {
     hidePreviewFrameScrollbar('previewFrame');
     setTimeout(updatePreview, 300);
 });
+updateEffectControls();
 </script>
 @endpush

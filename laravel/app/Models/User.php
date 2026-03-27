@@ -5,7 +5,8 @@ use App\Models\Product;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Storage;   
 
 // RELATION MODELS
 use App\Models\UserProfile;
@@ -20,6 +21,27 @@ class User extends Authenticatable
 {
     use HasFactory, Notifiable;
 
+    public const FREE_APPEARANCE_ACCESS = [
+        'background_types' => ['color', 'gradient'],
+        'button_styles' => ['fill', 'outline', 'soft_shadow', 'hard_shadow'],
+        'fonts' => ['Plus Jakarta Sans', 'Inter', 'Poppins', 'Lato'],
+        'block_layouts' => ['default', 'compact', 'grid'],
+        'max_social_links' => 5,
+        'analytics_basic' => true,
+    ];
+
+    public const PRO_APPEARANCE_ACCESS = [
+        'background_types' => ['color', 'gradient', 'image'],
+        'button_styles' => ['fill', 'outline', 'hard_shadow', 'soft_shadow', 'ghost', 'minimal', 'neon', 'glass'],
+        'fonts' => ['Plus Jakarta Sans', 'Inter', 'Poppins', 'Lato', 'Merriweather', 'Space Grotesk', 'Nunito', 'DM Sans', 'Playfair Display', 'Roboto Mono', 'Dancing Script'],
+        'block_layouts' => ['default', 'grid', 'compact', 'highlight'],
+        'max_social_links' => 15,
+        'analytics_advanced' => true,
+        'custom_css' => true,
+        'animation_effects' => true,
+        'priority_support' => true,
+    ];
+
     protected $fillable = [
         'name',
         'username',
@@ -31,9 +53,12 @@ class User extends Authenticatable
         'balance',
         'role',          
         'is_suspended',
+        'subscription_plan',
         'origin_village_code',
         'origin_city_id',
-        'origin_city_name'
+        'origin_city_name',
+        'storage_used',
+        'storage_limit'
     ];
 
     protected $hidden = [
@@ -45,6 +70,79 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
+
+    public function isPro(): bool
+    {
+        return in_array((string) $this->subscription_plan, ['pro', 'premium'], true);
+    }
+
+    public function appearanceAccess(): array
+    {
+        return $this->isPro()
+            ? self::PRO_APPEARANCE_ACCESS
+            : self::FREE_APPEARANCE_ACCESS;
+    }
+
+    /**
+     * ===== STORAGE MANAGEMENT =====
+     * Method untuk mengelola kapasitas penyimpanan user
+     */
+
+    /**
+     * Dapatkan info penyimpanan user
+     */
+    public function getStorageInfo(): array
+    {
+        return \App\Services\StorageService::getStorageInfo($this);
+    }
+
+    /**
+     * Validasi apakah user bisa upload file
+     */
+    public function canUpload(int $fileSize): array
+    {
+        return \App\Services\StorageService::validateUpload($this, $fileSize);
+    }
+
+    /**
+     * Tambahkan storage usage setelah file diupload
+     */
+    public function addStorageUsage(int $fileSize): void
+    {
+        \App\Services\StorageService::addStorageUsage($this, $fileSize);
+    }
+
+    /**
+     * Kurangi storage usage ketika file dihapus
+     */
+    public function removeStorageUsage(int $fileSize): void
+    {
+        \App\Services\StorageService::removeStorageUsage($this, $fileSize);
+    }
+
+    /**
+     * Dapatkan sisa storage yang tersedia
+     */
+    public function getAvailableStorage(): int
+    {
+        return \App\Services\StorageService::getAvailableStorage($this);
+    }
+
+    /**
+     * Dapatkan persentase penggunaan storage
+     */
+    public function getStoragePercentage(): float
+    {
+        return \App\Services\StorageService::getStoragePercentage($this);
+    }
+
+    /**
+     * Set storage limit berdasarkan subscription plan
+     */
+    public function updateStorageLimit(): void
+    {
+        \App\Services\StorageService::updateStorageLimit($this);
+    }
 
     // ===== RELATIONS =====
 
@@ -114,6 +212,14 @@ public function profileReports()
 {
     return $this->hasMany(ProfileReport::class, 'reported_user_id');
 }
+public function getAvatarUrlAttribute(): string
+    {
+        if (!$this->avatar) {
+            return asset('images/default-avatar.png');
+        }
+
+        return Str::startsWith($this->avatar, ['http://', 'https://'])
+            ? $this->avatar
+            : Storage::url($this->avatar);
+    }
 }
-
-

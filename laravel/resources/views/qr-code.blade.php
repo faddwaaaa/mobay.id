@@ -1,4 +1,9 @@
 
+@php
+    $user = Auth::user();
+    $isProUser = method_exists($user, 'isPro') ? $user->isPro() : in_array((string) data_get($user, 'subscription_plan'), ['pro', 'premium'], true);
+@endphp
+
 @extends('layouts.dashboard')
 @section('title', 'QR Code | Mobay.id')
 
@@ -103,40 +108,80 @@
                     {{-- Warna QR --}}
                     <div style="margin-bottom: 20px;">
                         <label style="display: block; font-size: 13px; font-weight: 500; color: #475569; margin-bottom: 10px;">Warna QR Code</label>
-                        <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
-                            <button onclick="changeColor('#0066CC', this)" class="color-btn active" title="Biru Mobay"
-                                style="width: 38px; height: 38px; background: #0066CC; border-radius: 50%; border: 3px solid white; cursor: pointer; box-shadow: 0 0 0 3px rgba(0,102,204,0.35); transition: all 0.2s;">
-                            </button>
-                            <button onclick="changeColor('#111827', this)" class="color-btn" title="Hitam"
-                                style="width: 38px; height: 38px; background: #111827; border-radius: 50%; border: 3px solid #e2e8f0; cursor: pointer; transition: all 0.2s;">
-                            </button>
-                            <button onclick="changeColor('#16a34a', this)" class="color-btn" title="Hijau"
-                                style="width: 38px; height: 38px; background: #16a34a; border-radius: 50%; border: 3px solid #e2e8f0; cursor: pointer; transition: all 0.2s;">
-                            </button>
-                            <button onclick="changeColor('#dc2626', this)" class="color-btn" title="Merah"
-                                style="width: 38px; height: 38px; background: #dc2626; border-radius: 50%; border: 3px solid #e2e8f0; cursor: pointer; transition: all 0.2s;">
-                            </button>
-                            <button onclick="changeColor('#7c3aed', this)" class="color-btn" title="Ungu"
-                                style="width: 38px; height: 38px; background: #7c3aed; border-radius: 50%; border: 3px solid #e2e8f0; cursor: pointer; transition: all 0.2s;">
-                            </button>
-                            <button onclick="changeColor('#ea580c', this)" class="color-btn" title="Oranye"
-                                style="width: 38px; height: 38px; background: #ea580c; border-radius: 50%; border: 3px solid #e2e8f0; cursor: pointer; transition: all 0.2s;">
-                            </button>
-                            <label title="Pilih Warna Kustom"
-                                style="width: 38px; height: 38px; border-radius: 50%; border: 2px dashed #cbd5e1; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; overflow: hidden; position: relative;">
-                                <i class="fas fa-plus" style="font-size: 13px; color: #94a3b8; pointer-events: none; position: relative; z-index: 1;"></i>
-                                <input type="color" id="custom-color-picker" value="#0066CC"
-                                    oninput="changeColor(this.value, this.parentElement)"
-                                    style="position: absolute; opacity: 0; width: 100%; height: 100%; cursor: pointer; top: 0; left: 0; z-index: 2;">
-                            </label>
-                        </div>
-                        <p style="margin: 10px 0 0 0; font-size: 11px; color: #94a3b8;">
-                            Warna aktif: <span id="color-label" style="font-weight: 600; color: #0066CC;">#0066CC (Biru Mobay)</span>
-                        </p>
-                        <div style="margin-top: 8px; background: #fffbeb; border: 1px solid #fde68a; border-radius: 6px; padding: 8px 10px; display: flex; align-items: center; gap: 7px;">
-                            <i class="fas fa-exclamation-triangle" style="color: #d97706; font-size: 11px; flex-shrink: 0;"></i>
-                            <p style="margin: 0; font-size: 11px; color: #92400e; line-height: 1.5;">Perubahan warna akan ikut dipakai pada hasil <strong>Download</strong> dan <strong>Share</strong> agar tampilannya tetap konsisten.</p>
-                        </div>
+
+                        @if($isProUser)
+                            {{-- PRO USER: Full Access --}}
+                            <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+                                <button onclick="changeColor('#0066CC', this)" class="color-btn active" title="Biru Mobay"
+                                    style="width: 38px; height: 38px; background: #0066CC; border-radius: 50%; border: 3px solid white; cursor: pointer; box-shadow: 0 0 0 3px rgba(0,102,204,0.35); transition: all 0.2s;">
+                                </button>
+                                <button onclick="changeColor('#111827', this)" class="color-btn" title="Hitam"
+                                    style="width: 38px; height: 38px; background: #111827; border-radius: 50%; border: 3px solid #e2e8f0; cursor: pointer; transition: all 0.2s;">
+                                </button>
+                                <button onclick="changeColor('#16a34a', this)" class="color-btn" title="Hijau"
+                                    style="width: 38px; height: 38px; background: #16a34a; border-radius: 50%; border: 3px solid #e2e8f0; cursor: pointer; transition: all 0.2s;">
+                                </button>
+                                <button onclick="changeColor('#dc2626', this)" class="color-btn" title="Merah"
+                                    style="width: 38px; height: 38px; background: #dc2626; border-radius: 50%; border: 3px solid #e2e8f0; cursor: pointer; transition: all 0.2s;">
+                                </button>
+                                <button onclick="changeColor('#7c3aed', this)" class="color-btn" title="Ungu"
+                                    style="width: 38px; height: 38px; background: #7c3aed; border-radius: 50%; border: 3px solid #e2e8f0; cursor: pointer; transition: all 0.2s;">
+                                </button>
+                                <button onclick="changeColor('#ea580c', this)" class="color-btn" title="Oranye"
+                                    style="width: 38px; height: 38px; background: #ea580c; border-radius: 50%; border: 3px solid #e2e8f0; cursor: pointer; transition: all 0.2s;">
+                                </button>
+                                <label title="Pilih Warna Kustom"
+                                    style="width: 38px; height: 38px; border-radius: 50%; border: 2px dashed #cbd5e1; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; overflow: hidden; position: relative;">
+                                    <i class="fas fa-plus" style="font-size: 13px; color: #94a3b8; pointer-events: none; position: relative; z-index: 1;"></i>
+                                    <input type="color" id="custom-color-picker" value="#0066CC"
+                                        oninput="changeColor(this.value, this.parentElement)"
+                                        style="position: absolute; opacity: 0; width: 100%; height: 100%; cursor: pointer; top: 0; left: 0; z-index: 2;">
+                                </label>
+                            </div>
+                            <p style="margin: 10px 0 0 0; font-size: 11px; color: #94a3b8;">
+                                Warna aktif: <span id="color-label" style="font-weight: 600; color: #0066CC;">#0066CC (Biru Mobay)</span>
+                            </p>
+                            <div style="margin-top: 8px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 6px; padding: 8px 10px; display: flex; align-items: center; gap: 7px;">
+                                <i class="fas fa-crown" style="color: #16a34a; font-size: 11px; flex-shrink: 0;"></i>
+                                <p style="margin: 0; font-size: 11px; color: #15803d; line-height: 1.5;">Sebagai user Pro, Anda bisa mengubah warna QR Code sesuai keinginan!</p>
+                            </div>
+                        @else
+                            {{-- FREE USER: Limited Access --}}
+                            <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center; opacity: 0.6; pointer-events: none;">
+                                <button class="color-btn active" title="Biru Mobay (Default)"
+                                    style="width: 38px; height: 38px; background: #0066CC; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 0 3px rgba(0,102,204,0.35);">
+                                </button>
+                                <button class="color-btn" title="Hitam (Pro)"
+                                    style="width: 38px; height: 38px; background: #111827; border-radius: 50%; border: 3px solid #e2e8f0;">
+                                </button>
+                                <button class="color-btn" title="Hijau (Pro)"
+                                    style="width: 38px; height: 38px; background: #16a34a; border-radius: 50%; border: 3px solid #e2e8f0;">
+                                </button>
+                                <button class="color-btn" title="Merah (Pro)"
+                                    style="width: 38px; height: 38px; background: #dc2626; border-radius: 50%; border: 3px solid #e2e8f0;">
+                                </button>
+                                <button class="color-btn" title="Ungu (Pro)"
+                                    style="width: 38px; height: 38px; background: #7c3aed; border-radius: 50%; border: 3px solid #e2e8f0;">
+                                </button>
+                                <button class="color-btn" title="Oranye (Pro)"
+                                    style="width: 38px; height: 38px; background: #ea580c; border-radius: 50%; border: 3px solid #e2e8f0;">
+                                </button>
+                                <label title="Warna Kustom (Pro)"
+                                    style="width: 38px; height: 38px; border-radius: 50%; border: 2px dashed #cbd5e1; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative;">
+                                    <i class="fas fa-plus" style="font-size: 13px; color: #94a3b8;"></i>
+                                </label>
+                            </div>
+                            <p style="margin: 10px 0 0 0; font-size: 11px; color: #94a3b8;">
+                                Warna aktif: <span id="color-label" style="font-weight: 600; color: #0066CC;">#0066CC (Biru Mobay - Default)</span>
+                            </p>
+                            <div style="margin-top: 8px; background: #fef3c7; border: 1px solid #fde68a; border-radius: 6px; padding: 8px 10px; display: flex; align-items: center; gap: 7px;">
+                                <i class="fas fa-lock" style="color: #d97706; font-size: 11px; flex-shrink: 0;"></i>
+                                <p style="margin: 0; font-size: 11px; color: #92400e; line-height: 1.5;">
+                                    Fitur ubah warna QR Code eksklusif untuk user Pro. Upgrade untuk dapat warna custom yang lebih menarik!
+                                    <a href="{{ route('premium.index') }}" style="color: #d97706; font-weight: 600; text-decoration: underline;">Upgrade ke Pro</a>
+                                </p>
+                            </div>
+                        @endif
                     </div>
 
                     <div style="border-top: 1px solid #f1f5f9; margin-bottom: 20px;"></div>
@@ -500,6 +545,13 @@ async function buildPosterBlob() {
 }
 
 function changeColor(color, el) {
+    // Check if user is pro
+    @if(!$isProUser)
+        // Show upgrade message for free users
+        showToast('Fitur ubah warna QR Code eksklusif untuk user Pro. Upgrade untuk dapat warna custom!', 'warning');
+        return;
+    @endif
+
     currentColor = color;
     document.querySelectorAll('.color-btn').forEach(btn => {
         btn.classList.remove('active');
@@ -649,6 +701,42 @@ async function shareQR(event) {
 async function shareWhatsApp(event) {
     event?.preventDefault();
     await handleQRShare('whatsapp-share-btn');
+}
+
+// Toast notification function
+function showToast(message, type = 'info') {
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    toast.innerHTML = `
+        <div class="toast-content">
+            <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : type === 'warning' ? 'fa-exclamation-triangle' : 'fa-info-circle'}"></i>
+            <span>${message}</span>
+        </div>
+    `;
+    document.body.appendChild(toast);
+
+    // Add styles if not exist
+    if (!document.getElementById('toast-styles')) {
+        const styles = document.createElement('style');
+        styles.id = 'toast-styles';
+        styles.textContent = `
+            .toast { position: fixed; top: 20px; right: 20px; z-index: 9999; min-width: 300px; max-width: 500px; padding: 12px 16px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); display: flex; align-items: center; gap: 10px; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 14px; opacity: 0; transform: translateX(100%); transition: all 0.3s ease; }
+            .toast-success { background: #10b981; color: white; }
+            .toast-error { background: #ef4444; color: white; }
+            .toast-warning { background: #f59e0b; color: white; }
+            .toast-info { background: #3b82f6; color: white; }
+            .toast.show { opacity: 1; transform: translateX(0); }
+            .toast-content { display: flex; align-items: center; gap: 10px; }
+            .toast i { font-size: 16px; flex-shrink: 0; }
+        `;
+        document.head.appendChild(styles);
+    }
+
+    setTimeout(() => toast.classList.add('show'), 100);
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => document.body.removeChild(toast), 300);
+    }, 4000);
 }
 </script>
 

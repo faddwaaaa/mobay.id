@@ -94,6 +94,47 @@ class ProductController extends Controller
         $request->merge(['price' => $price, 'discount' => $discount]);
 
         $platform = $request->input('file_platform', 'upload');
+        $user = Auth::user();
+
+        /**
+         * ===== STORAGE VALIDATION =====
+         * Check kapasitas penyimpanan user sebelum upload
+         */
+        $totalFileSize = 0;
+
+        // Hitung ukuran gambar produk
+        if ($request->hasFile('images')) {
+            foreach ($request->file('images') as $img) {
+                $totalFileSize += $img->getSize();
+            }
+        }
+
+        // Hitung ukuran file digital jika ada
+        if ($request->product_type === 'digital' && $platform === 'upload' && $request->hasFile('files')) {
+            foreach ($request->file('files') as $file) {
+                $totalFileSize += $file->getSize();
+            }
+        }
+
+        // Validasi storage
+        if ($totalFileSize > 0) {
+            $storageValidation = $user->canUpload($totalFileSize);
+            if (!$storageValidation['can_upload']) {
+                return back()
+                    ->with('storage_error', $storageValidation['message'])
+                    ->with('storage_status', $storageValidation['status'])
+                    ->withInput();
+            }
+        }
+
+        // Storage warning jika tidak error
+        $storageWarning = null;
+        if ($totalFileSize > 0) {
+            $storageValidation = $user->canUpload($totalFileSize);
+            if ($storageValidation['status'] === 'warning') {
+                $storageWarning = $storageValidation['message'];
+            }
+        }
 
         $rules = [
             'product_type'   => 'required|in:fisik,digital',
@@ -135,33 +176,55 @@ class ProductController extends Controller
             foreach ($request->file('images') as $img) {
                 $path = $img->store('products/images', 'public');
                 $product->images()->create(['image' => $path]);
+                // Tambahkan storage usage setelah file berhasil diupload
+                $user->addStorageUsage($img->getSize());
             }
         }
 
         if ($request->product_type === 'digital') {
-            $this->saveDigitalFiles($request, $product, $platform);
+            $this->saveDigitalFiles($request, $product, $platform, $user);
         }
 
-        if ($request->redirect === 'builder') {
-            return redirect()->route('links.index')
-                ->with('openProductModal', true)
-                ->with('success', 'Produk berhasil ditambahkan');
+        // Build redirect dengan notifikasi
+        $redirectRoute = $request->redirect === 'builder' 
+            ? redirect()->route('links.index')->with('openProductModal', true)
+            : redirect()->route('products.manage');
+
+        $response = $redirectRoute->with('success', 'Produk berhasil ditambahkan');
+
+        // Tambahkan storage warning jika ada
+        if ($storageWarning) {
+            $response->with('storage_warning', $storageWarning);
         }
 
-        return redirect()->route('products.manage')
-            ->with('success', 'Produk berhasil ditambahkan');
+        return $response;
     }
 
     public function destroy(Product $produk)
     {
         abort_if($produk->user_id !== Auth::id(), 403);
 
+        $user = Auth::user();
+
+        /**
+         * ===== STORAGE CLEANUP =====
+         * Kurangi storage usage saat file produk dihapus
+         */
         foreach ($produk->images as $img) {
-            Storage::delete('public/' . $img->image);
+            if (Storage::exists('public/' . $img->image)) {
+                $fileSize = Storage::size('public/' . $img->image);
+                Storage::delete('public/' . $img->image);
+                $user->removeStorageUsage($fileSize);
+            }
         }
+
         foreach ($produk->files as $file) {
             if (($file->platform ?? 'upload') === 'upload' && $file->file) {
-                Storage::delete('public/' . $file->file);
+                if (Storage::exists('public/' . $file->file)) {
+                    $fileSize = Storage::size('public/' . $file->file);
+                    Storage::delete('public/' . $file->file);
+                    $user->removeStorageUsage($fileSize);
+                }
             }
         }
 
@@ -182,6 +245,36 @@ class ProductController extends Controller
         $request->merge(['price' => $price, 'discount' => $discount]);
 
         $platform = $request->input('file_platform', 'upload');
+        $user = Auth::user();
+
+        /**
+         * ===== STORAGE VALIDATION =====
+         * Check kapasitas penyimpanan untuk file baru yang akan diupload
+         */
+        $totalNewFileSize = 0;
+
+        if ($request->hasFile('images')) {
+            foreach ($request->file('images') as $img) {
+                $totalNewFileSize += $img->getSize();
+            }
+        }
+
+        if ($request->product_type === 'digital' && $platform === 'upload' && $request->hasFile('files')) {
+            foreach ($request->file('files') as $file) {
+                $totalNewFileSize += $file->getSize();
+            }
+        }
+
+        // Validasi storage untuk file baru
+        if ($totalNewFileSize > 0) {
+            $storageValidation = $user->canUpload($totalNewFileSize);
+            if (!$storageValidation['can_upload']) {
+                return back()
+                    ->with('storage_error', $storageValidation['message'])
+                    ->with('storage_status', $storageValidation['status'])
+                    ->withInput();
+            }
+        }
 
         $rules = [
             'product_type'    => 'required|in:fisik,digital',
@@ -223,7 +316,12 @@ class ProductController extends Controller
                 ->where('product_id', $product->id)
                 ->get();
             foreach ($imgs as $img) {
-                Storage::delete('public/' . $img->image);
+                if (Storage::exists('public/' . $img->image)) {
+                    $fileSize = Storage::size('public/' . $img->image);
+                    Storage::delete('public/' . $img->image);
+                    // Kurangi storage usage saat file dihapus
+                    $user->removeStorageUsage($fileSize);
+                }
                 $img->delete();
             }
         }
@@ -234,7 +332,12 @@ class ProductController extends Controller
                 ->get();
             foreach ($files as $file) {
                 if (($file->platform ?? 'upload') === 'upload' && $file->file) {
-                    Storage::delete('public/' . $file->file);
+                    if (Storage::exists('public/' . $file->file)) {
+                        $fileSize = Storage::size('public/' . $file->file);
+                        Storage::delete('public/' . $file->file);
+                        // Kurangi storage usage saat file dihapus
+                        $user->removeStorageUsage($fileSize);
+                    }
                 }
                 $file->delete();
             }
@@ -244,11 +347,13 @@ class ProductController extends Controller
             foreach ($request->file('images') as $img) {
                 $path = $img->store('products/images', 'public');
                 $product->images()->create(['image' => $path]);
+                // Tambahkan storage usage setelah file berhasil diupload
+                $user->addStorageUsage($img->getSize());
             }
         }
 
         if ($request->product_type === 'digital') {
-            $this->saveDigitalFiles($request, $product, $platform);
+            $this->saveDigitalFiles($request, $product, $platform, $user);
         }
 
         return redirect()->route('products.manage')
@@ -267,7 +372,7 @@ class ProductController extends Controller
         return view('products.show', compact('product'));
     }
 
-    private function saveDigitalFiles(Request $request, Product $product, string $platform): void
+    private function saveDigitalFiles(Request $request, Product $product, string $platform, $user = null): void
     {
         if ($platform === 'upload') {
             if (!$request->hasFile('files')) return;
@@ -279,6 +384,10 @@ class ProductController extends Controller
                     'platform' => 'upload',
                     'file_url' => null,
                 ]);
+                // Tambahkan storage usage setelah file berhasil diupload
+                if ($user) {
+                    $user->addStorageUsage($file->getSize());
+                }
             }
         } else {
             $url = $request->input('file_url');

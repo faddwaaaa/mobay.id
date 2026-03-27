@@ -4,6 +4,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use App\Http\Middleware\TrackClickMetadata;
+use App\Http\Middleware\AddStorageToView;
 use Illuminate\Routing\Router;
 
 return Application::configure(basePath: dirname(__DIR__))
@@ -25,6 +26,9 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         // Track klik metadata
         $middleware->append(TrackClickMetadata::class);
+
+        // Tambahkan storage info ke semua view
+        $middleware->append(AddStorageToView::class);
 
         // Alias middleware
         $middleware->alias([

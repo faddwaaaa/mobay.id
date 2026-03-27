@@ -1,3 +1,8 @@
+@php
+    $isGoogle  = !is_null(auth()->user()->google_id);
+    $userEmail = auth()->user()->email;
+@endphp
+
 <section class="space-y-4">
     <header>
         <h2 class="text-lg font-semibold text-gray-900">Hapus Akun</h2>
@@ -71,32 +76,70 @@
             @method('delete')
 
             <div class="px-6 pb-2">
-                <label for="del_password" class="block text-xs font-semibold text-gray-500 uppercase tracking-widest mb-2">
-                    Konfirmasi dengan Password
-                </label>
-                <div class="relative">
-                    <input id="del_password"
-                        name="password"
-                        type="password"
-                        autocomplete="current-password"
-                        placeholder="Masukkan password Anda"
-                        class="w-full px-4 py-3 pr-11 rounded-xl border text-sm text-gray-900
-                               placeholder-gray-400 transition-all duration-150
-                               focus:outline-none focus:ring-2 focus:ring-red-400/25 focus:border-red-400
-                               @error('password', 'userDeletion') border-red-300 bg-red-50 @else border-gray-200 bg-gray-50 focus:bg-white @enderror"
-                        style="font-size:13.5px;">
-                    <button type="button" onclick="toggleDelPass()" tabindex="-1"
-                        class="absolute inset-y-0 right-0 flex items-center px-3.5 text-gray-400 hover:text-gray-600 transition-colors">
-                        <i id="delPassIcon" class="fa-solid fa-eye text-xs"></i>
-                    </button>
-                </div>
 
-                @if ($errors->userDeletion->has('password'))
-                    <div class="mt-2 flex items-center gap-2 px-3 py-2 rounded-lg bg-red-50 border border-red-100">
-                        <i class="fa-solid fa-circle-exclamation text-red-400 text-xs flex-shrink-0"></i>
-                        <p class="text-xs text-red-600">{{ $errors->userDeletion->first('password') }}</p>
+                @if (!$isGoogle)
+                    {{-- ===== USER MANUAL: konfirmasi password ===== --}}
+                    <label for="del_password" class="block text-xs font-semibold text-gray-500 uppercase tracking-widest mb-2">
+                        Konfirmasi dengan Password
+                    </label>
+                    <div class="relative">
+                        <input id="del_password"
+                            name="password"
+                            type="password"
+                            autocomplete="current-password"
+                            placeholder="Masukkan password Anda"
+                            class="w-full px-4 py-3 pr-11 rounded-xl border text-sm text-gray-900
+                                   placeholder-gray-400 transition-all duration-150
+                                   focus:outline-none focus:ring-2 focus:ring-red-400/25 focus:border-red-400
+                                   @error('password', 'userDeletion') border-red-300 bg-red-50 @else border-gray-200 bg-gray-50 focus:bg-white @enderror"
+                            style="font-size:13.5px;">
+                        <button type="button" onclick="toggleDelPass()" tabindex="-1"
+                            class="absolute inset-y-0 right-0 flex items-center px-3.5 text-gray-400 hover:text-gray-600 transition-colors">
+                            <i id="delPassIcon" class="fa-solid fa-eye text-xs"></i>
+                        </button>
                     </div>
+
+                    @if ($errors->userDeletion->has('password'))
+                        <div class="mt-2 flex items-center gap-2 px-3 py-2 rounded-lg bg-red-50 border border-red-100">
+                            <i class="fa-solid fa-circle-exclamation text-red-400 text-xs flex-shrink-0"></i>
+                            <p class="text-xs text-red-600">{{ $errors->userDeletion->first('password') }}</p>
+                        </div>
+                    @endif
+
+                @else
+                    {{-- ===== USER GOOGLE: konfirmasi email ===== --}}
+                    <div class="mb-3 flex items-center gap-2.5 px-3 py-2.5 rounded-xl"
+                         style="background:#f0fdf4; border:1px solid #bbf7d0;">
+                        <i class="fa-brands fa-google text-green-500 text-xs flex-shrink-0"></i>
+                        <p class="text-xs text-green-700 leading-relaxed">
+                            Akun Anda terhubung via <strong>Google</strong>.
+                            Ketik ulang email Anda sebagai konfirmasi.
+                        </p>
+                    </div>
+
+                    <label for="del_email_confirm" class="block text-xs font-semibold text-gray-500 uppercase tracking-widest mb-2">
+                        Ketik Ulang Email Anda
+                    </label>
+                    <input id="del_email_confirm"
+                        name="email_confirm"
+                        type="email"
+                        autocomplete="off"
+                        placeholder="{{ $userEmail }}"
+                        class="w-full px-4 py-3 rounded-xl border text-sm text-gray-900
+                               placeholder-gray-300 transition-all duration-150
+                               focus:outline-none focus:ring-2 focus:ring-red-400/25 focus:border-red-400
+                               @error('email_confirm', 'userDeletion') border-red-300 bg-red-50 @else border-gray-200 bg-gray-50 focus:bg-white @enderror"
+                        style="font-size:13.5px;">
+
+                    @if ($errors->userDeletion->has('email_confirm'))
+                        <div class="mt-2 flex items-center gap-2 px-3 py-2 rounded-lg bg-red-50 border border-red-100">
+                            <i class="fa-solid fa-circle-exclamation text-red-400 text-xs flex-shrink-0"></i>
+                            <p class="text-xs text-red-600">{{ $errors->userDeletion->first('email_confirm') }}</p>
+                        </div>
+                    @endif
+
                 @endif
+
             </div>
 
             {{-- Footer --}}
@@ -126,16 +169,22 @@ function openDeleteModal() {
 
     backdrop.classList.remove('hidden');
     modal.classList.remove('hidden');
-    modal.style.display      = 'flex';
+    modal.style.display       = 'flex';
     modal.style.pointerEvents = 'auto';
 
-    card.getBoundingClientRect(); // force reflow
+    card.getBoundingClientRect();
     backdrop.style.opacity = '1';
     card.style.opacity     = '1';
     card.style.transform   = 'translateY(0)';
 
     document.body.style.overflow = 'hidden';
-    setTimeout(() => document.getElementById('del_password').focus(), 200);
+
+    setTimeout(() => {
+        const passInput  = document.getElementById('del_password');
+        const emailInput = document.getElementById('del_email_confirm');
+        if (passInput)  passInput.focus();
+        if (emailInput) emailInput.focus();
+    }, 200);
 }
 
 function closeDeleteModal() {
@@ -158,6 +207,7 @@ function closeDeleteModal() {
 function toggleDelPass() {
     const input = document.getElementById('del_password');
     const icon  = document.getElementById('delPassIcon');
+    if (!input) return;
     if (input.type === 'password') {
         input.type = 'text';
         icon.classList.replace('fa-eye', 'fa-eye-slash');
