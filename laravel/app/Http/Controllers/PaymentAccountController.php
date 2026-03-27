@@ -14,7 +14,8 @@ use Illuminate\View\View;
 
 class PaymentAccountController extends Controller
 {
-    private const MAX_ACCOUNTS  = 5;
+    private const FREE_MAX_ACCOUNTS = 2;
+    private const PRO_MAX_ACCOUNTS  = 5;
     private const PIN_RATE_KEY  = 'pin_verify:{userId}';
     private const PIN_MAX_TRIES = 3;
     private const PIN_DECAY_SEC = 300; // 5 menit
@@ -54,6 +55,8 @@ class PaymentAccountController extends Controller
 
     public function index(): View
     {
+        $user = auth()->user();
+        $maxAccounts = $this->getMaxAccounts($user);
         $accounts = PaymentAccount::forUser(auth()->id())
             ->orderByDesc('is_default')
             ->orderBy('created_at')
@@ -62,10 +65,11 @@ class PaymentAccountController extends Controller
 
         return view('payment.accounts', [
             'accounts'       => $accounts,
-            'maxAccounts'    => self::MAX_ACCOUNTS,
-            'remainingSlots' => self::MAX_ACCOUNTS - $accounts->count(),
+            'maxAccounts'    => $maxAccounts,
+            'remainingSlots' => max(0, $maxAccounts - $accounts->count()),
             'bankList'       => self::BANK_NAMES,
             'isDevMode'      => $this->isDevMode(), // kirim ke view untuk info banner
+            'isProUser'      => method_exists($user, 'isPro') ? $user->isPro() : false,
         ]);
     }
 
@@ -117,11 +121,12 @@ class PaymentAccountController extends Controller
         RateLimiter::clear($pinKey);
 
         // ── Cek limit rekening ──────────────────────────────────────────────
+        $maxAccounts = $this->getMaxAccounts($user);
         $count = PaymentAccount::forUser($user->id)->count();
-        if ($count >= self::MAX_ACCOUNTS) {
+        if ($count >= $maxAccounts) {
             return response()->json([
                 'success' => false,
-                'message' => 'Batas maksimal ' . self::MAX_ACCOUNTS . ' rekening tercapai.',
+                'message' => 'Batas maksimal ' . $maxAccounts . ' rekening tercapai.',
             ], 422);
         }
 
@@ -375,5 +380,12 @@ class PaymentAccountController extends Controller
     private function authorizeAccount(PaymentAccount $account): void
     {
         abort_unless($account->user_id === auth()->id(), 403, 'Forbidden');
+    }
+
+    private function getMaxAccounts($user): int
+    {
+        return method_exists($user, 'isPro') && $user->isPro()
+            ? self::PRO_MAX_ACCOUNTS
+            : self::FREE_MAX_ACCOUNTS;
     }
 }
