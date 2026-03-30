@@ -208,6 +208,10 @@
     $unitPrice = (int) ($notes['unit_price'] ?? 0);
     $subtotal = (int) ($notes['subtotal'] ?? ($unitPrice * $qty));
     $shipping = (int) ($notes['shipping_cost'] ?? 0);
+    $serviceFee = (int) ($notes['payment_fee_amount'] ?? 0);
+    $paymentMethodFee = (int) ($notes['payment_method_fee'] ?? 0);
+    $paymentMethodLabel = $notes['payment_method_label'] ?? strtoupper(optional($transaction)->payment_method ?? '-');
+    $totalFee = (int) ($notes['total_fee_amount'] ?? ($serviceFee + $paymentMethodFee));
     $productType = $notes['product_type'] ?? '';
     $buyerEmail = $notes['buyer_email'] ?? '';
 @endphp
@@ -255,6 +259,10 @@
                 <div class="row"><span class="k">Harga Satuan</span><span class="v">Rp {{ number_format($unitPrice, 0, ',', '.') }}</span></div>
                 <div class="row"><span class="k">Subtotal</span><span class="v">Rp {{ number_format($subtotal, 0, ',', '.') }}</span></div>
                 <div class="row"><span class="k">Ongkir</span><span class="v">{{ $shipping > 0 ? 'Rp ' . number_format($shipping, 0, ',', '.') : 'Gratis Ongkir' }}</span></div>
+                @if($totalFee > 0)
+                <div class="row"><span class="k">Total Fee Pembayaran</span><span class="v">Rp {{ number_format($totalFee, 0, ',', '.') }}</span></div>
+                <div class="row"><span class="k">Rincian Fee</span><span class="v">Layanan Rp {{ number_format($serviceFee, 0, ',', '.') }} + {{ $paymentMethodLabel }} Rp {{ number_format($paymentMethodFee, 0, ',', '.') }}</span></div>
+                @endif
                 <div class="row"><span class="k">Total Bayar</span><span class="v">Rp {{ number_format((int) $transaction->amount, 0, ',', '.') }}</span></div>
                 <div class="row"><span class="k">Metode Bayar</span><span class="v">{{ strtoupper($transaction->payment_method ?? '-') }}</span></div>
                 <div class="row"><span class="k">Status</span><span class="v ok">Lunas</span></div>

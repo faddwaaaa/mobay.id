@@ -22,7 +22,7 @@ return [
 
 
     // Environment (sandbox or production)
-    'is_production' => env('MIDTRANS_IS_PRODUCTION', false),
+    'is_production' => env('MIDTRANS_IS_PRODUCTION', true), // Changed to true for production
 
     // API base URL
     'api_base_url' => env('MIDTRANS_IS_PRODUCTION', false) 
@@ -48,7 +48,7 @@ return [
 
     // Withdraw limits
     'withdrawal' => [
-        'min_amount' => 10000,      // Minimum withdraw: Rp 10.000
+        'min_amount' => 20000,      // Minimum withdraw: Rp 20.000
         'max_amount' => 50000000,   // Maximum withdraw: Rp 50.000.000
     ],
 
@@ -111,4 +111,25 @@ return [
 
     // Log all transactions (for debugging)
     'log_transactions' => true,
+
+    /*
+    |--------------------------------------------------------------------------
+    | Disbursement Configuration
+    |--------------------------------------------------------------------------
+    */
+
+    // Disbursement API Key (different from payment keys)
+    'disbursement_api_key' => env('MIDTRANS_DISBURSEMENT_API_KEY', ''),
+
+    // Disbursement environment
+    'disbursement_is_production' => env('MIDTRANS_DISBURSEMENT_IS_PRODUCTION', true),
+
+    // Disbursement API base URL
+    'disbursement_api_base_url' => env('MIDTRANS_DISBURSEMENT_IS_PRODUCTION', true)
+        ? 'https://dashboard.midtrans.com/disbursement/v1'
+        : 'https://dashboard.sandbox.midtrans.com/disbursement/v1',
+
+    // Withdrawal fees
+    'withdrawal_fee_flat' => 6000, // Rp 6.000 flat fee
+    'withdrawal_fee_ppn_percent' => 11, // 11% PPN
 ];

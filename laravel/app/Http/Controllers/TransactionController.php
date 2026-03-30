@@ -176,17 +176,17 @@ class TransactionController extends Controller
             $user   = auth()->user();
             $data   = $request->validated();
             $amount = (int) $data['amount'];
-            $withdrawFee = (int) config('payment.withdraw_fee', 3000);
-            $totalDeduction = $amount + $withdrawFee;
+            $withdrawFee = (int) config('payment.withdraw_fee', 6660);
+            $totalDeduction = $amount; // Fee is deducted from amount, not added to deduction
 
             if ((int) $user->balance < $totalDeduction) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Saldo tidak cukup. Total potongan (nominal + fee): Rp ' . number_format($totalDeduction, 0, ',', '.'),
+                    'message' => 'Saldo tidak cukup. Total potongan: Rp ' . number_format($totalDeduction, 0, ',', '.'),
                 ], 400);
             }
 
-            $minAmount = config('midtrans.withdrawal.min_amount', 50000);
+            $minAmount = config('midtrans.withdrawal.min_amount', 20000);
             if ($amount < $minAmount) {
                 return response()->json([
                     'success' => false,

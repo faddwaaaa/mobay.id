@@ -44,6 +44,25 @@ return [
     |
     */
     'payment_fee_percent' => (float) env('PAYMENT_FEE_PERCENT', 5),
-    'withdraw_fee' => (int) env('PAYMENT_WITHDRAW_FEE', 3000),
+    'withdraw_fee' => (int) env('PAYMENT_WITHDRAW_FEE', 6660),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Payment Method Fees
+    |--------------------------------------------------------------------------
+    |
+    | Biaya tambahan untuk setiap metode pembayaran (dalam Rupiah)
+    | 0 = gratis
+    |
+    */
+    'payment_method_fees' => [
+        'bank_transfer' => 0,
+        'qris' => 500,
+        'gopay' => 1000,
+        'ovo' => 1000,
+        'dana' => 1000,
+        'shopeepay' => 1000,
+        'credit_card' => 2500,
+    ],
 
 ];

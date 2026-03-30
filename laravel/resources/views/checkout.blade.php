@@ -630,14 +630,14 @@
             @endif
             <div class="sum-row" style="color:#6b7280;">
                 <span style="display:flex;align-items:center;gap:8px;">
-                    Biaya Layanan
+                    Biaya Admin & Gateway
                     <span style="font-size:12px;padding:3px 8px;background:#fef3c7;color:#92400e;
-                                 border-radius:5px;font-weight:800;">5%</span>
+                                 border-radius:5px;font-weight:800;">Tergantung metode bayar</span>
                 </span>
-                <span id="sumFee" style="color:#b45309;font-weight:700;">Rp 0</span>
+                <span id="sumFee" style="color:#b45309;font-weight:700;">Dihitung setelah pilih metode</span>
             </div>
             <div class="sum-row total">
-                <span>Total Pembayaran</span>
+                <span>Total Sementara</span>
                 <span class="total-amt" id="sumTotal">Rp {{ number_format((int)($product->discount ?? $product->price), 0, ',', '.') }}</span>
             </div>
         </div>
@@ -678,8 +678,6 @@ function updateSummary(qty) {
     const sub  = UNIT_PRICE * qty;
     const ship = PRODUCT_TYPE === 'fisik' ? (SHIPPING_ENABLED ? selectedCost : 0) : 0;
     const base = sub + ship;
-    const fee  = Math.ceil(base * 0.05);
-    const tot  = base + fee;
 
     const elQ    = document.getElementById('sumQty');
     const elS    = document.getElementById('sumSubtotal');
@@ -694,8 +692,8 @@ function updateSummary(qty) {
             ? (ship > 0 ? `<span style="font-weight:700">${fmtRp(ship)}</span>` : '<span class="sum-ph">Belum dipilih</span>')
             : '<span style="color:#15803d;font-weight:700;">Gratis Ongkir</span>';
     }
-    if (elFee) elFee.textContent = fmtRp(fee);
-    if (elT)   elT.textContent   = fmtRp(tot);
+    if (elFee) elFee.textContent = 'Dihitung setelah pilih metode';
+    if (elT)   elT.textContent   = fmtRp(base);
 }
 
 // ===== QTY =====

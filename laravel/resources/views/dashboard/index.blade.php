@@ -448,7 +448,7 @@ document.querySelectorAll('.range-option').forEach(el => {
                 </div>
                 <div>
                     <h3 style="margin:0;font-size:17px;font-weight:700;color:#0f172a;">Tarik Saldo</h3>
-                    <p style="margin:0;font-size:12px;color:#94a3b8;">Minimal penarikan Rp 10.000</p>
+                    <p style="margin:0;font-size:12px;color:#94a3b8;">Minimal penarikan Rp 20.000</p>
                 </div>
             </div>
             <button onclick="closeWithdrawModal()"
@@ -601,7 +601,7 @@ document.querySelectorAll('.range-option').forEach(el => {
 
                     {{-- Quick amount buttons --}}
                     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:10px;">
-                        @foreach([10000,50000,100000] as $preset)
+                        @foreach([20000,50000,100000] as $preset)
                             <button type="button"
                                     onclick="setAmount({{ $preset }}, this)"
                                     class="wd-preset-btn"
@@ -635,7 +635,7 @@ document.querySelectorAll('.range-option').forEach(el => {
                             <span style="position:absolute;left:13px;top:50%;transform:translateY(-50%);
                                          font-size:14px;font-weight:700;color:#9aaabb;">Rp</span>
                             <input type="number" id="wd-amount-input"
-                                   min="10000" max="{{ $balance ?? 0 }}"
+                                   min="20000" max="{{ $balance ?? 0 }}"
                                    placeholder="0"
                                    oninput="onAmountInput()"
                                    style="width:100%;padding:12px 13px 12px 36px;
@@ -704,12 +704,18 @@ document.querySelectorAll('.range-option').forEach(el => {
                                 <span style="font-size:10px;padding:2px 6px;background:#fef3c7;
                                              color:#854d0e;border-radius:4px;font-weight:600;">Fixed</span>
                             </span>
-                            <span id="breakdown-fee" style="font-size:15px;font-weight:700;color:#b45309;">Rp 3.000</span>
+                            <span id="breakdown-fee" style="font-size:15px;font-weight:700;color:#b45309;">Rp 6.660</span>
+                        </div>
+
+                        {{-- Yang Diterima --}}
+                        <div style="display:flex;justify-content:space-between;align-items:center;">
+                            <span style="font-size:13px;color:#64748b;">Yang Diterima</span>
+                            <span id="breakdown-received" style="font-size:15px;font-weight:700;color:#15803d;">Rp 0</span>
                         </div>
 
                         <div style="height:1px;background:#e2e8f0;"></div>
 
-                        {{-- Total Potongan --}}
+                        {{-- Total Potongan Saldo --}}
                         <div style="display:flex;justify-content:space-between;align-items:center;">
                             <span style="font-size:13px;color:#111827;font-weight:600;">Total Potongan Saldo</span>
                             <span id="breakdown-total" style="font-size:16px;font-weight:800;color:#dc2626;">Rp 0</span>
@@ -791,8 +797,8 @@ document.querySelectorAll('.range-option').forEach(el => {
 
 <script>
 const WD_BALANCE    = {{ $balance ?? 0 }};
-const WD_MIN_AMOUNT = 10000;
-const WD_FEE        = 3000;
+const WD_MIN_AMOUNT = 20000;
+const WD_FEE        = 6660;
 const WD_ROUTES     = { store: '/withdrawal' };
 const WD_CSRF       = () => document.querySelector('meta[name="csrf-token"]').content;
 let   wdSelectedAcc = null;
@@ -901,7 +907,7 @@ function onAmountInput() {
         hint.style.color = '#e53e3e';
         input.style.borderColor = '#e53e3e';
         showSelectedAmountInfo(val, true);
-    } else if ((val + WD_FEE) > WD_BALANCE) {
+    } else if (val > WD_BALANCE) {
         hint.innerHTML = `<i class="fas fa-triangle-exclamation"></i><span>Saldo tidak cukup (termasuk fee Rp ${formatRp(WD_FEE)})</span>`;
         hint.style.color = '#e53e3e';
         input.style.borderColor = '#e53e3e';
@@ -944,19 +950,21 @@ function formatRp(n) {
 
 function updateBreakdown() {
     const breakdown = document.getElementById('wd-breakdown');
-    const isValid = wdSelectedAmount >= WD_MIN_AMOUNT && (wdSelectedAmount + WD_FEE) <= WD_BALANCE && wdSelectedAcc;
+    const isValid = wdSelectedAmount >= WD_MIN_AMOUNT && wdSelectedAmount <= WD_BALANCE && wdSelectedAcc;
 
     if (!isValid || wdSelectedAmount === 0) {
         breakdown.style.display = 'none';
         return;
     }
 
-    const totalDeduction = wdSelectedAmount + WD_FEE;
+    const totalDeduction = wdSelectedAmount; // Only amount, fee is deducted from amount
+    const receivedAmount = wdSelectedAmount - WD_FEE;
     const remaining = WD_BALANCE - totalDeduction;
 
     breakdown.style.display = 'block';
     document.getElementById('breakdown-amount').textContent = 'Rp ' + formatRp(wdSelectedAmount);
     document.getElementById('breakdown-fee').textContent = 'Rp ' + formatRp(WD_FEE);
+    document.getElementById('breakdown-received').textContent = 'Rp ' + formatRp(receivedAmount);
     document.getElementById('breakdown-total').textContent = 'Rp ' + formatRp(totalDeduction);
     document.getElementById('breakdown-remaining').textContent = 'Rp ' + formatRp(remaining);
 }
@@ -970,8 +978,8 @@ async function handleWithdrawSubmit() {
         wdToast('error', `Minimal penarikan Rp ${formatRp(WD_MIN_AMOUNT)}.`);
         return;
     }
-    if ((wdSelectedAmount + WD_FEE) > WD_BALANCE) {
-        wdToast('error', `Saldo tidak cukup. Total potongan Rp ${formatRp(wdSelectedAmount + WD_FEE)}.`);
+    if (wdSelectedAmount > WD_BALANCE) {
+        wdToast('error', `Saldo tidak cukup. Total potongan Rp ${formatRp(wdSelectedAmount)}.`);
         return;
     }
 

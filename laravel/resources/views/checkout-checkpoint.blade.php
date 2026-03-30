@@ -83,9 +83,10 @@
                 <div class="row"><span class="k">Harga Satuan</span><span class="v">Rp {{ number_format($productPrice, 0, ',', '.') }}</span></div>
                 <div class="row"><span class="k">Subtotal</span><span class="v">Rp {{ number_format($subtotal, 0, ',', '.') }}</span></div>
                 <div class="row"><span class="k">Ongkir</span><span class="v">{{ $shippingEnabled ? 'Rp ' . number_format($shippingCost, 0, ',', '.') : 'Gratis Ongkir' }}</span></div>
-                <div class="row"><span class="k">Biaya Layanan ({{ rtrim(rtrim(number_format($paymentFeePercent, 2, '.', ''), '0'), '.') }}%)</span><span class="v">Rp {{ number_format($paymentFeeAmount, 0, ',', '.') }}</span></div>
                 <div class="row"><span class="k">Total Dasar</span><span class="v">Rp {{ number_format($baseTotal, 0, ',', '.') }}</span></div>
-                <div class="row"><span class="k">Total Pembayaran</span><span class="v">Rp {{ number_format($total, 0, ',', '.') }}</span></div>
+                <div class="row"><span class="k">Fee Pembayaran</span><span class="v">Dipilih di langkah berikutnya</span></div>
+                <div class="row"><span class="k">Estimasi Tambahan Layanan</span><span class="v">Mulai Rp {{ number_format($paymentFeeAmount, 0, ',', '.') }}</span></div>
+                <div class="row"><span class="k">Total Sementara</span><span class="v">Rp {{ number_format($baseTotal, 0, ',', '.') }}</span></div>
                 <div class="row"><span class="k">Kurir</span><span class="v">{{ $payload['selected_courier'] ?? '-' }}</span></div>
                 <div class="row"><span class="k">Layanan</span><span class="v">{{ $payload['selected_service'] ?? '-' }}</span></div>
             </div>
@@ -104,10 +105,9 @@
 
                 <div class="action">
                     <a href="{{ route('checkout.show', $product->id) }}" class="btn btn-back">Ubah Data</a>
-                    <button type="button" id="btnPayNow" class="btn btn-pay">
-                        <span class="spinner" id="paySpinner"></span>
-                        <span id="payBtnTxt">Lanjut Pembayaran</span>
-                    </button>
+                    <a href="{{ route('checkout.payment-method.show') }}" class="btn btn-pay">
+                        Pilih Metode Pembayaran
+                    </a>
                 </div>
             </div>
         </div>
@@ -129,47 +129,7 @@ function showAlert(msg) {
     setTimeout(() => { el.style.display = 'none'; }, 3200);
 }
 
-document.getElementById('btnPayNow').addEventListener('click', async function () {
-    const btn = this;
-    const spin = document.getElementById('paySpinner');
-    const txt = document.getElementById('payBtnTxt');
-    btn.disabled = true;
-    spin.style.display = 'inline-block';
-    txt.textContent = 'Memproses...';
-
-    try {
-        const res = await fetch('{{ route("checkout.process") }}', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                'Accept': 'application/json',
-            },
-            body: JSON.stringify(payload),
-        });
-
-        const result = await res.json();
-        if (!res.ok || result.error) {
-            throw new Error(result.message || 'Gagal memproses pembayaran.');
-        }
-
-        snap.pay(result.snap_token, {
-            onSuccess: () => window.location.href = '{{ route("checkout.success") }}?order_id=' + result.order_id,
-            onPending: () => window.location.href = '{{ route("checkout.pending") }}?order_id=' + result.order_id,
-            onError: () => { showAlert('Pembayaran gagal. Coba lagi.'); reset(); },
-            onClose: () => reset(),
-        });
-    } catch (err) {
-        showAlert(err.message || 'Terjadi kesalahan saat menghubungi server.');
-        reset();
-    }
-
-    function reset() {
-        btn.disabled = false;
-        spin.style.display = 'none';
-        txt.textContent = 'Lanjut Pembayaran';
-    }
-});
+// Note: Payment processing now handled in payment method selection page
 </script>
 </body>
 </html>

@@ -232,4 +232,155 @@ class MidtransWebhookController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Handle Midtrans Disbursement API webhook/callback
+     */
+    public function handleDisbursementCallback(Request $request)
+    {
+        try {
+            // Log incoming webhook
+            Log::info('Midtrans Disbursement Webhook Received:', $request->all());
+
+            $disbursementId = $request->id;
+            $status = $request->status;
+            $amount = $request->amount;
+
+            // Verify signature for Disbursement API
+            $disbursementApiKey = config('midtrans.disbursement_api_key');
+            $signature = $request->header('X-Midtrans-Signature') ?? $request->signature;
+
+            // Disbursement API signature format: sha512(id + status + amount + disbursement_api_key)
+            $calculatedSignature = hash('sha512', $disbursementId . $status . $amount . $disbursementApiKey);
+
+            if ($signature && $signature !== $calculatedSignature) {
+                Log::warning('Invalid Midtrans Disbursement webhook signature', [
+                    'received' => $signature,
+                    'calculated' => $calculatedSignature,
+                    'disbursement_id' => $disbursementId
+                ]);
+                return response()->json(['message' => 'Invalid signature'], 403);
+            }
+
+            // Find withdrawal by payout_id (disbursement ID)
+            $withdrawal = Withdrawal::where('payout_id', $disbursementId)->first();
+
+            if (!$withdrawal) {
+                Log::warning('Withdrawal not found for disbursement_id: ' . $disbursementId);
+                return response()->json(['message' => 'Withdrawal not found'], 404);
+            }
+
+            DB::beginTransaction();
+            try {
+                // Map Disbursement API status to internal status
+                $newStatus = $this->mapDisbursementStatus($status);
+
+                $withdrawal->update([
+                    'status' => $newStatus,
+                    'midtrans_response' => $request->all(),
+                ]);
+
+                // If failed, refund balance to user
+                if ($newStatus === 'rejected') {
+                    $withdrawal->user->increment('balance', $withdrawal->amount);
+                    $withdrawal->update([
+                        'rejection_reason' => $request->failure_reason ?? 'Gagal diproses oleh bank',
+                    ]);
+
+                    // Update transaction
+                    DB::table('transactions')
+                        ->where('transaction_id', $disbursementId)
+                        ->update([
+                            'status' => 'failed',
+                            'notes' => 'Penarikan gagal: ' . ($request->failure_reason ?? 'Unknown'),
+                            'updated_at' => now(),
+                        ]);
+
+                    // Create refund ledger entry
+                    \App\Models\Ledger::create([
+                        'transaction_type' => 'withdrawal_refund',
+                        'reference_id' => 'WD-' . $withdrawal->id,
+                        'user_id' => $withdrawal->user_id,
+                        'amount' => $withdrawal->amount,
+                        'description' => 'Refund for failed withdrawal',
+                        'metadata' => [
+                            'disbursement_id' => $disbursementId,
+                            'failure_reason' => $request->failure_reason ?? 'Unknown',
+                        ],
+                    ]);
+                }
+
+                // If completed, update transaction
+                if ($newStatus === 'completed') {
+                    DB::table('transactions')
+                        ->where('transaction_id', $disbursementId)
+                        ->update([
+                            'status' => 'settlement',
+                            'updated_at' => now(),
+                        ]);
+
+                    // Create completion ledger entry
+                    \App\Models\Ledger::create([
+                        'transaction_type' => 'withdrawal_completed',
+                        'reference_id' => 'WD-' . $withdrawal->id,
+                        'user_id' => $withdrawal->user_id,
+                        'amount' => -$withdrawal->disbursement_amount,
+                        'description' => 'Withdrawal completed to bank account',
+                        'metadata' => [
+                            'disbursement_id' => $disbursementId,
+                            'bank_name' => $withdrawal->bank_name,
+                            'account_number' => $withdrawal->account_number,
+                        ],
+                    ]);
+                }
+
+                DB::commit();
+
+                Log::info('Disbursement webhook processed successfully', [
+                    'withdrawal_id' => $withdrawal->id,
+                    'disbursement_id' => $disbursementId,
+                    'new_status' => $newStatus,
+                ]);
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Disbursement webhook processed successfully'
+                ]);
+
+            } catch (\Exception $e) {
+                DB::rollBack();
+                Log::error('Error processing Disbursement webhook: ' . $e->getMessage());
+
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Error processing webhook'
+                ], 500);
+            }
+
+        } catch (\Exception $e) {
+            Log::error('Midtrans Disbursement Webhook Error: ' . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Webhook error'
+            ], 500);
+        }
+    }
+
+    /**
+     * Map Disbursement API status to internal status
+     */
+    private function mapDisbursementStatus($disbursementStatus): string
+    {
+        return match(strtolower($disbursementStatus)) {
+            'queued' => 'approved',
+            'processing' => 'approved',
+            'processed' => 'completed',
+            'completed' => 'completed',
+            'failed' => 'rejected',
+            'cancelled' => 'cancelled',
+            'refunded' => 'refunded',
+            default => 'approved',
+        };
+    }
 }
