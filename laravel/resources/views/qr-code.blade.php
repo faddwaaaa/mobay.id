@@ -73,7 +73,7 @@
                     <button type="button" onclick="shareWhatsApp(event)" id="whatsapp-share-btn"
                         style="padding: 12px 16px; background: #25D366; color: white; border: none; border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;">
                         <i class="fab fa-whatsapp" style="font-size: 12px;"></i>
-                        <span>WA Cepat</span>
+                        <span>Share</span>
                     </button>
                 </div>
 
@@ -461,7 +461,7 @@ async function shareOrderQR(imageUrl, captionText) {
     if (navigator.share && typeof navigator.canShare === 'function' && navigator.canShare({ files: [file] })) {
         await navigator.share({
             title: `Mobay.id - @${currentUsername}`,
-            text: captionText,
+            // text: captionText,
             files: [file],
         });
         return true;
@@ -484,7 +484,7 @@ async function handleQRShare(buttonId = null) {
 
     try {
         posterAsset = await buildPosterImageUrl();
-        await shareOrderQR(posterAsset.imageUrl, buildShareCaption());
+        await shareOrderQR(posterAsset.imageUrl);
     } catch (error) {
         console.error('Error:', error);
         if (error.name !== 'AbortError' && !error.message?.includes('cancel')) {
