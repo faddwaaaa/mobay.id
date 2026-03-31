@@ -375,7 +375,7 @@
     <div class="summary-strip">
         <div class="summary-box">
             <div class="k">Status Pembayaran</div>
-            <div class="v">{{ strtoupper((string) $order->status) }}</div>
+            <div class="v">{{ $order->status === 'settlement' ? 'BERHASIL' : strtoupper((string) $order->status) }}</div>
         </div>
         <div class="summary-box">
             <div class="k">Jenis Produk</div>
@@ -420,7 +420,7 @@
             <div style="margin-bottom:12px;">
                 <span class="status-pill {{ $statusClass }}">
                     <i class="fas fa-circle" style="font-size:8px;"></i>
-                    {{ strtoupper($order->status) }}
+                    {{ $order->status === 'settlement' ? 'BERHASIL' : strtoupper($order->status) }}
                 </span>
             </div>
 
@@ -480,15 +480,41 @@
     {{-- ── SECTION INPUT RESI — hanya muncul untuk produk fisik ── --}}
     @if($physicalOrder)
         @if($physicalOrder->status === 'paid')
-        {{-- Belum diinput resi → tampilkan form --}}
-        <div class="resi-card">
+
+        {{-- ── TOMBOL PESAN KURIR OTOMATIS (di luar form manual) ── --}}
+        @if($physicalOrder->courier_code)
+        <div style="margin-top:12px; padding: 16px; background: #eff6ff; border: 1.5px solid #bfdbfe; border-radius: 16px;">
+            <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;">
+                <div>
+                    <div style="font-size: 14px; font-weight: 700; color: #1d4ed8; margin-bottom: 4px;">
+                        <i class="fas fa-bolt"></i> Pesan Kurir Otomatis via Biteship
+                    </div>
+                    <div style="font-size: 12px; color: #3b82f6;">
+                        Resi akan dibuat otomatis. Kurir: <strong>{{ strtoupper($physicalOrder->courier_code) }}</strong>
+                        &nbsp;|&nbsp; Layanan: <strong>{{ $physicalOrder->courier_service ?? '-' }}</strong>
+                    </div>
+                </div>
+                <form method="POST" action="{{ route('physical-orders.biteship.create', $physicalOrder) }}"
+                      onsubmit="return confirm('Pesan kurir via Biteship sekarang? Pastikan paket sudah siap.')">
+                    @csrf
+                    <button type="submit" style="display:inline-flex;align-items:center;gap:8px;background:linear-gradient(130deg,#1d4ed8,#2563eb);color:#fff;border:none;border-radius:10px;padding:11px 22px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;">
+                        <i class="fas fa-truck"></i>
+                        Pesan Kurir via Biteship
+                    </button>
+                </form>
+            </div>
+        </div>
+        @endif
+
+        {{-- ── FORM INPUT RESI MANUAL ── --}}
+        <div class="resi-card" style="margin-top:12px;">
             <div class="resi-header">
                 <div class="resi-header-left">
                     <div class="resi-header-icon">
                         <i class="fas fa-truck"></i>
                     </div>
                     <div>
-                        <div class="resi-header-title">Input Nomor Resi</div>
+                        <div class="resi-header-title">Input Nomor Resi Manual</div>
                         <div class="resi-header-sub">Email notifikasi akan dikirim otomatis ke pembeli</div>
                     </div>
                 </div>
@@ -498,6 +524,11 @@
                 @if(session('success'))
                     <div style="background:#dcfce7;border:1px solid #bbf7d0;color:#166534;padding:10px 14px;border-radius:10px;font-size:13px;font-weight:600;margin-bottom:14px;">
                         {{ session('success') }}
+                    </div>
+                @endif
+                @if(session('error'))
+                    <div style="background:#fee2e2;border:1px solid #fecaca;color:#991b1b;padding:10px 14px;border-radius:10px;font-size:13px;font-weight:600;margin-bottom:14px;">
+                        {{ session('error') }}
                     </div>
                 @endif
                 <form method="POST" action="{{ route('physical-orders.shipment.update', $physicalOrder) }}">

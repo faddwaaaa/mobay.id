@@ -1,6 +1,6 @@
 @extends('layouts.dashboard')
 
-@section('title', 'Dashboard | Payou.id')
+@section('title', 'Dashboard | Mobay.id')
 
 @php
     $user = Auth::user();
@@ -108,10 +108,10 @@
                         <h3 class="font-semibold text-gray-800 mb-1">{{ $link->title }}</h3>
                         <p class="text-sm text-gray-500 mb-2">{{ $link->url }}</p>
                         <div class="flex items-center justify-between">
-                            <a href="{{ url('payou.id/' . $userSlug . '/' . $link->slug) }}" 
+                            <a href="{{ url('mobay.id/' . $userSlug . '/' . $link->slug) }}" 
                                class="text-blue-600 hover:underline text-sm" 
                                target="_blank">
-                                payou.id/{{ $userSlug }}/{{ $link->slug }}
+                                mobay.id/{{ $userSlug }}/{{ $link->slug }}
                             </a>
                             <span class="text-sm text-gray-600">
                                 <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">

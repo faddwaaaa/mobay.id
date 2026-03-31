@@ -441,6 +441,11 @@ Route::get('/debug/biteship', function () {
     ]);
 })->middleware('auth');
 
+// Pesan kurir otomatis via Biteship
+Route::post('/pesanan/fisik/{physicalOrder}/pesan-kurir', 
+    [App\Http\Controllers\BiteshipOrderController::class, 'createOrder'])
+    ->middleware('auth')
+    ->name('physical-orders.biteship.create');
 
 /*
 |--------------------------------------------------------------------------

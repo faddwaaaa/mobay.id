@@ -200,7 +200,7 @@
                                     </div>
                                     <div style="flex: 1; min-width: 0;">
                                         <p style="margin: 0 0 4px 0; font-size: 15px; font-weight: 600; color: #0f172a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Promo Ramadan</p>
-                                        <p style="margin: 0; font-size: 13px; color: #64748b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">payou.id/promo-ramadan</p>
+                                        <p style="margin: 0; font-size: 13px; color: #64748b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">mobay.id/promo-ramadan</p>
                                     </div>
                                 </div>
                                 <div style="text-align: right; flex-shrink: 0; margin-left: 16px;">
@@ -265,7 +265,7 @@
                                 </div>
                                 <div style="flex: 1; min-width: 0;">
                                     <p style="margin: 0 0 2px 0; font-size: 14px; font-weight: 600; color: #0f172a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Promo Spesial Ramadan</p>
-                                    <p style="margin: 0; font-size: 12px; color: #94a3b8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">payou.id/promo-ramadan</p>
+                                    <p style="margin: 0; font-size: 12px; color: #94a3b8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">mobay.id/promo-ramadan</p>
                                 </div>
                             </div>
                             <div style="text-align: right; flex-shrink: 0; margin-left: 12px;">
@@ -287,7 +287,7 @@
                                 </div>
                                 <div style="flex: 1; min-width: 0;">
                                     <p style="margin: 0 0 2px 0; font-size: 14px; font-weight: 600; color: #0f172a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Katalog Produk Terbaru</p>
-                                    <p style="margin: 0; font-size: 12px; color: #94a3b8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">payou.id/katalog-2024</p>
+                                    <p style="margin: 0; font-size: 12px; color: #94a3b8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">mobay.id/katalog-2024</p>
                                 </div>
                             </div>
                             <div style="text-align: right; flex-shrink: 0; margin-left: 12px;">
@@ -309,7 +309,7 @@
                                 </div>
                                 <div style="flex: 1; min-width: 0;">
                                     <p style="margin: 0 0 2px 0; font-size: 14px; font-weight: 600; color: #0f172a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Giveaway Instagram</p>
-                                    <p style="margin: 0; font-size: 12px; color: #94a3b8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">payou.id/giveaway-ig</p>
+                                    <p style="margin: 0; font-size: 12px; color: #94a3b8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">mobay.id/giveaway-ig</p>
                                 </div>
                             </div>
                             <div style="text-align: right; flex-shrink: 0; margin-left: 12px;">
