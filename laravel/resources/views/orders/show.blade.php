@@ -190,10 +190,166 @@
     font-weight: 600;
     word-break: break-word;
 }
+
+/* ── RESI SECTION ── */
+.resi-card {
+    margin-top: 12px;
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1.5px solid #2563eb;
+    background: #fff;
+}
+.resi-card.shipped {
+    border-color: #16a34a;
+}
+.resi-header {
+    background: linear-gradient(130deg, #1d4ed8, #2563eb);
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+.resi-card.shipped .resi-header {
+    background: linear-gradient(130deg, #15803d, #16a34a);
+}
+.resi-header-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.resi-header-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 9px;
+    background: rgba(255,255,255,.18);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 15px;
+}
+.resi-header-title {
+    color: #fff;
+    font-size: 14px;
+    font-weight: 700;
+}
+.resi-header-sub {
+    color: rgba(255,255,255,.75);
+    font-size: 12px;
+    margin-top: 1px;
+}
+.resi-badge {
+    background: rgba(255,255,255,.18);
+    border: 1px solid rgba(255,255,255,.3);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 999px;
+}
+.resi-body { padding: 18px; }
+
+/* Form input resi */
+.resi-form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 14px;
+}
+.resi-form-grid.full { grid-template-columns: 1fr; }
+.form-group label {
+    display: block;
+    font-size: 12px;
+    font-weight: 700;
+    color: #475569;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+}
+.form-group input, .form-group select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 10px;
+    font-size: 13px;
+    color: #0f172a;
+    background: #f8fafc;
+    outline: none;
+    transition: border-color .15s;
+}
+.form-group input:focus, .form-group select:focus {
+    border-color: #2563eb;
+    background: #fff;
+}
+.resi-submit {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: linear-gradient(130deg, #1d4ed8, #2563eb);
+    color: #fff;
+    border: none;
+    border-radius: 11px;
+    padding: 11px 22px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: opacity .15s;
+}
+.resi-submit:hover { opacity: .9; }
+
+/* Info resi sudah diinput */
+.resi-info-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+}
+.resi-info-item {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 10px 12px;
+}
+.resi-info-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    margin-bottom: 4px;
+}
+.resi-info-value {
+    font-size: 14px;
+    font-weight: 700;
+    color: #0f172a;
+}
+.resi-info-value.resi-number {
+    font-size: 18px;
+    letter-spacing: 1px;
+    color: #16a34a;
+}
+.tracking-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    margin-top: 14px;
+    padding: 9px 18px;
+    background: #f0fdf4;
+    border: 1.5px solid #bbf7d0;
+    border-radius: 10px;
+    color: #16a34a;
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+}
+.tracking-btn:hover { background: #dcfce7; }
+
 @media (max-width: 900px) {
     .summary-strip { grid-template-columns: 1fr; }
     .order-grid { grid-template-columns: 1fr; }
     .buyer-grid { grid-template-columns: 1fr; }
+    .resi-form-grid { grid-template-columns: 1fr; }
+    .resi-info-grid { grid-template-columns: 1fr; }
 }
 </style>
 
@@ -320,5 +476,128 @@
             </div>
         </div>
     </div>
+
+    {{-- ── SECTION INPUT RESI — hanya muncul untuk produk fisik ── --}}
+    @if($physicalOrder)
+        @if($physicalOrder->status === 'paid')
+        {{-- Belum diinput resi → tampilkan form --}}
+        <div class="resi-card">
+            <div class="resi-header">
+                <div class="resi-header-left">
+                    <div class="resi-header-icon">
+                        <i class="fas fa-truck"></i>
+                    </div>
+                    <div>
+                        <div class="resi-header-title">Input Nomor Resi</div>
+                        <div class="resi-header-sub">Email notifikasi akan dikirim otomatis ke pembeli</div>
+                    </div>
+                </div>
+                <span class="resi-badge">Menunggu Pengiriman</span>
+            </div>
+            <div class="resi-body">
+                @if(session('success'))
+                    <div style="background:#dcfce7;border:1px solid #bbf7d0;color:#166534;padding:10px 14px;border-radius:10px;font-size:13px;font-weight:600;margin-bottom:14px;">
+                        {{ session('success') }}
+                    </div>
+                @endif
+                <form method="POST" action="{{ route('physical-orders.shipment.update', $physicalOrder) }}">
+                    @csrf
+                    @method('PUT')
+                    <div class="resi-form-grid">
+                        <div class="form-group">
+                            <label>Nomor Resi <span style="color:#ef4444">*</span></label>
+                            <input type="text" name="tracking_number" placeholder="Contoh: JNE1234567890"
+                                value="{{ old('tracking_number') }}" required>
+                            @error('tracking_number')
+                                <p style="color:#ef4444;font-size:12px;margin-top:4px;">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        <div class="form-group">
+                            <label>Kurir <span style="color:#ef4444">*</span></label>
+                            <select name="courier_code" required>
+                                <option value="">-- Pilih Kurir --</option>
+                                @foreach(['jne' => 'JNE', 'sicepat' => 'SiCepat', 'jnt' => 'J&T', 'anteraja' => 'Anteraja', 'tiki' => 'TIKI', 'pos' => 'POS Indonesia', 'ninja' => 'Ninja Xpress', 'wahana' => 'Wahana'] as $code => $label)
+                                    <option value="{{ $code }}"
+                                        {{ old('courier_code', strtolower($physicalOrder->courier_code ?? '')) === $code ? 'selected' : '' }}>
+                                        {{ $label }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            @error('courier_code')
+                                <p style="color:#ef4444;font-size:12px;margin-top:4px;">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        <div class="form-group">
+                            <label>Layanan</label>
+                            <input type="text" name="courier_service" placeholder="Contoh: REG, YES, OKE"
+                                value="{{ old('courier_service', $physicalOrder->courier_service ?? '') }}">
+                        </div>
+                        <div class="form-group">
+                            <label>Estimasi Tiba</label>
+                            <input type="text" name="estimated_arrival" placeholder="Contoh: 2-3 hari kerja"
+                                value="{{ old('estimated_arrival') }}">
+                        </div>
+                    </div>
+                    <button type="submit" class="resi-submit">
+                        <i class="fas fa-paper-plane"></i>
+                        Simpan Resi & Kirim Notifikasi
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        @else
+        {{-- Sudah diinput resi → tampilkan info --}}
+        <div class="resi-card shipped">
+            <div class="resi-header">
+                <div class="resi-header-left">
+                    <div class="resi-header-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div>
+                        <div class="resi-header-title">Pesanan Sudah Dikirim</div>
+                        <div class="resi-header-sub">
+                            Dikirim {{ optional($physicalOrder->shipped_at)->format('d M Y, H:i') }} WIB
+                        </div>
+                    </div>
+                </div>
+                <span class="resi-badge">{{ strtoupper($physicalOrder->status) }}</span>
+            </div>
+            <div class="resi-body">
+                <div class="resi-info-grid">
+                    <div class="resi-info-item" style="grid-column: 1 / -1;">
+                        <div class="resi-info-label">Nomor Resi</div>
+                        <div class="resi-info-value resi-number">{{ $physicalOrder->tracking_number }}</div>
+                    </div>
+                    <div class="resi-info-item">
+                        <div class="resi-info-label">Kurir</div>
+                        <div class="resi-info-value">{{ strtoupper($physicalOrder->courier_code) }}</div>
+                    </div>
+                    <div class="resi-info-item">
+                        <div class="resi-info-label">Layanan</div>
+                        <div class="resi-info-value">{{ $physicalOrder->courier_service ?? '-' }}</div>
+                    </div>
+                    @if($physicalOrder->estimated_arrival)
+                    <div class="resi-info-item">
+                        <div class="resi-info-label">Estimasi Tiba</div>
+                        <div class="resi-info-value">{{ $physicalOrder->estimated_arrival }}</div>
+                    </div>
+                    @endif
+                    <div class="resi-info-item">
+                        <div class="resi-info-label">Status Pengiriman</div>
+                        <div class="resi-info-value">{{ $physicalOrder->biteship_status ?? 'Menunggu update' }}</div>
+                    </div>
+                </div>
+                @if($physicalOrder->tracking_url)
+                    <a href="{{ $physicalOrder->tracking_url }}" target="_blank" class="tracking-btn">
+                        <i class="fas fa-external-link-alt"></i>
+                        Lacak Paket
+                    </a>
+                @endif
+            </div>
+        </div>
+        @endif
+    @endif
+
 </div>
 @endsection

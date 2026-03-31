@@ -370,7 +370,7 @@ Route::get('/preview/{username}', function ($username) {
 })->name('preview.profile');
 
 //biteship
-Route::post('/webhooks/biteship', [\App\Http\Controllers\BiteshipWebhookController::class, 'handle'])
+Route::post('/webhook/biteship', [\App\Http\Controllers\BiteshipWebhookController::class, 'handle'])
     ->name('webhooks.biteship');
 
     Route::get('/debug/biteship', function () {

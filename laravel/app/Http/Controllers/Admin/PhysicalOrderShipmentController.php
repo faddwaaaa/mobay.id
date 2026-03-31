@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Mail\PhysicalOrderShipped;
 use App\Models\PhysicalOrder;
+use App\Models\Transaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 
@@ -27,7 +28,7 @@ class PhysicalOrderShipmentController extends Controller
      */
     public function update(Request $request, PhysicalOrder $physicalOrder)
     {
-        abort_if($physicalOrder->status !== 'paid', 422);
+        abort_if(in_array($physicalOrder->status, ['shipped', 'delivered', 'cancelled']), 422);
 
         $validated = $request->validate([
             'tracking_number'   => ['required', 'string', 'max:100'],
@@ -49,8 +50,15 @@ class PhysicalOrderShipmentController extends Controller
         Mail::to($physicalOrder->buyer_email)
             ->send(new PhysicalOrderShipped($physicalOrder->fresh()));
 
-        return redirect()
-            ->route('admin.physical-orders.index')
-            ->with('success', "Resi disimpan & email dikirim ke {$physicalOrder->buyer_email}");
+        // ✅ Redirect ke halaman detail pesanan penjual
+        $transaction = Transaction::where('order_id', $physicalOrder->midtrans_order_id)->first();
+
+        if ($transaction) {
+            return redirect()
+                ->route('orders.show', ['id' => $transaction->id])
+                ->with('success', "Resi disimpan & email dikirim ke {$physicalOrder->buyer_email}");
+        }
+
+        return back()->with('success', "Resi disimpan & email dikirim ke {$physicalOrder->buyer_email}");
     }
 }
