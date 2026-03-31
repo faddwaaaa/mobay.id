@@ -31,7 +31,8 @@ use App\Http\Controllers\{
     PublicProfileReportController,
     DigitalOrderController,
     ShippingSettingsController,
-    BiteshipWebhookController
+    BiteshipWebhookController,
+    Api\PaymentController
 };
 
 use App\Http\Controllers\Admin\ProfileReportController;
@@ -51,6 +52,19 @@ Route::get('/contact', [LandingController::class, 'contact'])->name('contact');
 require __DIR__ . '/auth.php';
 require __DIR__ . '/webhook_routes.php';
 
+/*
+|--------------------------------------------------------------------------
+| WEBHOOK TEST ROUTES (untuk debugging)
+|--------------------------------------------------------------------------
+*/
+Route::get('/webhook/xendit/invoice', function () {
+    return response()->json([
+        'status' => 'ok',
+        'webhook_url' => config('app.url') . '/webhook/xendit/invoice',
+        'method' => 'POST',
+        'note' => 'Xendit akan hit route ini dengan POST request',
+    ]);
+})->name('webhook.xendit.invoice.test');
 
 /*
 |--------------------------------------------------------------------------
@@ -79,6 +93,10 @@ Route::post('/checkout/create-charge', [CheckoutController::class, 'createCharge
 Route::get('/checkout/{productId}', [CheckoutController::class, 'show'])->name('checkout.show');
 Route::post('/checkout/process', [CheckoutController::class, 'process'])->name('checkout.process');
 Route::post('/midtrans/webhook', [CheckoutController::class, 'webhook'])->name('midtrans.webhook');
+
+// Payment modal/modal routes (Xendit)
+Route::post('/payment/create', [PaymentController::class, 'create'])->name('payment.create');
+Route::get('/payment/status/{paymentId}', [PaymentController::class, 'status'])->name('payment.status');
 
 Route::get('/payment/success/{orderCode}', [DigitalOrderController::class, 'paymentSuccess'])
     ->name('payment.show');
@@ -121,6 +139,10 @@ Route::prefix('api')->group(function () {
     Route::get('/ongkir/cities', [RajaOngkirController::class, 'cities']);
     Route::post('/ongkir/cost', [RajaOngkirController::class, 'cost']);
     Route::post('/callback/midtrans', [CallbackController::class, 'handleMidtransCallback'])->name('midtrans.callback');
+
+    // Payment routes
+    Route::post('/payment/create', [PaymentController::class, 'create']);
+    Route::get('/payment/status/{paymentId}', [PaymentController::class, 'status']);
 
     Route::middleware('auth')->get('/storage/info', [DashboardController::class, 'getStorageInfo'])->name('api.storage.info');
 
@@ -400,19 +422,14 @@ Route::get('/preview/{username}', function ($username) {
     return view('public.profile', compact('user', 'profile', 'socialLinks'));
 })->name('preview.profile');
 
-<<<<<<< HEAD
 
 /*
 |--------------------------------------------------------------------------
 | BITESHIP WEBHOOK
 |--------------------------------------------------------------------------
 */
-Route::post('/webhooks/biteship', [BiteshipWebhookController::class, 'handle'])
-=======
-//biteship
-Route::post('/webhook/biteship', [\App\Http\Controllers\BiteshipWebhookController::class, 'handle'])
->>>>>>> 3ef5f6235b108b0daecd77988faaea1f6b1e3fb4
-    ->name('webhooks.biteship');
+Route::post('/webhooks/biteship', [BiteshipWebhookController::class, 'handle'])->name('webhooks.biteship');
+Route::post('/webhook/biteship', [\App\Http\Controllers\BiteshipWebhookController::class, 'handle'])->name('webhooks.biteship');
 
 Route::get('/debug/biteship', function () {
     return response()->json([
