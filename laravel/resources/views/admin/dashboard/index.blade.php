@@ -81,7 +81,7 @@
     <div class="banner">
       <div>
         <div class="banner-hi">Halo, {{ auth()->user()->name }} 👋</div>
-        <div class="banner-sub">Platform Payou.id berjalan normal.<br>Pantau aktivitas pengguna dan link di sini.</div>
+        <div class="banner-sub">Platform Mobay.id berjalan normal.<br>Pantau aktivitas pengguna dan link di sini.</div>
         <div class="banner-chips">
           <div class="chip"><div class="cdot" style="background:#6ee7b7;"></div>Platform aktif</div>
           <div class="chip"><div class="cdot" style="background:#fde68a;"></div>{{ $stats['new_users_today'] }} user baru hari ini</div>

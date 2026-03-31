@@ -85,60 +85,38 @@ class User extends Authenticatable
 
     /**
      * ===== STORAGE MANAGEMENT =====
-     * Method untuk mengelola kapasitas penyimpanan user
      */
 
-    /**
-     * Dapatkan info penyimpanan user
-     */
     public function getStorageInfo(): array
     {
         return \App\Services\StorageService::getStorageInfo($this);
     }
 
-    /**
-     * Validasi apakah user bisa upload file
-     */
     public function canUpload(int $fileSize): array
     {
         return \App\Services\StorageService::validateUpload($this, $fileSize);
     }
 
-    /**
-     * Tambahkan storage usage setelah file diupload
-     */
     public function addStorageUsage(int $fileSize): void
     {
         \App\Services\StorageService::addStorageUsage($this, $fileSize);
     }
 
-    /**
-     * Kurangi storage usage ketika file dihapus
-     */
     public function removeStorageUsage(int $fileSize): void
     {
         \App\Services\StorageService::removeStorageUsage($this, $fileSize);
     }
 
-    /**
-     * Dapatkan sisa storage yang tersedia
-     */
     public function getAvailableStorage(): int
     {
         return \App\Services\StorageService::getAvailableStorage($this);
     }
 
-    /**
-     * Dapatkan persentase penggunaan storage
-     */
     public function getStoragePercentage(): float
     {
         return \App\Services\StorageService::getStoragePercentage($this);
     }
 
-    /**
-     * Set storage limit berdasarkan subscription plan
-     */
     public function updateStorageLimit(): void
     {
         \App\Services\StorageService::updateStorageLimit($this);
@@ -153,7 +131,7 @@ class User extends Authenticatable
 
     public function userProfile()
     {
-        return $this->hasOne(UserProfile::class); // alias untuk controller appearance
+        return $this->hasOne(UserProfile::class);
     }
 
     public function links()
@@ -196,23 +174,22 @@ class User extends Authenticatable
         return $this->hasMany(Click::class);
     }
 
-    // Generate username dari email
     public static function generateUsernameFromEmail($email)
     {
-        return strtok($email, '@'); // Ambil bagian sebelum @
+        return strtok($email, '@');
     }
 
+    public function paymentAccounts()
+    {
+        return $this->hasMany(PaymentAccount::class)->whereNull('deleted_at')->orderByDesc('is_default');
+    }
 
-public function paymentAccounts()
-{
-    return $this->hasMany(PaymentAccount::class)->whereNull('deleted_at')->orderByDesc('is_default');
-}
+    public function profileReports()
+    {
+        return $this->hasMany(ProfileReport::class, 'reported_user_id');
+    }
 
-public function profileReports()
-{
-    return $this->hasMany(ProfileReport::class, 'reported_user_id');
-}
-public function getAvatarUrlAttribute(): string
+    public function getAvatarUrlAttribute(): string
     {
         if (!$this->avatar) {
             return asset('images/default-avatar.png');

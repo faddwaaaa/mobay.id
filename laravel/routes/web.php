@@ -7,7 +7,6 @@ use App\Models\User;
 use App\Models\Product;
 use App\Models\ProfileView;
 
-// FIX 1: <Admin>ProfileReportController dipisah jadi use sendiri (beda namespace)
 use App\Http\Controllers\{
     DashboardController,
     ProfileController,
@@ -38,6 +37,11 @@ use App\Http\Controllers\{
 use App\Http\Controllers\Admin\ProfileReportController;
 use App\Http\Controllers\Admin\PhysicalOrderShipmentController;
 
+/*
+|--------------------------------------------------------------------------
+| LANDING PAGES
+|--------------------------------------------------------------------------
+*/
 Route::get('/', [LandingController::class, 'index'])->name('home');
 Route::get('/service', [LandingController::class, 'service'])->name('service');
 Route::get('/faq', [LandingController::class, 'faq'])->name('faq');
@@ -45,7 +49,6 @@ Route::get('/about', [LandingController::class, 'about'])->name('about');
 Route::get('/contact', [LandingController::class, 'contact'])->name('contact');
 
 require __DIR__ . '/auth.php';
-
 
 
 /*
@@ -74,24 +77,20 @@ Route::get('/checkout/{productId}', [CheckoutController::class, 'show'])->name('
 Route::post('/checkout/process', [CheckoutController::class, 'process'])->name('checkout.process');
 Route::post('/midtrans/webhook', [CheckoutController::class, 'webhook'])->name('midtrans.webhook');
 
-// ✅ FIX: Dipindah ke sini — harus di luar auth & di atas wildcard
 Route::get('/payment/success/{orderCode}', [DigitalOrderController::class, 'paymentSuccess'])
     ->name('payment.show');
 
-// ✅ FIX: Dipindah ke sini — pembeli tidak perlu login untuk download
 Route::match(['get', 'post'], '/download/{token}', [DigitalOrderController::class, 'verifyDownload'])
     ->name('download.verify');
 
 
-
-    // ================================================================
-// TAMBAHKAN KE routes/web.php
-// Di dalam group Route::middleware('auth')->group(...)
-// ================================================================
-
-// Banding — hanya user yang disuspend bisa POST
-Route::post('/appeal',        [\App\Http\Controllers\AppealController::class, 'store']) ->name('appeal.store');
-Route::get('/appeal/status',  [\App\Http\Controllers\AppealController::class, 'status'])->name('appeal.status');
+/*
+|--------------------------------------------------------------------------
+| APPEAL — di luar auth agar user suspended bisa akses
+|--------------------------------------------------------------------------
+*/
+Route::post('/appeal', [\App\Http\Controllers\AppealController::class, 'store'])->name('appeal.store');
+Route::get('/appeal/status', [\App\Http\Controllers\AppealController::class, 'status'])->name('appeal.status');
 
 
 /*
@@ -108,24 +107,24 @@ Route::middleware(['auth', 'verified'])->prefix('payment')->name('payment.')->gr
     Route::post('/setup-pin', [PaymentAccountController::class, 'setupPin'])->name('accounts.setup-pin');
 });
 
+
+/*
+|--------------------------------------------------------------------------
+| API ROUTES
+|--------------------------------------------------------------------------
+*/
 Route::prefix('api')->group(function () {
+
     Route::get('/ongkir/cities', [RajaOngkirController::class, 'cities']);
     Route::post('/ongkir/cost', [RajaOngkirController::class, 'cost']);
     Route::post('/callback/midtrans', [CallbackController::class, 'handleMidtransCallback'])->name('midtrans.callback');
 
-    // ===== STORAGE API =====
     Route::middleware('auth')->get('/storage/info', [DashboardController::class, 'getStorageInfo'])->name('api.storage.info');
-
-    Route::post('/callback/midtrans', [CallbackController::class, 'handleMidtransCallback'])->name('midtrans.callback');
 
     Route::post('/topup', [TransactionController::class, 'createTopUp']);
     Route::post('/withdraw', [TransactionController::class, 'createWithdraw']);
     Route::get('/transactions', [TransactionController::class, 'getTransactionHistory']);
     Route::get('/withdrawals', [TransactionController::class, 'getWithdrawalHistory']);
-    Route::get('/product/{id}/data', [ProductController::class, 'apiShow']);
-    Route::get('/product/{id}', [ProductController::class, 'apiShow']);
-    Route::post('/product/{id}/view', [ProductController::class, 'trackView']);
-    Route::post('/profile/{username}/view', [App\Http\Controllers\PublicProfileController::class, 'trackProfileView']);
 
     Route::get('/product/{id}/data', [ProductController::class, 'apiShow']);
     Route::get('/product/{id}', [ProductController::class, 'apiShow']);
@@ -134,33 +133,34 @@ Route::prefix('api')->group(function () {
 
     Route::post('/profile/{username}/view', [PublicProfileController::class, 'trackProfileView']);
 
-    // FIX 2: backslash nyasar di depan Route dihapus
-    Route::get('/cart',          [CartController::class, 'index']);
-    Route::post('/cart/add',     [CartController::class, 'add']);
-    Route::patch('/cart/{id}',   [CartController::class, 'update']);
+    Route::get('/cart', [CartController::class, 'index']);
+    Route::post('/cart/add', [CartController::class, 'add']);
+    Route::patch('/cart/{id}', [CartController::class, 'update']);
     Route::delete('/cart/clear', [CartController::class, 'clear']);
-    Route::delete('/cart/{id}',  [CartController::class, 'remove']);
+    Route::delete('/cart/{id}', [CartController::class, 'remove']);
 
     Route::post('/report-digital-problem', [DigitalOrderController::class, 'reportProblem'])
-    ->name('digital.report');
+        ->name('digital.report');
 
-    Route::get('/blocks', function (Request $request) {
+    Route::middleware('auth')->get('/blocks', function (Request $request) {
         $pageId = $request->query('page_id');
         if (!$pageId) return response()->json(['success' => false, 'message' => 'Page ID required'], 400);
+
         $page = \App\Models\Page::with('blocks')->find($pageId);
         if (!$page) return response()->json(['success' => false, 'message' => 'Page not found'], 404);
         if ($page->user_id !== auth()->id()) return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
-        $blocks = $page->blocks->sortBy('position')->map(function ($block) {
-            return ['id' => $block->id, 'type' => $block->type, 'content' => $block->content, 'product_id' => $block->product_id ?? null, 'position' => $block->position];
-        })->values();
-        $blocks = $page->blocks->sortBy('position')->map(fn ($b) => [
-            'id' => $b->id, 'type' => $b->type, 'content' => $b->content,
-            'product_id' => $b->product_id ?? null, 'position' => $b->position,
-        ])->values();
-        return response()->json(['success' => true, 'blocks' => $blocks, 'pageTitle' => $page->title]);
-    })->middleware('auth')->name('api.blocks');
 
-    // Polling updated_at untuk sync appearance di profil publik
+        $blocks = $page->blocks->sortBy('position')->map(fn ($b) => [
+            'id'         => $b->id,
+            'type'       => $b->type,
+            'content'    => $b->content,
+            'product_id' => $b->product_id ?? null,
+            'position'   => $b->position,
+        ])->values();
+
+        return response()->json(['success' => true, 'blocks' => $blocks, 'pageTitle' => $page->title]);
+    })->name('api.blocks');
+
     Route::get('/profile/{username}/updated_at', function ($username) {
         $user    = \App\Models\User::where('username', $username)->firstOrFail();
         $profile = $user->userProfile;
@@ -180,14 +180,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/riwayat/penarikan/{id}', [TransactionController::class, 'withdrawalDetail'])->name('transactions.withdrawal-detail');
 });
 
-Route::middleware(['auth', 'verified'])->prefix('payment')->name('payment.')->group(function () {
-    Route::get('/accounts', [PaymentAccountController::class, 'index'])->name('accounts.index');
-    Route::post('/accounts', [PaymentAccountController::class, 'store'])->name('accounts.store');
-    Route::patch('/accounts/{paymentAccount}/default', [PaymentAccountController::class, 'setDefault'])->name('accounts.default');
-    Route::delete('/accounts/{paymentAccount}', [PaymentAccountController::class, 'destroy'])->name('accounts.destroy');
-    Route::post('/accounts/verify', [PaymentAccountController::class, 'verifyAccount'])->name('accounts.verify');
-    Route::post('/setup-pin', [PaymentAccountController::class, 'setupPin'])->name('accounts.setup-pin');
-});
 
 /*
 |--------------------------------------------------------------------------
@@ -195,8 +187,8 @@ Route::middleware(['auth', 'verified'])->prefix('payment')->name('payment.')->gr
 |--------------------------------------------------------------------------
 */
 Route::middleware(['auth'])->group(function () {
-    Route::get('/settings/shipping', [App\Http\Controllers\ShippingSettingsController::class, 'index'])->name('settings.shipping');
-    Route::post('/settings/shipping', [App\Http\Controllers\ShippingSettingsController::class, 'save'])->name('settings.shipping.save');
+    Route::get('/settings/shipping', [ShippingSettingsController::class, 'index'])->name('settings.shipping');
+    Route::post('/settings/shipping', [ShippingSettingsController::class, 'save'])->name('settings.shipping.save');
 });
 
 
@@ -206,7 +198,6 @@ Route::middleware(['auth'])->group(function () {
 |--------------------------------------------------------------------------
 */
 Route::middleware('auth')->group(function () {
-    // ✅ spesifik dulu, baru wildcard
     Route::get('/pesanan/fisik/{physicalOrder}/resi', [PhysicalOrderShipmentController::class, 'edit'])
         ->name('physical-orders.shipment.edit');
     Route::put('/pesanan/fisik/{physicalOrder}/resi', [PhysicalOrderShipmentController::class, 'update'])
@@ -227,7 +218,7 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
     Route::get('/dashboard', [App\Http\Controllers\Admin\DashboardController::class, 'index'])
         ->name('admin.dashboard');
 
-    // ✅ TAMBAHAN: Admin input resi produk fisik
+    // Admin input resi produk fisik
     Route::middleware(['is_admin'])->group(function () {
         Route::get('physical-orders/{physicalOrder}/shipment', [PhysicalOrderShipmentController::class, 'edit'])
             ->name('admin.physical-orders.shipment.edit');
@@ -235,21 +226,53 @@ Route::prefix('admin')->middleware(['auth'])->group(function () {
             ->name('admin.physical-orders.shipment.update');
     });
 
-    Route::get   ('/reports',                           [ProfileReportController::class, 'index'])       ->name('admin.reports.index');
-    Route::get   ('/reports/export',                    [ProfileReportController::class, 'exportCsv'])   ->name('admin.reports.export');
-    Route::get   ('/reports/{report}',                  [ProfileReportController::class, 'show'])         ->name('admin.reports.show');
-    Route::patch ('/reports/{report}/status',           [ProfileReportController::class, 'updateStatus'])->name('admin.reports.updateStatus');
-    Route::patch ('/reports/{report}/note',             [ProfileReportController::class, 'saveNote'])    ->name('admin.reports.saveNote');
-    Route::get   ('/reports/{report}/evidence',         [ProfileReportController::class, 'viewEvidence'])->name('admin.reports.evidence');
-    Route::get   ('/reports/{report}/evidence/{index}', [ProfileReportController::class, 'evidenceFile'])->name('admin.reports.evidence.file');
-    Route::get   ('/appeals',                           [\App\Http\Controllers\Admin\AppealController::class, 'index'])        ->name('admin.appeals.index');
-    Route::get   ('/appeals/{appeal}',                  [\App\Http\Controllers\Admin\AppealController::class, 'show'])         ->name('admin.appeals.show');
-    Route::get   ('/appeals/{appeal}/evidence',         [\App\Http\Controllers\Admin\AppealController::class, 'viewEvidence']) ->name('admin.appeals.evidence');
-    Route::get   ('/appeals/{appeal}/evidence/{index}', [\App\Http\Controllers\Admin\AppealController::class, 'evidenceFile']) ->name('admin.appeals.evidence.file');
-    Route::patch ('/appeals/{appeal}/approve',          [\App\Http\Controllers\Admin\AppealController::class, 'approve'])      ->name('admin.appeals.approve');
-    Route::patch ('/appeals/{appeal}/reject',           [\App\Http\Controllers\Admin\AppealController::class, 'reject'])       ->name('admin.appeals.reject');
+    // Reports
+    Route::get('/reports', [ProfileReportController::class, 'index'])->name('admin.reports.index');
+    Route::get('/reports/export', [ProfileReportController::class, 'exportCsv'])->name('admin.reports.export');
+    Route::get('/reports/{report}', [ProfileReportController::class, 'show'])->name('admin.reports.show');
+    Route::patch('/reports/{report}/status', [ProfileReportController::class, 'updateStatus'])->name('admin.reports.updateStatus');
+    Route::patch('/reports/{report}/note', [ProfileReportController::class, 'saveNote'])->name('admin.reports.saveNote');
+    Route::get('/reports/{report}/evidence', [ProfileReportController::class, 'viewEvidence'])->name('admin.reports.evidence');
+    Route::get('/reports/{report}/evidence/{index}', [ProfileReportController::class, 'evidenceFile'])->name('admin.reports.evidence.file');
 
-});
+    // Appeals
+    Route::get('/appeals', [\App\Http\Controllers\Admin\AppealController::class, 'index'])->name('admin.appeals.index');
+    Route::get('/appeals/{appeal}', [\App\Http\Controllers\Admin\AppealController::class, 'show'])->name('admin.appeals.show');
+    Route::get('/appeals/{appeal}/evidence', [\App\Http\Controllers\Admin\AppealController::class, 'viewEvidence'])->name('admin.appeals.evidence');
+    Route::get('/appeals/{appeal}/evidence/{index}', [\App\Http\Controllers\Admin\AppealController::class, 'evidenceFile'])->name('admin.appeals.evidence.file');
+    Route::patch('/appeals/{appeal}/approve', [\App\Http\Controllers\Admin\AppealController::class, 'approve'])->name('admin.appeals.approve');
+    Route::patch('/appeals/{appeal}/reject', [\App\Http\Controllers\Admin\AppealController::class, 'reject'])->name('admin.appeals.reject');
+
+    // ─── Halaman Bio & Link ───────────────────────────────────────────────
+    Route::prefix('bio')->name('admin.bio.')->group(function () {
+        Route::get('/',                        [App\Http\Controllers\Admin\BioController::class,     'index'])        ->name('index');
+        Route::get('/{username}',              [App\Http\Controllers\Admin\BioController::class,     'show'])         ->name('show');
+        Route::patch('/{id}/suspend',          [App\Http\Controllers\Admin\BioController::class,     'suspend'])      ->name('suspend');
+        Route::patch('/{id}/unsuspend',        [App\Http\Controllers\Admin\BioController::class,     'unsuspend'])    ->name('unsuspend');
+        Route::patch('/{id}/dismiss-report',   [App\Http\Controllers\Admin\BioController::class,     'dismissReport'])->name('dismissReport');
+        Route::patch('/user/{id}/verify',      [App\Http\Controllers\Admin\BioController::class,     'verify'])       ->name('verify');
+    });
+
+    // ─── Toko & Produk ────────────────────────────────────────────────────
+    Route::prefix('products')->name('admin.products.')->group(function () {
+        Route::get('/',                        [App\Http\Controllers\Admin\ProductController::class, 'index'])        ->name('index');
+        Route::get('/{id}',                    [App\Http\Controllers\Admin\ProductController::class, 'show'])         ->name('show');
+        Route::patch('/{id}/approve',          [App\Http\Controllers\Admin\ProductController::class, 'approve'])      ->name('approve');
+        Route::patch('/{id}/reject',           [App\Http\Controllers\Admin\ProductController::class, 'reject'])       ->name('reject');
+        Route::patch('/{id}/suspend',          [App\Http\Controllers\Admin\ProductController::class, 'suspend'])      ->name('suspend');
+        Route::patch('/{id}/unsuspend',        [App\Http\Controllers\Admin\ProductController::class, 'unsuspend'])    ->name('unsuspend');
+    });
+
+    // ─── Order ────────────────────────────────────────────────────────────
+    Route::prefix('orders')->name('admin.orders.')->group(function () {
+        Route::get('/',                        [App\Http\Controllers\Admin\OrderController::class,   'index'])        ->name('index');
+        Route::get('/export',                  [App\Http\Controllers\Admin\OrderController::class,   'export'])       ->name('export');
+        Route::get('/{id}',                    [App\Http\Controllers\Admin\OrderController::class,   'show'])         ->name('show');
+        Route::patch('/{id}/refund',           [App\Http\Controllers\Admin\OrderController::class,   'refund'])       ->name('refund');
+        Route::patch('/{id}/resolve',          [App\Http\Controllers\Admin\OrderController::class,   'resolve'])      ->name('resolve');
+    });
+
+}); // end admin group
 
 
 /*
@@ -269,7 +292,6 @@ Route::middleware('auth')->group(function () {
         Route::get('/export', [AnalyticsController::class, 'export'])->name('export');
     });
 
-    Route::get('/premium', function () { return view('premium.index'); })->name('premium.index');
     Route::get('/premium', fn () => view('premium.index'))->name('premium.index');
 
     Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
@@ -295,8 +317,8 @@ Route::middleware('auth')->group(function () {
         return view('qr-code', ['userSlug' => $user->username, 'totalScans' => 0, 'todayScans' => 0]);
     })->name('qrcode.show');
 
-
-    Route::get('/notifications/all',[App\Http\Controllers\NotificationController::class, 'page'])->name('notifications.index');
+    // Notifications
+    Route::get('/notifications/all', [App\Http\Controllers\NotificationController::class, 'page'])->name('notifications.index');
     Route::get('/notifications', [App\Http\Controllers\NotificationController::class, 'index']);
     Route::get('/notifications/unread-count', [App\Http\Controllers\NotificationController::class, 'unreadCount'])->name('notifications.unread');
     Route::post('/notifications/mark-all', [App\Http\Controllers\NotificationController::class, 'markAllRead'])->name('notifications.markAll');
@@ -304,11 +326,13 @@ Route::middleware('auth')->group(function () {
     Route::delete('/notifications/all', [App\Http\Controllers\NotificationController::class, 'destroyAll'])->name('notifications.destroyAll');
     Route::delete('/notifications/{notification}', [App\Http\Controllers\NotificationController::class, 'destroy'])->name('notifications.destroy');
 
+    // Produk
     Route::get('/produk', [ProductController::class, 'index'])->name('products.manage');
     Route::post('/produk', [ProductController::class, 'store'])->name('products.store');
     Route::delete('/produk/{produk}', [ProductController::class, 'destroy'])->name('products.destroy');
     Route::put('/produk/{product}/update', [ProductController::class, 'update'])->name('products.update');
 
+    // Topup & Withdraw
     Route::get('/dashboard/topup', [TransactionController::class, 'showTopupForm'])->name('topup.form');
     Route::get('/dashboard/topup/success', [TransactionController::class, 'topupSuccess'])->name('topup.success');
     Route::get('/dashboard/topup/error', [TransactionController::class, 'topupError'])->name('topup.error');
@@ -316,22 +340,25 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboard/withdraw', [TransactionController::class, 'showWithdrawForm'])->name('withdraw.form');
     Route::post('/withdrawal', [TransactionController::class, 'createWithdraw'])->name('withdrawal.store');
 
-    // ─── Tampilan / Appearance ───
-    Route::get('/appearance',                [AppearanceController::class, 'index'])->name('dashboard.appearance');
-    Route::get('/appearance/preview',        [AppearanceController::class, 'preview'])->name('dashboard.appearance.preview');
-    Route::post('/appearance/save',          [AppearanceController::class, 'save'])->name('dashboard.appearance.save');
-    Route::post('/appearance/upload-bg',     [AppearanceController::class, 'uploadBgImage'])->name('dashboard.appearance.uploadBg');
+    // Appearance
+    Route::get('/appearance', [AppearanceController::class, 'index'])->name('dashboard.appearance');
+    Route::get('/appearance/preview', [AppearanceController::class, 'preview'])->name('dashboard.appearance.preview');
+    Route::post('/appearance/save', [AppearanceController::class, 'save'])->name('dashboard.appearance.save');
+    Route::post('/appearance/upload-bg', [AppearanceController::class, 'uploadBgImage'])->name('dashboard.appearance.uploadBg');
     Route::post('/appearance/upload-banner', [AppearanceController::class, 'uploadBanner'])->name('dashboard.appearance.uploadBanner');
-    Route::post('/appearance/reset',         [AppearanceController::class, 'reset'])->name('dashboard.appearance.reset');
+    Route::post('/appearance/reset', [AppearanceController::class, 'reset'])->name('dashboard.appearance.reset');
     Route::post('/appearance/delete-banner', [AppearanceController::class, 'deleteBanner'])->name('dashboard.appearance.deleteBanner');
-    Route::post('appearance/delete-bg', [AppearanceController::class, 'deleteBg'])->name('dashboard.appearance.deleteBg');
+    Route::post('/appearance/delete-bg', [AppearanceController::class, 'deleteBg'])->name('dashboard.appearance.deleteBg');
 
     Route::get('/debug-last-trx', function () {
         $trx = App\Models\Transaction::latest()->first();
-        return ['order_id' => $trx->order_id ?? null, 'status' => $trx->status ?? null,
-                'amount' => $trx->amount ?? null,
-                'notes' => is_string($trx->notes ?? null) ? json_decode($trx->notes, true) : $trx->notes,
-                'created_at' => $trx->created_at ?? null];
+        return [
+            'order_id'   => $trx->order_id ?? null,
+            'status'     => $trx->status ?? null,
+            'amount'     => $trx->amount ?? null,
+            'notes'      => is_string($trx->notes ?? null) ? json_decode($trx->notes, true) : $trx->notes,
+            'created_at' => $trx->created_at ?? null,
+        ];
     });
 
     Route::post('/logout', function () {
@@ -340,7 +367,8 @@ Route::middleware('auth')->group(function () {
         request()->session()->regenerateToken();
         return redirect('/login');
     })->name('logout');
-});
+
+}); // end auth group
 
 
 /*
@@ -363,25 +391,31 @@ Route::get('/preview/{username}', function ($username) {
         ->with(['profile', 'pages' => fn ($q) => $q->with('blocks')])
         ->firstOrFail();
 
-    $profile = $user->userProfile;
+    $profile     = $user->userProfile;
     $socialLinks = collect($profile?->social_links ?? [])->filter()->toArray();
 
     return view('public.profile', compact('user', 'profile', 'socialLinks'));
 })->name('preview.profile');
 
-//biteship
-Route::post('/webhooks/biteship', [\App\Http\Controllers\BiteshipWebhookController::class, 'handle'])
+
+/*
+|--------------------------------------------------------------------------
+| BITESHIP WEBHOOK
+|--------------------------------------------------------------------------
+*/
+Route::post('/webhooks/biteship', [BiteshipWebhookController::class, 'handle'])
     ->name('webhooks.biteship');
 
-    Route::get('/debug/biteship', function () {
+Route::get('/debug/biteship', function () {
     return response()->json([
         'webhook_secret_set' => !empty(config('services.biteship.webhook_secret')),
         'api_key_set'        => !empty(env('BITESHIP_API_KEY')),
-        'webhook_url'        => config('app.url') . '/webhooks/biteship', // ✅ ganti ini
+        'webhook_url'        => config('app.url') . '/webhooks/biteship',
         'app_url'            => config('app.url'),
         'environment'        => app()->environment(),
     ]);
 })->middleware('auth');
+
 
 /*
 |--------------------------------------------------------------------------
@@ -393,13 +427,17 @@ Route::get('/go/{username}', [LinkRedirectController::class, 'redirect'])->name(
 Route::get('/search', [SearchController::class, 'search']);
 
 
+/*
+|--------------------------------------------------------------------------
+| WILDCARD ROUTES — HARUS PALING BAWAH
+|--------------------------------------------------------------------------
+*/
 Route::get('/{short_code}', function ($short_code) {
     if (\App\Models\User::where('username', $short_code)->exists()) {
         $user = \App\Models\User::where('username', $short_code)
             ->with(['profile', 'pages' => fn ($q) => $q->where('is_active', 1)->with('blocks')])
             ->firstOrFail();
 
-        // Blokir profil user yang disuspend
         if ($user->is_suspended) abort(404);
 
         $profile     = $user->userProfile;
@@ -414,7 +452,6 @@ Route::get('/{username}', function ($username) {
         ->with(['profile', 'pages' => fn ($q) => $q->where('is_active', 1)->with('blocks')])
         ->firstOrFail();
 
-    // Blokir profil user yang disuspend
     if ($user->is_suspended) abort(404);
 
     $profile     = $user->userProfile;

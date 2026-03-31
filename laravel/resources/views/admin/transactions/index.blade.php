@@ -6,7 +6,7 @@
 
   <div>
     <div style="font-size:18px;font-weight:900;color:var(--ink);letter-spacing:-.3px;">History Pembayaran</div>
-    <div style="font-size:12px;color:var(--ink3);font-weight:600;margin-top:2px;">Semua transaksi di platform Payou.id</div>
+    <div style="font-size:12px;color:var(--ink3);font-weight:600;margin-top:2px;">Semua transaksi di platform Mobay.id</div>
   </div>
 
   {{-- STAT CARDS --}}

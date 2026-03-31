@@ -21,31 +21,44 @@ class Product extends Model
         'shipping_enabled',
     ];
 
-    public function images() {
+    // ===== RELATIONS =====
+
+    /**
+     * Seller / pemilik produk ini
+     * Nama 'owner' dipakai agar tidak bentrok dengan controller User lain
+     */
+    public function owner()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function images()
+    {
         return $this->hasMany(ProductImage::class);
     }
 
-    public function files() {
+    public function files()
+    {
         return $this->hasMany(ProductFile::class);
     }
 
     public function block()
-{
-    return $this->hasOne(Block::class);
-}
+    {
+        return $this->hasOne(Block::class);
+    }
 
-public function views()
-{
-    return $this->hasMany(ProductViews::class);
-}
+    public function views()
+    {
+        return $this->hasMany(ProductViews::class);
+    }
 
-public function transaction()
-{
-    return $this->hasMany(Transaction::class);
-}
+    public function transaction()
+    {
+        return $this->hasMany(Transaction::class);
+    }
 
-public function sales()
-{
-    return $this->hasMany(ProductSale::class);
-}
+    public function sales()
+    {
+        return $this->hasMany(ProductSale::class);
+    }
 }
