@@ -20,9 +20,13 @@ use Illuminate\Support\Facades\Route;
  */
 
 Route::prefix('webhook/midtrans')->name('webhook.midtrans.')->group(function () {
-    // Iris Payout Callback
+    // Iris Payout Callback (legacy)
     Route::post('iris', [MidtransWebhookController::class, 'handleIrisCallback'])
         ->name('iris');
+    
+    // Disbursement API Callback (current)
+    Route::post('disbursement', [MidtransWebhookController::class, 'handleDisbursementCallback'])
+        ->name('disbursement');
     
     // Transaction Notification (Snap/Core API)
     Route::post('transaction', [MidtransWebhookController::class, 'handleTransactionNotification'])

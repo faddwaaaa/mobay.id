@@ -99,7 +99,7 @@
                         onmouseenter="this.style.background='#20BA5A'; this.style.boxShadow='0 2px 8px rgba(37,211,102,0.3)';"
                         onmouseleave="this.style.background='#25D366'; this.style.boxShadow='none';">
                     <i class="fab fa-whatsapp" style="font-size:11px;"></i>
-                    <span>WA Cepat</span>
+                    <span>Share</span>
                 </button>
             </div>
         </div>
@@ -289,13 +289,13 @@ async function shareOrderQR(imageUrl, captionText) {
     if (navigator.share && typeof navigator.canShare === 'function' && navigator.canShare({ files: [file] })) {
         await navigator.share({
             title: `Mobay.id - @${currentUsername}`,
-            files: [file],
-            text: captionText,
+            files: [file]
+            // text: captionText,
         });
         return true;
     }
 
-    // await fallbackShareText(captionText);
+    await fallbackShareText(captionText);
     return false;
 }
 
@@ -312,7 +312,7 @@ async function handleQRShare(buttonId = 'whatsapp-share-btn') {
 
     try {
         posterAsset = await buildPosterImageUrl();
-        await shareOrderQR(posterAsset.imageUrl, buildShareCaption());
+        await shareOrderQR(posterAsset.imageUrl);
     } catch (error) {
         console.error('Error:', error);
         if (error.name !== 'AbortError' && !error.message?.includes('cancel')) {

@@ -404,6 +404,18 @@
                     <span class="detail-value">Rp {{ number_format((int) $notes['payment_fee_amount'], 0, ',', '.') }}</span>
                 </div>
                 @endif
+                @if(isset($notes['payment_method_fee']))
+                <div class="detail-item">
+                    <span class="detail-label">Fee {{ $notes['payment_method_label'] ?? strtoupper($transaction->payment_method ?? '-') }}</span>
+                    <span class="detail-value">Rp {{ number_format((int) $notes['payment_method_fee'], 0, ',', '.') }}</span>
+                </div>
+                @endif
+                @if(isset($notes['total_fee_amount']) || isset($notes['payment_fee_amount']) || isset($notes['payment_method_fee']))
+                <div class="detail-item">
+                    <span class="detail-label">Total Fee Pembayaran</span>
+                    <span class="detail-value">Rp {{ number_format((int) ($notes['total_fee_amount'] ?? ((int) ($notes['payment_fee_amount'] ?? 0) + (int) ($notes['payment_method_fee'] ?? 0))), 0, ',', '.') }}</span>
+                </div>
+                @endif
                 <div class="detail-item">
                     <span class="detail-label">Total Pembayaran</span>
                     <span class="detail-value highlight">Rp {{ number_format($transaction->amount, 0, ',', '.') }}</span>

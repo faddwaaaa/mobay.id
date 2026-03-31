@@ -19,7 +19,7 @@ class WithdrawRequest extends FormRequest
      */
     public function rules(): array
     {
-        $minAmount = config('midtrans.withdrawal.min_amount', 10000);
+        $minAmount = config('midtrans.withdrawal.min_amount', 20000);
         $maxAmount = config('midtrans.withdrawal.max_amount', 50000000);
 
         return [
@@ -41,7 +41,7 @@ class WithdrawRequest extends FormRequest
      */
     public function messages(): array
     {
-        $minAmount = config('midtrans.withdrawal.min_amount', 10000);
+        $minAmount = config('midtrans.withdrawal.min_amount', 20000);
         $maxAmount = config('midtrans.withdrawal.max_amount', 50000000);
 
         return [

@@ -15,12 +15,12 @@ class MidtransPayoutService
         $this->serverKey = config('midtrans.server_key');
         $isProduction = config('midtrans.is_production', false);
         $this->apiUrl = $isProduction 
-            ? 'https://api.midtrans.com/v2/iris' 
-            : 'https://api.sandbox.midtrans.com/v2/iris';
+            ? 'https://dashboard.midtrans.com/disbursement/v1' 
+            : 'https://dashboard.sandbox.midtrans.com/disbursement/v1';
     }
 
     /**
-     * Create payout to bank account
+     * Create disbursement to bank account
      * 
      * @param array $data
      * @return array
@@ -28,27 +28,30 @@ class MidtransPayoutService
     public function createPayout(array $data)
     {
         try {
-            $response = Http::withBasicAuth($this->serverKey, '')
+            $disbursementApiKey = config('midtrans.disbursement_api_key');
+            $isProduction = config('midtrans.disbursement_is_production', false);
+            $apiUrl = $isProduction 
+                ? 'https://dashboard.midtrans.com/disbursement/v1' 
+                : 'https://dashboard.sandbox.midtrans.com/disbursement/v1';
+
+            $response = Http::withBasicAuth($disbursementApiKey, '')
                 ->withHeaders([
                     'Accept' => 'application/json',
                     'Content-Type' => 'application/json',
                 ])
-                ->post($this->apiUrl . '/payouts', [
-                    'payouts' => [
-                        [
-                            'beneficiary_name' => $data['account_name'],
-                            'beneficiary_account' => $data['account_number'],
-                            'beneficiary_bank' => $this->getBankCode($data['bank_name']),
-                            'beneficiary_email' => $data['email'] ?? '',
-                            'amount' => (int) $data['amount'],
-                            'notes' => $data['notes'] ?? 'Withdrawal dari Payou.id',
-                        ]
-                    ]
+                ->post($apiUrl . '/disburse', [
+                    'id' => uniqid('DISB-', true), // Unique disbursement ID
+                    'bank_code' => $this->getBankCode($data['bank_name']),
+                    'account_number' => $data['account_number'],
+                    'amount' => (int) $data['amount'],
+                    'remark' => $data['notes'] ?? 'Disbursement from Payou.id',
+                    'beneficiary_name' => $data['account_name'],
+                    'beneficiary_email' => $data['email'] ?? '',
                 ]);
 
             $result = $response->json();
 
-            Log::info('Midtrans Payout Response:', $result);
+            Log::info('Midtrans Disbursement Response:', $result);
 
             return [
                 'success' => $response->successful(),
@@ -57,7 +60,7 @@ class MidtransPayoutService
             ];
 
         } catch (\Exception $e) {
-            Log::error('Midtrans Payout Error: ' . $e->getMessage());
+            Log::error('Midtrans Disbursement Error: ' . $e->getMessage());
             
             return [
                 'success' => false,
@@ -68,7 +71,7 @@ class MidtransPayoutService
     }
 
     /**
-     * Get payout status
+     * Get disbursement status
      * 
      * @param string $referenceNo
      * @return array
@@ -76,8 +79,14 @@ class MidtransPayoutService
     public function getPayoutStatus(string $referenceNo)
     {
         try {
-            $response = Http::withBasicAuth($this->serverKey, '')
-                ->get($this->apiUrl . '/payouts/' . $referenceNo);
+            $disbursementApiKey = config('midtrans.disbursement_api_key');
+            $isProduction = config('midtrans.disbursement_is_production', false);
+            $apiUrl = $isProduction 
+                ? 'https://dashboard.midtrans.com/disbursement/v1' 
+                : 'https://dashboard.sandbox.midtrans.com/disbursement/v1';
+
+            $response = Http::withBasicAuth($disbursementApiKey, '')
+                ->get($apiUrl . '/disburse/' . $referenceNo);
 
             return [
                 'success' => $response->successful(),
@@ -86,7 +95,7 @@ class MidtransPayoutService
             ];
 
         } catch (\Exception $e) {
-            Log::error('Get Payout Status Error: ' . $e->getMessage());
+            Log::error('Get Disbursement Status Error: ' . $e->getMessage());
             
             return [
                 'success' => false,

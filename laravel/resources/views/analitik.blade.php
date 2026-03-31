@@ -705,17 +705,15 @@
                                 <div class="an-mini-box-val">Rp {{ number_format($advancedStats['revenue_per_click'] ?? 0, 0, ',', '.') }}</div>
                             </div>
                         </div>
+                        <div class="an-chart-box an-chart-box--small">
+                            <canvas id="convChart"></canvas>
+                        </div>
                     @else
                         <div style="border: 1px dashed #cbd5e1; border-radius: 10px; background: #f8fafc; padding: 28px; text-align: center;">
                             <p style="font-size: 14px; color: #334155; margin: 0 0 10px;">Fitur konversi dan pendapatan per klik hanya tersedia untuk akun PRO.</p>
                             <a href="{{ route('premium.index') }}" class="an-export-btn an-export-btn--primary" style="background: #f59e0b; color: white;">Upgrade ke Pro untuk membuka akses</a>
                         </div>
                     @endif
-                        </div>
-                    </div>
-                    <div class="an-chart-box an-chart-box--small">
-                        <canvas id="convChart"></canvas>
-                    </div>
                 </div>
             </div>
 

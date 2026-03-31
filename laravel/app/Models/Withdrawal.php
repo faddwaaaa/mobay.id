@@ -13,6 +13,8 @@ class Withdrawal extends Model
     protected $fillable = [
         'user_id',
         'amount',
+        'fee',
+        'disbursement_amount',
         'status',
         'bank_name',
         'account_name',
@@ -28,6 +30,8 @@ class Withdrawal extends Model
 
     protected $casts = [
         'amount' => 'decimal:2',
+        'fee' => 'decimal:2',
+        'disbursement_amount' => 'decimal:2',
         'approved_at' => 'datetime',
         'midtrans_response' => 'array',
     ];
@@ -45,6 +49,16 @@ class Withdrawal extends Model
     public function getFormattedAmountAttribute(): string
     {
         return 'Rp ' . number_format($this->amount, 0, ',', '.');
+    }
+
+    public function getFormattedFeeAttribute(): string
+    {
+        return 'Rp ' . number_format($this->fee ?? 0, 0, ',', '.');
+    }
+
+    public function getFormattedDisbursementAmountAttribute(): string
+    {
+        return 'Rp ' . number_format($this->disbursement_amount ?? 0, 0, ',', '.');
     }
 
     public function scopePending($query)
