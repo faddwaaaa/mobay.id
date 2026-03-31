@@ -144,7 +144,220 @@ class CheckoutController extends Controller
     }
 
     // =========================================================
-    // PROCESS
+    // PAYMENT METHOD SELECTION
+    // =========================================================
+    public function paymentMethodShow(Request $request)
+    {
+        $payload = session('checkout_checkpoint');
+        if (!$payload || empty($payload['product_id'])) {
+            return redirect()->route('home');
+        }
+
+        $product = Product::with(['images'])->find($payload['product_id']);
+        if (!$product) {
+            return redirect()->route('home');
+        }
+
+        $seller = User::find($product->user_id);
+        $shippingEnabled = $product->product_type === 'fisik'
+            ? (bool) ($product->shipping_enabled ?? true)
+            : false;
+        $qty = $product->product_type === 'digital' ? 1 : max((int) ($payload['qty'] ?? 1), 1);
+        $unitPrice = (int) ($product->discount ?: $product->price);
+        $subtotal = $unitPrice * $qty;
+        $shippingCost = $shippingEnabled ? max((int) ($payload['selected_ongkir_cost'] ?? 0), 0) : 0;
+        $baseTotal = $subtotal + $shippingCost;
+        $paymentFeePercent = (float) config('payment.payment_fee_percent', 5);
+        $paymentFeeAmount = (int) ceil($baseTotal * ($paymentFeePercent / 100));
+
+        return view('checkout-payment-method', compact(
+            'product', 'seller', 'payload', 'qty', 'unitPrice',
+            'subtotal', 'shippingCost', 'baseTotal',
+            'paymentFeePercent', 'paymentFeeAmount', 'shippingEnabled'
+        ));
+    }
+
+    // =========================================================
+    // CREATE CHARGE (Midtrans Core API)
+    // =========================================================
+    public function createCharge(Request $request)
+    {
+        $request->validate([
+            'product_id'     => 'required|exists:products,id',
+            'buyer_name'     => 'required|string|max:255',
+            'buyer_email'    => 'required|email|max:255',
+            'buyer_phone'    => 'required|string|max:20',
+            'qty'            => 'required|integer|min:1',
+            'payment_method' => 'required|string',
+            'payment_method_fee' => 'required|integer|min:0',
+            'total_amount'   => 'required|integer|min:1',
+        ]);
+
+        // Validate payment method fee matches config
+        $expectedFee = config('payment.payment_method_fees.' . $request->payment_method, 0);
+        if ((int) $request->payment_method_fee !== (int) $expectedFee) {
+            return response()->json(['error' => true, 'message' => 'Biaya payment method tidak valid.'], 422);
+        }
+
+        $product = Product::with('files')->findOrFail($request->product_id);
+        $shippingEnabled = $product->product_type === 'fisik'
+            ? (bool) ($product->shipping_enabled ?? true)
+            : false;
+
+        if ($product->product_type === 'fisik') {
+            if ($product->stock !== null && $product->stock < $request->qty) {
+                return response()->json(['error' => true, 'message' => 'Stok tidak mencukupi. Tersedia: ' . $product->stock], 422);
+            }
+            if ($product->purchase_limit && $request->qty > $product->purchase_limit) {
+                return response()->json(['error' => true, 'message' => 'Batas pembelian maks. ' . $product->purchase_limit . ' per transaksi.'], 422);
+            }
+            if (empty($request->buyer_address)) {
+                return response()->json(['error' => true, 'message' => 'Alamat pengiriman wajib diisi untuk produk fisik.'], 422);
+            }
+            if ($shippingEnabled) {
+                if (empty($request->destination_village_code)) {
+                    return response()->json(['error' => true, 'message' => 'Pilih area tujuan pengiriman terlebih dahulu.'], 422);
+                }
+                if (!isset($request->selected_ongkir_cost) || (int) $request->selected_ongkir_cost <= 0) {
+                    return response()->json(['error' => true, 'message' => 'Pilih layanan pengiriman terlebih dahulu.'], 422);
+                }
+            }
+        }
+
+        $qty          = $product->product_type === 'digital' ? 1 : (int) $request->qty;
+        $unitPrice    = (int) ($product->discount ?: $product->price);
+        $subtotal     = $unitPrice * $qty;
+        $shippingCost = ($product->product_type === 'fisik' && $shippingEnabled)
+            ? max((int) ($request->selected_ongkir_cost ?? 0), 0)
+            : 0;
+        $baseTotal          = $subtotal + $shippingCost;
+        $paymentFeePercent  = (float) config('payment.payment_fee_percent', 5);
+        $paymentFeeAmount   = (int) ceil($baseTotal * ($paymentFeePercent / 100));
+        $paymentMethodFee   = (int) $request->payment_method_fee;
+        $paymentMethodLabel = $this->getPaymentMethodLabel($request->payment_method);
+        $totalFeeAmount     = $paymentFeeAmount + $paymentMethodFee;
+        $totalAmount        = $baseTotal + $paymentFeeAmount + $paymentMethodFee;
+        $orderId            = 'PAYOU-' . strtoupper(Str::random(8)) . '-' . time();
+
+        // Create transaction record
+        $transaction = Transaction::create([
+            'user_id'        => $product->user_id,
+            'order_id'       => $orderId,
+            'amount'         => $totalAmount,
+            'status'         => 'pending',
+            'payment_method' => $request->payment_method,
+            'notes'          => json_encode([
+                'buyer_name'           => $request->buyer_name,
+                'buyer_email'          => $request->buyer_email,
+                'buyer_phone'          => $request->buyer_phone,
+                'buyer_address'        => $request->buyer_address ?? null,
+                'buyer_notes'          => $request->buyer_notes ?? null,
+                'product_id'           => $product->id,
+                'product_title'        => $product->title,
+                'product_type'         => $product->product_type,
+                'qty'                  => $qty,
+                'unit_price'           => $unitPrice,
+                'shipping_enabled'     => $shippingEnabled,
+                'shipping_cost'        => $shippingCost,
+                'subtotal'             => $subtotal,
+                'base_total'           => $baseTotal,
+                'payment_fee_percent'  => $paymentFeePercent,
+                'payment_fee_amount'   => $paymentFeeAmount,
+                'payment_method_fee'   => $paymentMethodFee,
+                'payment_method_label' => $paymentMethodLabel,
+                'total_fee_amount'     => $totalFeeAmount,
+                'seller_amount'        => $baseTotal,
+                'destination_village_code' => $request->destination_village_code ?? null,
+                'destination_label'    => $request->destination_label ?? null,
+                'selected_courier'     => $shippingEnabled ? ($request->selected_courier ?: 'OTHER') : 'FREE',
+                'selected_service'     => $shippingEnabled ? ($request->selected_service ?: 'Standard') : 'Tanpa Ongkir',
+            ]),
+            'ip_address' => $request->ip(),
+        ]);
+
+        // Prepare charge parameters for Midtrans Core API
+        $chargeParams = [
+            'payment_type' => $this->mapPaymentMethodToMidtrans($request->payment_method),
+            'transaction_details' => [
+                'order_id'     => $orderId,
+                'gross_amount' => $totalAmount,
+            ],
+            'item_details' => [[
+                'id'       => (string) $product->id,
+                'price'    => $unitPrice,
+                'quantity' => $qty,
+                'name'     => substr($product->title, 0, 50),
+            ]],
+            'customer_details' => [
+                'first_name' => $request->buyer_name,
+                'email'      => $request->buyer_email,
+                'phone'      => $request->buyer_phone,
+            ],
+        ];
+
+        // Add shipping item if applicable
+        if ($shippingCost > 0) {
+            $chargeParams['item_details'][] = [
+                'id'       => 'shipping',
+                'price'    => $shippingCost,
+                'quantity' => 1,
+                'name'     => 'Ongkir ' . strtoupper((string) ($request->selected_courier ?: 'OTHER')),
+            ];
+        }
+
+        // Add platform fee item
+        if ($paymentFeeAmount > 0) {
+            $chargeParams['item_details'][] = [
+                'id'       => 'platform-fee',
+                'price'    => $paymentFeeAmount,
+                'quantity' => 1,
+                'name'     => 'Biaya Layanan',
+            ];
+        }
+
+        // Add payment method fee item
+        if ($paymentMethodFee > 0) {
+            $chargeParams['item_details'][] = [
+                'id'       => 'payment-method-fee',
+                'price'    => $paymentMethodFee,
+                'quantity' => 1,
+                'name'     => 'Biaya ' . $paymentMethodLabel,
+            ];
+        }
+
+        // Add specific payment method configuration
+        $chargeParams = array_merge($chargeParams, $this->getPaymentMethodConfig($request->payment_method));
+
+        try {
+            $charge = \Midtrans\CoreApi::charge($chargeParams);
+
+            // Update transaction with Midtrans response
+            $transaction->update([
+                'transaction_id' => $charge->transaction_id ?? null,
+                'midtrans_response' => json_encode($charge),
+            ]);
+
+            // Get payment URL based on payment method
+            $paymentUrl = $this->getPaymentUrl($charge, $request->payment_method);
+
+            if (!$paymentUrl) {
+                throw new \Exception('Tidak dapat mendapatkan URL pembayaran');
+            }
+
+            return response()->json([
+                'success' => true,
+                'payment_url' => $paymentUrl,
+                'order_id' => $orderId,
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Midtrans Core API Error: ' . $e->getMessage());
+            return response()->json(['error' => true, 'message' => 'Gagal menghubungi payment gateway. Coba lagi.'], 500);
+        }
+    }
+
+    // =========================================================
+    // PROCESS (Legacy - Snap)
     // =========================================================
     public function process(Request $request)
     {
@@ -655,5 +868,114 @@ class CheckoutController extends Controller
                 'created_by'     => null,
             ]);
         });
+    }
+
+    // =========================================================
+    // HELPER METHODS FOR PAYMENT METHODS
+    // =========================================================
+    private function mapPaymentMethodToMidtrans(string $paymentMethod): string
+    {
+        return match ($paymentMethod) {
+            'bank_transfer' => 'bank_transfer',
+            'qris' => 'qris',
+            'gopay' => 'gopay',
+            'ovo' => 'ovo',
+            'dana' => 'dana',
+            'shopeepay' => 'shopeepay',
+            'credit_card' => 'credit_card',
+            default => 'bank_transfer',
+        };
+    }
+
+    private function getPaymentMethodConfig(string $paymentMethod): array
+    {
+        return match ($paymentMethod) {
+            'bank_transfer' => [
+                'bank_transfer' => [
+                    'bank' => 'bca', // Default to BCA, can be expanded
+                ],
+            ],
+            'qris' => [
+                'qris' => [
+                    'acquirer' => 'gopay',
+                ],
+            ],
+            'gopay' => [
+                'gopay' => [
+                    'enable_callback' => true,
+                    'callback_url' => config('app.url') . '/midtrans/webhook',
+                ],
+            ],
+            'ovo' => [
+                'ovo' => [
+                    'enable_callback' => true,
+                    'callback_url' => config('app.url') . '/midtrans/webhook',
+                ],
+            ],
+            'dana' => [
+                'dana' => [
+                    'enable_callback' => true,
+                    'callback_url' => config('app.url') . '/midtrans/webhook',
+                ],
+            ],
+            'shopeepay' => [
+                'shopeepay' => [
+                    'enable_callback' => true,
+                    'callback_url' => config('app.url') . '/midtrans/webhook',
+                ],
+            ],
+            'credit_card' => [
+                'credit_card' => [
+                    'secure' => true,
+                ],
+            ],
+            default => [],
+        };
+    }
+
+    private function getPaymentUrl($charge, string $paymentMethod)
+    {
+        // Different payment methods have different response structures
+        switch ($paymentMethod) {
+            case 'bank_transfer':
+                return $charge->va_numbers[0]->va_url ?? null;
+
+            case 'qris':
+                return $charge->qr_string ?? $charge->actions[0]->url ?? null;
+
+            case 'gopay':
+            case 'ovo':
+            case 'dana':
+            case 'shopeepay':
+                // E-wallets usually have actions array with deeplink URLs
+                if (isset($charge->actions) && is_array($charge->actions)) {
+                    foreach ($charge->actions as $action) {
+                        if (isset($action->url)) {
+                            return $action->url;
+                        }
+                    }
+                }
+                return null;
+
+            case 'credit_card':
+                return $charge->redirect_url ?? null;
+
+            default:
+                return null;
+        }
+    }
+
+    private function getPaymentMethodLabel(?string $method): string
+    {
+        return match ($method) {
+            'bank_transfer' => 'Transfer Bank',
+            'qris' => 'QRIS',
+            'gopay' => 'GoPay',
+            'ovo' => 'OVO',
+            'dana' => 'DANA',
+            'shopeepay' => 'ShopeePay',
+            'credit_card' => 'Kartu Kredit',
+            default => ucwords(str_replace('_', ' ', (string) $method)),
+        };
     }
 }

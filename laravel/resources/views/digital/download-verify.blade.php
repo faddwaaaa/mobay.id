@@ -264,7 +264,7 @@
                 </div>
                 <div class="form-group">
                     <label>Nomor Order</label>
-                    <input type="text" id="reportOrder" placeholder="Contoh: PAYOU-XXXXXXXX"/>
+                    <input type="text" id="reportOrder" placeholder="Contoh: MOBAY-XXXXXXXX"/>
                 </div>
                 <div class="form-group">
                     <label>Deskripsi masalah <span style="color:var(--danger)">*</span></label>

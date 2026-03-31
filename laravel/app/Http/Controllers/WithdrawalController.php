@@ -2,13 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Withdrawal;
-use App\Models\User;
-use App\Services\MidtransPayoutService;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
+use App\Models\Ledger;
 
 class WithdrawalController extends Controller
 {
@@ -37,14 +31,14 @@ class WithdrawalController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'amount' => 'required|numeric|min:10000|max:10000000',
+            'amount' => 'required|numeric|min:20000|max:10000000',
             'bank_name' => 'required|string|max:100',
             'account_number' => 'required|string|max:50',
             'account_name' => 'required|string|max:100',
             'notes' => 'nullable|string|max:500',
         ], [
             'amount.required' => 'Jumlah penarikan harus diisi',
-            'amount.min' => 'Minimal penarikan adalah Rp 10.000',
+            'amount.min' => 'Minimal penarikan adalah Rp 20.000',
             'amount.max' => 'Maksimal penarikan adalah Rp 10.000.000',
             'bank_name.required' => 'Nama bank harus diisi',
             'account_number.required' => 'Nomor rekening harus diisi',
@@ -53,6 +47,13 @@ class WithdrawalController extends Controller
 
         $user = Auth::user();
         $amount = $request->amount;
+
+        // Calculate withdrawal fee
+        $feeFlat = config('midtrans.withdrawal_fee_flat', 6000);
+        $feePpnPercent = config('midtrans.withdrawal_fee_ppn_percent', 11);
+        $feePpn = ceil($feeFlat * ($feePpnPercent / 100));
+        $totalFee = $feeFlat + $feePpn;
+        $disbursementAmount = $amount - $totalFee;
 
         // Check if user has sufficient balance
         if ($user->balance < $amount) {
@@ -76,17 +77,17 @@ class WithdrawalController extends Controller
 
         DB::beginTransaction();
         try {
-            // Prepare payout data
+            // Prepare disbursement data
             $payoutData = [
                 'account_name' => $request->account_name,
                 'account_number' => $request->account_number,
                 'bank_name' => strtoupper($request->bank_name),
-                'amount' => $amount,
+                'amount' => $disbursementAmount, // Amount after fee deduction
                 'email' => $user->email,
                 'notes' => $request->notes ?? 'Penarikan saldo dari Payou.id',
             ];
 
-            // Process payout immediately via Midtrans
+            // Process disbursement immediately via Midtrans
             $payoutResult = $this->midtransService->createPayout($payoutData);
 
             if (!$payoutResult['success']) {
@@ -94,18 +95,20 @@ class WithdrawalController extends Controller
             }
 
             $payoutResponse = $payoutResult['data'];
-            $payoutStatus = $payoutResponse['payouts'][0]['status'] ?? 'pending';
-            $referenceNo = $payoutResponse['payouts'][0]['reference_no'] ?? null;
+            $payoutStatus = $payoutResponse['status'] ?? 'pending';
+            $referenceNo = $payoutResponse['id'] ?? null;
 
             // Create withdrawal record
             $withdrawal = Withdrawal::create([
                 'user_id' => $user->id,
                 'amount' => $amount,
+                'fee' => $totalFee,
+                'disbursement_amount' => $disbursementAmount,
                 'bank_name' => strtoupper($request->bank_name),
                 'account_number' => $request->account_number,
                 'account_name' => $request->account_name,
                 'notes' => $request->notes,
-                'status' => $payoutStatus === 'processed' ? 'completed' : 'approved',
+                'status' => 'approved', // Always start as approved, webhook will update to completed/failed
                 'payout_id' => $referenceNo,
                 'midtrans_response' => $payoutResponse,
                 'approved_by' => $user->id, // Self approval
@@ -115,6 +118,42 @@ class WithdrawalController extends Controller
 
             // Deduct balance from user
             $user->decrement('balance', $amount);
+
+            // Create ledger entries for security tracking
+            Ledger::create([
+                'transaction_type' => 'withdrawal_request',
+                'reference_id' => 'WD-' . $withdrawal->id,
+                'user_id' => $user->id,
+                'amount' => -$amount,
+                'description' => 'Withdrawal request to ' . $request->bank_name,
+                'metadata' => [
+                    'bank_name' => $request->bank_name,
+                    'account_number' => $request->account_number,
+                    'fee' => $totalFee,
+                    'disbursement_amount' => $disbursementAmount,
+                ],
+            ]);
+
+            // Add fee to admin wallet (assuming admin user id 1)
+            $admin = User::find(1); // Adjust if admin ID is different
+            if ($admin) {
+                $admin->increment('balance', $totalFee);
+                Ledger::create([
+                    'transaction_type' => 'withdrawal_fee',
+                    'reference_id' => 'WD-' . $withdrawal->id,
+                    'user_id' => $admin->id,
+                    'amount' => $totalFee,
+                    'description' => 'Withdrawal fee from user ' . $user->id,
+                    'metadata' => [
+                        'user_id' => $user->id,
+                        'fee_breakdown' => [
+                            'flat' => $feeFlat,
+                            'ppn' => $feePpn,
+                            'total' => $totalFee,
+                        ],
+                    ],
+                ]);
+            }
 
             // Create transaction record
             DB::table('transactions')->insert([

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Product;
 use App\Models\Transaction;
+use App\Models\PhysicalOrder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -88,11 +89,18 @@ class OrderController extends Controller
             ' untuk produk "' . ($notes['product_title'] ?? $product->title) . '"'
         );
 
+        // ✅ Ambil PhysicalOrder yang matching — untuk form input resi
+        $physicalOrder = null;
+        if (($notes['product_type'] ?? '') === 'fisik') {
+            $physicalOrder = PhysicalOrder::where('midtrans_order_id', $order->order_id)->first();
+        }
+
         return view('orders.show', [
-            'order' => $order,
-            'notes' => $notes,
-            'product' => $product,
-            'waLink' => $buyerPhone ? "https://wa.me/{$buyerPhone}?text={$waMessage}" : null,
+            'order'         => $order,
+            'notes'         => $notes,
+            'product'       => $product,
+            'waLink'        => $buyerPhone ? "https://wa.me/{$buyerPhone}?text={$waMessage}" : null,
+            'physicalOrder' => $physicalOrder,  // ✅ null kalau digital / belum ada
         ]);
     }
 }

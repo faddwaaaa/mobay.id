@@ -42,7 +42,8 @@ return Application::configure(basePath: dirname(__DIR__))
         // ✅ Pengecualian CSRF — webhook tidak bisa kirim CSRF token
         $middleware->validateCsrfTokens(except: [
             'midtrans/webhook',
-            'webhooks/biteship',
+            'webhook/biteship',
+           
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

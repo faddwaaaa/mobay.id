@@ -10,95 +10,94 @@ use Illuminate\Support\Facades\Mail;
 
 class BiteshipWebhookController extends Controller
 {
-    /**
-     * Status yang tidak perlu kirim email ke pembeli (terlalu teknis / spam).
-     * Sesuaikan dengan kebutuhanmu untuk hemat kuota Brevo.
-     */
     private const SKIP_EMAIL_STATUSES = [
         'allocated',
         'picking_up',
         'courier_not_found',
     ];
 
-    /**
-     * Handle incoming Biteship webhook.
-     * Biteship POST ke endpoint ini setiap kali status pengiriman berubah.
-     *
-     * Docs: https://biteship.com/id/docs/api/webhook
-     */
     public function handle(Request $request)
     {
-        //1. Verifikasi webhook secret dari Biteship
+        // ✅ 1. HANDLE VERIFICATION (body kosong dari Biteship)
+        if (empty($request->all())) {
+            Log::info('[Biteship] Verification ping received');
+            return response('ok', 200);
+        }
+
+        // ✅ 2. VALIDASI SECRET (hanya kalau ada payload)
         $secret = $request->header('x-api-key');
+
         if ($secret !== config('services.biteship.webhook_secret')) {
             Log::warning('[Biteship] Unauthorized webhook attempt', [
                 'ip' => $request->ip(),
+                'headers' => $request->headers->all(),
             ]);
-            return response()->json(['message' => 'Unauthorized'], 401);
+
+            // ⚠️ tetap balikin OK biar tidak retry terus
+            return response('ok', 200);
         }
 
-        $payload = $request->all();
+        try {
+            $payload = $request->all();
 
-        Log::info('[Biteship] Webhook received', $payload);
+            Log::info('[Biteship] Webhook received', $payload);
 
-        // 2. Ambil data dari payload Biteship
-        // Sesuaikan field ini dengan struktur payload Biteship kamu
-        $trackingNumber = $payload['order']['courier']['tracking_id']   ?? null;
-        $biteshipStatus = $payload['order']['courier']['status']        ?? null;
-        $biteshipOrderId= $payload['order']['id']                       ?? null;
+            // ✅ 3. Ambil data
+            $trackingNumber = $payload['order']['courier']['tracking_id'] ?? null;
+            $biteshipStatus = $payload['order']['courier']['status'] ?? null;
+            $biteshipOrderId = $payload['order']['id'] ?? null;
 
-        if (! $trackingNumber || ! $biteshipStatus) {
-            return response()->json(['message' => 'Payload tidak lengkap'], 400);
-        }
-
-        // 3. Cari order berdasarkan tracking number
-        $order = PhysicalOrder::where('tracking_number', $trackingNumber)
-                      ->orWhere('biteship_order_id', $biteshipOrderId)
-                      ->first();
-
-        if (! $order) {
-            Log::warning('[Biteship] Order tidak ditemukan', [
-                'tracking_number' => $trackingNumber,
-                'biteship_order_id' => $biteshipOrderId,
-            ]);
-            // Tetap return 200 biar Biteship tidak retry terus
-            return response()->json(['message' => 'Order tidak ditemukan'], 200);
-        }
-
-        // 4. Map status Biteship ke status internal kamu
-        $internalStatus = $this->mapStatus($biteshipStatus);
-
-        // 5. Update status order
-        $order->update([
-            'status'           => $internalStatus,
-            'biteship_status'  => $biteshipStatus,
-            'last_updated_at'  => now(),
-        ]);
-
-        // 6. Kirim email notifikasi (skip status yang tidak penting)
-        if (! in_array($biteshipStatus, self::SKIP_EMAIL_STATUSES)) {
-            try {
-                Mail::to($order->buyer_email)
-                    ->send(new PhysicalOrderStatusUpdated($order, $biteshipStatus));
-            } catch (\Exception $e) {
-                Log::error('[Biteship] Gagal kirim email status update', [
-                    'order_id' => $order->id,
-                    'error'    => $e->getMessage(),
-                ]);
-                // Jangan lempar exception ke sini, biar Biteship dapat response 200
+            if (! $trackingNumber || ! $biteshipStatus) {
+                Log::warning('[Biteship] Payload tidak lengkap', $payload);
+                return response('ok', 200);
             }
+
+            // ✅ 4. Cari order
+            $order = PhysicalOrder::where('tracking_number', $trackingNumber)
+                ->orWhere('biteship_order_id', $biteshipOrderId)
+                ->first();
+
+            if (! $order) {
+                Log::warning('[Biteship] Order tidak ditemukan', [
+                    'tracking_number' => $trackingNumber,
+                    'biteship_order_id' => $biteshipOrderId,
+                ]);
+                return response('ok', 200);
+            }
+
+            // ✅ 5. Map status
+            $internalStatus = $this->mapStatus($biteshipStatus);
+
+            // ✅ 6. Update
+            $order->update([
+                'status'          => $internalStatus,
+                'biteship_status' => $biteshipStatus,
+                'last_updated_at' => now(),
+            ]);
+
+            // ✅ 7. Email (optional)
+            if (! in_array($biteshipStatus, self::SKIP_EMAIL_STATUSES)) {
+                try {
+                    Mail::to($order->buyer_email)
+                        ->send(new PhysicalOrderStatusUpdated($order, $biteshipStatus));
+                } catch (\Exception $e) {
+                    Log::error('[Biteship] Email gagal', [
+                        'order_id' => $order->id,
+                        'error' => $e->getMessage(),
+                    ]);
+                }
+            }
+
+        } catch (\Throwable $e) {
+            Log::error('[Biteship] Fatal error', [
+                'error' => $e->getMessage(),
+            ]);
         }
 
-        return response()->json(['message' => 'OK'], 200);
+        // ✅ WAJIB: selalu return OK
+        return response('ok', 200);
     }
 
-    /**
-     * Map status dari Biteship ke status internal order kamu.
-     * Sesuaikan sesuai status yang ada di tabel orders kamu.
-     *
-     * Referensi status Biteship:
-     * https://biteship.com/id/docs/api/order-status
-     */
     private function mapStatus(string $biteshipStatus): string
     {
         return match($biteshipStatus) {
@@ -111,7 +110,7 @@ class BiteshipWebhookController extends Controller
             'return_in_transit',
             'returned'          => 'returned',
             'cancelled'         => 'cancelled',
-            default             => 'shipped', // fallback aman
+            default             => 'shipped',
         };
     }
 }

@@ -49,6 +49,7 @@ Route::get('/about', [LandingController::class, 'about'])->name('about');
 Route::get('/contact', [LandingController::class, 'contact'])->name('contact');
 
 require __DIR__ . '/auth.php';
+require __DIR__ . '/webhook_routes.php';
 
 
 /*
@@ -73,6 +74,8 @@ Route::get('/checkout/success', [CheckoutController::class, 'success'])->name('c
 Route::get('/checkout/pending', [CheckoutController::class, 'pending'])->name('checkout.pending');
 Route::get('/checkout/checkpoint', [CheckoutController::class, 'checkpointShow'])->name('checkout.checkpoint.show');
 Route::post('/checkout/checkpoint', [CheckoutController::class, 'checkpointStore'])->name('checkout.checkpoint.store');
+Route::get('/checkout/payment-method', [CheckoutController::class, 'paymentMethodShow'])->name('checkout.payment-method.show');
+Route::post('/checkout/create-charge', [CheckoutController::class, 'createCharge'])->name('checkout.createCharge');
 Route::get('/checkout/{productId}', [CheckoutController::class, 'show'])->name('checkout.show');
 Route::post('/checkout/process', [CheckoutController::class, 'process'])->name('checkout.process');
 Route::post('/midtrans/webhook', [CheckoutController::class, 'webhook'])->name('midtrans.webhook');
@@ -397,6 +400,7 @@ Route::get('/preview/{username}', function ($username) {
     return view('public.profile', compact('user', 'profile', 'socialLinks'));
 })->name('preview.profile');
 
+<<<<<<< HEAD
 
 /*
 |--------------------------------------------------------------------------
@@ -404,6 +408,10 @@ Route::get('/preview/{username}', function ($username) {
 |--------------------------------------------------------------------------
 */
 Route::post('/webhooks/biteship', [BiteshipWebhookController::class, 'handle'])
+=======
+//biteship
+Route::post('/webhook/biteship', [\App\Http\Controllers\BiteshipWebhookController::class, 'handle'])
+>>>>>>> 3ef5f6235b108b0daecd77988faaea1f6b1e3fb4
     ->name('webhooks.biteship');
 
 Route::get('/debug/biteship', function () {

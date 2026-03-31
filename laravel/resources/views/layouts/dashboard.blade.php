@@ -172,6 +172,14 @@ html, body { margin: 0; padding: 0; min-height: 100vh; }
     background: #f0fdf4;
     color: #15803d;
     box-shadow: none;
+    cursor: pointer;
+}
+
+.s-premium-badge:hover {
+    border-color: #86efac;
+    background: #ecfdf5;
+    color: #166534;
+    transform: translateY(-1px);
 }
 
 /* ── TOP ACCOUNT ─────────────────────────────────── */
@@ -606,10 +614,10 @@ body:not(.preload) .content-pad {
         </a>
         <div class="s-premium-wrap">
             @if($isPremiumUser)
-                <div class="s-premium-badge">
+                <a href="{{ route('premium.index') }}" class="s-premium-badge">
                     <i class="fas fa-circle-check"></i>
                     Pro aktif
-                </div>
+                </a>
             @else
                 <a href="{{ route('premium.index') }}" class="s-premium-btn">
                     <i class="fas fa-sparkles"></i>
