@@ -237,7 +237,7 @@ class CheckoutController extends Controller
         $paymentMethodLabel = $this->getPaymentMethodLabel($request->payment_method);
         $totalFeeAmount     = $paymentFeeAmount + $paymentMethodFee;
         $totalAmount        = $baseTotal + $paymentFeeAmount + $paymentMethodFee;
-        $orderId            = 'PAYOU-' . strtoupper(Str::random(8)) . '-' . time();
+        $orderId            = 'MOBAY-' . strtoupper(Str::random(8)) . '-' . time();
 
         // Create transaction record
         $transaction = Transaction::create([
@@ -405,7 +405,7 @@ class CheckoutController extends Controller
         $paymentFeePercent  = (float) config('payment.payment_fee_percent', 5);
         $paymentFeeAmount   = (int) ceil($baseTotal * ($paymentFeePercent / 100));
         $amount             = $baseTotal + $paymentFeeAmount;
-        $orderId            = 'PAYOU-' . strtoupper(Str::random(8)) . '-' . time();
+        $orderId            = 'MOBAY-' . strtoupper(Str::random(8)) . '-' . time();
 
         $transaction = Transaction::create([
             'user_id'        => $product->user_id,
@@ -724,7 +724,7 @@ class CheckoutController extends Controller
                 'buyer_name'              => $notes['buyer_name'] ?? '',
                 'buyer_email'             => $notes['buyer_email'] ?? '',
                 'buyer_phone'             => $notes['buyer_phone'] ?? null,
-                'order_code'              => $transaction->order_id, // ✅ Pakai PAYOU-xxx biar sama dengan admin
+                'order_code'              => $transaction->order_id, // ✅ Pakai MOBAY-xxx biar sama dengan admin
                 'product_name'            => $notes['product_title'] ?? $product->title,
                 'product_price'           => $notes['unit_price'] ?? $product->price,
                 'quantity'                => $notes['qty'] ?? 1,
