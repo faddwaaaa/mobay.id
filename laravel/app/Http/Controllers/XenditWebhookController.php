@@ -11,6 +11,7 @@ use App\Models\AdminWalletLedger;
 use App\Models\DigitalOrder;
 use App\Mail\PhysicalOrderConfirmation;
 use App\Services\DigitalOrderService;
+use App\Services\ProSubscriptionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
@@ -70,6 +71,18 @@ class XenditWebhookController extends Controller
             if (!$externalId) {
                 Log::error('Xendit webhook: external_id not found');
                 return response('Missing external_id', 400);
+            }
+
+            // Check if this is a Pro subscription payment
+            if (strpos($externalId, 'pro-') === 0) {
+                $proService = new ProSubscriptionService();
+                if ($proService->handlePaymentSuccess($data)) {
+                    Log::info("Pro subscription payment processed for {$externalId}");
+                    return response('OK', 200);
+                } else {
+                    Log::error("Failed to process Pro subscription payment for {$externalId}");
+                    return response('Error processing Pro subscription', 500);
+                }
             }
 
             // Find transaction by order_id (external_id)

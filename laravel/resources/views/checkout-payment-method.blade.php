@@ -110,13 +110,15 @@
     $productPrice = (int) ($product->discount ?: $product->price);
     $baseTotal = $subtotal + $shippingCost; // Harga produk + ongkir saja
     $platformFee = (int) ceil($baseTotal * ($paymentFeePercent / 100)); // Platform fee 5%
+    $subtotalWithFee = $baseTotal + $platformFee; // Total sebelum payment method fee
     $paymentMethodOptions = [
-        ['code' => 'bank_transfer', 'label' => 'Transfer Bank', 'icon' => 'BANK', 'desc' => 'Rekomendasi awal. Metode akhir dipilih di halaman checkout Xendit', 'fee' => 0],
-        ['code' => 'qris', 'label' => 'QRIS', 'icon' => 'QR', 'desc' => 'Rekomendasi awal. Metode akhir dipilih di halaman checkout Xendit', 'fee' => 0],
-        ['code' => 'dana', 'label' => 'DANA', 'icon' => 'D', 'desc' => 'Rekomendasi awal. Metode akhir dipilih di halaman checkout Xendit', 'fee' => 0],
-        ['code' => 'ovo', 'label' => 'OVO', 'icon' => 'O', 'desc' => 'Rekomendasi awal. Metode akhir dipilih di halaman checkout Xendit', 'fee' => 0],
-        ['code' => 'linkaja', 'label' => 'LinkAja', 'icon' => 'L', 'desc' => 'Rekomendasi awal. Metode akhir dipilih di halaman checkout Xendit', 'fee' => 0],
-        ['code' => 'retail', 'label' => 'Minimarket', 'icon' => 'M', 'desc' => 'Rekomendasi awal. Metode akhir dipilih di halaman checkout Xendit', 'fee' => 0],
+        ['code' => 'bank_transfer', 'label' => 'Transfer Bank', 'icon' => 'BANK', 'desc' => 'BCA, BNI, Mandiri, BRI, dll', 'fee' => (int) config('payment.payment_method_fees.bank_transfer', 0)],
+        ['code' => 'qris', 'label' => 'QRIS', 'icon' => 'QR', 'desc' => 'Scan QR dengan e-wallet atau mobile banking', 'fee' => (int) config('payment.payment_method_fees.qris', 500)],
+        ['code' => 'gopay', 'label' => 'GoPay', 'icon' => 'G', 'desc' => 'E-wallet dari Gojek', 'fee' => (int) config('payment.payment_method_fees.gopay', 1000)],
+        ['code' => 'ovo', 'label' => 'OVO', 'icon' => 'O', 'desc' => 'E-wallet OVO', 'fee' => (int) config('payment.payment_method_fees.ovo', 1000)],
+        ['code' => 'dana', 'label' => 'DANA', 'icon' => 'D', 'desc' => 'E-wallet DANA', 'fee' => (int) config('payment.payment_method_fees.dana', 1000)],
+        ['code' => 'shopeepay', 'label' => 'ShopeePay', 'icon' => 'S', 'desc' => 'E-wallet dari Shopee', 'fee' => (int) config('payment.payment_method_fees.shopeepay', 1000)],
+        ['code' => 'credit_card', 'label' => 'Kartu Kredit', 'icon' => 'CC', 'desc' => 'Visa, Mastercard, JCB', 'fee' => (int) config('payment.payment_method_fees.credit_card', 2500)],
     ];
 @endphp
 
@@ -147,7 +149,7 @@
                                 <div class="method-desc">{{ $method['desc'] }}</div>
                             </div>
                         </div>
-                        <div class="method-fee">Fee Sama</div>
+                        <div class="method-fee">+Rp {{ number_format($methodExtraFee, 0, ',', '.') }}</div>
                     </label>
                     @endforeach
                 </div>
@@ -164,7 +166,7 @@
                 <div class="total-row row"><span class="k">Total Pembayaran</span><span class="v total-amount">Rp {{ number_format($baseTotal, 0, ',', '.') }}</span></div>
 
                 <div class="note">
-                    💡 <strong>Total akhir di halaman ini tidak memakai fee per metode.</strong> Ini sengaja supaya tidak ada celah pilih metode murah di awal lalu bayar dengan metode lain di halaman <strong>Xendit Hosted Checkout</strong>.
+                    💡 <strong>Pilih metode pembayaran</strong> untuk melihat biaya tambahan (jika ada) dan total akhir yang harus dibayar.
                 </div>
 
                 <div class="action">

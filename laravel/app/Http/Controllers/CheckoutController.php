@@ -16,20 +16,14 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
-use App\Services\XenditPaymentService;
 use Midtrans\Config;
 use Midtrans\Snap;
 use Midtrans\Notification;
 
 class CheckoutController extends Controller
 {
-    protected XenditPaymentService $xenditService;
-
-    public function __construct(XenditPaymentService $xenditService)
+    public function __construct()
     {
-        $this->xenditService = $xenditService;
-        
-        // Keep Midtrans config for legacy support
         Config::$serverKey        = config('midtrans.server_key');
         Config::$clientKey        = config('midtrans.client_key');
         Config::$isProduction     = config('midtrans.is_production');
@@ -141,12 +135,11 @@ class CheckoutController extends Controller
         $paymentFeePercent = (float) config('payment.payment_fee_percent', 5);
         $paymentFeeAmount = (int) ceil($baseTotal * ($paymentFeePercent / 100));
         $total = $baseTotal + $paymentFeeAmount;
-        $orderId = 'PAYOU-' . strtoupper(Str::random(8)) . '-' . time();
 
-        return view('checkout-modal', compact(
+        return view('checkout-checkpoint', compact(
             'product', 'seller', 'payload', 'qty', 'unitPrice',
             'subtotal', 'shippingCost', 'baseTotal',
-            'paymentFeePercent', 'paymentFeeAmount', 'total', 'shippingEnabled', 'orderId'
+            'paymentFeePercent', 'paymentFeeAmount', 'total', 'shippingEnabled'
         ));
     }
 
@@ -196,9 +189,15 @@ class CheckoutController extends Controller
             'buyer_phone'    => 'required|string|max:20',
             'qty'            => 'required|integer|min:1',
             'payment_method' => 'required|string',
-            'payment_method_fee' => 'nullable|integer|min:0',
+            'payment_method_fee' => 'required|integer|min:0',
             'total_amount'   => 'required|integer|min:1',
         ]);
+
+        // Validate payment method fee matches config
+        $expectedFee = config('payment.payment_method_fees.' . $request->payment_method, 0);
+        if ((int) $request->payment_method_fee !== (int) $expectedFee) {
+            return response()->json(['error' => true, 'message' => 'Biaya payment method tidak valid.'], 422);
+        }
 
         $product = Product::with('files')->findOrFail($request->product_id);
         $shippingEnabled = $product->product_type === 'fisik'
@@ -234,15 +233,11 @@ class CheckoutController extends Controller
         $baseTotal          = $subtotal + $shippingCost;
         $paymentFeePercent  = (float) config('payment.payment_fee_percent', 5);
         $paymentFeeAmount   = (int) ceil($baseTotal * ($paymentFeePercent / 100));
-        // Hosted checkout can still show other active channels in Xendit,
-        // so method-specific fee on our side is unsafe and can be gamed.
-        $paymentMethodFee   = 0;
-        $paymentMethodLabel = 'Xendit Hosted Checkout';
+        $paymentMethodFee   = (int) $request->payment_method_fee;
+        $paymentMethodLabel = $this->getPaymentMethodLabel($request->payment_method);
         $totalFeeAmount     = $paymentFeeAmount + $paymentMethodFee;
-        $totalAmount        = $baseTotal + $paymentFeeAmount;
-        $orderId            = 'PAYOU-' . strtoupper(Str::random(8)) . '-' . time();
         $totalAmount        = $baseTotal + $paymentFeeAmount + $paymentMethodFee;
-        $orderId            = 'MOBAY-' . strtoupper(Str::random(8)) . '-' . time();
+        $orderId            = 'PAYOU-' . strtoupper(Str::random(8)) . '-' . time();
 
         // Create transaction record
         $transaction = Transaction::create([
@@ -280,68 +275,70 @@ class CheckoutController extends Controller
             'ip_address' => $request->ip(),
         ]);
 
-        // Prepare invoice parameters for Xendit
-        $items = [[
-            'name' => substr($product->title, 0, 100),
-            'quantity' => $qty,
-            'price' => $unitPrice,
-        ]];
+        // Prepare charge parameters for Midtrans Core API
+        $chargeParams = [
+            'payment_type' => $this->mapPaymentMethodToMidtrans($request->payment_method),
+            'transaction_details' => [
+                'order_id'     => $orderId,
+                'gross_amount' => $totalAmount,
+            ],
+            'item_details' => [[
+                'id'       => (string) $product->id,
+                'price'    => $unitPrice,
+                'quantity' => $qty,
+                'name'     => substr($product->title, 0, 50),
+            ]],
+            'customer_details' => [
+                'first_name' => $request->buyer_name,
+                'email'      => $request->buyer_email,
+                'phone'      => $request->buyer_phone,
+            ],
+        ];
 
         // Add shipping item if applicable
         if ($shippingCost > 0) {
-            $items[] = [
-                'name' => 'Ongkir ' . strtoupper((string) ($request->selected_courier ?: 'OTHER')),
+            $chargeParams['item_details'][] = [
+                'id'       => 'shipping',
+                'price'    => $shippingCost,
                 'quantity' => 1,
-                'price' => $shippingCost,
+                'name'     => 'Ongkir ' . strtoupper((string) ($request->selected_courier ?: 'OTHER')),
             ];
         }
 
         // Add platform fee item
         if ($paymentFeeAmount > 0) {
-            $items[] = [
-                'name' => 'Biaya Layanan',
+            $chargeParams['item_details'][] = [
+                'id'       => 'platform-fee',
+                'price'    => $paymentFeeAmount,
                 'quantity' => 1,
-                'price' => $paymentFeeAmount,
+                'name'     => 'Biaya Layanan',
             ];
         }
 
         // Add payment method fee item
         if ($paymentMethodFee > 0) {
-            $items[] = [
-                'name' => 'Biaya ' . $paymentMethodLabel,
+            $chargeParams['item_details'][] = [
+                'id'       => 'payment-method-fee',
+                'price'    => $paymentMethodFee,
                 'quantity' => 1,
-                'price' => $paymentMethodFee,
+                'name'     => 'Biaya ' . $paymentMethodLabel,
             ];
         }
 
-        // Map payment method to Xendit channels
-        $paymentMethods = $this->mapPaymentMethodToXendit($request->payment_method);
+        // Add specific payment method configuration
+        $chargeParams = array_merge($chargeParams, $this->getPaymentMethodConfig($request->payment_method));
 
         try {
-            // Create invoice via Xendit
-            $invoiceResponse = $this->xenditService->createInvoice([
-                'external_id' => $orderId,
-                'description' => 'Pembayaran ' . $product->title,
-                'amount' => $totalAmount,
-                'customer_name' => $request->buyer_name,
-                'customer_email' => $request->buyer_email,
-                'payment_methods' => $paymentMethods,
-                'items' => $items,
-                'success_url' => config('app.url') . '/checkout/success?order_id=' . $orderId,
-                'failure_url' => config('app.url') . '/checkout/pending?order_id=' . $orderId,
-            ]);
+            $charge = \Midtrans\CoreApi::charge($chargeParams);
 
-            if (!$invoiceResponse['success']) {
-                throw new \Exception($invoiceResponse['message'] ?? 'Gagal membuat invoice');
-            }
-
-            // Update transaction with Xendit response
+            // Update transaction with Midtrans response
             $transaction->update([
-                'transaction_id' => $invoiceResponse['data']['id'] ?? null,
-                'midtrans_response' => json_encode($invoiceResponse['data']),
+                'transaction_id' => $charge->transaction_id ?? null,
+                'midtrans_response' => json_encode($charge),
             ]);
 
-            $paymentUrl = $invoiceResponse['invoice_url'];
+            // Get payment URL based on payment method
+            $paymentUrl = $this->getPaymentUrl($charge, $request->payment_method);
 
             if (!$paymentUrl) {
                 throw new \Exception('Tidak dapat mendapatkan URL pembayaran');
@@ -354,7 +351,7 @@ class CheckoutController extends Controller
             ]);
 
         } catch (\Exception $e) {
-            Log::error('Xendit Invoice Creation Error: ' . $e->getMessage());
+            Log::error('Midtrans Core API Error: ' . $e->getMessage());
             return response()->json(['error' => true, 'message' => 'Gagal menghubungi payment gateway. Coba lagi.'], 500);
         }
     }
@@ -408,7 +405,7 @@ class CheckoutController extends Controller
         $paymentFeePercent  = (float) config('payment.payment_fee_percent', 5);
         $paymentFeeAmount   = (int) ceil($baseTotal * ($paymentFeePercent / 100));
         $amount             = $baseTotal + $paymentFeeAmount;
-        $orderId            = 'MOBAY-' . strtoupper(Str::random(8)) . '-' . time();
+        $orderId            = 'PAYOU-' . strtoupper(Str::random(8)) . '-' . time();
 
         $transaction = Transaction::create([
             'user_id'        => $product->user_id,
@@ -489,14 +486,43 @@ class CheckoutController extends Controller
     }
 
     // =========================================================
-    // WEBHOOK (Xendit)
+    // WEBHOOK
     // =========================================================
     public function webhook(Request $request)
     {
-        // This is now handled by XenditWebhookController
-        // Kept for backward compatibility, delegates to webhook controller
-        $controller = new XenditWebhookController();
-        return $controller->handleInvoiceCallback($request);
+        try {
+            $notif = new Notification();
+        } catch (\Exception $e) {
+            Log::error('Midtrans webhook error: ' . $e->getMessage());
+            return response('Error', 500);
+        }
+
+        $transaction = Transaction::where('order_id', $notif->order_id)->first();
+        if (!$transaction) return response('Not found', 404);
+
+        if ($transaction->status === 'settlement') return response('Already processed', 200);
+
+        $finalStatus = match (true) {
+            $notif->transaction_status === 'capture' && $notif->fraud_status === 'accept' => 'settlement',
+            $notif->transaction_status === 'settlement'                                    => 'settlement',
+            $notif->transaction_status === 'pending'                                       => 'pending',
+            in_array($notif->transaction_status, ['deny', 'cancel', 'expire'])             => $notif->transaction_status,
+            $notif->transaction_status === 'failure'                                       => 'failed',
+            default                                                                        => $transaction->status,
+        };
+
+        $transaction->update([
+            'status'            => $finalStatus,
+            'payment_method'    => $notif->payment_type ?? $transaction->payment_method,
+            'transaction_id'    => $notif->transaction_id ?? null,
+            'midtrans_response' => json_encode($notif->getResponse()),
+        ]);
+
+        if ($finalStatus === 'settlement') {
+            $this->handleSuccessfulPayment($transaction->fresh());
+        }
+
+        return response('OK', 200);
     }
 
     // =========================================================
@@ -517,46 +543,28 @@ class CheckoutController extends Controller
 
         if ($transaction->status === 'pending') {
             try {
-                if (str_starts_with((string) $transaction->transaction_id, 'pr-')) {
-                    $paymentStatus = $this->xenditService->verifyPaymentRequest($transaction->transaction_id);
+                $status    = \Midtrans\Transaction::status($orderId);
+                $txStatus  = $status->transaction_status ?? '';
+                $fraud     = $status->fraud_status ?? 'accept';
+                $isSuccess = ($txStatus === 'settlement') ||
+                             ($txStatus === 'capture' && $fraud === 'accept');
 
-                    if (($paymentStatus['success'] ?? false) && ($paymentStatus['status'] ?? null) === 'SUCCEEDED') {
-                        $transaction->update([
-                            'status' => 'settlement',
-                            'payment_method' => $paymentStatus['payment_method'] ?? $transaction->payment_method,
-                            'midtrans_response' => $paymentStatus['raw'] ?? $transaction->midtrans_response,
-                        ]);
+                if ($isSuccess) {
+                    $transaction->update([
+                        'status'            => 'settlement',
+                        'payment_method'    => $status->payment_type ?? $transaction->payment_method,
+                        'transaction_id'    => $status->transaction_id ?? null,
+                        'midtrans_response' => json_encode($status),
+                    ]);
 
-                        $this->handleSuccessfulPayment($transaction->fresh());
-                        $transaction = $transaction->fresh();
-                        $notes = is_string($transaction->notes)
-                            ? json_decode($transaction->notes, true)
-                            : ($transaction->notes ?? []);
-                    }
-                } else {
-                    $status    = \Midtrans\Transaction::status($orderId);
-                    $txStatus  = $status->transaction_status ?? '';
-                    $fraud     = $status->fraud_status ?? 'accept';
-                    $isSuccess = ($txStatus === 'settlement') ||
-                                 ($txStatus === 'capture' && $fraud === 'accept');
-
-                    if ($isSuccess) {
-                        $transaction->update([
-                            'status'            => 'settlement',
-                            'payment_method'    => $status->payment_type ?? $transaction->payment_method,
-                            'transaction_id'    => $status->transaction_id ?? null,
-                            'midtrans_response' => json_encode($status),
-                        ]);
-
-                        $this->handleSuccessfulPayment($transaction->fresh());
-                        $transaction = $transaction->fresh();
-                        $notes = is_string($transaction->notes)
-                            ? json_decode($transaction->notes, true)
-                            : ($transaction->notes ?? []);
-                    }
+                    $this->handleSuccessfulPayment($transaction->fresh());
+                    $transaction = $transaction->fresh();
+                    $notes = is_string($transaction->notes)
+                        ? json_decode($transaction->notes, true)
+                        : ($transaction->notes ?? []);
                 }
             } catch (\Exception $e) {
-                Log::error('Checkout success status check error: ' . $e->getMessage());
+                Log::error('Midtrans status check error: ' . $e->getMessage());
             }
         }
 
@@ -716,7 +724,7 @@ class CheckoutController extends Controller
                 'buyer_name'              => $notes['buyer_name'] ?? '',
                 'buyer_email'             => $notes['buyer_email'] ?? '',
                 'buyer_phone'             => $notes['buyer_phone'] ?? null,
-                'order_code'              => $transaction->order_id, // ✅ Pakai MOBAY-xxx biar sama dengan admin
+                'order_code'              => $transaction->order_id, // ✅ Pakai PAYOU-xxx biar sama dengan admin
                 'product_name'            => $notes['product_title'] ?? $product->title,
                 'product_price'           => $notes['unit_price'] ?? $product->price,
                 'quantity'                => $notes['qty'] ?? 1,
@@ -957,29 +965,16 @@ class CheckoutController extends Controller
         }
     }
 
-    private function mapPaymentMethodToXendit(string $paymentMethod): array
-    {
-        $mapping = [
-            'bank_transfer' => ['VIRTUAL_ACCOUNT_BCA', 'VIRTUAL_ACCOUNT_BNI', 'VIRTUAL_ACCOUNT_MANDIRI'],
-            'qris' => ['QRIS'],
-            'dana' => ['DANA'],
-            'ovo' => ['OVO'],
-            'linkaja' => ['LINKAJA'],
-            'retail' => ['INDOMARET', 'ALFAMART'],
-        ];
-
-        return $mapping[strtolower($paymentMethod)] ?? ['VIRTUAL_ACCOUNT_BCA'];
-    }
-
     private function getPaymentMethodLabel(?string $method): string
     {
         return match ($method) {
             'bank_transfer' => 'Transfer Bank',
             'qris' => 'QRIS',
-            'dana' => 'DANA',
+            'gopay' => 'GoPay',
             'ovo' => 'OVO',
-            'linkaja' => 'LinkAja',
-            'retail' => 'Minimarket',
+            'dana' => 'DANA',
+            'shopeepay' => 'ShopeePay',
+            'credit_card' => 'Kartu Kredit',
             default => ucwords(str_replace('_', ' ', (string) $method)),
         };
     }

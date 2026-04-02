@@ -58,7 +58,11 @@ class User extends Authenticatable
         'origin_city_id',
         'origin_city_name',
         'storage_used',
-        'storage_limit'
+        'storage_limit',
+        'pro_until',
+        'pro_type',
+        'xendit_invoice_id',
+        'xendit_external_id'
     ];
 
     protected $hidden = [
@@ -68,12 +72,30 @@ class User extends Authenticatable
 
     protected $casts = [
         'email_verified_at' => 'datetime',
+        'pro_until' => 'datetime',
         'password' => 'hashed',
     ];
 
     public function isPro(): bool
     {
+        // Cek apakah Pro masih aktif (pro_until lebih besar dari sekarang)
+        if ($this->pro_until && $this->pro_until > now()) {
+            return true;
+        }
         return in_array((string) $this->subscription_plan, ['pro', 'premium'], true);
+    }
+
+    public function isProActive(): bool
+    {
+        return $this->pro_until && $this->pro_until > now();
+    }
+
+    public function getProRemainingDays(): ?int
+    {
+        if (!$this->isProActive()) {
+            return null;
+        }
+        return $this->pro_until->diffInDays(now());
     }
 
     public function appearanceAccess(): array
