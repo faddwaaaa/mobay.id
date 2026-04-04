@@ -105,9 +105,10 @@
 
                 <div class="action">
                     <a href="{{ route('checkout.show', $product->id) }}" class="btn btn-back">Ubah Data</a>
-                    <a href="{{ route('checkout.payment-method.show') }}" class="btn btn-pay">
-                        Pilih Metode Pembayaran
-                    </a>
+                    <button id="payXenditBtn" class="btn btn-pay" onclick="payViaXendit()">
+                        <span id="payBtnText">💳 Bayar via Xendit</span>
+                        <span class="spinner" id="paySpinner"></span>
+                    </button>
                 </div>
             </div>
         </div>
@@ -127,6 +128,56 @@ function showAlert(msg) {
     el.textContent = msg;
     el.style.display = 'block';
     setTimeout(() => { el.style.display = 'none'; }, 3200);
+}
+
+async function payViaXendit() {
+    const btn = document.getElementById('payXenditBtn');
+    const spinner = document.getElementById('paySpinner');
+    const btnText = document.getElementById('payBtnText');
+    
+    btn.disabled = true;
+    spinner.style.display = 'block';
+    btnText.textContent = 'Sedang memproses...';
+
+    try {
+        const response = await fetch('{{ route("checkout.xendit.create-invoice") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+            },
+            body: JSON.stringify({
+                email: payload.buyer_email,
+                phone: payload.buyer_phone,
+                type: payload.product_type === 'digital' ? 'digital' : 'physical',
+                province_id: payload.province_id || null,
+                city_id: payload.city_id || null,
+                postal_code: payload.postal_code || null,
+                address: payload.buyer_address || null,
+            }),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || data.error) {
+            showAlert('❌ ' + (data.error || 'Gagal membuat invoice'));
+            return;
+        }
+
+        if (data.invoice_url) {
+            // Redirect to Xendit for payment
+            window.location.href = data.invoice_url;
+        } else {
+            showAlert('❌ Tidak ada URL payment');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        showAlert('❌ Terjadi kesalahan: ' + error.message);
+    } finally {
+        btn.disabled = false;
+        spinner.style.display = 'none';
+        btnText.textContent = '💳 Bayar via Xendit';
+    }
 }
 
 // Note: Payment processing now handled in payment method selection page

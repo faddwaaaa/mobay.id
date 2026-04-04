@@ -78,6 +78,10 @@ Route::get('/checkout/{productId}', [CheckoutController::class, 'show'])->name('
 Route::post('/checkout/process', [CheckoutController::class, 'process'])->name('checkout.process');
 Route::post('/midtrans/webhook', [CheckoutController::class, 'webhook'])->name('midtrans.webhook');
 
+// ✅ Xendit simplified checkout flow
+Route::post('/checkout/xendit/create-invoice', [CheckoutController::class, 'processXenditCheckout'])->name('checkout.xendit.create-invoice');
+Route::post('/checkout/xendit/callback', [CheckoutController::class, 'handleXenditCallback'])->name('checkout.xendit.callback');
+
 // ✅ FIX: Dipindah ke sini — harus di luar auth & di atas wildcard
 Route::get('/payment/success/{orderCode}', [DigitalOrderController::class, 'paymentSuccess'])
     ->name('payment.show');
