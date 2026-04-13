@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\ProductViews;
 use App\Models\ProfileView;
 use App\Services\PaymentService;
+use App\Services\StorageService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Link;
@@ -108,7 +109,9 @@ class DashboardController extends Controller
             'products',
             'totalProducts',
             'totalOrders',
-        ));
+        ), [
+            'storageInfo' => StorageService::getStorageInfo($user),
+        ]);
     }
 
     public function chartData(Request $request)

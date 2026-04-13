@@ -9,13 +9,16 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->string('subscription_plan', 20)->default('free')->after('role');
-        });
+        // Cek apakah kolom sudah ada sebelum menambahkan
+        if (!Schema::hasColumn('users', 'subscription_plan')) {
+            Schema::table('users', function (Blueprint $table) {
+                $table->string('subscription_plan', 20)->default('free')->after('role');
+            });
 
-        DB::table('users')
-            ->whereNull('subscription_plan')
-            ->update(['subscription_plan' => 'free']);
+            DB::table('users')
+                ->whereNull('subscription_plan')
+                ->update(['subscription_plan' => 'free']);
+        }
     }
 
     public function down(): void
