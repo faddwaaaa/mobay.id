@@ -717,7 +717,7 @@ body:not(.preload) .content-pad {
         </a>
 
         <div class="s-divider"></div>
-        <div class="s-label">Preferensi</div>
+        {{-- <div class="s-label">Preferensi</div>
 
         <div>
             <div class="s-theme-toggle" id="sThemeToggle">
@@ -738,7 +738,7 @@ body:not(.preload) .content-pad {
                 </button>
             </div>
         </div>
-    </nav>
+    </nav> --}}
 
     <!-- Logout -->
     <div class="s-footer">

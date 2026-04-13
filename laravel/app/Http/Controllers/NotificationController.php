@@ -65,24 +65,23 @@ class NotificationController extends Controller
     /**
      * Delete a single notification.
      */
-    public function destroy(Notification $notification)
-    {
-        abort_unless($notification->user_id === Auth::id(), 403);
+    public function destroy($id)
+{
+    $notification = \App\Models\Notification::where('id', $id)
+        ->where('user_id', Auth::id())
+        ->firstOrFail();
 
-        $notification->delete();
+    $notification->delete();
 
-        return response()->json(['success' => true]);
-    }
+    return redirect()->back()->with('success', 'Notifikasi berhasil dihapus');
+}
 
-    /**
-     * Delete ALL notifications for the current user.
-     */
-    public function destroyAll()
-    {
-        Notification::forUser(Auth::id())->delete();
+public function destroyAll()
+{
+    \App\Models\Notification::where('user_id', auth::id())->delete();
 
-        return response()->json(['success' => true]);
-    }
+    return redirect()->back()->with('success', 'Semua notifikasi dihapus');
+}
 
     public function page(Request $request)
 {
