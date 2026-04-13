@@ -19,7 +19,7 @@
             {{ strtoupper(substr($user->name,0,2)) }}
           </div>
           <div style="font-size:16px;font-weight:900;color:var(--ink);">{{ $user->name }}</div>
-          <div style="font-size:12px;color:var(--ink3);font-family:var(--mono);margin-top:3px;">@{{ $user->username }}</div>
+          <div style="font-size:12px;color:var(--ink3);font-family:var(--mono);margin-top:3px;"><span>@</span>{{ $user->username }}</div>
           <div style="margin-top:10px;">
             @if($user->is_suspended ?? false)
               <span class="badge b-off">Suspended</span>

@@ -870,7 +870,7 @@ if (buyerAddressEl && addressDropdown) {
 function renderCityResults(data) {
     cityDropdown.innerHTML = '';
     if (!Array.isArray(data) || !data.length) {
-        cityDropdown.innerHTML = '<div class="city-item" style="color:#9ca3af">Area tidak ditemukan</div>';
+        cityDropdown.innerHTML = '<div class="city-item" style="color:#9ca3af">Sedang mencari lokasi…</div>';
         return;
     }
     data.forEach((v) => {
@@ -931,7 +931,7 @@ function extractAddressSearchTerm(value) {
 function renderAddressResults(data) {
     addressDropdown.innerHTML = '';
     if (!Array.isArray(data) || !data.length) {
-        addressDropdown.innerHTML = '<div class="city-item" style="color:#9ca3af">Rekomendasi area tidak ditemukan</div>';
+        addressDropdown.innerHTML = '<div class="city-item" style="color:#9ca3af">Sedang mencari rekomendasi area…</div>';
         return;
     }
     data.forEach((v) => {

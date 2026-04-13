@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\MidtransWebhookController;
+use App\Http\Controllers\XenditWebhookController;
 use Illuminate\Support\Facades\Route;
 
 /**
@@ -16,6 +17,7 @@ use Illuminate\Support\Facades\Route;
  * protected $except = [
  *     'webhook/midtrans/iris',
  *     'webhook/midtrans/transaction',
+ *     'webhook/xendit/invoice',
  * ];
  */
 
@@ -31,4 +33,19 @@ Route::prefix('webhook/midtrans')->name('webhook.midtrans.')->group(function () 
     // Transaction Notification (Snap/Core API)
     Route::post('transaction', [MidtransWebhookController::class, 'handleTransactionNotification'])
         ->name('transaction');
+});
+
+/**
+ * Xendit Webhook Routes
+ * 
+ * These routes handle callbacks from Xendit for:
+ * 1. Invoice Payment Notifications
+ * 2. Payout/Disbursement Status Updates
+ * 
+ * Important: These routes should NOT have CSRF protection
+ */
+Route::prefix('webhook/xendit')->name('webhook.xendit.')->group(function () {
+    // Invoice Payment Notification
+    Route::post('invoice', [XenditWebhookController::class, 'handleInvoiceCallback'])
+        ->name('invoice');
 });

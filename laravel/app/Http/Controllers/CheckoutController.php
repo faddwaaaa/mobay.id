@@ -11,6 +11,7 @@ use App\Models\DigitalOrder;
 use App\Models\PhysicalOrder;
 use App\Mail\PhysicalOrderConfirmation;
 use App\Services\DigitalOrderService;
+use App\Services\XenditCheckoutService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
@@ -237,7 +238,7 @@ class CheckoutController extends Controller
         $paymentMethodLabel = $this->getPaymentMethodLabel($request->payment_method);
         $totalFeeAmount     = $paymentFeeAmount + $paymentMethodFee;
         $totalAmount        = $baseTotal + $paymentFeeAmount + $paymentMethodFee;
-        $orderId            = 'MOBAY-' . strtoupper(Str::random(8)) . '-' . time();
+        $orderId            = 'PAYOU-' . strtoupper(Str::random(8)) . '-' . time();
 
         // Create transaction record
         $transaction = Transaction::create([
@@ -405,7 +406,7 @@ class CheckoutController extends Controller
         $paymentFeePercent  = (float) config('payment.payment_fee_percent', 5);
         $paymentFeeAmount   = (int) ceil($baseTotal * ($paymentFeePercent / 100));
         $amount             = $baseTotal + $paymentFeeAmount;
-        $orderId            = 'MOBAY-' . strtoupper(Str::random(8)) . '-' . time();
+        $orderId            = 'PAYOU-' . strtoupper(Str::random(8)) . '-' . time();
 
         $transaction = Transaction::create([
             'user_id'        => $product->user_id,
@@ -724,7 +725,7 @@ class CheckoutController extends Controller
                 'buyer_name'              => $notes['buyer_name'] ?? '',
                 'buyer_email'             => $notes['buyer_email'] ?? '',
                 'buyer_phone'             => $notes['buyer_phone'] ?? null,
-                'order_code'              => $transaction->order_id, // ✅ Pakai MOBAY-xxx biar sama dengan admin
+                'order_code'              => $transaction->order_id, // ✅ Pakai PAYOU-xxx biar sama dengan admin
                 'product_name'            => $notes['product_title'] ?? $product->title,
                 'product_price'           => $notes['unit_price'] ?? $product->price,
                 'quantity'                => $notes['qty'] ?? 1,
@@ -977,5 +978,126 @@ class CheckoutController extends Controller
             'credit_card' => 'Kartu Kredit',
             default => ucwords(str_replace('_', ' ', (string) $method)),
         };
+    }
+
+    /**
+     * Create Xendit invoice for simplified checkout flow
+     */
+    public function processXenditCheckout(Request $request)
+    {
+        try {
+            // Get checkout payload from session
+            $payload = session('checkout_checkpoint');
+            if (!$payload || empty($payload['product_id'])) {
+                return response()->json(['error' => 'Data checkout tidak ditemukan'], 400);
+            }
+
+            // Validate incoming request data
+            $validated = $request->validate([
+                'email' => 'required|email',
+                'phone' => 'required|string',
+                'type' => 'required|in:digital,physical',
+                'province_id' => 'nullable|integer',
+                'city_id' => 'nullable|integer',
+                'postal_code' => 'nullable|numeric',
+                'address' => 'nullable|string',
+            ]);
+
+            // Get product details
+            $product = Product::with('files')->find($payload['product_id']);
+            if (!$product) {
+                return response()->json(['error' => 'Produk tidak ditemukan'], 404);
+            }
+
+            // Prepare checkout data in format expected by XenditCheckoutService
+            $checkoutData = [
+                'product_id' => $product->id,
+                'buyer_name' => $validated['email'],
+                'buyer_email' => $validated['email'],
+                'buyer_phone' => $validated['phone'],
+                'buyer_address' => $validated['address'] ?? null,
+                'qty' => $product->product_type === 'digital' ? 1 : max((int) ($payload['qty'] ?? 1), 1),
+                'selected_ongkir_cost' => $payload['selected_ongkir_cost'] ?? 0,
+                'selected_service' => $payload['selected_service'] ?? 'Standard',
+                'destination_village_code' => $payload['destination_village_code'] ?? null,
+                'destination_label' => $payload['destination_label'] ?? null,
+                'selected_courier' => $payload['selected_courier'] ?? 'FREE',
+                'ip_address' => $request->ip(),
+            ];
+
+            // Create Xendit invoice using service
+            $xenditService = new XenditCheckoutService();
+            $result = $xenditService->createCheckoutInvoice($checkoutData);
+
+            if (!$result['success'] || isset($result['error'])) {
+                return response()->json(['error' => $result['error'] ?? 'Gagal membuat invoice'], 400);
+            }
+
+            if (!isset($result['invoice_url'])) {
+                return response()->json(['error' => 'Gagal mendapatkan URL pembayaran'], 500);
+            }
+
+            // Clear checkout session after successful invoice creation
+            session()->forget('checkout_checkpoint');
+
+            return response()->json([
+                'success' => true,
+                'invoice_url' => $result['invoice_url'],
+                'order_id' => $result['order_id'] ?? null,
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Xendit Checkout Error: ' . $e->getMessage(), ['exception' => $e]);
+            return response()->json([
+                'error' => 'Gagal membuat invoice pembayaran: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Handle Xendit payment callback for checkout orders
+     */
+    public function handleXenditCallback(Request $request)
+    {
+        try {
+            $data = $request->all();
+
+            // Verify callback authenticity
+            $xenditService = new XenditCheckoutService();
+            if (!method_exists($xenditService, 'validateCallback')) {
+                // Simple validation - check if external_id exists
+                if (!isset($data['external_id'])) {
+                    return response()->json(['error' => 'Invalid callback'], 400);
+                }
+            }
+
+            // Handle payment based on type
+            $externalId = $data['external_id'] ?? null;
+
+            // Check if it's a Pro subscription payment (starts with 'pro-') or checkout payment
+            if ($externalId && strpos($externalId, 'pro-') === 0) {
+                // Pro payment - delegate to ProSubscriptionController
+                return response()->json(['message' => 'Pro payment handled']);
+            }
+
+            // Product checkout payment
+            if (isset($data['status']) && $data['status'] === 'PAID') {
+                $result = $xenditService->handlePaymentSuccess($data);
+
+                if ($result['success']) {
+                    return response()->json([
+                        'message' => 'Payment processed successfully',
+                        'order_id' => $result['order_id'] ?? null,
+                    ]);
+                }
+            }
+
+            return response()->json(['message' => 'Callback received']);
+        } catch (\Exception $e) {
+            \Log::error('Xendit Callback Error: ' . $e->getMessage());
+            return response()->json([
+                'error' => 'Callback processing failed: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }

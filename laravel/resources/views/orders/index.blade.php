@@ -652,15 +652,17 @@
                 $typeBadge = ($notes['product_type'] ?? 'fisik') === 'digital' ? 'digital' : 'fisik';
             @endphp
 
-            <a href="{{ route('orders.show', $order->id) }}" class="order-card">
+            <a href="{{ route('orders.show', $order->id) }}" class="order-card" style="position:relative;">
                 <div class="card-top">
                     <div class="card-code">
                         <i class="fas fa-receipt" style="color:#2563eb;"></i>
                         <span>{{ $order->order_id }}</span>
                     </div>
-                    <span class="type-badge {{ $typeBadge }}">
-                        <i class="fas {{ $typeBadge === 'digital' ? 'fa-file-lines' : 'fa-box' }}"></i>
-                        {{ $typeBadge }}
+                    <span style="position:absolute;right:18px;top:18px;z-index:2;display:flex;align-items:center;gap:6px;">
+                        <span class="type-badge {{ $typeBadge }}" style="position:relative;font-size:12px;min-width:60px;text-transform:capitalize;">{{ $typeBadge }}</span>
+                        <span style="background:rgba(255,255,255,0.85);border-radius:50%;border:1px solid #e5e7eb;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-size:18px;color:#2563eb;box-shadow:0 2px 8px rgba(37,99,235,0.07);pointer-events:none;">
+                            <i class="fas fa-arrow-right"></i>
+                        </span>
                     </span>
                 </div>
 

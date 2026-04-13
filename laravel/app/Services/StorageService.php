@@ -9,14 +9,14 @@ use Illuminate\Support\Facades\Auth;
  * StorageService - Mengelola dan memvalidasi kapasitas penyimpanan user
  * 
  * Kapasitas per tipe subscription:
- * - Free: 20 MB (20971520 bytes)
- * - Pro: 1 GB (1073741824 bytes)
+ * - Free: 10 MB (10485760 bytes)
+ * - Pro: 50 MB (52428800 bytes)
  */
 class StorageService
 {
     // Storage limits dalam bytes
-    const FREE_STORAGE_LIMIT = 20971520;   // 20 MB
-    const PRO_STORAGE_LIMIT = 1073741824;  // 1 GB
+    const FREE_STORAGE_LIMIT = 10485760;   // 10 MB
+    const PRO_STORAGE_LIMIT = 52428800;    // 50 MB
 
     /**
      * Dapatkan storage limit berdasarkan subscription plan

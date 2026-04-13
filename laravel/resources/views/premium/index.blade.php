@@ -842,13 +842,13 @@
                     </div>
                     <p class="premium-price-value">Rp 49.900</p>
                     <p class="premium-price-sub">Cocok untuk coba fitur Pro dulu dan lihat dampaknya ke tampilan serta analitik tokomu.</p>
-                    <a href="{{ $proMonthlyLink }}" target="_blank" rel="noopener" class="premium-buy-btn">
+                    <button type="button" class="premium-buy-btn" onclick="showProQrisModal('monthly')">
                         <span class="premium-buy-btn-copy">
-                            <span class="premium-buy-btn-icon"><i class="fab fa-whatsapp"></i></span>
+                            <span class="premium-buy-btn-icon"><i class="fas fa-qrcode"></i></span>
                             <span class="premium-buy-btn-text">Pilih paket bulanan</span>
                         </span>
                         <span class="premium-buy-btn-arrow"><i class="fas fa-arrow-right"></i></span>
-                    </a>
+                    </button>
                 </div>
                 <div class="premium-price-card premium-price-card--yearly">
                     <div class="premium-price-head">
@@ -860,13 +860,13 @@
                     </div>
                     <p class="premium-price-value">Rp 500.000</p>
                     <p class="premium-price-sub">Pilihan terbaik kalau kamu sudah rutin jualan dan ingin biaya langganan lebih efisien sepanjang tahun.</p>
-                    <a href="{{ $proYearlyLink }}" target="_blank" rel="noopener" class="premium-buy-btn premium-buy-btn--primary">
+                    <button type="button" class="premium-buy-btn premium-buy-btn--primary" onclick="showProQrisModal('yearly')">
                         <span class="premium-buy-btn-copy">
-                            <span class="premium-buy-btn-icon"><i class="fab fa-whatsapp"></i></span>
+                            <span class="premium-buy-btn-icon"><i class="fas fa-qrcode"></i></span>
                             <span class="premium-buy-btn-text">Pilih paket tahunan</span>
                         </span>
                         <span class="premium-buy-btn-arrow"><i class="fas fa-arrow-right"></i></span>
-                    </a>
+                    </button>
                 </div>
             </div>
         </section>
@@ -916,4 +916,6 @@
 
     </div>
 </div>
+    <!-- Include QRIS Modal -->
+    @include('pro.qris-modal')
 @endsection

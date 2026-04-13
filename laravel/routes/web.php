@@ -32,7 +32,8 @@ use App\Http\Controllers\{
     PublicProfileReportController,
     DigitalOrderController,
     ShippingSettingsController,
-    BiteshipWebhookController
+    BiteshipWebhookController,
+    ProSubscriptionController
 };
 
 use App\Http\Controllers\Admin\ProfileReportController;
@@ -76,6 +77,10 @@ Route::post('/checkout/create-charge', [CheckoutController::class, 'createCharge
 Route::get('/checkout/{productId}', [CheckoutController::class, 'show'])->name('checkout.show');
 Route::post('/checkout/process', [CheckoutController::class, 'process'])->name('checkout.process');
 Route::post('/midtrans/webhook', [CheckoutController::class, 'webhook'])->name('midtrans.webhook');
+
+// ✅ Xendit simplified checkout flow
+Route::post('/checkout/xendit/create-invoice', [CheckoutController::class, 'processXenditCheckout'])->name('checkout.xendit.create-invoice');
+Route::post('/checkout/xendit/callback', [CheckoutController::class, 'handleXenditCallback'])->name('checkout.xendit.callback');
 
 // ✅ FIX: Dipindah ke sini — harus di luar auth & di atas wildcard
 Route::get('/payment/success/{orderCode}', [DigitalOrderController::class, 'paymentSuccess'])
@@ -337,6 +342,14 @@ Route::middleware('auth')->group(function () {
                 'created_at' => $trx->created_at ?? null];
     });
 
+    // ─── Pro Subscription ───
+    Route::prefix('pro')->name('pro.')->group(function () {
+        Route::post('/create-invoice', [ProSubscriptionController::class, 'createInvoice'])->name('create-invoice');
+        Route::get('/status', [ProSubscriptionController::class, 'checkStatus'])->name('status');
+        Route::get('/payment/success', [ProSubscriptionController::class, 'paymentSuccess'])->name('payment.success');
+        Route::get('/payment/failed', [ProSubscriptionController::class, 'paymentFailed'])->name('payment.failed');
+    });
+
     Route::post('/logout', function () {
         Auth::logout();
         request()->session()->invalidate();
@@ -373,7 +386,7 @@ Route::get('/preview/{username}', function ($username) {
 })->name('preview.profile');
 
 //biteship
-Route::post('/webhook/biteship', [\App\Http\Controllers\BiteshipWebhookController::class, 'handle'])
+Route::post('/webhooks/biteship', [\App\Http\Controllers\BiteshipWebhookController::class, 'handle'])
     ->name('webhooks.biteship');
 
     Route::get('/debug/biteship', function () {
@@ -386,12 +399,6 @@ Route::post('/webhook/biteship', [\App\Http\Controllers\BiteshipWebhookControlle
     ]);
 })->middleware('auth');
 
-// Pesan kurir otomatis via Biteship
-Route::post('/pesanan/fisik/{physicalOrder}/pesan-kurir', 
-    [App\Http\Controllers\BiteshipOrderController::class, 'createOrder'])
-    ->middleware('auth')
-    ->name('physical-orders.biteship.create');
-    
 /*
 |--------------------------------------------------------------------------
 | LINK TRACKING /go/

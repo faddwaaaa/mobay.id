@@ -16,6 +16,119 @@
 @include('components.qr-modal')
 
 <style>
+    .quick-actions {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(185px, 1fr));
+        gap: 14px;
+        margin-bottom: 28px;
+    }
+    .quick-action-card {
+        position: relative;
+        overflow: hidden;
+        min-height: 132px;
+        padding: 18px;
+        border-radius: 18px;
+        color: #ffffff;
+        text-decoration: none;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        gap: 18px;
+        box-shadow: 0 12px 30px rgba(15, 23, 42, 0.12);
+        transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+    }
+    .quick-action-card::before {
+        content: '';
+        position: absolute;
+        inset: auto -24px -38px auto;
+        width: 110px;
+        height: 110px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.12);
+    }
+    .quick-action-card::after {
+        content: '';
+        position: absolute;
+        top: -26px;
+        right: -12px;
+        width: 82px;
+        height: 82px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.08);
+    }
+    .quick-action-card:hover,
+    .quick-action-card:focus-visible {
+        transform: translateY(-3px);
+        filter: saturate(1.05);
+        box-shadow: 0 18px 36px rgba(15, 23, 42, 0.18);
+    }
+    .quick-action-card:focus-visible {
+        outline: 3px solid rgba(255, 255, 255, 0.75);
+        outline-offset: 2px;
+    }
+    .quick-action-top,
+    .quick-action-bottom {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+    }
+    .quick-action-label {
+        display: inline-flex;
+        align-items: center;
+        width: fit-content;
+        padding: 5px 10px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.18);
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+    }
+    .quick-action-icon {
+        width: 46px;
+        height: 46px;
+        border-radius: 14px;
+        background: rgba(255, 255, 255, 0.16);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14);
+        flex-shrink: 0;
+    }
+    .quick-action-icon i {
+        font-size: 18px;
+    }
+    .quick-action-content {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+    .quick-action-title {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 800;
+        line-height: 1.15;
+    }
+    .quick-action-desc {
+        margin: 0;
+        font-size: 13px;
+        line-height: 1.5;
+        color: rgba(255, 255, 255, 0.9);
+    }
+    .quick-action-arrow {
+        font-size: 13px;
+        opacity: 0.88;
+    }
+    .quick-action-links { background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); }
+    .quick-action-products { background: linear-gradient(135deg, #059669 0%, #047857 100%); }
+    .quick-action-appearance { background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); }
+    .quick-action-history { background: linear-gradient(135deg, #d97706 0%, #b45309 100%); }
+
 @media (max-width: 768px) {
     .page-header { flex-direction: column !important; align-items: flex-start !important; }
     .page-header > div:first-child h1 { font-size: 20px !important; }
@@ -33,12 +146,17 @@
     .chart-card h3 { font-size: 15px !important; }
     .stat-card h4 { font-size: 13px !important; }
     .stat-card .stat-value { font-size: 28px !important; }
+    .quick-actions { grid-template-columns: 1fr 1fr; }
+    .quick-action-card { min-height: 122px; padding: 16px; }
+    .quick-action-title { font-size: 16px; }
+    .quick-action-desc { font-size: 12px; }
 }
 @media (max-width: 480px) {
     .page-header > div:first-child h1 { font-size: 18px !important; }
     .balance-card > div:first-child > div:nth-child(2) { font-size: 32px !important; }
     .stat-card { padding: 16px !important; }
     .date-range-btn { padding: 8px 12px !important; font-size: 12px !important; }
+    .quick-actions { grid-template-columns: 1fr; }
 }
 </style>
 
@@ -61,6 +179,65 @@
         <span style="font-size:14px;font-weight:600;">{{ session('success') }}</span>
     </div>
 @endif
+
+<!-- ================= QUICK ACTION BUTTONS ================= -->
+<div class="quick-actions">
+    <a href="{{ route('links.index') }}" class="quick-action-card quick-action-links">
+        <div class="quick-action-top">
+            <span class="quick-action-label">Akses Cepat</span>
+            <span class="quick-action-icon"><i class="fas fa-link"></i></span>
+        </div>
+        <div class="quick-action-bottom">
+            <div class="quick-action-content">
+                <h3 class="quick-action-title">Kelola Link</h3>
+                <p class="quick-action-desc">Atur tautan utama dan susun halaman bio kamu.</p>
+            </div>
+            <i class="fas fa-arrow-right quick-action-arrow"></i>
+        </div>
+    </a>
+
+    <a href="{{ route('products.manage') }}" class="quick-action-card quick-action-products">
+        <div class="quick-action-top">
+            <span class="quick-action-label">Jualan</span>
+            <span class="quick-action-icon"><i class="fas fa-box"></i></span>
+        </div>
+        <div class="quick-action-bottom">
+            <div class="quick-action-content">
+                <h3 class="quick-action-title">Produk</h3>
+                <p class="quick-action-desc">Tambah, edit, dan pantau produk digital maupun fisik.</p>
+            </div>
+            <i class="fas fa-arrow-right quick-action-arrow"></i>
+        </div>
+    </a>
+
+    <a href="{{ route('dashboard.appearance') }}" class="quick-action-card quick-action-appearance">
+        <div class="quick-action-top">
+            <span class="quick-action-label">Branding</span>
+            <span class="quick-action-icon"><i class="fas fa-palette"></i></span>
+        </div>
+        <div class="quick-action-bottom">
+            <div class="quick-action-content">
+                <h3 class="quick-action-title">Tampilan</h3>
+                <p class="quick-action-desc">Sesuaikan warna, gaya, dan nuansa profil publik.</p>
+            </div>
+            <i class="fas fa-arrow-right quick-action-arrow"></i>
+        </div>
+    </a>
+
+    <a href="{{ url('/riwayat') }}" class="quick-action-card quick-action-history">
+        <div class="quick-action-top">
+            <span class="quick-action-label">Keuangan</span>
+            <span class="quick-action-icon"><i class="fas fa-history"></i></span>
+        </div>
+        <div class="quick-action-bottom">
+            <div class="quick-action-content">
+                <h3 class="quick-action-title">Riwayat</h3>
+                <p class="quick-action-desc">Lihat transaksi terbaru, pembayaran, dan penarikan saldo.</p>
+            </div>
+            <i class="fas fa-arrow-right quick-action-arrow"></i>
+        </div>
+    </a>
+</div>
 
 <!-- ================= SALDO ================= -->
 {{-- ================= SALDO CARD — ganti bagian balance-card di dashboard ================= --}}
@@ -225,6 +402,80 @@
 </div>
 </div>
 
+<!-- ================= NOTIFICATIONS & ALERTS ================= -->
+<div id="notificationsContainer" style="margin-bottom:32px;">
+    <!-- STORAGE WARNING -->
+    @if($storageInfo['percentage'] > 80)
+    <div style="background:linear-gradient(135deg, #fef3c7 0%, #fcd34d 100%);border-radius:14px;border-left:4px solid #f59e0b;
+                padding:16px 20px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;gap:16px;">
+        <div style="display:flex;align-items:center;gap:12px;flex:1;min-width:0;">
+            <div style="width:40px;height:40px;background:rgba(245, 158, 11, 0.1);border-radius:10px;
+                        display:flex;align-items:center;justify-content:center;font-size:20px;color:#f59e0b;flex-shrink:0;">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <div style="min-width:0;">
+                <p style="margin:0 0 4px;font-size:13px;font-weight:700;color:#78350f;">Penyimpanan Hampir Penuh!</p>
+                <p style="margin:0;font-size:12px;color:#92400e;">{{ $storageInfo['percentage'] }}% dari {{ $storageInfo['limit_formatted'] }} sudah terpakai</p>
+            </div>
+        </div>
+        <button onclick="document.getElementById('storageCard').click()"
+                style="padding:8px 14px;background:#f59e0b;color:#ffffff;border:none;border-radius:8px;
+                       font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0;">
+            Upgrade
+        </button>
+    </div>
+    @endif
+
+    <!-- PRO UPGRADE RECOMMENDATION -->
+    @if(!$isProUser)
+    <div style="background:linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);border-radius:14px;border-left:4px solid #2563eb;
+                padding:16px 20px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;gap:16px;">
+        <div style="display:flex;align-items:center;gap:12px;flex:1;min-width:0;">
+            <div style="width:40px;height:40px;background:rgba(37, 99, 235, 0.1);border-radius:10px;
+                        display:flex;align-items:center;justify-content:center;font-size:20px;color:#2563eb;flex-shrink:0;">
+                <i class="fas fa-crown"></i>
+            </div>
+            <div style="min-width:0;">
+                <p style="margin:0 0 4px;font-size:13px;font-weight:700;color:#1e40af;">Tingkatkan ke Pro 🚀</p>
+                <p style="margin:0;font-size:12px;color:#1e40af;">Dapatkan penyimpanan 5x lebih besar & fitur premium lainnya</p>
+            </div>
+        </div>
+        <a href="{{ route('dashboard.appearance') }}"
+           style="padding:8px 14px;background:#2563eb;color:#ffffff;border:none;border-radius:8px;
+                  font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;text-decoration:none;
+                  display:flex;align-items:center;gap:5px;flex-shrink:0;">
+            <i class="fas fa-arrow-right" style="font-size:10px;"></i> Lihat Paket
+        </a>
+    </div>
+    @endif
+
+    <!-- RECENT ACTIVITY ALERT -->
+    @php
+        $now = \Carbon\Carbon::now();
+        $recentActivity = $now->diffInHours(\Carbon\Carbon::now()->subHours(24)) < 24;
+    @endphp
+    @if(!$recentActivity && array_sum($data) > 0)
+    <div style="background:linear-gradient(135deg, #e9d5ff 0%, #d8b4fe 100%);border-radius:14px;border-left:4px solid #7c3aed;
+                padding:16px 20px;display:flex;align-items:center;justify-content:space-between;gap:16px;">
+        <div style="display:flex;align-items:center;gap:12px;flex:1;min-width:0;">
+            <div style="width:40px;height:40px;background:rgba(124, 58, 237, 0.1);border-radius:10px;
+                        display:flex;align-items:center;justify-content:center;font-size:20px;color:#7c3aed;flex-shrink:0;">
+                <i class="fas fa-info-circle"></i>
+            </div>
+            <div style="min-width:0;">
+                <p style="margin:0 0 4px;font-size:13px;font-weight:700;color:#581c87;">Tidak ada aktivitas 24 jam terakhir</p>
+                <p style="margin:0;font-size:12px;color:#6b21a8;">Coba bagikan link profil Anda untuk mendapatkan visitors baru</p>
+            </div>
+        </div>
+        <button onclick="openQRModal('{{ $user->username }}')"
+                style="padding:8px 14px;background:#7c3aed;color:#ffffff;border:none;border-radius:8px;
+                       font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0;">
+            Bagikan
+        </button>
+    </div>
+    @endif
+</div>
+
 <style>
 @media (max-width: 640px) {
     .balance-card {
@@ -246,7 +497,6 @@
         width: 100%;
         justify-content: center;
     }
-}
 </style>
 
 <!-- ================= CHART ================= -->
@@ -404,6 +654,85 @@ document.querySelectorAll('.range-option').forEach(el => {
 });
 </script>
 
+<!-- ================= STORAGE INFO — CLICKABLE ================= -->
+<div id="storageCard" style="background:#ffffff;border-radius:18px;padding:24px;margin-bottom:32px;box-shadow:0 10px 30px rgba(0,0,0,.06);cursor:pointer;transition:all 0.3s ease;">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+        <i class="fas fa-database" style="font-size:20px;color:#2563eb;"></i>
+        <h3 style="font-size:16px;font-weight:700;margin:0;color:#111827;">Penyimpanan</h3>
+    </div>
+    
+    <!-- Storage Usage -->
+    <div style="margin-bottom:16px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+            <span style="font-size:13px;color:#6b7280;font-weight:600;">
+                Penggunaan Penyimpanan
+            </span>
+            <span style="font-size:13px;font-weight:700;color:#2563eb;">{{ $storageInfo['percentage'] }}%</span>
+        </div>
+        <div style="width:100%;background:#e5e7eb;border-radius:999px;height:8px;overflow:hidden;">
+            <div style="background:linear-gradient(90deg, #2563eb, #3b82f6);height:100%;transition:width 0.3s ease;width:{{ min($storageInfo['percentage'], 100) }}%;"></div>
+        </div>
+    </div>
+
+    <!-- Available Storage -->
+    <div style="background:#ecf0ff;border:1px solid #bfdbfe;border-radius:12px;padding:12px 14px;margin-bottom:12px;">
+        <p style="font-size:13px;color:#1e40af;margin:0;">
+            <span style="font-weight:700;">{{ $storageInfo['percentage'] < 100 ? 'Masih ada ruang' : 'Penyimpanan penuh' }}</span> untuk upload
+        </p>
+    </div>
+
+    <!-- Plan Info -->
+    <div style="border-top:1px solid #e5e7eb;padding-top:12px;">
+        <p style="font-size:12px;color:#6b7280;margin:0 0 6px;font-weight:600;">
+            @if($storageInfo['plan'] === 'Pro')
+                <i class="fas fa-crown" style="color:#fbbf24;margin-right:4px;"></i> Akun Pro
+            @else
+                <i class="fas fa-rocket" style="color:#ec4899;margin-right:4px;"></i> Akun Free
+            @endif
+        </p>
+        <p style="font-size:12px;color:#6b7280;margin:0;line-height:1.5;">
+            @if($storageInfo['plan'] === 'Free')
+                <span style="font-weight:700;color:#ec4899;">👉 Klik untuk upgrade</span> ke Pro dan dapatkan penyimpanan 5x lebih besar!
+            @else
+                Anda menggunakan akun Pro dengan penyimpanan 5x lebih besar dari Free. Nikmati upload dan manajemen file tanpa khawatir!
+            @endif
+        </p>
+    </div>
+</div>
+
+<script>
+const isProUser = @json($isProUser);
+const storageCard = document.getElementById('storageCard');
+
+if (!isProUser) {
+    storageCard.addEventListener('click', () => {
+        const modal = document.getElementById('upgradeModal');
+        const overlay = document.getElementById('upgradeOverlay');
+        if (modal && overlay) {
+            modal.style.display = 'flex';
+            setTimeout(() => {
+                modal.style.opacity = '1';
+                modal.style.transform = 'translateY(0)';
+                overlay.style.opacity = '1';
+                overlay.style.pointerEvents = 'auto';
+            }, 10);
+        }
+    });
+    
+    storageCard.addEventListener('mouseenter', function() {
+        this.style.background = '#f0f9ff';
+        this.style.boxShadow = '0 10px 40px rgba(37, 99, 235, 0.15)';
+        this.style.transform = 'translateY(-2px)';
+    });
+    
+    storageCard.addEventListener('mouseleave', function() {
+        this.style.background = '#ffffff';
+        this.style.boxShadow = '0 10px 30px rgba(0,0,0,.06)';
+        this.style.transform = 'translateY(0)';
+    });
+}
+</script>
+
 @endsection
 
 {{-- ============================================================
@@ -418,6 +747,147 @@ document.querySelectorAll('.range-option').forEach(el => {
      - Keterangan jumlah yang akan ditarik
 ============================================================ --}}
 @push('modals')
+
+<!-- ================= UPGRADE MODAL OVERLAY ================= -->
+<div id="upgradeOverlay"
+     style="position:fixed;inset:0;z-index:8990;background:rgba(15,23,42,0.5);
+            backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);
+            opacity:0;pointer-events:none;transition:opacity 0.22s ease;" 
+     onclick="closeUpgradeModal()">
+</div>
+
+<!-- ================= UPGRADE MODAL ================= -->
+<div id="upgradeModal"
+     style="position:fixed;inset:0;z-index:8999;display:none;
+            align-items:center;justify-content:center;padding:16px;">
+    <div style="background:#ffffff;width:100%;max-width:500px;max-height:90vh;
+                border-radius:20px;box-shadow:0 24px 64px rgba(0,0,0,.22);
+                overflow:hidden;display:flex;flex-direction:column;
+                opacity:0;transform:translateY(20px);
+                transition:opacity 0.22s ease,transform 0.22s ease;">
+        
+        <!-- Header dengan background gradient -->
+        <div style="background:linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+                    padding:32px 28px 24px;color:#ffffff;position:relative;overflow:hidden;">
+            <div style="position:absolute;top:-40px;right:-40px;width:200px;height:200px;
+                        border-radius:50%;background:rgba(255,255,255,.08);"></div>
+            <div style="position:absolute;bottom:-30px;left:-40px;width:150px;height:150px;
+                        border-radius:50%;background:rgba(255,255,255,.06);"></div>
+            
+            <div style="position:relative;z-index:1;">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+                    <div style="display:flex;align-items:center;gap:12px;">
+                        <div style="width:48px;height:48px;background:rgba(255,255,255,.2);
+                                    border-radius:14px;display:flex;align-items:center;justify-content:center;
+                                    font-size:24px;">
+                            <i class="fas fa-rocket"></i>
+                        </div>
+                        <h2 style="margin:0;font-size:24px;font-weight:800;">Upgrade ke Pro</h2>
+                    </div>
+                    <button onclick="closeUpgradeModal()"
+                            style="border:none;background:rgba(255,255,255,.2);color:#ffffff;
+                                   width:36px;height:36px;border-radius:10px;font-size:18px;cursor:pointer;
+                                   display:flex;align-items:center;justify-content:center;
+                                   transition:background 0.2s;padding:0;"
+                            onmouseenter="this.style.background='rgba(255,255,255,.3)'"
+                            onmouseleave="this.style.background='rgba(255,255,255,.2)'">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <p style="margin:0;font-size:14px;opacity:.95;">Dapatkan penyimpanan 5x lebih besar dan fitur premium lainnya</p>
+            </div>
+        </div>
+        
+        <!-- Body -->
+        <div style="padding:28px;flex:1;overflow-y:auto;">
+            <div style="margin-bottom:28px;">
+                <h3 style="font-size:14px;font-weight:700;color:#374151;margin:0 0 16px;text-transform:uppercase;letter-spacing:0.05em;">
+                    Keuntungan Akun Pro
+                </h3>
+                <div style="display:flex;flex-direction:column;gap:12px;">
+                    <div style="display:flex;align-items:center;gap:12px;padding:12px;background:#f0f9ff;border-radius:10px;border:1px solid #bfdbfe;">
+                        <i class="fas fa-database" style="color:#2563eb;font-size:16px;flex-shrink:0;"></i>
+                        <div>
+                            <p style="margin:0;font-size:13px;font-weight:600;color:#1e40af;">Penyimpanan 50 MB</p>
+                            <p style="margin:2px 0 0;font-size:12px;color:#6b7280;">5x lebih besar dari Akun Free</p>
+                        </div>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:12px;padding:12px;background:#f0f9ff;border-radius:10px;border:1px solid #bfdbfe;">
+                        <i class="fas fa-crown" style="color:#fbbf24;font-size:16px;flex-shrink:0;"></i>
+                        <div>
+                            <p style="margin:0;font-size:13px;font-weight:600;color:#1e40af;">Fitur Premium</p>
+                            <p style="margin:2px 0 0;font-size:12px;color:#6b7280;">Akses ke semua fitur eksklusif</p>
+                        </div>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:12px;padding:12px;background:#f0f9ff;border-radius:10px;border:1px solid #bfdbfe;">
+                        <i class="fas fa-zap" style="color:#f59e0b;font-size:16px;flex-shrink:0;"></i>
+                        <div>
+                            <p style="margin:0;font-size:13px;font-weight:600;color:#1e40af;">Prioritas Support</p>
+                            <p style="margin:2px 0 0;font-size:12px;color:#6b7280;">Support lebih cepat dan responsif</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Action Buttons -->
+        <div style="padding:20px 28px;border-top:1px solid #e5e7eb;background:#f9fafb;display:flex;gap:10px;">
+            <button onclick="closeUpgradeModal()"
+                    style="flex:1;padding:12px 16px;border:1.5px solid #e5e7eb;background:#ffffff;
+                           border-radius:10px;font-size:13px;font-weight:600;color:#6b7280;
+                           cursor:pointer;transition:all 0.2s;font-family:'Plus Jakarta Sans',sans-serif;"
+                    onmouseenter="this.style.background='#f3f4f6';this.style.borderColor='#d1d5db'"
+                    onmouseleave="this.style.background='#ffffff';this.style.borderColor='#e5e7eb'">
+                Nanti dulu
+            </button>
+            <a href="{{ route('dashboard.appearance') }}"
+               style="flex:1;padding:12px 16px;background:linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+                      border-radius:10px;font-size:13px;font-weight:700;color:#ffffff;cursor:pointer;
+                      text-decoration:none;display:flex;align-items:center;justify-content:center;gap:8px;
+                      transition:all 0.2s;border:none;font-family:'Plus Jakarta Sans',sans-serif;">
+                <i class="fas fa-star" style="font-size:12px;"></i>
+                Upgrade Sekarang
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+function closeUpgradeModal() {
+    const modal = document.getElementById('upgradeModal');
+    const overlay = document.getElementById('upgradeOverlay');
+    if (modal && overlay) {
+        modal.style.opacity = '0';
+        modal.style.transform = 'translateY(20px)';
+        overlay.style.opacity = '0';
+        overlay.style.pointerEvents = 'none';
+        setTimeout(() => {
+            modal.style.display = 'none';
+        }, 220);
+    }
+}
+
+// Show modal animation
+const originalOpenUpgrade = function() {
+    const modal = document.getElementById('upgradeModal');
+    const overlay = document.getElementById('upgradeOverlay');
+    if (modal && overlay) {
+        modal.style.display = 'flex';
+        setTimeout(() => {
+            modal.style.opacity = '1';
+            modal.style.transform = 'translateY(0)';
+            overlay.style.opacity = '1';
+        }, 10);
+    }
+};
+
+// Override click handler to show animation
+const storageCardClick = document.getElementById('storageCard');
+if (storageCardClick && !isProUser) {
+    storageCardClick.removeEventListener('click', () => {});
+    storageCardClick.addEventListener('click', originalOpenUpgrade);
+}
+</script>
 
 {{-- OVERLAY --}}
 <div id="withdrawOverlay"
