@@ -35,7 +35,10 @@ class MidtransService
         $this->snapBaseUrl = config('midtrans.snap_base_url');
         $this->verifySsl = config('midtrans.verify_ssl', true);
 
-        // Validate configuration
+        if (!config('midtrans.enabled')) {
+            return;
+        }
+
         $this->validateConfiguration();
     }
 
