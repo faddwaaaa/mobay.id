@@ -180,64 +180,7 @@
     </div>
 @endif
 
-<!-- ================= QUICK ACTION BUTTONS ================= -->
-<div class="quick-actions">
-    <a href="{{ route('links.index') }}" class="quick-action-card quick-action-links">
-        <div class="quick-action-top">
-            <span class="quick-action-label">Akses Cepat</span>
-            <span class="quick-action-icon"><i class="fas fa-link"></i></span>
-        </div>
-        <div class="quick-action-bottom">
-            <div class="quick-action-content">
-                <h3 class="quick-action-title">Kelola Link</h3>
-                <p class="quick-action-desc">Atur tautan utama dan susun halaman bio kamu.</p>
-            </div>
-            <i class="fas fa-arrow-right quick-action-arrow"></i>
-        </div>
-    </a>
 
-    <a href="{{ route('products.manage') }}" class="quick-action-card quick-action-products">
-        <div class="quick-action-top">
-            <span class="quick-action-label">Jualan</span>
-            <span class="quick-action-icon"><i class="fas fa-box"></i></span>
-        </div>
-        <div class="quick-action-bottom">
-            <div class="quick-action-content">
-                <h3 class="quick-action-title">Produk</h3>
-                <p class="quick-action-desc">Tambah, edit, dan pantau produk digital maupun fisik.</p>
-            </div>
-            <i class="fas fa-arrow-right quick-action-arrow"></i>
-        </div>
-    </a>
-
-    <a href="{{ route('dashboard.appearance') }}" class="quick-action-card quick-action-appearance">
-        <div class="quick-action-top">
-            <span class="quick-action-label">Branding</span>
-            <span class="quick-action-icon"><i class="fas fa-palette"></i></span>
-        </div>
-        <div class="quick-action-bottom">
-            <div class="quick-action-content">
-                <h3 class="quick-action-title">Tampilan</h3>
-                <p class="quick-action-desc">Sesuaikan warna, gaya, dan nuansa profil publik.</p>
-            </div>
-            <i class="fas fa-arrow-right quick-action-arrow"></i>
-        </div>
-    </a>
-
-    <a href="{{ url('/riwayat') }}" class="quick-action-card quick-action-history">
-        <div class="quick-action-top">
-            <span class="quick-action-label">Keuangan</span>
-            <span class="quick-action-icon"><i class="fas fa-history"></i></span>
-        </div>
-        <div class="quick-action-bottom">
-            <div class="quick-action-content">
-                <h3 class="quick-action-title">Riwayat</h3>
-                <p class="quick-action-desc">Lihat transaksi terbaru, pembayaran, dan penarikan saldo.</p>
-            </div>
-            <i class="fas fa-arrow-right quick-action-arrow"></i>
-        </div>
-    </a>
-</div>
 
 <!-- ================= SALDO ================= -->
 {{-- ================= SALDO CARD — ganti bagian balance-card di dashboard ================= --}}
