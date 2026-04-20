@@ -25,14 +25,14 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <script>
+    {{-- <script>
         (function() {
             const t = localStorage.getItem('payou_theme');
             if (t === 'dark' || (!t && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
                 document.documentElement.classList.add('dark');
             }
         })();
-    </script>
+    </script> --}}
     <link rel="stylesheet" href="...">
     <title>@yield('title', 'Dashboard | Mobay.id')</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -43,7 +43,7 @@
     <link rel="stylesheet" href="{{ asset('css/dashboard.css') }}">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <link rel="stylesheet" href="{{ asset('css/profile.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/darkmode.css') }}">
+    {{-- <link rel="stylesheet" href="{{ asset('css/darkmode.css') }}"> --}}
 
     <style>
 /* ── TOKENS ──────────────────────────────────────── */
@@ -763,7 +763,7 @@ body:not(.preload) .content-pad {
 </div>
 
 <script src="{{ asset('js/dashboard.js') }}"></script>
-<script src="{{ asset('js/darkmode.js') }}"></script>
+{{-- <script src="{{ asset('js/darkmode.js') }}"></script> --}}
 
 @include('components.notification-bell')
 @include('components.app-alert')
