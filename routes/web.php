@@ -1,40 +1,30 @@
 <?php
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Auth;
-use App\Models\User;
-use App\Models\Product;
-use App\Models\ProfileView;
-
-// FIX 1: <Admin>ProfileReportController dipisah jadi use sendiri (beda namespace)
-use App\Http\Controllers\{
-    DashboardController,
-    ProfileController,
-    LinkController,
-    PageController,
-    BlockController,
-    TransactionController,
-    CallbackController,
-    ProductController,
-    AnalyticsController,
-    LinkRedirectController,
-    LinksController,
-    CheckoutController,
-    LandingController,
-    CartController,
-    PaymentAccountController,
-    SearchController,
-    OrderController,
-    RajaOngkirController,
-    AppearanceController,
-    PublicProfileController,
-    PublicProfileReportController,
-    DigitalOrderController,
-    ShippingSettingsController,
-    BiteshipWebhookController,
-    ProSubscriptionController
-};
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\LinkController;
+use App\Http\Controllers\PageController;
+use App\Http\Controllers\BlockController;
+use App\Http\Controllers\TransactionController;
+use App\Http\Controllers\CallbackController;
+use App\Http\Controllers\ProductController;
+use App\Http\Controllers\AnalyticsController;
+use App\Http\Controllers\LinkRedirectController;
+use App\Http\Controllers\LinksController;
+use App\Http\Controllers\CheckoutController;
+use App\Http\Controllers\LandingController;
+use App\Http\Controllers\CartController;
+use App\Http\Controllers\PaymentAccountController;
+use App\Http\Controllers\SearchController;
+use App\Http\Controllers\OrderController;
+use App\Http\Controllers\RajaOngkirController;
+use App\Http\Controllers\AppearanceController;
+use App\Http\Controllers\PublicProfileController;
+use App\Http\Controllers\PublicProfileReportController;
+use App\Http\Controllers\DigitalOrderController;
+use App\Http\Controllers\ShippingSettingsController;
+use App\Http\Controllers\BiteshipWebhookController;
+use App\Http\Controllers\ProSubscriptionController;
 
 use App\Http\Controllers\Admin\ProfileReportController;
 use App\Http\Controllers\Admin\PhysicalOrderShipmentController;

@@ -181,7 +181,7 @@
 @endif
 
 <!-- ================= QUICK ACTION BUTTONS ================= -->
-<div class="quick-actions">
+{{-- <div class="quick-actions">
     <a href="{{ route('links.index') }}" class="quick-action-card quick-action-links">
         <div class="quick-action-top">
             <span class="quick-action-label">Akses Cepat</span>
@@ -237,7 +237,7 @@
             <i class="fas fa-arrow-right quick-action-arrow"></i>
         </div>
     </a>
-</div>
+</div> --}}
 
 <!-- ================= SALDO ================= -->
 {{-- ================= SALDO CARD — ganti bagian balance-card di dashboard ================= --}}

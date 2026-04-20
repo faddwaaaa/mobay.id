@@ -812,13 +812,13 @@ document.addEventListener('DOMContentLoaded', function () {
         if (e.key === 'Escape') closeSidebar();
     });
 
-    var themeToggle = document.getElementById('sThemeToggle');
-    var themeMenu   = document.getElementById('sThemeMenu');
+    // var themeToggle = document.getElementById('sThemeToggle');
+    // var themeMenu   = document.getElementById('sThemeMenu');
 
-    themeToggle && themeToggle.addEventListener('click', function () {
-        themeMenu.classList.toggle('open');
-        themeToggle.classList.toggle('open');
-    });
+    // themeToggle && themeToggle.addEventListener('click', function () {
+    //     themeMenu.classList.toggle('open');
+    //     themeToggle.classList.toggle('open');
+    // });
 });
 </script>
 @stack('scripts')
