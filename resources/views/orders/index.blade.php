@@ -578,9 +578,9 @@
     <section class="page-hero">
         <div class="hero-top">
             <div class="hero-head">
-                <a href="{{ route('dashboard') }}" class="hero-back" aria-label="Kembali ke dashboard">
+                {{-- <a href="{{ route('dashboard') }}" class="hero-back" aria-label="Kembali ke dashboard">
                     <i class="fas fa-arrow-left"></i>
-                </a>
+                </a> --}}
                 <div>
                     <div class="hero-eyebrow">
                         <i class="fas fa-box-open"></i>

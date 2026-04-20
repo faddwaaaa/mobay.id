@@ -14,9 +14,9 @@
         {{-- Header Section --}}
         <div style="margin-bottom: 24px;">
             <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
-                <a href="{{ route('dashboard') }}" style="width: 36px; height: 36px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; display: flex; align-items: center; justify-content: center; text-decoration: none; transition: all 0.2s;">
+                {{-- <a href="{{ route('dashboard') }}" style="width: 36px; height: 36px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; display: flex; align-items: center; justify-content: center; text-decoration: none; transition: all 0.2s;">
                     <i class="fas fa-arrow-left" style="font-size: 14px; color: #475569;"></i>
-                </a>
+                </a> --}}
                 <div>
                     <h1 style="margin: 0; font-size: 24px; font-weight: 600; color: #000000;">QR Code Saya</h1>
                     <p style="margin: 0; font-size: 14px; color: #797979;">Bagikan QR Code untuk mempromosikan halaman Anda</p>
@@ -358,6 +358,70 @@ button:active { transform: translateY(0); }
 }
 @media (max-width: 640px) {
     div[style*="grid-template-columns: 1fr 1fr 1fr"] { grid-template-columns: 1fr !important; }
+}
+
+/* ===== MOBILE FIRST FIX ===== */
+@media (max-width: 768px) {
+    
+    /* Container padding biar ga mepet */
+    div[style*="min-height: 100vh"] {
+        padding: 16px !important;
+    }
+
+    /* Grid jadi 1 kolom */
+    div[style*="grid-template-columns: 1fr 1fr"] {
+        grid-template-columns: 1fr !important;
+        gap: 16px !important;
+    }
+
+    /* Card padding lebih kecil */
+    div[style*="border-radius: 12px; padding: 32px"] {
+        padding: 20px !important;
+    }
+
+    /* QR box biar ga kegedean */
+    #qrcode-main img,
+    #qrcode-main canvas {
+        width: 150px !important;
+        height: 150px !important;
+    }
+
+    /* Tengah icon QR */
+    div[style*="position: absolute"][style*="50px"] {
+        width: 40px !important;
+        height: 40px !important;
+    }
+
+    /* Button grid jadi stack */
+    div[style*="grid-template-columns: 1fr 1fr 1fr"] {
+        grid-template-columns: 1fr !important;
+    }
+
+    div[style*="grid-template-columns: 1fr 1fr"] {
+        grid-template-columns: 1fr !important;
+    }
+
+    /* Use case jadi 2 kolom */
+    div[style*="grid-template-columns: repeat(4, 1fr)"] {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+
+    /* Font size kecilin dikit */
+    h1 {
+        font-size: 20px !important;
+    }
+
+    h2 {
+        font-size: 16px !important;
+    }
+
+    h3 {
+        font-size: 14px !important;
+    }
+
+    p {
+        font-size: 12px !important;
+    }
 }
 </style>
 
