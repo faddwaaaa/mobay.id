@@ -11,9 +11,9 @@
                 <h1 class="text-3xl font-bold text-gray-800">Riwayat Penarikan</h1>
                 <p class="text-gray-600 mt-2">Kelola permintaan penarikan saldo Anda</p>
             </div>
-            <a href="{{ route('dashboard') }}" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition">
+            {{-- <a href="{{ route('dashboard') }}" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition">
                 ← Kembali
-            </a>
+            </a> --}}
         </div>
     </div>
 

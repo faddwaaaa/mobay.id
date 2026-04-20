@@ -555,7 +555,7 @@
 <div class="analitik-page">
     <div class="an-shell">
         <div class="an-topbar">
-            <a href="{{ route('dashboard') }}" class="an-back-btn">←</a>
+            {{-- <a href="{{ route('dashboard') }}" class="an-back-btn">←</a> --}}
             <div class="an-topbar-text">
                 <h1>Analitik Toko</h1>
                 <p>Pantau performa, penjualan, dan minat pembeli. Periode data {{ $analyticsRangeLabel }}</p>
