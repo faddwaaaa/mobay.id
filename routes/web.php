@@ -10,7 +10,6 @@ use App\Http\Controllers\CallbackController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\AnalyticsController;
 use App\Http\Controllers\LinkRedirectController;
-use App\Http\Controllers\LinksController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\LandingController;
 use App\Http\Controllers\CartController;
@@ -28,6 +27,10 @@ use App\Http\Controllers\ProSubscriptionController;
 
 use App\Http\Controllers\Admin\ProfileReportController;
 use App\Http\Controllers\Admin\PhysicalOrderShipmentController;
+use Illuminate\Support\Facades\Route;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use App\Models\User;
 
 Route::get('/', [LandingController::class, 'index'])->name('home');
 Route::get('/service', [LandingController::class, 'service'])->name('service');
