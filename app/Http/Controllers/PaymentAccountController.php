@@ -5,15 +5,19 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StorePaymentAccountRequest;
 use App\Models\PaymentAccount;
 use App\Models\PaymentAccountAuditLog;
+use App\Services\XenditPayoutService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\View\View;
 
 class PaymentAccountController extends Controller
 {
+    public function __construct(protected XenditPayoutService $xenditPayoutService)
+    {
+    }
+
     private const FREE_MAX_ACCOUNTS = 2;
     private const PRO_MAX_ACCOUNTS  = 5;
     private const PIN_RATE_KEY  = 'pin_verify:{userId}';
@@ -248,7 +252,7 @@ class PaymentAccountController extends Controller
     }
 
     // -----------------------------------------------------------------------
-    // Verify Account (Midtrans / Mock)
+    // Verify Account (Xendit / Mock)
     // -----------------------------------------------------------------------
 
     public function verifyAccount(Request $request): JsonResponse
@@ -300,19 +304,17 @@ class PaymentAccountController extends Controller
 
         // ── PRODUCTION: hit Midtrans ────────────────────────────────────────
         try {
-            $serverKey = config('services.midtrans.server_key');
-            $baseUrl   = config('services.midtrans.is_production')
-                ? 'https://api.midtrans.com'
-                : 'https://api.sandbox.midtrans.com';
+            $response = $this->xenditPayoutService->validateBankAccount(
+                (string) $request->bank_code,
+                (string) $request->account_number
+            );
 
-            $response = Http::withBasicAuth($serverKey, '')
-                ->timeout(10)
-                ->post("{$baseUrl}/v2/bank_accounts/validate", [
-                    'bank'           => strtolower($request->bank_code),
-                    'account_number' => $request->account_number,
-                ]);
+            $accountName = $response['data']['account_holder_name']
+                ?? $response['data']['account_name']
+                ?? $response['data']['name']
+                ?? null;
 
-            if ($response->successful() && isset($response['account_name'])) {
+            if (($response['success'] ?? false) && $accountName) {
                 PaymentAccountAuditLog::record($user->id, 'account_verified', null, [
                     'bank_code' => $request->bank_code,
                     'last4'     => substr($request->account_number, -4),
@@ -320,7 +322,7 @@ class PaymentAccountController extends Controller
 
                 return response()->json([
                     'success'      => true,
-                    'account_name' => $response['account_name'],
+                    'account_name' => $accountName,
                 ]);
             }
 
@@ -330,7 +332,7 @@ class PaymentAccountController extends Controller
             ], 422);
 
         } catch (\Exception $e) {
-            \Log::error('Midtrans account verification failed', [
+            \Log::error('Xendit account verification failed', [
                 'user_id' => $user->id,
                 'error'   => $e->getMessage(),
             ]);

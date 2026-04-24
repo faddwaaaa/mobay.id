@@ -29,6 +29,7 @@ return [
 
     // Callback/Webhook URL
     'webhook_url' => env('APP_URL', '') . '/webhook/xendit/invoice',
+    'callback_token' => env('XENDIT_CALLBACK_TOKEN', ''),
 
     /*
     |--------------------------------------------------------------------------

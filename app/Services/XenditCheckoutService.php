@@ -17,7 +17,7 @@ class XenditCheckoutService
 
     public function __construct()
     {
-        $this->apiKey = config('xendit.secret_key');
+        $this->apiKey = config('xendit.api_key') ?: config('xendit.secret_key');
         $this->client = new Client([
             'base_uri' => $this->baseUrl,
             'auth' => [$this->apiKey, ''],
@@ -137,7 +137,11 @@ class XenditCheckoutService
             // Store invoice ID untuk tracking
             $transaction->update([
                 'transaction_id' => $invoiceData['id'],
-                'xendit_response' => json_encode($invoiceData),
+                'midtrans_response' => [
+                    'gateway' => 'xendit',
+                    'type' => 'invoice',
+                    'payload' => $invoiceData,
+                ],
             ]);
 
             Log::info('Xendit checkout invoice created', [
@@ -193,7 +197,11 @@ class XenditCheckoutService
             // Update transaction to settlement
             $transaction->update([
                 'status' => 'settlement',
-                'xendit_response' => json_encode($data),
+                'midtrans_response' => [
+                    'gateway' => 'xendit',
+                    'type' => 'invoice',
+                    'payload' => $data,
+                ],
             ]);
 
             // Process the order (same logic as Midtrans)
@@ -228,9 +236,8 @@ class XenditCheckoutService
         // Create product sale record
         \App\Models\ProductSale::create([
             'product_id' => $product->id,
-            'quantity' => $notes['qty'] ?? 1,
-            'unit_price' => $notes['unit_price'] ?? 0,
-            'total_price' => $notes['subtotal'] ?? 0,
+            'qty' => $notes['qty'] ?? 1,
+            'price' => $notes['subtotal'] ?? 0,
             'options' => json_encode([
                 'order_id' => $transaction->order_id,
                 'buyer_name' => $notes['buyer_name'] ?? 'Guest',

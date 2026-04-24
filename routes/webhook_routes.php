@@ -48,4 +48,8 @@ Route::prefix('webhook/xendit')->name('webhook.xendit.')->group(function () {
     // Invoice Payment Notification
     Route::post('invoice', [XenditWebhookController::class, 'handleInvoiceCallback'])
         ->name('invoice');
+
+    // Disbursement/Payout Notification
+    Route::post('disbursement', [XenditWebhookController::class, 'handlePayoutCallback'])
+        ->name('disbursement');
 });
