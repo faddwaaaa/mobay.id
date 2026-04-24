@@ -11,6 +11,7 @@ use App\Models\AdminWalletLedger;
 use App\Models\DigitalOrder;
 use App\Mail\PhysicalOrderConfirmation;
 use App\Services\DigitalOrderService;
+use App\Services\PaymentService;
 use App\Services\ProSubscriptionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -19,6 +20,10 @@ use Illuminate\Support\Facades\Log;
 
 class XenditWebhookController extends Controller
 {
+    public function __construct(private PaymentService $paymentService)
+    {
+    }
+
     /**
      * Handle Xendit invoice payment notification
      * 
@@ -53,6 +58,25 @@ class XenditWebhookController extends Controller
 
         } catch (\Exception $e) {
             Log::error('Xendit Webhook Error: ' . $e->getMessage());
+            return response('Error', 500);
+        }
+    }
+
+    public function handlePayoutCallback(Request $request)
+    {
+        try {
+            if (!$this->verifyWebhookSignature($request)) {
+                Log::warning('Xendit payout webhook signature verification failed');
+                return response('Unauthorized', 401);
+            }
+
+            $result = $this->paymentService->handleXenditPayoutWebhook($request->all());
+
+            Log::info('Xendit payout webhook processed', $result);
+
+            return response('OK', 200);
+        } catch (\Exception $e) {
+            Log::error('Xendit payout webhook error: ' . $e->getMessage());
             return response('Error', 500);
         }
     }
@@ -103,7 +127,11 @@ class XenditWebhookController extends Controller
             $transaction->update([
                 'status' => 'settlement',
                 'transaction_id' => $invoiceId,
-                'xendit_response' => json_encode($data),
+                'midtrans_response' => [
+                    'gateway' => 'xendit',
+                    'type' => 'invoice',
+                    'payload' => $data,
+                ],
             ]);
 
             Log::info("Transaction {$externalId} marked as settlement");
@@ -138,7 +166,11 @@ class XenditWebhookController extends Controller
 
             $transaction->update([
                 'status' => 'expired',
-                'xendit_response' => json_encode($data),
+                'midtrans_response' => [
+                    'gateway' => 'xendit',
+                    'type' => 'invoice',
+                    'payload' => $data,
+                ],
             ]);
 
             Log::info("Transaction {$externalId} marked as expired");
@@ -160,19 +192,16 @@ class XenditWebhookController extends Controller
     private function verifyWebhookSignature(Request $request): bool
     {
         try {
-            // Get X-Callback-Token from header
             $callbackToken = $request->header('X-Callback-Token');
-            
-            // In production, verify this token matches your configured webhook token
-            // For now, we'll accept all callbacks (but log them)
-            if (!$callbackToken) {
-                Log::warning('Xendit callback token missing');
-                // You can return false hier to reject, or true to accept
-                // For testing, we accept without token
+
+            $expectedToken = config('xendit.callback_token');
+
+            if (blank($expectedToken)) {
+                Log::warning('Xendit callback token not configured; webhook accepted without verification');
                 return true;
             }
 
-            return true;
+            return hash_equals((string) $expectedToken, (string) $callbackToken);
 
         } catch (\Exception $e) {
             Log::error('Webhook signature verification error: ' . $e->getMessage());

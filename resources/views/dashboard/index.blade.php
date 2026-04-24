@@ -919,7 +919,7 @@ if (storageCardClick && !isProUser) {
                 </div>
                 <div>
                     <h3 style="margin:0;font-size:17px;font-weight:700;color:#0f172a;">Tarik Saldo</h3>
-                    <p style="margin:0;font-size:12px;color:#94a3b8;">Minimal penarikan Rp 20.000</p>
+                    <p style="margin:0;font-size:12px;color:#94a3b8;">Minimal penarikan Rp {{ number_format(config('xendit.withdrawal.min_amount', 20000), 0, ',', '.') }}</p>
                 </div>
             </div>
             <button onclick="closeWithdrawModal()"
@@ -1106,7 +1106,7 @@ if (storageCardClick && !isProUser) {
                             <span style="position:absolute;left:13px;top:50%;transform:translateY(-50%);
                                          font-size:14px;font-weight:700;color:#9aaabb;">Rp</span>
                             <input type="number" id="wd-amount-input"
-                                   min="20000" max="{{ $balance ?? 0 }}"
+                                    min="{{ config('xendit.withdrawal.min_amount', 20000) }}" max="{{ $balance ?? 0 }}"
                                    placeholder="0"
                                    oninput="onAmountInput()"
                                    style="width:100%;padding:12px 13px 12px 36px;
@@ -1268,8 +1268,8 @@ if (storageCardClick && !isProUser) {
 
 <script>
 const WD_BALANCE    = {{ $balance ?? 0 }};
-const WD_MIN_AMOUNT = 20000;
-const WD_FEE        = 6660;
+const WD_MIN_AMOUNT = {{ config('xendit.withdrawal.min_amount', 20000) }};
+const WD_FEE        = {{ config('payment.withdraw_fee', config('xendit.disbursement.fee_flat', 6660)) }};
 const WD_ROUTES     = { store: '/withdrawal' };
 const WD_CSRF       = () => document.querySelector('meta[name="csrf-token"]').content;
 let   wdSelectedAcc = null;

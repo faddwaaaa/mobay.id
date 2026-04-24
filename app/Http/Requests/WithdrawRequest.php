@@ -19,8 +19,8 @@ class WithdrawRequest extends FormRequest
      */
     public function rules(): array
     {
-        $minAmount = config('midtrans.withdrawal.min_amount', 20000);
-        $maxAmount = config('midtrans.withdrawal.max_amount', 50000000);
+        $minAmount = config('xendit.withdrawal.min_amount', 20000);
+        $maxAmount = config('xendit.withdrawal.max_amount', 50000000);
 
         return [
             'amount' => [
@@ -29,6 +29,8 @@ class WithdrawRequest extends FormRequest
                 'min:' . $minAmount,
                 'max:' . $maxAmount,
             ],
+            'payment_account_id' => ['required', 'integer', 'exists:payment_accounts,id'],
+            'bank_code' => ['nullable', 'string', 'max:20'],
             'bank_name' => ['nullable', 'string', 'max:255'],
             'account_name' => ['nullable', 'string', 'max:255'],
             'account_number' => ['nullable', 'string', 'max:255'],
@@ -41,14 +43,16 @@ class WithdrawRequest extends FormRequest
      */
     public function messages(): array
     {
-        $minAmount = config('midtrans.withdrawal.min_amount', 20000);
-        $maxAmount = config('midtrans.withdrawal.max_amount', 50000000);
+        $minAmount = config('xendit.withdrawal.min_amount', 20000);
+        $maxAmount = config('xendit.withdrawal.max_amount', 50000000);
 
         return [
             'amount.required' => 'Jumlah penarikan harus diisi.',
             'amount.integer' => 'Jumlah penarikan harus berupa angka.',
             'amount.min' => 'Jumlah penarikan minimum adalah Rp ' . number_format($minAmount, 0, ',', '.'),
             'amount.max' => 'Jumlah penarikan maksimum adalah Rp ' . number_format($maxAmount, 0, ',', '.'),
+            'payment_account_id.required' => 'Pilih rekening tujuan terlebih dahulu.',
+            'payment_account_id.exists' => 'Rekening tujuan tidak valid.',
             'bank_name.string' => 'Nama bank harus berupa teks.',
             'account_name.string' => 'Nama akun harus berupa teks.',
             'account_number.string' => 'Nomor akun harus berupa teks.',
