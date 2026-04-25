@@ -14,6 +14,7 @@ use App\Models\Product;
 use App\Models\DigitalOrder;
 use App\Models\PhysicalOrder;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\App;
 use Illuminate\Http\RedirectResponse;
 
 class DashboardController extends Controller
@@ -164,39 +165,31 @@ class DashboardController extends Controller
         ]);
     }
 
-    public function toggleProTrial(Request $request): RedirectResponse
+    public function activateTestingPro(Request $request): RedirectResponse
     {
+        abort_unless(App::isLocal() || config('app.debug'), 404);
+
         $user = $request->user();
-        $isPro = $user->isPro();
+
+        if ($user->isProActive()) {
+            return redirect()
+                ->back()
+                ->with('success', 'Akun ini masih berada di mode Pro aktif.');
+        }
+
+        $startsFrom = $user->pro_until && $user->pro_until->isFuture()
+            ? $user->pro_until->copy()
+            : now();
 
         $user->forceFill([
-            'subscription_plan' => $isPro ? 'free' : 'pro',
+            'subscription_plan' => 'pro',
+            'pro_type' => 'monthly',
+            'pro_until' => $startsFrom->copy()->addDays(30),
         ])->save();
-
-        if ($isPro) {
-            $profile = $user->fresh()->userProfile;
-
-            if ($profile) {
-                $freeAppearance = $user->fresh()->appearanceAccess();
-
-                $profile->update([
-                    'bg_type' => in_array($profile->bg_type ?? 'color', $freeAppearance['background_types'], true) ? $profile->bg_type : 'color',
-                    'bg_image' => in_array($profile->bg_type ?? 'color', $freeAppearance['background_types'], true) ? $profile->bg_image : null,
-                    'btn_style' => in_array($profile->btn_style ?? 'fill', $freeAppearance['button_styles'], true) ? $profile->btn_style : 'fill',
-                    'font_family' => in_array($profile->font_family ?? 'Plus Jakarta Sans', $freeAppearance['fonts'], true) ? $profile->font_family : 'Plus Jakarta Sans',
-                    'block_layout' => in_array($profile->block_layout ?? 'default', $freeAppearance['block_layouts'], true) ? $profile->block_layout : 'default',
-                ]);
-            }
-        }
 
         return redirect()
             ->route('dashboard')
-            ->with(
-                'success',
-                $isPro
-                    ? 'Mode Pro trial dimatikan. Akun kembali ke status Free.'
-                    : 'Mode Pro trial berhasil diaktifkan. Akun sekarang berstatus Pro.'
-            );
+            ->with('success', 'Mode testing Pro berhasil diaktifkan kembali selama 30 hari.');
     }
 
     public function getStats()

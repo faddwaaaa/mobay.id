@@ -24,11 +24,21 @@ class AddStorageToView
     {
         if (Auth::check()) {
             $user = Auth::user();
-            
+
+            $proExpiryReminder = null;
+
+            if (method_exists($user, 'shouldShowProExpiryReminder') && $user->shouldShowProExpiryReminder()) {
+                $proExpiryReminder = [
+                    'remaining_days' => max(0, (int) $user->getProRemainingDays()),
+                    'expired_at' => optional($user->pro_until)?->format('d M Y H:i'),
+                ];
+            }
+             
             // Tambahkan storage info ke shared view data
             view()->share([
                 'userStorageInfo' => $user->getStorageInfo(),
                 'userStoragePercentage' => $user->getStoragePercentage(),
+                'proExpiryReminder' => $proExpiryReminder,
             ]);
         }
 

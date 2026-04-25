@@ -6,6 +6,7 @@
 
     $user = Auth::user();
     $isProUser = method_exists($user, 'isPro') ? $user->isPro() : in_array((string) data_get($user, 'subscription_plan'), ['pro', 'premium'], true);
+    $isExpiredProUser = method_exists($user, 'hasExpiredProAccess') ? $user->hasExpiredProAccess() : false;
     $freeAccess = User::FREE_APPEARANCE_ACCESS;
     $proAccess = User::PRO_APPEARANCE_ACCESS;
     $proMonthlyLink = 'https://wa.me/6285600489815?text=' . rawurlencode('Halo Admin Mobay.id, saya ingin beli Pro bulanan seharga Rp 49.900.');
@@ -768,8 +769,14 @@
         <section class="premium-summary-bar">
             <article class="premium-summary-card premium-summary-card--status">
                 <p class="premium-summary-label">Mode akun saat ini</p>
-                <p class="premium-summary-value">{{ $isProUser ? 'Pro aktif' : 'Free aktif' }}</p>
-                <p class="premium-summary-text">{{ $isProUser ? 'Akses fitur lanjutan sudah terbuka untuk analitik, tampilan, dan operasional toko.' : 'Cukup untuk mulai jualan, lalu upgrade saat butuh insight dan kontrol yang lebih dalam.' }}</p>
+                <p class="premium-summary-value">{{ $isProUser ? 'Pro aktif' : ($isExpiredProUser ? 'Pro habis' : 'Free aktif') }}</p>
+                <p class="premium-summary-text">
+                    {{ $isProUser
+                        ? 'Akses fitur lanjutan sudah terbuka untuk analitik, tampilan, dan operasional toko.'
+                        : ($isExpiredProUser
+                            ? 'Langganan Pro sudah berakhir. Lakukan pembayaran kembali agar akun aktif lagi.'
+                            : 'Cukup untuk mulai jualan, lalu upgrade saat butuh insight dan kontrol yang lebih dalam.') }}
+                </p>
             </article>
             <article class="premium-summary-card">
                 <p class="premium-summary-label">Fokus utama</p>

@@ -32,12 +32,14 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // Alias middleware
         $middleware->alias([
-            'is_admin'  => \App\Http\Middleware\IsAdmin::class,
-            'suspended' => \App\Http\Middleware\CheckSuspended::class,
+            'is_admin'    => \App\Http\Middleware\IsAdmin::class,
+            'suspended'   => \App\Http\Middleware\CheckSuspended::class,
+            'pro.expired' => \App\Http\Middleware\CheckExpiredProAccess::class,
         ]);
 
         // CheckSuspended otomatis berjalan di semua route web
         $middleware->appendToGroup('web', \App\Http\Middleware\CheckSuspended::class);
+        $middleware->appendToGroup('web', \App\Http\Middleware\CheckExpiredProAccess::class);
 
         // ✅ Pengecualian CSRF — webhook tidak bisa kirim CSRF token
         $middleware->validateCsrfTokens(except: [

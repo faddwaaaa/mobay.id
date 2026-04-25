@@ -30,8 +30,8 @@ class UserObserver
      */
     public function updated(User $user): void
     {
-        // Jika subscription_plan berubah, update storage limit
-        if ($user->wasChanged('subscription_plan')) {
+        // Jika status langganan berubah, sinkronkan storage limit
+        if ($user->wasChanged('subscription_plan') || $user->wasChanged('pro_until')) {
             StorageService::updateStorageLimit($user);
         }
     }

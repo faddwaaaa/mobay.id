@@ -78,11 +78,11 @@ class User extends Authenticatable
 
     public function isPro(): bool
     {
-        // Cek apakah Pro masih aktif (pro_until lebih besar dari sekarang)
-        if ($this->pro_until && $this->pro_until > now()) {
+        if ($this->isProActive()) {
             return true;
         }
-        return in_array((string) $this->subscription_plan, ['pro', 'premium'], true);
+
+        return $this->hasProPlan() && $this->pro_until === null;
     }
 
     public function isProActive(): bool
@@ -90,12 +90,32 @@ class User extends Authenticatable
         return $this->pro_until && $this->pro_until > now();
     }
 
+    public function hasProPlan(): bool
+    {
+        return in_array((string) $this->subscription_plan, ['pro', 'premium'], true);
+    }
+
+    public function hasExpiredProAccess(): bool
+    {
+        return $this->hasProPlan()
+            && $this->pro_until !== null
+            && !$this->isProActive();
+    }
+
     public function getProRemainingDays(): ?int
     {
         if (!$this->isProActive()) {
             return null;
         }
-        return $this->pro_until->diffInDays(now());
+
+        return now()->diffInDays($this->pro_until, false);
+    }
+
+    public function shouldShowProExpiryReminder(int $days = 5): bool
+    {
+        $remainingDays = $this->getProRemainingDays();
+
+        return $remainingDays !== null && $remainingDays <= $days;
     }
 
     public function appearanceAccess(): array

@@ -15,11 +15,14 @@
         }
     }
 
-    $isPremiumUser =
-        (bool) data_get($user, 'is_premium') ||
-        $hasPremiumDate ||
-        in_array((string) data_get($user, 'plan'), ['pro', 'premium'], true) ||
-        in_array((string) data_get($user, 'subscription_plan'), ['pro', 'premium'], true);
+    $isPremiumUser = method_exists($user, 'isPro')
+        ? $user->isPro()
+        : (
+            (bool) data_get($user, 'is_premium') ||
+            $hasPremiumDate ||
+            in_array((string) data_get($user, 'plan'), ['pro', 'premium'], true) ||
+            in_array((string) data_get($user, 'subscription_plan'), ['pro', 'premium'], true)
+        );
 @endphp
 <!DOCTYPE html>
 <html lang="id">
@@ -758,6 +761,30 @@ body:not(.preload) .content-pad {
 <!-- ── CONTENT ───────────────────────────────────────────────── -->
 <div class="main-wrap">
     <main class="content-pad">
+        @if(!empty($proExpiryReminder))
+            <div style="margin-bottom:18px;padding:16px 18px;border-radius:16px;border:1px solid #fed7aa;background:linear-gradient(135deg,#fff7ed 0%,#ffedd5 100%);display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;">
+                <div style="display:flex;align-items:flex-start;gap:12px;min-width:0;">
+                    <div style="width:42px;height:42px;border-radius:12px;background:#ffedd5;color:#ea580c;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div>
+                        <div style="font-size:14px;font-weight:800;color:#9a3412;">Masa aktif Pro hampir habis</div>
+                        <div style="margin-top:4px;font-size:12px;line-height:1.6;color:#9a3412;">
+                            Sisa {{ $proExpiryReminder['remaining_days'] }} hari.
+                            @if(!empty($proExpiryReminder['expired_at']))
+                                Berakhir pada {{ $proExpiryReminder['expired_at'] }}.
+                            @endif
+                            Lanjutkan pembayaran agar akun tetap aktif.
+                        </div>
+                    </div>
+                </div>
+                <a href="{{ route('premium.index') }}"
+                   style="display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 14px;border-radius:12px;background:#ea580c;color:#fff;text-decoration:none;font-size:12px;font-weight:800;white-space:nowrap;">
+                    <i class="fas fa-wallet"></i>
+                    Bayar Pro
+                </a>
+            </div>
+        @endif
         @yield('content')
     </main>
 </div>

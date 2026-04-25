@@ -6,6 +6,8 @@
     use Illuminate\Support\Str;
     $user = Auth::user();
     $isProUser = method_exists($user, 'isPro') ? $user->isPro() : in_array((string) data_get($user, 'subscription_plan'), ['pro', 'premium'], true);
+    $isProActive = method_exists($user, 'isProActive') ? $user->isProActive() : $isProUser;
+    $isExpiredProUser = method_exists($user, 'hasExpiredProAccess') ? $user->hasExpiredProAccess() : false;
     $publicProfileUrl = url('/' . $user->username);
     $savedAccountsCount = $user->paymentAccounts()->count();
     $primaryAccount = $user->paymentAccounts()->where('is_default', true)->first()
@@ -343,20 +345,30 @@
                 <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;">
                     <div>
                         <div style="font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;">Status Langganan</div>
-                        <div style="font-size:15px;font-weight:800;color:#111827;margin-top:4px;">{{ $isProUser ? 'Pro' : 'Free' }}</div>
+                        <div style="font-size:15px;font-weight:800;color:#111827;margin-top:4px;">
+                            {{ $isProActive ? 'Pro Aktif' : ($isExpiredProUser ? 'Pro Habis' : 'Free') }}
+                        </div>
                         <div style="font-size:12px;color:#6b7280;margin-top:3px;">
-                            {{ $isProUser ? 'Mode uji coba Pro sedang aktif.' : 'Mode default akun saat ini Free.' }}
+                            @if ($isProActive && $user->pro_until)
+                                Berlaku sampai {{ $user->pro_until->format('d M Y H:i') }}.
+                            @elseif ($isExpiredProUser && $user->pro_until)
+                                Masa Pro berakhir pada {{ $user->pro_until->format('d M Y H:i') }}. Akun tidak bisa kembali ke Free.
+                            @else
+                                Mode default akun saat ini Free.
+                            @endif
                         </div>
                     </div>
 
-                    <form method="POST" action="{{ route('dashboard.subscription.trial-toggle') }}">
-                        @csrf
-                        <button type="submit"
-                                style="display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:8px 11px;border:1px solid {{ $isProUser ? '#86efac' : '#fdba74' }};border-radius:999px;background:{{ $isProUser ? '#f0fdf4' : '#fff7ed' }};color:{{ $isProUser ? '#15803d' : '#c2410c' }};font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;box-shadow:none;">
-                            <i class="fas {{ $isProUser ? 'fa-rotate-left' : 'fa-bolt' }}"></i>
-                            {{ $isProUser ? 'Balik ke Free' : 'Coba Pro' }}
-                        </button>
-                    </form>
+                    @if (config('app.debug') && !$isProActive)
+                        <form method="POST" action="{{ route('dashboard.subscription.testing-activate') }}">
+                            @csrf
+                            <button type="submit"
+                                    style="display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:8px 11px;border:1px solid #bfdbfe;border-radius:999px;background:#eff6ff;color:#1d4ed8;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;box-shadow:none;">
+                                <i class="fas fa-flask"></i>
+                                Aktifkan Pro Testing
+                            </button>
+                        </form>
+                    @endif
                 </div>
             </div>
 
