@@ -359,7 +359,7 @@
                         </div>
                     </div>
 
-                    @if (config('app.debug') && !$isProActive)
+                    @if (!$isProActive)
                         <form method="POST" action="{{ route('dashboard.subscription.testing-activate') }}">
                             @csrf
                             <button type="submit"

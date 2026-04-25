@@ -14,7 +14,6 @@ use App\Models\Product;
 use App\Models\DigitalOrder;
 use App\Models\PhysicalOrder;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\App;
 use Illuminate\Http\RedirectResponse;
 
 class DashboardController extends Controller
@@ -167,8 +166,6 @@ class DashboardController extends Controller
 
     public function activateTestingPro(Request $request): RedirectResponse
     {
-        abort_unless(App::isLocal() || config('app.debug'), 404);
-
         $user = $request->user();
 
         if ($user->isProActive()) {

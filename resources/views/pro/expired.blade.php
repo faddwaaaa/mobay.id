@@ -235,18 +235,16 @@
                         <div class="detail-copy">Status ini akan tetap mengunci akun sampai ada pembayaran Pro baru.</div>
                     </div>
 
-                    @if (config('app.debug'))
-                        <form method="POST" action="{{ route('pro.testing.activate') }}">
-                            @csrf
-                            <button type="submit" class="ghost-btn">
-                                <i class="fas fa-flask"></i>
-                                Aktifkan Kembali Pro Testing
-                            </button>
-                        </form>
-                        <div class="testing-note">
-                            Tombol ini hanya untuk testing. Saat ditekan, akun akan langsung kembali ke mode Pro aktif selama 30 hari.
-                        </div>
-                    @endif
+                    <form method="POST" action="{{ route('pro.testing.activate') }}">
+                        @csrf
+                        <button type="submit" class="ghost-btn">
+                            <i class="fas fa-flask"></i>
+                            Aktifkan Kembali Pro Testing
+                        </button>
+                    </form>
+                    <div class="testing-note">
+                        Tombol ini hanya untuk testing. Saat ditekan, akun akan langsung kembali ke mode Pro aktif selama 30 hari.
+                    </div>
 
                     <form method="POST" action="{{ route('logout') }}" class="logout-form">
                         @csrf
