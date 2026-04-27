@@ -115,7 +115,9 @@ class User extends Authenticatable
     {
         $remainingDays = $this->getProRemainingDays();
 
-        return $remainingDays !== null && $remainingDays <= $days;
+        return $remainingDays !== null
+            && $remainingDays >= 1
+            && $remainingDays <= $days;
     }
 
     public function appearanceAccess(): array

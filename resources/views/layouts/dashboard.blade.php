@@ -81,6 +81,255 @@ html, body { margin: 0; padding: 0; min-height: 100vh; }
     z-index: -1;
 }
 
+.pro-reminder-modal {
+    position: fixed;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background:
+        radial-gradient(circle at top, rgba(249, 115, 22, 0.18), transparent 34%),
+        rgba(15, 23, 42, 0.52);
+    backdrop-filter: blur(10px);
+    z-index: 120;
+}
+
+.pro-reminder-modal.is-open {
+    display: flex;
+}
+
+.pro-reminder-card {
+    position: relative;
+    width: min(100%, 540px);
+    overflow: hidden;
+    border-radius: 28px;
+    background:
+        radial-gradient(circle at top right, rgba(255, 255, 255, 0.42), transparent 30%),
+        linear-gradient(145deg, #fff7ed 0%, #ffffff 42%, #fff1f2 100%);
+    border: 1px solid rgba(251, 146, 60, 0.3);
+    box-shadow: 0 32px 80px rgba(15, 23, 42, 0.28);
+    color: #7c2d12;
+    animation: proReminderPop .28s ease-out;
+}
+
+.pro-reminder-card::before {
+    content: '';
+    position: absolute;
+    inset: auto -52px -48px auto;
+    width: 180px;
+    height: 180px;
+    border-radius: 999px;
+    background: rgba(251, 146, 60, 0.14);
+}
+
+.pro-reminder-card::after {
+    content: '';
+    position: absolute;
+    inset: -48px auto auto -38px;
+    width: 150px;
+    height: 150px;
+    border-radius: 999px;
+    background: rgba(244, 63, 94, 0.1);
+}
+
+.pro-reminder-shell {
+    position: relative;
+    z-index: 1;
+    padding: 28px;
+}
+
+.pro-reminder-close {
+    position: absolute;
+    top: 18px;
+    right: 18px;
+    width: 40px;
+    height: 40px;
+    border: none;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.78);
+    color: #9a3412;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.1);
+    transition: transform .18s ease, background .18s ease, color .18s ease;
+}
+
+.pro-reminder-close:hover {
+    transform: rotate(90deg);
+    background: #fff;
+    color: #7c2d12;
+}
+
+.pro-reminder-top {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+}
+
+.pro-reminder-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 20px;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    background: linear-gradient(135deg, #f97316 0%, #ef4444 100%);
+    box-shadow: 0 18px 32px rgba(249, 115, 22, 0.3);
+    font-size: 24px;
+}
+
+.pro-reminder-kicker {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 12px;
+    border-radius: 999px;
+    background: rgba(255, 237, 213, 0.92);
+    color: #c2410c;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+}
+
+.pro-reminder-title {
+    margin: 14px 0 8px;
+    font-size: 30px;
+    line-height: 1.05;
+    letter-spacing: -0.04em;
+    color: #7c2d12;
+}
+
+.pro-reminder-copy {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.8;
+    color: #9a3412;
+}
+
+.pro-reminder-meta {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    margin-top: 22px;
+}
+
+.pro-reminder-stat {
+    padding: 15px 16px;
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.72);
+    border: 1px solid rgba(251, 146, 60, 0.18);
+}
+
+.pro-reminder-label {
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: .07em;
+    text-transform: uppercase;
+    color: #c2410c;
+}
+
+.pro-reminder-value {
+    margin-top: 8px;
+    font-size: 24px;
+    font-weight: 800;
+    line-height: 1.1;
+    color: #7c2d12;
+}
+
+.pro-reminder-timeline {
+    display: flex;
+    gap: 8px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+}
+
+.pro-reminder-day {
+    min-width: 44px;
+    padding: 9px 10px;
+    border-radius: 14px;
+    text-align: center;
+    font-size: 12px;
+    font-weight: 800;
+    color: #9a3412;
+    background: rgba(255, 255, 255, 0.58);
+    border: 1px solid rgba(251, 146, 60, 0.18);
+}
+
+.pro-reminder-day.is-active {
+    color: #fff;
+    background: linear-gradient(135deg, #ea580c 0%, #ef4444 100%);
+    border-color: transparent;
+    box-shadow: 0 14px 26px rgba(239, 68, 68, 0.18);
+}
+
+.pro-reminder-note {
+    margin-top: 18px;
+    padding: 14px 16px;
+    border-radius: 18px;
+    background: rgba(255, 247, 237, 0.82);
+    border: 1px dashed rgba(251, 146, 60, 0.34);
+    font-size: 13px;
+    line-height: 1.7;
+    color: #9a3412;
+}
+
+.pro-reminder-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 22px;
+    flex-wrap: wrap;
+}
+
+.pro-reminder-btn {
+    min-height: 48px;
+    padding: 0 18px;
+    border: none;
+    border-radius: 16px;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    font-size: 13px;
+    font-weight: 800;
+    transition: transform .18s ease, box-shadow .18s ease, background .18s ease;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+.pro-reminder-btn:hover {
+    transform: translateY(-1px);
+}
+
+.pro-reminder-btn--primary {
+    color: #fff;
+    background: linear-gradient(135deg, #ea580c 0%, #ef4444 100%);
+    box-shadow: 0 18px 34px rgba(234, 88, 12, 0.28);
+}
+
+.pro-reminder-btn--ghost {
+    color: #9a3412;
+    background: rgba(255, 255, 255, 0.82);
+    border: 1px solid rgba(251, 146, 60, 0.22);
+}
+
+@keyframes proReminderPop {
+    from {
+        opacity: 0;
+        transform: translateY(18px) scale(.97);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
 /* ── SIDEBAR ─────────────────────────────────────── */
 .s-sidebar {
     position: fixed;
@@ -568,6 +817,34 @@ html, body { margin: 0; padding: 0; min-height: 100vh; }
         font-size: 15px;                   /* ↑ was 13px */
         padding: 12px 12px;                /* ↑ was 8px 10px */
     }
+
+    .pro-reminder-modal {
+        padding: 14px;
+    }
+
+    .pro-reminder-shell {
+        padding: 22px 18px 18px;
+    }
+
+    .pro-reminder-top {
+        flex-direction: column;
+    }
+
+    .pro-reminder-title {
+        font-size: 24px;
+    }
+
+    .pro-reminder-meta {
+        grid-template-columns: 1fr;
+    }
+
+    .pro-reminder-actions {
+        flex-direction: column;
+    }
+
+    .pro-reminder-btn {
+        width: 100%;
+    }
 }
 
 @media (max-width: 480px) {
@@ -761,33 +1038,86 @@ body:not(.preload) .content-pad {
 <!-- ── CONTENT ───────────────────────────────────────────────── -->
 <div class="main-wrap">
     <main class="content-pad">
-        @if(!empty($proExpiryReminder))
-            <div style="margin-bottom:18px;padding:16px 18px;border-radius:16px;border:1px solid #fed7aa;background:linear-gradient(135deg,#fff7ed 0%,#ffedd5 100%);display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;">
-                <div style="display:flex;align-items:flex-start;gap:12px;min-width:0;">
-                    <div style="width:42px;height:42px;border-radius:12px;background:#ffedd5;color:#ea580c;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                        <i class="fas fa-clock"></i>
-                    </div>
-                    <div>
-                        <div style="font-size:14px;font-weight:800;color:#9a3412;">Masa aktif Pro hampir habis</div>
-                        <div style="margin-top:4px;font-size:12px;line-height:1.6;color:#9a3412;">
-                            Sisa {{ $proExpiryReminder['remaining_days'] }} hari.
-                            @if(!empty($proExpiryReminder['expired_at']))
-                                Berakhir pada {{ $proExpiryReminder['expired_at'] }}.
-                            @endif
-                            Lanjutkan pembayaran agar akun tetap aktif.
-                        </div>
-                    </div>
-                </div>
-                <a href="{{ route('premium.index') }}"
-                   style="display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 14px;border-radius:12px;background:#ea580c;color:#fff;text-decoration:none;font-size:12px;font-weight:800;white-space:nowrap;">
-                    <i class="fas fa-wallet"></i>
-                    Bayar Pro
-                </a>
-            </div>
-        @endif
         @yield('content')
     </main>
 </div>
+
+@if(!empty($proExpiryReminder))
+    <div
+        id="proExpiryReminderModal"
+        class="pro-reminder-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="proExpiryReminderTitle"
+        aria-describedby="proExpiryReminderCopy"
+    >
+        <div class="pro-reminder-card">
+            <button
+                type="button"
+                class="pro-reminder-close"
+                id="proExpiryReminderClose"
+                aria-label="Tutup peringatan masa aktif Pro"
+            >
+                <i class="fas fa-xmark"></i>
+            </button>
+            <div class="pro-reminder-shell">
+                <div class="pro-reminder-top">
+                    <div class="pro-reminder-icon">
+                        <i class="fas fa-hourglass-half"></i>
+                    </div>
+                    <div style="min-width:0;">
+                        <div class="pro-reminder-kicker">
+                            <i class="fas fa-bell"></i>
+                            Peringatan Perpanjangan Pro
+                        </div>
+                        <h2 class="pro-reminder-title" id="proExpiryReminderTitle">
+                            Sisa {{ $proExpiryReminder['remaining_days'] }} hari sebelum akses Pro berhenti.
+                        </h2>
+                        <p class="pro-reminder-copy" id="proExpiryReminderCopy">
+                            Peringatan ini tampil otomatis saat Anda membuka area dashboard pada H-5 sampai H-1. Tutup dengan tombol silang jika sudah dibaca, lalu lanjutkan pembayaran agar akun tetap aktif tanpa putus akses.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="pro-reminder-meta">
+                    <div class="pro-reminder-stat">
+                        <div class="pro-reminder-label">Sisa Hari</div>
+                        <div class="pro-reminder-value">{{ $proExpiryReminder['remaining_days'] }} hari</div>
+                    </div>
+                    <div class="pro-reminder-stat">
+                        <div class="pro-reminder-label">Berakhir Pada</div>
+                        <div class="pro-reminder-value" style="font-size:18px;">
+                            {{ $proExpiryReminder['expired_at'] ?? '-' }}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pro-reminder-timeline" aria-hidden="true">
+                    @foreach ([5, 4, 3, 2, 1] as $reminderDay)
+                        <div class="pro-reminder-day {{ (int) $proExpiryReminder['remaining_days'] === $reminderDay ? 'is-active' : '' }}">
+                            H-{{ $reminderDay }}
+                        </div>
+                    @endforeach
+                </div>
+
+                <div class="pro-reminder-note">
+                    Setelah masa aktif habis, akun akan masuk ke halaman Pro expired dan tidak bisa kembali ke mode Free. Perpanjang Pro sebelum waktunya selesai supaya operasional tetap lancar.
+                </div>
+
+                <div class="pro-reminder-actions">
+                    <a href="{{ route('premium.index') }}" class="pro-reminder-btn pro-reminder-btn--primary">
+                        <i class="fas fa-wallet"></i>
+                        Lihat Paket Pro
+                    </a>
+                    <button type="button" class="pro-reminder-btn pro-reminder-btn--ghost" id="proExpiryReminderDismiss">
+                        <i class="fas fa-check"></i>
+                        Tutup Dulu
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+@endif
 
 <script src="{{ asset('js/dashboard.js') }}"></script>
 {{-- <script src="{{ asset('js/darkmode.js') }}"></script> --}}
@@ -805,6 +1135,9 @@ document.addEventListener('DOMContentLoaded', function () {
     var hamburger = document.getElementById('mHamburger');
     var sidebar   = document.getElementById('sSidebar');
     var overlay   = document.getElementById('sOverlay');
+    var proReminderModal = document.getElementById('proExpiryReminderModal');
+    var proReminderClose = document.getElementById('proExpiryReminderClose');
+    var proReminderDismiss = document.getElementById('proExpiryReminderDismiss');
 
     function openSidebar()  {
         sidebar.classList.add('active');
@@ -816,6 +1149,20 @@ document.addEventListener('DOMContentLoaded', function () {
         sidebar.classList.remove('active');
         overlay.classList.remove('active');
         document.body.style.overflow = '';
+    }
+
+    function openProReminderModal() {
+        if (!proReminderModal) return;
+        proReminderModal.classList.add('is-open');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeProReminderModal() {
+        if (!proReminderModal) return;
+        proReminderModal.classList.remove('is-open');
+        if (!sidebar || !sidebar.classList.contains('active')) {
+            document.body.style.overflow = '';
+        }
     }
 
     hamburger && hamburger.addEventListener('click', function (e) {
@@ -836,8 +1183,28 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     document.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape') closeSidebar();
+        if (e.key === 'Escape') {
+            if (proReminderModal && proReminderModal.classList.contains('is-open')) {
+                closeProReminderModal();
+                return;
+            }
+
+            closeSidebar();
+        }
     });
+
+    proReminderClose && proReminderClose.addEventListener('click', closeProReminderModal);
+    proReminderDismiss && proReminderDismiss.addEventListener('click', closeProReminderModal);
+
+    proReminderModal && proReminderModal.addEventListener('click', function (e) {
+        if (e.target === proReminderModal) {
+            closeProReminderModal();
+        }
+    });
+
+    if (proReminderModal) {
+        window.setTimeout(openProReminderModal, 180);
+    }
 
     // var themeToggle = document.getElementById('sThemeToggle');
     // var themeMenu   = document.getElementById('sThemeMenu');
