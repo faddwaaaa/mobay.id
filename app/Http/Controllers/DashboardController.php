@@ -167,26 +167,63 @@ class DashboardController extends Controller
     public function activateTestingPro(Request $request): RedirectResponse
     {
         $user = $request->user();
+        $action = (string) $request->input('action', 'activate_30_days');
 
-        if ($user->isProActive()) {
+        if ($user->hasExpiredProAccess()) {
             return redirect()
-                ->back()
-                ->with('success', 'Akun ini masih berada di mode Pro aktif.');
+                ->route('pro.expired')
+                ->with('error', 'Mode testing Pro tidak tersedia lagi setelah masa aktif habis.');
         }
 
-        $startsFrom = $user->pro_until && $user->pro_until->isFuture()
-            ? $user->pro_until->copy()
-            : now();
+        if ($action === 'activate_30_days') {
+            if ($user->isProActive()) {
+                return redirect()
+                    ->back()
+                    ->with('success', 'Akun ini masih berada di mode Pro aktif.');
+            }
 
-        $user->forceFill([
-            'subscription_plan' => 'pro',
-            'pro_type' => 'monthly',
-            'pro_until' => $startsFrom->copy()->addDays(30),
-        ])->save();
+            $startsFrom = $user->pro_until && $user->pro_until->isFuture()
+                ? $user->pro_until->copy()
+                : now();
+
+            $user->forceFill([
+                'subscription_plan' => 'pro',
+                'pro_type' => 'monthly',
+                'pro_until' => $startsFrom->copy()->addDays(30),
+            ])->save();
+
+            return redirect()
+                ->route('dashboard')
+                ->with('success', 'Mode testing Pro berhasil diaktifkan selama 30 hari.');
+        }
+
+        if ($action === 'set_5_days') {
+            $user->forceFill([
+                'subscription_plan' => 'pro',
+                'pro_type' => 'monthly',
+                'pro_until' => now()->addDays(5),
+            ])->save();
+
+            return redirect()
+                ->route('dashboard')
+                ->with('success', 'Mode testing berhasil disetel ke sisa Pro 5 hari.');
+        }
+
+        if ($action === 'expire_now') {
+            $user->forceFill([
+                'subscription_plan' => 'pro',
+                'pro_type' => 'monthly',
+                'pro_until' => now()->subMinute(),
+            ])->save();
+
+            return redirect()
+                ->route('pro.expired')
+                ->with('success', 'Mode testing berhasil dipaksa ke status Pro habis.');
+        }
 
         return redirect()
-            ->route('dashboard')
-            ->with('success', 'Mode testing Pro berhasil diaktifkan kembali selama 30 hari.');
+            ->back()
+            ->with('error', 'Aksi testing Pro tidak dikenali.');
     }
 
     public function getStats()

@@ -31,7 +31,7 @@ class CheckExpiredProAccess
             'pro.status',
             'pro.payment.success',
             'pro.payment.failed',
-            'pro.testing.activate',
+            'dashboard.subscription.testing-activate',
             'logout',
         ];
 
