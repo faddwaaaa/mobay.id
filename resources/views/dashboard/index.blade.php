@@ -709,12 +709,6 @@ document.querySelectorAll('.range-option').forEach(el => {
 });
 </script>
 
-<!--
-<!-- ================= STORAGE INFO — CLICKABLE ================= -->
-
-
-                <span style="font-weight:700;color:#ec4899;">👉 Klik untuk upgrade</span> ke Pro dan dapatkan penyimpanan 5x lebih besar!
--->
 @endsection
 
 {{-- ============================================================
