@@ -473,7 +473,7 @@
                 <p style="margin:0;font-size:12px;color:#92400e;">{{ $storageInfo['percentage'] }}% dari {{ $storageInfo['limit_formatted'] }} sudah terpakai</p>
             </div>
         </div>
-        <button onclick="document.getElementById('storageCard').click()"
+        <button onclick="openUpgradeModal()"
                 style="padding:8px 14px;background:#f59e0b;color:#ffffff;border:none;border-radius:8px;
                        font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0;">
             Upgrade
@@ -709,85 +709,12 @@ document.querySelectorAll('.range-option').forEach(el => {
 });
 </script>
 
+<!--
 <!-- ================= STORAGE INFO — CLICKABLE ================= -->
-<div id="storageCard" style="background:#ffffff;border-radius:18px;padding:24px;margin-bottom:32px;box-shadow:0 10px 30px rgba(0,0,0,.06);cursor:pointer;transition:all 0.3s ease;">
-    <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
-        <i class="fas fa-database" style="font-size:20px;color:#2563eb;"></i>
-        <h3 style="font-size:16px;font-weight:700;margin:0;color:#111827;">Penyimpanan</h3>
-    </div>
-    
-    <!-- Storage Usage -->
-    <div style="margin-bottom:16px;">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-            <span style="font-size:13px;color:#6b7280;font-weight:600;">
-                Penggunaan Penyimpanan
-            </span>
-            <span style="font-size:13px;font-weight:700;color:#2563eb;">{{ $storageInfo['percentage'] }}%</span>
-        </div>
-        <div style="width:100%;background:#e5e7eb;border-radius:999px;height:8px;overflow:hidden;">
-            <div style="background:linear-gradient(90deg, #2563eb, #3b82f6);height:100%;transition:width 0.3s ease;width:{{ min($storageInfo['percentage'], 100) }}%;"></div>
-        </div>
-    </div>
 
-    <!-- Available Storage -->
-    <div style="background:#ecf0ff;border:1px solid #bfdbfe;border-radius:12px;padding:12px 14px;margin-bottom:12px;">
-        <p style="font-size:13px;color:#1e40af;margin:0;">
-            <span style="font-weight:700;">{{ $storageInfo['percentage'] < 100 ? 'Masih ada ruang' : 'Penyimpanan penuh' }}</span> untuk upload
-        </p>
-    </div>
 
-    <!-- Plan Info -->
-    <div style="border-top:1px solid #e5e7eb;padding-top:12px;">
-        <p style="font-size:12px;color:#6b7280;margin:0 0 6px;font-weight:600;">
-            @if($storageInfo['plan'] === 'Pro')
-                <i class="fas fa-crown" style="color:#fbbf24;margin-right:4px;"></i> Akun Pro
-            @else
-                <i class="fas fa-rocket" style="color:#ec4899;margin-right:4px;"></i> Akun Free
-            @endif
-        </p>
-        <p style="font-size:12px;color:#6b7280;margin:0;line-height:1.5;">
-            @if($storageInfo['plan'] === 'Free')
                 <span style="font-weight:700;color:#ec4899;">👉 Klik untuk upgrade</span> ke Pro dan dapatkan penyimpanan 5x lebih besar!
-            @else
-                Anda menggunakan akun Pro dengan penyimpanan 5x lebih besar dari Free. Nikmati upload dan manajemen file tanpa khawatir!
-            @endif
-        </p>
-    </div>
-</div>
-
-<script>
-const isProUser = @json($isProUser);
-const storageCard = document.getElementById('storageCard');
-
-if (!isProUser) {
-    storageCard.addEventListener('click', () => {
-        const modal = document.getElementById('upgradeModal');
-        const overlay = document.getElementById('upgradeOverlay');
-        if (modal && overlay) {
-            modal.style.display = 'flex';
-            setTimeout(() => {
-                modal.style.opacity = '1';
-                modal.style.transform = 'translateY(0)';
-                overlay.style.opacity = '1';
-                overlay.style.pointerEvents = 'auto';
-            }, 10);
-        }
-    });
-    
-    storageCard.addEventListener('mouseenter', function() {
-        this.style.background = '#f0f9ff';
-        this.style.boxShadow = '0 10px 40px rgba(37, 99, 235, 0.15)';
-        this.style.transform = 'translateY(-2px)';
-    });
-    
-    storageCard.addEventListener('mouseleave', function() {
-        this.style.background = '#ffffff';
-        this.style.boxShadow = '0 10px 30px rgba(0,0,0,.06)';
-        this.style.transform = 'translateY(0)';
-    });
-}
-</script>
-
+-->
 @endsection
 
 {{-- ============================================================
@@ -922,8 +849,7 @@ function closeUpgradeModal() {
     }
 }
 
-// Show modal animation
-const originalOpenUpgrade = function() {
+function openUpgradeModal() {
     const modal = document.getElementById('upgradeModal');
     const overlay = document.getElementById('upgradeOverlay');
     if (modal && overlay) {
@@ -932,15 +858,9 @@ const originalOpenUpgrade = function() {
             modal.style.opacity = '1';
             modal.style.transform = 'translateY(0)';
             overlay.style.opacity = '1';
+            overlay.style.pointerEvents = 'auto';
         }, 10);
     }
-};
-
-// Override click handler to show animation
-const storageCardClick = document.getElementById('storageCard');
-if (storageCardClick && !isProUser) {
-    storageCardClick.removeEventListener('click', () => {});
-    storageCardClick.addEventListener('click', originalOpenUpgrade);
 }
 </script>
 
