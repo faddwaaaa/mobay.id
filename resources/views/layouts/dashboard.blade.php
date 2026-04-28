@@ -960,11 +960,13 @@ body:not(.preload) .content-pad {
             Analitik
         </a>
 
+        {{--
         <a href="{{ route('qrcode.show') }}"
            class="s-nav-item {{ request()->routeIs('qrcode.show') ? 'active' : '' }}">
             <span class="s-icon"><i class="fas fa-qrcode"></i></span>
             QR Code
         </a>
+        --}}
 
         <a href="{{ route('products.manage') }}"
            class="s-nav-item {{ request()->routeIs('products.manage') ? 'active' : '' }}">
