@@ -27,17 +27,17 @@ return Application::configure(basePath: dirname(__DIR__))
         // Track klik metadata
         $middleware->append(TrackClickMetadata::class);
 
-        // Tambahkan storage info ke semua view
-        $middleware->append(AddStorageToView::class);
-
         // Alias middleware
         $middleware->alias([
-            'is_admin'  => \App\Http\Middleware\IsAdmin::class,
-            'suspended' => \App\Http\Middleware\CheckSuspended::class,
+            'is_admin'    => \App\Http\Middleware\IsAdmin::class,
+            'suspended'   => \App\Http\Middleware\CheckSuspended::class,
+            'pro.expired' => \App\Http\Middleware\CheckExpiredProAccess::class,
         ]);
 
-        // CheckSuspended otomatis berjalan di semua route web
+        // Middleware yang membutuhkan session/auth dijalankan di group web
+        $middleware->appendToGroup('web', AddStorageToView::class);
         $middleware->appendToGroup('web', \App\Http\Middleware\CheckSuspended::class);
+        $middleware->appendToGroup('web', \App\Http\Middleware\CheckExpiredProAccess::class);
 
         // ✅ Pengecualian CSRF — webhook tidak bisa kirim CSRF token
         $middleware->validateCsrfTokens(except: [

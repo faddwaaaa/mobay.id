@@ -10,7 +10,6 @@ use App\Http\Controllers\CallbackController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\AnalyticsController;
 use App\Http\Controllers\LinkRedirectController;
-use App\Http\Controllers\LinksController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\LandingController;
 use App\Http\Controllers\CartController;
@@ -29,6 +28,10 @@ use App\Models\User;
 
 use App\Http\Controllers\Admin\ProfileReportController;
 use App\Http\Controllers\Admin\PhysicalOrderShipmentController;
+use Illuminate\Support\Facades\Route;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use App\Models\User;
 
 Route::get('/', [LandingController::class, 'index'])->name('home');
 Route::get('/service', [LandingController::class, 'service'])->name('service');
@@ -52,6 +55,18 @@ Route::get('/suspended', function () {
     }
     return view('suspended');
 })->name('suspended');
+
+Route::get('/pro-expired', function () {
+    abort_unless(auth()->check(), 403);
+
+    if (!auth()->user()->hasExpiredProAccess()) {
+        return redirect()->route('dashboard');
+    }
+
+    return view('pro.expired', [
+        'user' => auth()->user(),
+    ]);
+})->middleware('auth')->name('pro.expired');
 
 
 /*
@@ -260,8 +275,8 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/dashboard/chart-data', [DashboardController::class, 'chartData']);
-    Route::post('/dashboard/subscription/trial-toggle', [DashboardController::class, 'toggleProTrial'])
-        ->name('dashboard.subscription.trial-toggle');
+    Route::post('/dashboard/subscription/testing-activate', [DashboardController::class, 'activateTestingPro'])
+        ->name('dashboard.subscription.testing-activate');
 
     Route::prefix('analitik')->name('analitik.')->group(function () {
         Route::get('/', [AnalyticsController::class, 'index'])->name('index');
@@ -339,6 +354,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/status', [ProSubscriptionController::class, 'checkStatus'])->name('status');
         Route::get('/payment/success', [ProSubscriptionController::class, 'paymentSuccess'])->name('payment.success');
         Route::get('/payment/failed', [ProSubscriptionController::class, 'paymentFailed'])->name('payment.failed');
+        Route::post('/testing-activate', [DashboardController::class, 'activateTestingPro'])->name('testing.activate');
     });
 
     Route::post('/logout', function () {
@@ -407,7 +423,7 @@ Route::get('/{short_code}', function ($short_code) {
             ->firstOrFail();
 
         // Blokir profil user yang disuspend
-        if ($user->is_suspended) abort(404);
+        if ($user->is_suspended || $user->hasExpiredProAccess()) abort(404);
 
         $profile     = $user->userProfile;
         $socialLinks = collect($profile?->social_links ?? [])->filter()->toArray();
@@ -422,7 +438,7 @@ Route::get('/{username}', function ($username) {
         ->firstOrFail();
 
     // Blokir profil user yang disuspend
-    if ($user->is_suspended) abort(404);
+    if ($user->is_suspended || $user->hasExpiredProAccess()) abort(404);
 
     $profile     = $user->userProfile;
     $socialLinks = collect($profile?->social_links ?? [])->filter()->toArray();

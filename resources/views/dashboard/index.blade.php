@@ -6,6 +6,8 @@
     use Illuminate\Support\Str;
     $user = Auth::user();
     $isProUser = method_exists($user, 'isPro') ? $user->isPro() : in_array((string) data_get($user, 'subscription_plan'), ['pro', 'premium'], true);
+    $isProActive = method_exists($user, 'isProActive') ? $user->isProActive() : $isProUser;
+    $isExpiredProUser = method_exists($user, 'hasExpiredProAccess') ? $user->hasExpiredProAccess() : false;
     $publicProfileUrl = url('/' . $user->username);
     $savedAccountsCount = $user->paymentAccounts()->count();
     $primaryAccount = $user->paymentAccounts()->where('is_default', true)->first()
@@ -180,6 +182,13 @@
     </div>
 @endif
 
+@if (session('error'))
+    <div style="margin-bottom:18px;padding:14px 16px;border-radius:14px;border:1px solid #fecaca;background:#fef2f2;color:#b91c1c;display:flex;align-items:center;gap:10px;">
+        <i class="fas fa-circle-exclamation"></i>
+        <span style="font-size:14px;font-weight:600;">{{ session('error') }}</span>
+    </div>
+@endif
+
 <!-- ================= QUICK ACTION BUTTONS ================= -->
 {{-- <div class="quick-actions">
     <a href="{{ route('links.index') }}" class="quick-action-card quick-action-links">
@@ -343,22 +352,67 @@
                 <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;">
                     <div>
                         <div style="font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;">Status Langganan</div>
-                        <div style="font-size:15px;font-weight:800;color:#111827;margin-top:4px;">{{ $isProUser ? 'Pro' : 'Free' }}</div>
+                        <div style="font-size:15px;font-weight:800;color:#111827;margin-top:4px;">
+                            {{ $isProActive ? 'Pro Aktif' : ($isExpiredProUser ? 'Pro Habis' : 'Free') }}
+                        </div>
                         <div style="font-size:12px;color:#6b7280;margin-top:3px;">
-                            {{ $isProUser ? 'Mode uji coba Pro sedang aktif.' : 'Mode default akun saat ini Free.' }}
+                            @if ($isProActive && $user->pro_until)
+                                Berlaku sampai {{ $user->pro_until->format('d M Y H:i') }}.
+                            @elseif ($isExpiredProUser && $user->pro_until)
+                                Masa Pro berakhir pada {{ $user->pro_until->format('d M Y H:i') }}. Akun tidak bisa kembali ke Free.
+                            @else
+                                Mode default akun saat ini Free.
+                            @endif
                         </div>
                     </div>
 
-                    <form method="POST" action="{{ route('dashboard.subscription.trial-toggle') }}">
-                        @csrf
-                        <button type="submit"
-                                style="display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:8px 11px;border:1px solid {{ $isProUser ? '#86efac' : '#fdba74' }};border-radius:999px;background:{{ $isProUser ? '#f0fdf4' : '#fff7ed' }};color:{{ $isProUser ? '#15803d' : '#c2410c' }};font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;box-shadow:none;">
-                            <i class="fas {{ $isProUser ? 'fa-rotate-left' : 'fa-bolt' }}"></i>
-                            {{ $isProUser ? 'Balik ke Free' : 'Coba Pro' }}
-                        </button>
-                    </form>
                 </div>
             </div>
+
+            @if (!$isExpiredProUser)
+                <div style="padding:11px 12px;background:#eff6ff;border:1px dashed #93c5fd;border-radius:12px;">
+                    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:wrap;">
+                        <div>
+                            <div style="font-size:11px;font-weight:700;color:#1d4ed8;text-transform:uppercase;letter-spacing:.06em;">Testing Sementara</div>
+                            <div style="font-size:14px;font-weight:800;color:#1e3a8a;margin-top:4px;">Route QA untuk simulasi status Pro</div>
+                            <div style="font-size:12px;color:#1d4ed8;margin-top:4px;max-width:520px;">
+                                Pakai tombol ini untuk cek notifikasi sisa 5 hari dan alur redirect ke halaman Pro expired. Hapus sebelum production.
+                            </div>
+                        </div>
+                        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                            @if (!$isProActive)
+                                <form method="POST" action="{{ route('dashboard.subscription.testing-activate') }}">
+                                    @csrf
+                                    <input type="hidden" name="action" value="activate_30_days">
+                                    <button type="submit"
+                                            style="display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:8px 11px;border:1px solid #bfdbfe;border-radius:999px;background:#ffffff;color:#1d4ed8;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;box-shadow:none;">
+                                        <i class="fas fa-flask"></i>
+                                        Aktifkan 30 Hari
+                                    </button>
+                                </form>
+                            @endif
+                            <form method="POST" action="{{ route('dashboard.subscription.testing-activate') }}">
+                                @csrf
+                                <input type="hidden" name="action" value="set_5_days">
+                                <button type="submit"
+                                        style="display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:8px 11px;border:1px solid #bfdbfe;border-radius:999px;background:#ffffff;color:#1d4ed8;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;box-shadow:none;">
+                                    <i class="fas fa-clock"></i>
+                                    Set Sisa 5 Hari
+                                </button>
+                            </form>
+                            <form method="POST" action="{{ route('dashboard.subscription.testing-activate') }}">
+                                @csrf
+                                <input type="hidden" name="action" value="expire_now">
+                                <button type="submit"
+                                        style="display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:8px 11px;border:1px solid #fdba74;border-radius:999px;background:#fff7ed;color:#c2410c;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;box-shadow:none;">
+                                    <i class="fas fa-hourglass-end"></i>
+                                    Expired Sekarang
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            @endif
 
             <div style="padding:11px 12px;background:#f8fafc;border:1px solid #eef2f7;border-radius:12px;">
                 <div style="font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;">Link Publik</div>
@@ -919,7 +973,7 @@ if (storageCardClick && !isProUser) {
                 </div>
                 <div>
                     <h3 style="margin:0;font-size:17px;font-weight:700;color:#0f172a;">Tarik Saldo</h3>
-                    <p style="margin:0;font-size:12px;color:#94a3b8;">Minimal penarikan Rp 20.000</p>
+                    <p style="margin:0;font-size:12px;color:#94a3b8;">Minimal penarikan Rp {{ number_format(config('xendit.withdrawal.min_amount', 20000), 0, ',', '.') }}</p>
                 </div>
             </div>
             <button onclick="closeWithdrawModal()"
@@ -1106,7 +1160,7 @@ if (storageCardClick && !isProUser) {
                             <span style="position:absolute;left:13px;top:50%;transform:translateY(-50%);
                                          font-size:14px;font-weight:700;color:#9aaabb;">Rp</span>
                             <input type="number" id="wd-amount-input"
-                                   min="20000" max="{{ $balance ?? 0 }}"
+                                    min="{{ config('xendit.withdrawal.min_amount', 20000) }}" max="{{ $balance ?? 0 }}"
                                    placeholder="0"
                                    oninput="onAmountInput()"
                                    style="width:100%;padding:12px 13px 12px 36px;
@@ -1268,8 +1322,8 @@ if (storageCardClick && !isProUser) {
 
 <script>
 const WD_BALANCE    = {{ $balance ?? 0 }};
-const WD_MIN_AMOUNT = 20000;
-const WD_FEE        = 6660;
+const WD_MIN_AMOUNT = {{ config('xendit.withdrawal.min_amount', 20000) }};
+const WD_FEE        = {{ config('payment.withdraw_fee', config('xendit.disbursement.fee_flat', 6660)) }};
 const WD_ROUTES     = { store: '/withdrawal' };
 const WD_CSRF       = () => document.querySelector('meta[name="csrf-token"]').content;
 let   wdSelectedAcc = null;
