@@ -25,6 +25,7 @@ use App\Http\Controllers\DigitalOrderController;
 use App\Http\Controllers\ShippingSettingsController;
 use App\Http\Controllers\BiteshipWebhookController;
 use App\Http\Controllers\ProSubscriptionController;
+use App\Models\User;
 
 use App\Http\Controllers\Admin\ProfileReportController;
 use App\Http\Controllers\Admin\PhysicalOrderShipmentController;

@@ -575,24 +575,24 @@
 @endphp
 
 <div class="page-shell">
-    <section class="page-hero">
-        <div class="hero-top">
-            <div class="hero-head">
+    {{-- <section class="page-hero">
+        <div class="hero-top"> --}}
+            {{-- <div class="hero-head">
                 {{-- <a href="{{ route('dashboard') }}" class="hero-back" aria-label="Kembali ke dashboard">
                     <i class="fas fa-arrow-left"></i>
                 </a> --}}
-                <div>
+                {{-- <div>
                     <div class="hero-eyebrow">
                         <i class="fas fa-box-open"></i>
                         Kelola pesanan dengan tampilan yang lebih rapi
-                    </div>
+                    </div> --}}
                     <h1 class="hero-title">Pesanan Masuk</h1>
                    
-                </div>
+                {{-- </div>
             </div>
-        </div>
+        </div> --}}
 
-        <div class="hero-summary">
+        {{-- <div class="hero-summary">
             <div class="hero-stat">
                 <div class="hero-stat-label">
                     <i class="fas fa-layer-group"></i>
@@ -622,7 +622,7 @@
                 </div>
             </div>
         </div>
-    </section>
+    </section> --}}
 
     <div class="toolbar">
         <div class="segmented">
@@ -636,10 +636,10 @@
             </a>
         </div>
 
-        <div class="toolbar-note">
+        {{-- <div class="toolbar-note">
             <i class="fas fa-circle-info" style="color:#2563eb;"></i>
             <span><strong>{{ $ordersCount }}</strong> pesanan ditemukan untuk kategori <strong>{{ $type === 'digital' ? 'digital' : 'fisik' }}</strong>.</span>
-        </div>
+        </div> --}}
     </div>
 
     <div class="card-grid">

@@ -155,25 +155,25 @@ tbody tr:hover { background: #f7f9ff; }
     </a>
 
     {{-- ===== KONTEN ===== --}}
-    <div class="nav-section">Konten</div>
-    <a href="{{ route('admin.bio.index') }}" class="nav-item {{ request()->routeIs('admin.content.bio*') ? 'active' : '' }}">
+    {{-- <div class="nav-section">Konten</div> --}}
+    {{-- <a href="{{ route('admin.dashboard') }}" class="nav-item {{ request()->routeIs('admin.content.bio*') ? 'active' : '' }}">
       <svg class="nav-ico" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
         <path stroke-linecap="round" stroke-linejoin="round" d="M5.121 17.804A4 4 0 018 17h8a4 4 0 012.879 1.804M15 11a3 3 0 11-6 0 3 3 0 016 0zM3 5h18M3 19h18"/>
       </svg>
       Konten & Link
-    </a>
-    <a href="{{ route('admin.products.index') }}" class="nav-item {{ request()->routeIs('admin.content.products*') ? 'active' : '' }}">
+    </a> --}}
+    {{-- <a href="{{ route('admin.products.index') }}" class="nav-item {{ request()->routeIs('admin.content.products*') ? 'active' : '' }}">
       <svg class="nav-ico" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
         <path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
       </svg>
       Toko & Produk
-    </a>
-    <a href="{{ route('admin.orders.index') }}" class="nav-item {{ request()->routeIs('admin.content.orders*') ? 'active' : '' }}">
+    </a> --}}
+    {{-- <a href="{{ route('admin.orders.index') }}" class="nav-item {{ request()->routeIs('admin.content.orders*') ? 'active' : '' }}">
       <svg class="nav-ico" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
         <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
       </svg>
       Order
-    </a>
+    </a> --}}
 
     <div class="nav-section">Keuangan</div>
     <a href="{{ route('admin.wallet.index') }}" class="nav-item {{ request()->routeIs('admin.wallet*') ? 'active' : '' }}">

@@ -167,9 +167,9 @@ tbody tr:hover { background: #f1f5f9; }
 <div style="margin-bottom: 24px;">
     <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 8px;">
         <div style="display: flex; align-items: center; gap: 12px;">
-            <a href="{{ route('dashboard') }}" style="width: 36px; height: 36px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; display: flex; align-items: center; justify-content: center; text-decoration: none; transition: all 0.2s;">
+            {{-- <a href="{{ route('dashboard') }}" style="width: 36px; height: 36px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; display: flex; align-items: center; justify-content: center; text-decoration: none; transition: all 0.2s;">
                 <i class="fas fa-arrow-left" style="font-size: 14px; color: #475569;"></i>
-            </a>
+            </a> --}}
             <div>
                 <h1 style="margin: 0; font-size: 24px; font-weight: 600; color: #000000;">Produk Saya</h1>
                 <p style="margin: 0; font-size: 14px; color: #797979;">Kelola semua produk digital kamu</p>
@@ -397,25 +397,6 @@ tbody tr:hover { background: #f1f5f9; }
             return ($p->total_qty ?? 0) * $price;
         });
     @endphp
-
-    {{-- Kartu ringkasan --}}
-    <div class="stat-summary-grid">
-        <div class="stat-card">
-            <div class="stat-card-label">Total Produk</div>
-            <div class="stat-card-value">{{ $totalProducts }}</div>
-            <div style="font-size:11px; color:#6b7280; margin-top:3px;">{{ $digitalCount }} Digital &middot; {{ $fisikCount }} Fisik</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-card-label">Total Terjual</div>
-            <div class="stat-card-value">{{ number_format($totalSold) }}</div>
-            <div class="stat-card-sub">unit</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-card-label">Total Pendapatan</div>
-            <div class="stat-card-value" style="font-size:17px;">Rp {{ number_format($totalRevenue, 0, ',', '.') }}</div>
-            <div class="stat-card-sub">dari semua produk</div>
-        </div>
-    </div>
 
     {{-- Tabel lifetime sales (sama persis dari versi asli, cuma dipindah ke sini) --}}
     <div class="stat-table-wrap">
