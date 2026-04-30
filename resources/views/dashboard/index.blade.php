@@ -165,9 +165,6 @@
 <!-- ================= HEADER ================= -->
 <div style="margin-bottom: 24px;">
             <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
-                <!-- <a href="{{ route('dashboard') }}" style="width: 36px; height: 36px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; display: flex; align-items: center; justify-content: center; text-decoration: none; transition: all 0.2s;">
-                    <i class="fas fa-arrow-left" style="font-size: 14px; color: #475569;"></i>
-                </a> -->
                 <div>
                     <h1 style="margin: 0; font-size: 24px; font-weight: 600; color: #000000;">Dashboard</h1>
                     <p style="margin: 0; font-size: 14px; color: #797979;">Dashboard <strong>{{ $user->name }}</strong></p>
@@ -189,68 +186,7 @@
     </div>
 @endif
 
-<!-- ================= QUICK ACTION BUTTONS ================= -->
-{{-- <div class="quick-actions">
-    <a href="{{ route('links.index') }}" class="quick-action-card quick-action-links">
-        <div class="quick-action-top">
-            <span class="quick-action-label">Akses Cepat</span>
-            <span class="quick-action-icon"><i class="fas fa-link"></i></span>
-        </div>
-        <div class="quick-action-bottom">
-            <div class="quick-action-content">
-                <h3 class="quick-action-title">Kelola Link</h3>
-                <p class="quick-action-desc">Atur tautan utama dan susun halaman bio kamu.</p>
-            </div>
-            <i class="fas fa-arrow-right quick-action-arrow"></i>
-        </div>
-    </a>
-
-    <a href="{{ route('products.manage') }}" class="quick-action-card quick-action-products">
-        <div class="quick-action-top">
-            <span class="quick-action-label">Jualan</span>
-            <span class="quick-action-icon"><i class="fas fa-box"></i></span>
-        </div>
-        <div class="quick-action-bottom">
-            <div class="quick-action-content">
-                <h3 class="quick-action-title">Produk</h3>
-                <p class="quick-action-desc">Tambah, edit, dan pantau produk digital maupun fisik.</p>
-            </div>
-            <i class="fas fa-arrow-right quick-action-arrow"></i>
-        </div>
-    </a>
-
-    <a href="{{ route('dashboard.appearance') }}" class="quick-action-card quick-action-appearance">
-        <div class="quick-action-top">
-            <span class="quick-action-label">Branding</span>
-            <span class="quick-action-icon"><i class="fas fa-palette"></i></span>
-        </div>
-        <div class="quick-action-bottom">
-            <div class="quick-action-content">
-                <h3 class="quick-action-title">Tampilan</h3>
-                <p class="quick-action-desc">Sesuaikan warna, gaya, dan nuansa profil publik.</p>
-            </div>
-            <i class="fas fa-arrow-right quick-action-arrow"></i>
-        </div>
-    </a>
-
-    <a href="{{ url('/riwayat') }}" class="quick-action-card quick-action-history">
-        <div class="quick-action-top">
-            <span class="quick-action-label">Keuangan</span>
-            <span class="quick-action-icon"><i class="fas fa-history"></i></span>
-        </div>
-        <div class="quick-action-bottom">
-            <div class="quick-action-content">
-                <h3 class="quick-action-title">Riwayat</h3>
-                <p class="quick-action-desc">Lihat transaksi terbaru, pembayaran, dan penarikan saldo.</p>
-            </div>
-            <i class="fas fa-arrow-right quick-action-arrow"></i>
-        </div>
-    </a>
-</div> --}}
-
-
 <!-- ================= SALDO ================= -->
-{{-- ================= SALDO CARD — ganti bagian balance-card di dashboard ================= --}}
 <div class="dashboard-top-grid"
      style="display:grid;grid-template-columns:minmax(320px,1.15fr) minmax(280px,0.85fr);gap:18px;align-items:stretch;margin-bottom:32px;">
 <div class="balance-card"
@@ -341,10 +277,6 @@
                     <div style="font-size:12px;color:#6b7280;">{{ '@' . $user->username }}</div>
                 </div>
             </div>
-            <!-- <span style="padding:5px 10px;border-radius:999px;background:#ecfdf5;color:#047857;
-                         font-size:11px;font-weight:700;white-space:nowrap;">
-                {{ ($activeLinks ?? 0) > 0 ? 'Akun Aktif' : 'Belum Aktif' }}
-            </span> -->
         </div>
 
         <div style="display:grid;gap:10px;margin-bottom:14px;">
@@ -422,12 +354,10 @@
                 </a>
             </div>
             <div style="display:grid;grid-template-columns:repeat(3, 1fr);gap:8px;">
-                {{-- ✅ DIUBAH: Total Link → Total Pesanan --}}
                 <div style="padding:10px;border-radius:12px;background:#f8fafc;border:1px solid #eef2f7;">
                     <div style="font-size:11px;color:#6b7280;font-weight:700;">Total Pesanan</div>
                     <div style="font-size:13px;font-weight:800;color:#0f172a;margin-top:2px;">{{ $totalOrders ?? 0 }}</div>
                 </div>
-                {{-- ✅ DIUBAH: Link Aktif → Total Produk --}}
                 <div style="padding:10px;border-radius:12px;background:#f8fafc;border:1px solid #eef2f7;">
                     <div style="font-size:11px;color:#6b7280;font-weight:700;">Total Produk</div>
                     <div style="font-size:13px;font-weight:800;color:#0f172a;margin-top:2px;">{{ $totalProducts ?? 0 }}</div>
@@ -459,27 +389,6 @@
 
 <!-- ================= NOTIFICATIONS & ALERTS ================= -->
 <div id="notificationsContainer" style="margin-bottom:32px;">
-    <!-- STORAGE WARNING -->
-    @if($storageInfo['percentage'] > 80)
-    <div style="background:linear-gradient(135deg, #fef3c7 0%, #fcd34d 100%);border-radius:14px;border-left:4px solid #f59e0b;
-                padding:16px 20px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;gap:16px;">
-        <div style="display:flex;align-items:center;gap:12px;flex:1;min-width:0;">
-            <div style="width:40px;height:40px;background:rgba(245, 158, 11, 0.1);border-radius:10px;
-                        display:flex;align-items:center;justify-content:center;font-size:20px;color:#f59e0b;flex-shrink:0;">
-                <i class="fas fa-exclamation-triangle"></i>
-            </div>
-            <div style="min-width:0;">
-                <p style="margin:0 0 4px;font-size:13px;font-weight:700;color:#78350f;">Penyimpanan Hampir Penuh!</p>
-                <p style="margin:0;font-size:12px;color:#92400e;">{{ $storageInfo['percentage'] }}% dari {{ $storageInfo['limit_formatted'] }} sudah terpakai</p>
-            </div>
-        </div>
-        <button onclick="document.getElementById('storageCard').click()"
-                style="padding:8px 14px;background:#f59e0b;color:#ffffff;border:none;border-radius:8px;
-                       font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0;">
-            Upgrade
-        </button>
-    </div>
-    @endif
 
     <!-- PRO UPGRADE RECOMMENDATION -->
     @if(!$isProUser)
@@ -552,6 +461,7 @@
         width: 100%;
         justify-content: center;
     }
+}
 </style>
 
 <!-- ================= CHART ================= -->
@@ -709,240 +619,12 @@ document.querySelectorAll('.range-option').forEach(el => {
 });
 </script>
 
-<!-- ================= STORAGE INFO — CLICKABLE ================= -->
-<div id="storageCard" style="background:#ffffff;border-radius:18px;padding:24px;margin-bottom:32px;box-shadow:0 10px 30px rgba(0,0,0,.06);cursor:pointer;transition:all 0.3s ease;">
-    <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
-        <i class="fas fa-database" style="font-size:20px;color:#2563eb;"></i>
-        <h3 style="font-size:16px;font-weight:700;margin:0;color:#111827;">Penyimpanan</h3>
-    </div>
-    
-    <!-- Storage Usage -->
-    <div style="margin-bottom:16px;">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-            <span style="font-size:13px;color:#6b7280;font-weight:600;">
-                Penggunaan Penyimpanan
-            </span>
-            <span style="font-size:13px;font-weight:700;color:#2563eb;">{{ $storageInfo['percentage'] }}%</span>
-        </div>
-        <div style="width:100%;background:#e5e7eb;border-radius:999px;height:8px;overflow:hidden;">
-            <div style="background:linear-gradient(90deg, #2563eb, #3b82f6);height:100%;transition:width 0.3s ease;width:{{ min($storageInfo['percentage'], 100) }}%;"></div>
-        </div>
-    </div>
-
-    <!-- Available Storage -->
-    <div style="background:#ecf0ff;border:1px solid #bfdbfe;border-radius:12px;padding:12px 14px;margin-bottom:12px;">
-        <p style="font-size:13px;color:#1e40af;margin:0;">
-            <span style="font-weight:700;">{{ $storageInfo['percentage'] < 100 ? 'Masih ada ruang' : 'Penyimpanan penuh' }}</span> untuk upload
-        </p>
-    </div>
-
-    <!-- Plan Info -->
-    <div style="border-top:1px solid #e5e7eb;padding-top:12px;">
-        <p style="font-size:12px;color:#6b7280;margin:0 0 6px;font-weight:600;">
-            @if($storageInfo['plan'] === 'Pro')
-                <i class="fas fa-crown" style="color:#fbbf24;margin-right:4px;"></i> Akun Pro
-            @else
-                <i class="fas fa-rocket" style="color:#ec4899;margin-right:4px;"></i> Akun Free
-            @endif
-        </p>
-        <p style="font-size:12px;color:#6b7280;margin:0;line-height:1.5;">
-            @if($storageInfo['plan'] === 'Free')
-                <span style="font-weight:700;color:#ec4899;">👉 Klik untuk upgrade</span> ke Pro dan dapatkan penyimpanan 5x lebih besar!
-            @else
-                Anda menggunakan akun Pro dengan penyimpanan 5x lebih besar dari Free. Nikmati upload dan manajemen file tanpa khawatir!
-            @endif
-        </p>
-    </div>
-</div>
-
-<script>
-const isProUser = @json($isProUser);
-const storageCard = document.getElementById('storageCard');
-
-if (!isProUser) {
-    storageCard.addEventListener('click', () => {
-        const modal = document.getElementById('upgradeModal');
-        const overlay = document.getElementById('upgradeOverlay');
-        if (modal && overlay) {
-            modal.style.display = 'flex';
-            setTimeout(() => {
-                modal.style.opacity = '1';
-                modal.style.transform = 'translateY(0)';
-                overlay.style.opacity = '1';
-                overlay.style.pointerEvents = 'auto';
-            }, 10);
-        }
-    });
-    
-    storageCard.addEventListener('mouseenter', function() {
-        this.style.background = '#f0f9ff';
-        this.style.boxShadow = '0 10px 40px rgba(37, 99, 235, 0.15)';
-        this.style.transform = 'translateY(-2px)';
-    });
-    
-    storageCard.addEventListener('mouseleave', function() {
-        this.style.background = '#ffffff';
-        this.style.boxShadow = '0 10px 30px rgba(0,0,0,.06)';
-        this.style.transform = 'translateY(0)';
-    });
-}
-</script>
-
 @endsection
 
 {{-- ============================================================
      MODAL WITHDRAW — IMPROVED VERSION
-     - Breakdown amount, fee, total potongan
-     - Tombol custom nominal
-============================================================ --}}
-{{-- ============================================================
-     MODAL WITHDRAW — IMPROVED VERSION
-     - Breakdown amount, fee, total potongan
-     - Tombol custom nominal
-     - Keterangan jumlah yang akan ditarik
 ============================================================ --}}
 @push('modals')
-
-<!-- ================= UPGRADE MODAL OVERLAY ================= -->
-<div id="upgradeOverlay"
-     style="position:fixed;inset:0;z-index:8990;background:rgba(15,23,42,0.5);
-            backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);
-            opacity:0;pointer-events:none;transition:opacity 0.22s ease;" 
-     onclick="closeUpgradeModal()">
-</div>
-
-<!-- ================= UPGRADE MODAL ================= -->
-<div id="upgradeModal"
-     style="position:fixed;inset:0;z-index:8999;display:none;
-            align-items:center;justify-content:center;padding:16px;">
-    <div style="background:#ffffff;width:100%;max-width:500px;max-height:90vh;
-                border-radius:20px;box-shadow:0 24px 64px rgba(0,0,0,.22);
-                overflow:hidden;display:flex;flex-direction:column;
-                opacity:0;transform:translateY(20px);
-                transition:opacity 0.22s ease,transform 0.22s ease;">
-        
-        <!-- Header dengan background gradient -->
-        <div style="background:linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
-                    padding:32px 28px 24px;color:#ffffff;position:relative;overflow:hidden;">
-            <div style="position:absolute;top:-40px;right:-40px;width:200px;height:200px;
-                        border-radius:50%;background:rgba(255,255,255,.08);"></div>
-            <div style="position:absolute;bottom:-30px;left:-40px;width:150px;height:150px;
-                        border-radius:50%;background:rgba(255,255,255,.06);"></div>
-            
-            <div style="position:relative;z-index:1;">
-                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
-                    <div style="display:flex;align-items:center;gap:12px;">
-                        <div style="width:48px;height:48px;background:rgba(255,255,255,.2);
-                                    border-radius:14px;display:flex;align-items:center;justify-content:center;
-                                    font-size:24px;">
-                            <i class="fas fa-rocket"></i>
-                        </div>
-                        <h2 style="margin:0;font-size:24px;font-weight:800;">Upgrade ke Pro</h2>
-                    </div>
-                    <button onclick="closeUpgradeModal()"
-                            style="border:none;background:rgba(255,255,255,.2);color:#ffffff;
-                                   width:36px;height:36px;border-radius:10px;font-size:18px;cursor:pointer;
-                                   display:flex;align-items:center;justify-content:center;
-                                   transition:background 0.2s;padding:0;"
-                            onmouseenter="this.style.background='rgba(255,255,255,.3)'"
-                            onmouseleave="this.style.background='rgba(255,255,255,.2)'">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-                <p style="margin:0;font-size:14px;opacity:.95;">Dapatkan penyimpanan 5x lebih besar dan fitur premium lainnya</p>
-            </div>
-        </div>
-        
-        <!-- Body -->
-        <div style="padding:28px;flex:1;overflow-y:auto;">
-            <div style="margin-bottom:28px;">
-                <h3 style="font-size:14px;font-weight:700;color:#374151;margin:0 0 16px;text-transform:uppercase;letter-spacing:0.05em;">
-                    Keuntungan Akun Pro
-                </h3>
-                <div style="display:flex;flex-direction:column;gap:12px;">
-                    <div style="display:flex;align-items:center;gap:12px;padding:12px;background:#f0f9ff;border-radius:10px;border:1px solid #bfdbfe;">
-                        <i class="fas fa-database" style="color:#2563eb;font-size:16px;flex-shrink:0;"></i>
-                        <div>
-                            <p style="margin:0;font-size:13px;font-weight:600;color:#1e40af;">Penyimpanan 50 MB</p>
-                            <p style="margin:2px 0 0;font-size:12px;color:#6b7280;">5x lebih besar dari Akun Free</p>
-                        </div>
-                    </div>
-                    <div style="display:flex;align-items:center;gap:12px;padding:12px;background:#f0f9ff;border-radius:10px;border:1px solid #bfdbfe;">
-                        <i class="fas fa-crown" style="color:#fbbf24;font-size:16px;flex-shrink:0;"></i>
-                        <div>
-                            <p style="margin:0;font-size:13px;font-weight:600;color:#1e40af;">Fitur Premium</p>
-                            <p style="margin:2px 0 0;font-size:12px;color:#6b7280;">Akses ke semua fitur eksklusif</p>
-                        </div>
-                    </div>
-                    <div style="display:flex;align-items:center;gap:12px;padding:12px;background:#f0f9ff;border-radius:10px;border:1px solid #bfdbfe;">
-                        <i class="fas fa-zap" style="color:#f59e0b;font-size:16px;flex-shrink:0;"></i>
-                        <div>
-                            <p style="margin:0;font-size:13px;font-weight:600;color:#1e40af;">Prioritas Support</p>
-                            <p style="margin:2px 0 0;font-size:12px;color:#6b7280;">Support lebih cepat dan responsif</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Action Buttons -->
-        <div style="padding:20px 28px;border-top:1px solid #e5e7eb;background:#f9fafb;display:flex;gap:10px;">
-            <button onclick="closeUpgradeModal()"
-                    style="flex:1;padding:12px 16px;border:1.5px solid #e5e7eb;background:#ffffff;
-                           border-radius:10px;font-size:13px;font-weight:600;color:#6b7280;
-                           cursor:pointer;transition:all 0.2s;font-family:'Plus Jakarta Sans',sans-serif;"
-                    onmouseenter="this.style.background='#f3f4f6';this.style.borderColor='#d1d5db'"
-                    onmouseleave="this.style.background='#ffffff';this.style.borderColor='#e5e7eb'">
-                Nanti dulu
-            </button>
-            <a href="{{ route('dashboard.appearance') }}"
-               style="flex:1;padding:12px 16px;background:linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
-                      border-radius:10px;font-size:13px;font-weight:700;color:#ffffff;cursor:pointer;
-                      text-decoration:none;display:flex;align-items:center;justify-content:center;gap:8px;
-                      transition:all 0.2s;border:none;font-family:'Plus Jakarta Sans',sans-serif;">
-                <i class="fas fa-star" style="font-size:12px;"></i>
-                Upgrade Sekarang
-            </a>
-        </div>
-    </div>
-</div>
-
-<script>
-function closeUpgradeModal() {
-    const modal = document.getElementById('upgradeModal');
-    const overlay = document.getElementById('upgradeOverlay');
-    if (modal && overlay) {
-        modal.style.opacity = '0';
-        modal.style.transform = 'translateY(20px)';
-        overlay.style.opacity = '0';
-        overlay.style.pointerEvents = 'none';
-        setTimeout(() => {
-            modal.style.display = 'none';
-        }, 220);
-    }
-}
-
-// Show modal animation
-const originalOpenUpgrade = function() {
-    const modal = document.getElementById('upgradeModal');
-    const overlay = document.getElementById('upgradeOverlay');
-    if (modal && overlay) {
-        modal.style.display = 'flex';
-        setTimeout(() => {
-            modal.style.opacity = '1';
-            modal.style.transform = 'translateY(0)';
-            overlay.style.opacity = '1';
-        }, 10);
-    }
-};
-
-// Override click handler to show animation
-const storageCardClick = document.getElementById('storageCard');
-if (storageCardClick && !isProUser) {
-    storageCardClick.removeEventListener('click', () => {});
-    storageCardClick.addEventListener('click', originalOpenUpgrade);
-}
-</script>
 
 {{-- OVERLAY --}}
 <div id="withdrawOverlay"
@@ -1216,13 +898,10 @@ if (storageCardClick && !isProUser) {
                         Detail Penarikan
                     </div>
                     <div style="display:flex;flex-direction:column;gap:10px;">
-                        {{-- Jumlah Penarikan --}}
                         <div style="display:flex;justify-content:space-between;align-items:center;">
                             <span style="font-size:13px;color:#64748b;">Jumlah Penarikan</span>
                             <span id="breakdown-amount" style="font-size:15px;font-weight:700;color:#111827;">Rp 0</span>
                         </div>
-
-                        {{-- Fee Withdraw --}}
                         <div style="display:flex;justify-content:space-between;align-items:center;">
                             <span style="font-size:13px;color:#64748b;display:flex;align-items:center;gap:5px;">
                                 Fee Withdraw
@@ -1231,22 +910,15 @@ if (storageCardClick && !isProUser) {
                             </span>
                             <span id="breakdown-fee" style="font-size:15px;font-weight:700;color:#b45309;">Rp 6.660</span>
                         </div>
-
-                        {{-- Yang Diterima --}}
                         <div style="display:flex;justify-content:space-between;align-items:center;">
                             <span style="font-size:13px;color:#64748b;">Yang Diterima</span>
                             <span id="breakdown-received" style="font-size:15px;font-weight:700;color:#15803d;">Rp 0</span>
                         </div>
-
                         <div style="height:1px;background:#e2e8f0;"></div>
-
-                        {{-- Total Potongan Saldo --}}
                         <div style="display:flex;justify-content:space-between;align-items:center;">
                             <span style="font-size:13px;color:#111827;font-weight:600;">Total Potongan Saldo</span>
                             <span id="breakdown-total" style="font-size:16px;font-weight:800;color:#dc2626;">Rp 0</span>
                         </div>
-
-                        {{-- Sisa Saldo --}}
                         <div style="padding:10px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;">
                             <div style="display:flex;justify-content:space-between;align-items:center;">
                                 <span style="font-size:12px;color:#1e40af;font-weight:600;">Sisa Saldo Setelah Penarikan</span>
@@ -1409,7 +1081,7 @@ function hideCustomInput(skipReset) {
 }
 
 function setAmount(amount, btn) {
-    hideCustomInput(true); // skip reset
+    hideCustomInput(true);
     wdSelectedAmount = amount;
     document.querySelectorAll('.wd-preset-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
@@ -1459,12 +1131,9 @@ function showSelectedAmountInfo(amount, isError = false) {
     valEl.style.color = isError ? '#dc2626' : '#2356e8';
     valEl.textContent = 'Rp ' + formatRp(amount);
 
-    // Ganti icon sesuai state
     const icon = el.querySelector('i');
     if (icon) {
-        icon.className = isError
-            ? 'fas fa-triangle-exclamation'
-            : 'fas fa-money-bill-wave';
+        icon.className = isError ? 'fas fa-triangle-exclamation' : 'fas fa-money-bill-wave';
         icon.style.color = isError ? '#dc2626' : '#2356e8';
     }
 }
@@ -1482,7 +1151,7 @@ function updateBreakdown() {
         return;
     }
 
-    const totalDeduction = wdSelectedAmount; // Only amount, fee is deducted from amount
+    const totalDeduction = wdSelectedAmount;
     const receivedAmount = wdSelectedAmount - WD_FEE;
     const remaining = WD_BALANCE - totalDeduction;
 
