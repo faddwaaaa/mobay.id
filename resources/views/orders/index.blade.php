@@ -628,11 +628,11 @@
         <div class="segmented">
             <a href="{{ route('orders.index', ['type' => 'fisik']) }}" class="segmented-link {{ $type === 'fisik' ? 'active' : '' }}">
                 <i class="fas fa-box"></i>
-                Pesanan Fisik
+                Produk Fisik
             </a>
             <a href="{{ route('orders.index', ['type' => 'digital']) }}" class="segmented-link {{ $type === 'digital' ? 'active' : '' }}">
                 <i class="fas fa-file-arrow-down"></i>
-                Pesanan Digital
+                Produk Digital
             </a>
         </div>
 

@@ -38,14 +38,22 @@
 .sec-desc  { font-size: 12px; color: #9ca3af; margin: 1px 0 0; }
 
 .pc-banner-wrap {
-    position: relative; width: 100%; height: 130px;
+    position: relative; width: 100%; height: auto;
     background: #f3f4f6; border-radius: 12px; overflow: hidden;
     border: 2px dashed #e5e7eb; cursor: pointer; transition: all 0.18s;
     display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 6px;
+    min-height: 80px;
+    max-height: 220px;
 }
 .pc-banner-wrap:hover { border-color: #93c5fd; background: #f0f9ff; }
-.pc-banner-wrap.has-img { border-style: solid; border-color: #e5e7eb; }
-.pc-banner-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: none; }
+.pc-banner-wrap.has-img { border-style: solid; border-color: #e5e7eb; padding: 0; }
+.pc-banner-img { 
+    position: relative;
+    width: 100%; 
+    height: auto;
+    display: none;
+    border-radius: 10px;
+}
 .pc-banner-hint { font-size: 12px; color: #9ca3af; font-weight: 500; position: relative; z-index: 1; }
 .pc-banner-hint svg { display: block; margin: 0 auto 5px; }
 .pc-banner-overlay {

@@ -626,6 +626,7 @@ document.querySelectorAll('.range-option').forEach(el => {
 ============================================================ --}}
 @push('modals')
 
+
 {{-- OVERLAY --}}
 <div id="withdrawOverlay"
      style="position:fixed;inset:0;z-index:9990;background:rgba(15,23,42,0.5);
